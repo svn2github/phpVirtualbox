@@ -1,0 +1,17 @@
+#summary Common phpVirtualBox errors and issues
+
+=Error Messages=
+
+== Error logging in or connecting to vboxwebsrv==
+
+This typically indicates that the username and / or password is incorrect in config.php. These must be set to the system username / password of the user that administers your VirtualBox virtual machines.
+
+== Could not connect to host ==
+
+This indicates that phpVirtualBox could not connect to the vboxwebsrv server. Either the *location* setting in config.php is wrong or *vboxwebsrv* is not running on the VirtualBox host.
+
+=Issues=
+
+== Empty virtual machine list ==
+
+This is usually an indication that the username / password entered in config.php is not that of the user that administers your VirtualBox virtual machines.

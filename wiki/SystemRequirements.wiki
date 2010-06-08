@@ -1,0 +1,13 @@
+#summary System Requirements
+
+= phpVirtualBox System Requirements =
+
+  # A web server with PHP >= 5.2.0
+  # A working VirtualBox installation
+  # One of the following web browsers:
+    * Firefox >= 3.6.0
+    * Internet Explorer >= 8
+    * Opera >= 10.0
+    * Safari >= 4.0
+    * Chrome >= 5.0
+    * Other web browsers are simply untested.

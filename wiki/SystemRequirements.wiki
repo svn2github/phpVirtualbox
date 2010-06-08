@@ -11,3 +11,5 @@
     * Safari >= 4.0
     * Chrome >= 5.0
     * Other web browsers are simply untested.
+
+_Note: VirtualBox, PHP, Firefox, Internet Explorer, Opera, Safari, Chrome, and all other trademarks are the property of their respective owners._

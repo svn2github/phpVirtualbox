@@ -1,0 +1,36 @@
+#summary Installation of phpVirtualBox
+
+= VirtualBox Considerations =
+
+phpVirtualBox requires that vboxwebsrv (a program distributed with VirtualBox) is running on your VirtualBox host. On `*`nix hosts, this is typically found in /usr/bin. On Windows, it is typically found in C:\Program Files\Oracle\VirtualBox. This program MUST be run as the same user that administers your VirtualBox virtual machines.
+
+==Unix/Linux==
+
+In order for virtual machines started by phpVirtualBox (vboxwebsrv really) to maintain their running state, the vboxwebsrv process or the process that starts it, must be run as root. Assuming your VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /usr/bin, you may start vboxwebsrv by running the following command as *root*:
+
+ su vbox -c '/usr/bin/vboxwebsrv -b --logfile /dev/null >/dev/null'
+
+See the Downloads tab for an example init.d startup script.
+
+==Windows==
+
+On Windows (assuming your VirtualBox installation is located in C:\Program Files\Oracle\VirtualBox), the following command will start vboxwebsrv:
+
+ "C:\Program Files\Oracle\VirtualBox\vboxwebsrv.exe" >nul
+
+Note that *>nul* is needed so that vboxwebsrv does not send its output to the command prompt window. Without it, performance will be severely degraded.
+
+==OS X==
+TODO: Install VirtualBox on OS X and create instructions.
+
+
+
+= phpVirtualBox =
+
+  # Download the latest version of phpVirtualBox from the Downloads tab
+  # Unzip the downloaded file and copy the resulting files / folders to a folder accessible by your web server
+  # Edit config.php to reflect your VirtualBox settings.
+  # Navigate to the resulting folder in your web browser.
+
+
+_Note: Oracle, Unix, Linux, Windows, VirtualBox, OS X, and all other trademarks are the property of their respective owners._

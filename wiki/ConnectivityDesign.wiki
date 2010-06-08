@@ -1,0 +1,25 @@
+#summary Connectivity Design of phpVirtualBox
+
+Some people may have trouble understanding the design of phpVirtualBox and how it interacts with VirtualBox. The connectivity diagram below should aid in understanding of its interaction and why *user X* (the VirtualBox user that administers your VirtualBox installation) must be configured.
+
+<pre>
+ -----------------------------------------------------
+ | Web Server                                        |
+ |    phpVirtualBox (config.php contains user X's    |
+ |     |              system username / password)    |
+ ------|----------------------------------------------
+       |
+   Authentication and VirtualBox communication
+       |
+       |  -----------------------------------------------
+       |  | VirtualBox Installation                     |
+       |  |                                             |
+       '---- vboxwebsrv (running as user X)             |
+          |    |                                        |
+          |    '--- User X's VirtualBox configuration   |
+          |         and virtual machines                |
+          |                                             |
+          -----------------------------------------------
+</pre>
+
+_Note that although the web server and VirtualBox installation are in 2 different boxes in the diagram, they certainly may run on the same physical host._

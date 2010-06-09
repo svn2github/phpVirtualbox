@@ -6,11 +6,15 @@ phpVirtualBox requires that vboxwebsrv (a program distributed with VirtualBox) i
 
 ==Unix/Linux==
 
-In order for virtual machines started by phpVirtualBox (vboxwebsrv, really) to maintain their running state, the vboxwebsrv process or the process that starts it, must be run as root. Assuming your VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /usr/bin, you may start vboxwebsrv by running the following command as *root*:
+Assuming your VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /usr/bin, you may start vboxwebsrv by running the following command as *vbox*:
+
+ /usr/bin/vboxwebsrv -b --logfile /dev/null >/dev/null
+
+Alternatively you may run the command as root by using *su*. Assuming your VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /usr/bin, you may start vboxwebsrv by running the following command as *root*:
 
  su vbox -c '/usr/bin/vboxwebsrv -b --logfile /dev/null >/dev/null'
 
-See the Downloads tab for an example init.d startup script.
+This command can also be placed in a system startup script. *See the Downloads tab for an example init.d startup script.*
 
 ==Windows==
 

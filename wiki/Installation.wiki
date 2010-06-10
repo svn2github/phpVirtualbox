@@ -2,7 +2,7 @@
 
 = VirtualBox Considerations =
 
-phpVirtualBox requires that vboxwebsrv (a program distributed with VirtualBox) is running on your VirtualBox host. On `*`nix hosts, this is typically found in /usr/bin. On Windows, it is typically found in C:\Program Files\Oracle\VirtualBox. This program MUST be run as the same user that administers your VirtualBox virtual machines.
+phpVirtualBox requires that vboxwebsrv (a program distributed with VirtualBox) is running on your VirtualBox host. On `*`nix hosts, this is typically found in /usr/bin. On Windows, it is typically found in C:\Program Files\Oracle\VirtualBox. This program MUST be run as the same user that administers your VirtualBox virtual machines. On Windows and OS X, this simply means the same user that you log into your machine as when you run VirtualBox.
 
 ==Unix/Linux==
 

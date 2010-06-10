@@ -32,7 +32,7 @@ TODO: Install VirtualBox on OS X and create instructions.
 = phpVirtualBox =
 
   # Download the latest version of phpVirtualBox from the Downloads tab
-  # Unzip the downloaded file and copy the resulting files / folders to a folder accessible by your web server
+  # Unzip the downloaded file and copy the resulting files / folders to a folder accessible by your [http://code.google.com/p/phpvirtualbox/wiki/WebServerAndPHPInstall web server]
   # Edit config.php to reflect your VirtualBox settings.
   # Navigate to the resulting folder in your web browser.
 

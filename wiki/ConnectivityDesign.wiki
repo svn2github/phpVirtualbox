@@ -22,4 +22,4 @@ The connectivity diagram below should aid in understanding of its interaction an
           -----------------------------------------------
 </pre>
 
-_Note that although the web server and VirtualBox installation are in 2 different boxes in the diagram, they certainly may run on the same physical host._
+_Note that although the web server and VirtualBox installation are in 2 different boxes in the diagram, they certainly may run on the same physical host. Taking security considerations in mind, they probably should run on the same host._

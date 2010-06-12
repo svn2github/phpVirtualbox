@@ -1,6 +1,6 @@
 #summary Connectivity Design of phpVirtualBox
 
-Some people may have trouble understanding the design of phpVirtualBox and how it interacts with VirtualBox. The connectivity diagram below should aid in understanding of its interaction and why *user X* (the VirtualBox user that administers your VirtualBox installation) must be properly configured.
+The connectivity diagram below should aid in understanding of its interaction and why *user X* (the VirtualBox user that administers your VirtualBox installation) must be properly configured.
 
 <pre>
  -----------------------------------------------------

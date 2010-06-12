@@ -4,6 +4,14 @@
 
 phpVirtualBox requires that vboxwebsrv (a program distributed with VirtualBox) is running on your VirtualBox host. On `*`nix hosts, this is typically found in /usr/bin. On Windows, it is typically found in C:\Program Files\Oracle\VirtualBox. This program MUST be run as the same user that administers your VirtualBox virtual machines. On Windows and OS X, this simply means the same user that you log into your machine as when you run VirtualBox.
 
+== NOTE ==
+
+If your web server and your VirtualBox installation are on 2 different hosts, you may need to add:
+
+  -H IP.ADDRESS.OF.HOST
+
+to the command line of vboxwebsrv. Where IP.ADDRESS.OF.HOST is the IP address of your VirtualBox host, accessible by your web server. If this is not specified, vboxwebsrv will run on 127.0.0.1, which is not accessible outside of itself.
+
 ==Unix/Linux==
 
 Assuming your VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /usr/bin, you may start vboxwebsrv by running the following command as *vbox*:

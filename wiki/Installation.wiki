@@ -26,7 +26,7 @@ Note that *>nul* is needed so that vboxwebsrv does not send its output to the co
 
 ==OS X==
 
-In OS X, the follwing commands will start vboxwebsrv:
+In OS X, start Terminal (usually located in Applications -> Utilities) and enter the following commands:
 
   cd /Applications/VirtualBox.app/Contents/MacOS
 

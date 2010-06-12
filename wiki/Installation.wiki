@@ -25,9 +25,13 @@ On Windows (assuming your VirtualBox installation is located in C:\Program Files
 Note that *>nul* is needed so that vboxwebsrv does not send its output to the command prompt window. Without it, performance will be severely degraded.
 
 ==OS X==
-TODO: Install VirtualBox on OS X and create instructions.
 
+In OS X, the follwing commands will start vboxwebsrv:
 
+  cd /Applications/VirtualBox.app/Contents/MacOS
+  ./vboxwebsrv >/dev/null
+
+Running /usr/bin/vboxwebsrv or not running the command from within /Applications/VirtualBox.app/Contents/MacOS seems to crash vboxwebsrv
 
 = phpVirtualBox =
 

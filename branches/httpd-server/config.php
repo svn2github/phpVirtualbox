@@ -12,8 +12,8 @@ var $location = 'http://localhost:18083/';
 
 
 
-/* Currently, en_US is the only supported language */
-var $language = 'en_US';
+/* See languages folder for more language options */
+var $language = 'en_us';
 
 
 

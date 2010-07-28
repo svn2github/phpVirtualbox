@@ -12,6 +12,20 @@ If your web server and your VirtualBox installation are on 2 different hosts, yo
 
 to the command line of vboxwebsrv. Where IP.ADDRESS.OF.HOST is the IP address of your VirtualBox host, accessible by your web server. If this is not specified, vboxwebsrv will run on 127.0.0.1, which is not accessible outside of itself.
 
+=== VirtualBox OSE ===
+
+For *VirtualBox OSE* users, you must execute the following command:
+
+   VBoxManage setproperty websrvauthlibrary null
+
+This disables authentication for vboxwebsrv. At the moment, this is the only way for an application to communicate with the OSE version of vboxwebsrv. Taking security into consideration, only run vboxwebsrv OSE on a non-public network. 
+
+If you are not sure whether or not you are running the OSE version of VirtualBox, you can run:
+
+   vboxwebsrv -h
+
+If the first line contains "OSE" (e.g. Oracle VM VirtualBox web service version x.x.x_OSE), you are running the OSE version of VirtualBox.
+
 ==FreeBSD==
 
 To install the port:
@@ -21,6 +35,8 @@ To install the port:
 To add the package:
 
    pkg_add -r phpvirtualbox
+
+Thanks to Bernhard Fröhlich for his time and effort in creating the FreeBSD port.
 
 ==Unix/Linux==
 

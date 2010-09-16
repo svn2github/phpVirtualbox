@@ -50,6 +50,7 @@ Alternatively you may run the command as root by using *su*. Assuming your Virtu
 
 This command can also be placed in a system startup script. *See the Downloads tab for an example init.d startup script.*
 
+
 ==Windows==
 
 On Windows (assuming your VirtualBox installation is located in C:\Program Files\Oracle\VirtualBox), the following command will start vboxwebsrv:
@@ -74,6 +75,20 @@ Running /usr/bin/vboxwebsrv or not running the command from within /Applications
   # Unzip the downloaded file and copy the resulting files / folders to a folder accessible by your [http://code.google.com/p/phpvirtualbox/wiki/WebServerAndPHPInstall web server]
   # Edit config.php to reflect your VirtualBox settings.
   # Navigate to the resulting folder in your web browser.
+
+==CentOS Considerations==
+CentOS ships with PHP 5.1.x while phpVirtualBox requires PHP >= 5.2.0. If you wish to use phpVirtualBox, you must upgrade PHP.
+
+==Arch Linux Considerations==
+In Arch Linux, be sure to edit /etc/php/php.ini, and uncomment the following lines:
+
+{{{
+;extension=json.so
+;extension=soap.so
+}}}
+
+by removing the ';' at the beginning of each. Then restart apache.
+
 
 
 _Note: Oracle, Unix, Linux, Windows, VirtualBox, OS X, and all other trademarks are the property of their respective owners._

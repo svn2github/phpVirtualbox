@@ -50,13 +50,13 @@ Alternatively you may run the command as root by using *su*. Assuming your Virtu
 
 This command can also be placed in a system startup script. *See the Downloads tab for an example init.d startup script.*
 
-==Open Solaris==
+==Solaris==
 
 Assuming your VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /opt/VirtualBox, you may start vboxwebsrv by running the following command as *vbox*:
 
  /opt/VirtualBox/vboxwebsrv -b --logfile /dev/null >/dev/null
 
-
+Solaris users will also have to follow the same instructions outlined in the VirtualBox OSE section above, or vboxwebsrv will fail to authenticate.
 
 ==Windows==
 

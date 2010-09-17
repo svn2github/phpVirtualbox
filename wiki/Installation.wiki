@@ -38,7 +38,7 @@ To add the package:
 
 Thanks to Bernhard Fröhlich for his time and effort in creating the FreeBSD port.
 
-==Unix/Linux==
+==Linux==
 
 Assuming your VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /usr/bin, you may start vboxwebsrv by running the following command as *vbox*:
 
@@ -49,6 +49,13 @@ Alternatively you may run the command as root by using *su*. Assuming your Virtu
  su vbox -c '/usr/bin/vboxwebsrv -b --logfile /dev/null >/dev/null'
 
 This command can also be placed in a system startup script. *See the Downloads tab for an example init.d startup script.*
+
+==Open Solaris==
+
+Assuming your VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /opt/VirtualBox, you may start vboxwebsrv by running the following command as *vbox*:
+
+ /opt/VirtualBox/vboxwebsrv -b --logfile /dev/null >/dev/null
+
 
 
 ==Windows==
@@ -89,6 +96,7 @@ In Arch Linux, be sure to edit /etc/php/php.ini, and uncomment the following lin
 
 by removing the ';' at the beginning of each. Then restart apache.
 
-
+==Windows Considerations==
+phpVirtualBox's location setting in config.php cannot be set to 'localhost' use 127.0.0.1 instead. E.g. http://127.0.0.1:18083/
 
 _Note: Oracle, Unix, Linux, Windows, VirtualBox, OS X, and all other trademarks are the property of their respective owners._

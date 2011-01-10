@@ -99,4 +99,10 @@ by removing the ';' at the beginning of each. Then restart apache.
 ==Windows Considerations==
 phpVirtualBox's location setting in config.php cannot be set to 'localhost' use 127.0.0.1 instead. E.g. http://127.0.0.1:18083/
 
+= VirtualBox >= 4.0 - Remote Console Access =
+In order to access a VM's console over RDP (via phpVirtualBox's console tab, or other RDP client) you must install the *Oracle VM VirtualBox Extension Pack* from: http://www.virtualbox.org/wiki/Downloads
+
+Please refer to VirtualBox's documentation for instructions on installing extension packs.
+
+
 _Note: Oracle, Unix, Linux, Windows, VirtualBox, OS X, and all other trademarks are the property of their respective owners._

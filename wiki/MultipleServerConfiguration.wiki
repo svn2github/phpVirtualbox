@@ -44,6 +44,6 @@ var $servers = array(
 
 Note that the server names may be anything you wish. These should be descriptive to you.
 
-Once this is done, you may change servers by clicking on the server name in the top item of the virtual machine list.
+Once this is done, you may change servers by clicking on the server name in the top item of the virtual machine list. The resulting menu will allow you to specify which server phpVirtualBox will communicate with.
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbmulti.png]

@@ -10,8 +10,9 @@ This typically indicates that the username and / or password is incorrect in con
 
 If you have upgraded from VirtualBox 3.2.x and this was working before, you may have to run the following commands on your VirtualBox host:
 
-VBoxManage setproperty vrdeauthlibrary default
-VBoxManage setproperty websrvauthlibrary default
+   VBoxManage setproperty vrdeauthlibrary default
+
+   VBoxManage setproperty websrvauthlibrary default
 
 == Could not connect to host ==
 

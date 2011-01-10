@@ -29,3 +29,6 @@ This is usually an indication that the username / password entered in config.php
 
 To enable screen shots and the Console tab, please install a VirtualBox exteionsion pack that supports VRDE such as the Oracle VM VirtualBox Extension Pack found in the Downloads section of http://www.virtualbox.org
 
+== The Console tab does not appear in Internet Explorer ==
+
+The Flash RDP console program distributed by Oracle does not appear to work in Internet Explorer. Until this is fixed, the console tab is disabled in that browser.

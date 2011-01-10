@@ -2,7 +2,7 @@
 
 = Introduction =
 
-phpVirtualBox requires a web server with PHP >= 5.2.0 installed in order to run. The following may help you install these on the machine on which you intend to run phpVirtualBox. If you already have a web server with PHP installed, you may simply copy phpVirtualBox to the document root folder of that web server.
+phpVirtualBox requires a web server with PHP >= 5.1.0 installed in order to run. The following may help you install these on the machine on which you intend to run phpVirtualBox. If you already have a web server with PHP installed, you may simply copy phpVirtualBox to the document root folder of that web server.
 
 
 == Windows ==

@@ -1,0 +1,49 @@
+#summary Multiple server configuration example.
+
+= Multiple server configuration of phpVirtualBox =
+
+Starting with phpVirtualBox 4-0, phpVirtualBox can be configured to interact with multiple VirtualBox installations. Provided that each is running its own vboxwebsrv instance. To do this, edit config.php in phpVirtualBox's folder and locate the following code:
+
+{{{
+/*
+var $servers = array(
+	array(
+		'name' => 'London',
+		'username' => 'user',
+		'password' => 'pass',
+		'location' => 'http://192.168.1.1:18083/'
+	),
+	array(
+		'name' => 'New York',
+		'username' => 'user2',
+		'password' => 'pass2',
+		'location' => 'http://192.168.1.2:18083/'
+	),
+);
+*/
+}}}
+
+Uncomment the code (remove the /`*` and `*`/) and edit the server values. An example config may look like this:
+
+{{{
+var $servers = array(
+	array(
+		'name' => 'London',
+		'username' => 'vbox',
+		'password' => 'secret1',
+		'location' => 'http://10.32.32.4:18083/'
+	),
+	array(
+		'name' => 'New York',
+		'username' => 'vboxadmin',
+		'password' => 'secret2',
+		'location' => 'http://10.32.45.2:18083/'
+	),
+);
+}}}
+
+Note that the server names may be anything you wish. These should be descriptive to you.
+
+Once this is done, you may change servers by clicking on the server name in the top item of the virtual machine list.
+
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbmulti.png]

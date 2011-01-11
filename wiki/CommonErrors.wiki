@@ -28,7 +28,7 @@ This is usually an indication that the username / password entered in config.php
 	- or -
 == Console Tab is ALWAYS disabled ==
 
-To enable screen shots and the Console tab, please install a VirtualBox exteionsion pack that supports VRDE such as the Oracle VM VirtualBox Extension Pack found in the Downloads section of http://www.virtualbox.org
+To enable screen shots and the Console tab, please install a VirtualBox extension pack that supports VRDE such as the Oracle VM VirtualBox Extension Pack found in the Downloads section of http://www.virtualbox.org
 
 == Right click menu is displayed under context menu on VM Details tab when using Firefox ==
 

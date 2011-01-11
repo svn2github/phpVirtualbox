@@ -1,0 +1,85 @@
+#summary How to translate phpVirtualBox
+
+= Basics =
+
+*If you want to become a translator for phpVirtualBox, join the Google Group phpvbox-translate located at: http://groups.google.com/group/phpvbox-translate*
+
+phpVirtualBox can be translated to any language. You may begin translating by copying the en_us.php file in the languages folder to a name appropriate for your locale. E.g. es_es.php. If you aren't sure of the name, just make one up and I'll look up the correct locale codes after it is submitted. Then change the language setting in config.php so that phpVirtualBox uses your new file. E.g. in config.php change:
+
+{{{
+var $language = 'en_us';
+}}}
+
+to
+
+{{{
+var $language = 'es_es';
+}}}
+
+Translations the language file look like:
+
+'TEXT' => 'TRANSLATED TEXT'
+
+Simply change lines like these:
+
+{{{
+'Up' => 'Up',
+'Down' => 'Down',
+'Yes' => 'Yes',
+'No' => 'No',
+}}}
+
+To something like this:
+
+{{{
+'Up' => 'Ariba',
+'Down' => 'Abajo',
+'Yes' => 'Si',
+'No' => 'No',
+}}}
+
+(excuse my Spanish). Open up your new language file in the text editor of your choice and translate away.
+
+= Character Encoding =
+
+All translations should use UTF-8 encoding.
+
+  * Using Notepad in Windows, you may select UTF-8 encoding in the Save as... dialog.
+  * Using vi, you may enter the command *:set enc=utf-8*
+
+Other text editors should have some way to change / set the encoding used.
+
+= Contexts =
+
+Starting with phpVirtualBox 4-0, language translations are now given context. As one translator points out:
+
+`Label "New" in main form and in Virtual Media Manager must be different. In russian this is two different words "Новая" and "Новый";`
+
+Contextualization solves this problem. Most sections of phpVirtualBox have their own context. These are:
+
+|| *phpVirtualBox Section* || *Context Name* ||
+||Virtual Media Manager dialog||vboxVMM||
+||Virtual Machine Logs dialog||vboxVMLogs||
+||Settings dialog||vboxSettings||
+||Virtual Machine Toolbar buttons||vboxVMList||
+||Virtual Machine Snapshots tab||vboxSnapshots||
+||Virtual Machine Console tab||vboxVMConsole||
+||Mount Media dialog||vboxMountMediums||
+||Virtual Machine Guest Network Adapters dialog||vboxGuestNetAdapters||
+||Virtual Machine Port Forwarding dialog||vboxPortForwarding||
+||Import/Export Virtual Machine dialog||vboxAppliance||
+||New Hard Disk wizard||vboxwizardNewHD||
+||New Virtual Machine wizard||vboxwizardNewVM||
+
+You create a contextual translation by prepending *context name*:: to the translation in your language file. Using the noted example above, you may create a translation for "New" in the Virtual Media Manager by adding a line containing:
+
+{{{
+'vboxVMM::New' => 'Новый',
+}}}
+
+While leaving the default translation of "New" alone:
+
+{{{
+'New' => 'Новая',
+}}}
+

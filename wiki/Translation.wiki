@@ -2,7 +2,7 @@
 
 = Basics =
 
-*If you want to become a translator for phpVirtualBox, join the Google Group phpvbox-translate located at: http://groups.google.com/group/phpvbox-translate*
+*If you want to become a translator for phpVirtualBox, join the Google Group phpvbox-translate located at:* http://groups.google.com/group/phpvbox-translate
 
 phpVirtualBox can be translated to any language. You may begin translating by copying the en_us.php file in the languages folder to a name appropriate for your locale. E.g. es_es.php. If you aren't sure of the name, just make one up and I'll look up the correct locale codes after it is submitted. Then change the language setting in config.php so that phpVirtualBox uses your new file. E.g. in config.php change:
 
@@ -82,4 +82,3 @@ While leaving the default translation of "New" alone:
 {{{
 'New' => 'Новая',
 }}}
-

@@ -18,6 +18,12 @@ If you have upgraded from VirtualBox 3.2.x and this was working before, you may 
 
 This indicates that phpVirtualBox could not connect to the vboxwebsrv server. Either the *location* setting in config.php is wrong or *vboxwebsrv* is not running on the VirtualBox host.
 
+== The virtual machine 'vm name' has terminated unexpectedly during startup ==
+
+This is usually an indication of some sort of misconfiguration of the VM. For instance you may have enabled "Enable VT-x/AMD-V" in the VM's configuration, but your processor does not support it (just an example). Unfortunately the only way to get the correct error message is to start the VM using another VirtualBox interface such as the VirtualBox GUI, VBoxManage, or VBoxHeadless. These should print a more descriptive error.
+
+If the cause is not apparent through the error message, post the issue on the forums over at http://www.virtualbox.org
+
 =Issues=
 
 == Empty virtual machine list ==

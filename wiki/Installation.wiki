@@ -40,15 +40,7 @@ Thanks to Bernhard Fröhlich for his time and effort in creating the FreeBSD por
 
 ==Linux==
 
-Assuming your VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /usr/bin, you may start vboxwebsrv by running the following command as *vbox*:
-
- /usr/bin/vboxwebsrv -b --logfile /dev/null >/dev/null
-
-Alternatively you may run the command as root by using *su*. Assuming your VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /usr/bin, you may start vboxwebsrv by running the following command as *root*:
-
- su vbox -c '/usr/bin/vboxwebsrv -b --logfile /dev/null >/dev/null'
-
-This command can also be placed in a system startup script. *See the Downloads tab for an example init.d startup script.*
+Linux users should use the instructions for vboxweb-service found at http://code.google.com/p/phpvirtualbox/wiki/vboxwebServiceConfigLinux
 
 ==Solaris==
 

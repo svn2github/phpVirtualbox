@@ -8,7 +8,7 @@ See also: [http://code.google.com/p/phpvirtualbox/wiki/ConnectivityDesign connec
 
 This typically indicates that the username and / or password is incorrect in config.php. These must be set to the system username / password of the user that administers your VirtualBox virtual machines.
 
-If you have upgraded from VirtualBox 3.2.x and this was working before, you may have to run the following commands on your VirtualBox host:
+*If you have upgraded from VirtualBox 3.2.x and this was working before*, you may have to run the following commands on your VirtualBox host:
 
    VBoxManage setproperty vrdeauthlibrary default
 

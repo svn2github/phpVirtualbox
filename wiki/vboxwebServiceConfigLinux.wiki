@@ -40,7 +40,7 @@ VBOXWEB_USER=vbox
 VBOXWEB_HOST=192.168.0.4
 }}}
 
-.. or if your web server and vboxwebsrv are on the same host, simply:
+.. or *if your web server and vboxwebsrv are on the same host*, simply:
 
 {{{
 VBOXWEB_USER=vbox

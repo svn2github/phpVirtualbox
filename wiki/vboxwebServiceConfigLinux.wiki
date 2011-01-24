@@ -27,7 +27,7 @@ The following settings are available for use in this file:
 || VBOXWEB_LOGFILE || Name of file to write log to (no file). ||
 || INSTALL_DIR || The location of the vboxwebsrv binary (/usr/lib/virtualbox). ||
 
-At a minimum, most users will need to set *VBOXWEB_USER* and *VBOXWEB_HOST*.
+At a minimum, *VBOXWEB_USER* must be set. Some may need to set *VBOXWEB_HOST* as well.
 
 VBOXWEB_USER should be set to the user that runs VirtualBox virtual machines on your system. If more than one user runs virtual machines, you will have to pick one (multiple instances are possible, but beyond the scope of this document).
 
@@ -37,13 +37,13 @@ Your */etc/vbox/vbox.cfg* may look like this:
 
 {{{
 VBOXWEB_USER=vbox
-VBOXWEB_HOST=192.168.0.4
 }}}
 
-.. or *if your web server and vboxwebsrv are on the same host*, simply:
+.. or *if your web server and vboxwebsrv are on NOT the same host*:
 
 {{{
 VBOXWEB_USER=vbox
+VBOXWEB_HOST=192.168.0.4
 }}}
 
 Note that these values are just examples. The user that runs virtual machines on your system may not be named "vbox."

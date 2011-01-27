@@ -40,6 +40,20 @@ To something like this:
 
 (excuse my Spanish). Open up your new language file in the text editor of your choice and translate away.
 
+= Single Quotes (apostrophes) =
+
+In the language file, single quotes within a translation must be escaped by prepending a back slash. For instance, in the French translation, "Operating System" contains an apostrophe.
+
+{{{
+'Operating System' => 'Système d'exploitation',
+}}}
+
+This will confuse PHP and cause phpVirtualBox to generate an "Unknown PHP error." This must be translated as:
+
+{{{
+'Operating System' => 'Système d\'exploitation',
+}}}
+
 = Character Encoding =
 
 All translations should use UTF-8 encoding.

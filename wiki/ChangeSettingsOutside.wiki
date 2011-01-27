@@ -6,7 +6,7 @@ phpVirtualBox uses a caching mechanism to limit the amount of work vboxwebsrv ha
 
 As a result, changing settings *outside of phpVirtualBox* (using VBoxManage, or the VirtualBox GUI) may not be reflected in the phpVirtualBox web page. While phpVirtualBox DOES refresh its cache periodically, you may wish to manually refresh an item's cache. If you do not use VBoxManage, or the VirtualBox GUI, you may never have to worry about this at all.
 
-Again, *phpVirtualBox refreshes an appropriate item's cache each time a change that affects the cached item has been made through the phpVirtualBox web page. You may only have to perform these steps if you have made a change outside of the phpVirtualBox web page.* Even then, the cache will eventually be refreshed once it expires.
+Again, *phpVirtualBox refreshes an appropriate item's cache each time a change that affects the cached item has been made through the phpVirtualBox web page. You may only have to perform these steps if you have made a change outside of the phpVirtualBox web page.*
 
 = Cache Items =
 
@@ -39,6 +39,4 @@ The following are examples of tasks that may alter VirtualBox system settings:
   * Installing a new extension pack
   * Changing the Default Machine Folder setting
   * Any change made by running "VBoxManage setproperty"
-
-
 

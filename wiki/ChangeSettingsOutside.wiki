@@ -16,7 +16,7 @@ USB devices are not cached. It is expected that USB devices will be plugged in a
 
 == Virtual Machines ==
 
-If you change a virtual machine's settings, you may refresh its cache by highlighting the VM on the left hand side of phpVirtualBox. Then click on Machine (top menu item) -> Refresh. This will ensure that phpVirtualBox's cache is up-to-date. If you have changed a storage attachment setting (added / removed a hard disk for instance), or manipulated its snapshots, it is a good idea to also refresh the Mediums cache as described in the next section.
+If you change a virtual machine's settings *outside of phpVirtualBox*, you may refresh its cache by highlighting the VM on the left hand side of phpVirtualBox. Then click on Machine (top menu item) -> Refresh. This will ensure that phpVirtualBox's cache is up-to-date. If you have changed a storage attachment setting (added / removed a hard disk for instance), or manipulated its snapshots, it is a good idea to also refresh the Mediums cache as described in the next section.
 
 == Mediums (Hard Disks, CD/DVD images, etc.) ==
 
@@ -24,7 +24,7 @@ You may refresh phpVirtualBox's medium list by opening the Virtual Media Manager
 
 == VirtualBox host settings (host drives, host-only interfaces, etc.) ==
 
-If you change the VirtualBox host settings, you may refresh its cache by highlighting the VirtualBox at the top of the left hand side of phpVirtualBox. Then click on Machine (top menu item) -> Refresh.
+If you change the VirtualBox host settings *outside of phpVirtualBox*, you may refresh its cache by highlighting the VirtualBox at the top of the left hand side of phpVirtualBox. Then click on Machine (top menu item) -> Refresh.
 
 The following are examples of tasks that may alter VirtualBox host settings:
   * Attaching a new CD/DVD drive to the host
@@ -33,10 +33,9 @@ The following are examples of tasks that may alter VirtualBox host settings:
 
 == VirtualBox System Settings ==
 
-If you have changed VirtualBox system settings, you may refresh the cache using the same instructions for refreshing VirtualBox host settings. When the VirtualBox host cache is refreshed, VirtualBox system settings are also refreshed.
+If you have changed VirtualBox system settings *outside of phpVirtualBox*, you may refresh the cache using the same instructions for refreshing VirtualBox host settings. When the VirtualBox host cache is refreshed, VirtualBox system settings are also refreshed.
 
 The following are examples of tasks that may alter VirtualBox system settings:
   * Installing a new extension pack
   * Changing the Default Machine Folder setting
   * Any change made by running "VBoxManage setproperty"
-

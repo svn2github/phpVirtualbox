@@ -27,7 +27,7 @@ To change folders shared to a running VM, click on the Shared Folders header lin
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbvmsettingsshared.png]
 
-Note that only permanent ("Machine") folders will be listed on the Details tab. For more information regarding transient and machine shared folders, reference the VirtualBox documentation regarding Shared Folders.
+Note that only permanent ("Machine") folders will be listed on the Details tab. For more information regarding transient and machine shared folders, reference the Shared Folders section of the VirtualBox documentation.
 
 = USB Devices =
 
@@ -36,6 +36,4 @@ To attach / detach USB devices to a running VM, click on the USB header link. Se
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbvmsettingsusb.png]
 
 Only available USB devices can be attached to a virtual machine.
-
-
 

@@ -1,0 +1,41 @@
+#summary Modifying a running Virtual Machine
+
+= Introduction =
+
+Many of the same modifications that can be made through the VirtualBox GUI when a virtual machine is running, can also be made through phpVirtualBox by selecting the VM in the VM list and clicking on the appropriate item on the Details tab.
+
+
+= Removable (CD/DVD and Floppy) Media =
+
+To mount removable media to a running VM, click on the name of the current media (or the word Empty) in the Storage Controllers section. This will bring up the Mount dialog which will allow you to select a medium, a host drive, or to eject medium by selecting Empty.
+
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbvmsettingsmount.png]
+
+Select the item you wish to mount, and click on the Mount button.
+
+= Network Adapter Settings =
+
+To change network adapter settings of a running VM, click on the Network header link.
+
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbvmsettingnet.png]
+
+Note that some properties cannot be changed while a VM is running. These items are disabled in the Network Adapter settings window.
+
+= Shared Folders =
+
+To change folders shared to a running VM, click on the Shared Folders header link.
+
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbvmsettingsshared.png]
+
+Note that only permanent ("Machine") folders will be listed on the Details tab. For more information regarding transient and machine shared folders, reference the VirtualBox documentation regarding Shared Folders.
+
+= USB Devices =
+
+To attach / detach USB devices to a running VM, click on the USB header link. Select or deselect the Attached check box, and click OK.
+
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbvmsettingsusb.png]
+
+Only available USB devices can be attached to a virtual machine.
+
+
+

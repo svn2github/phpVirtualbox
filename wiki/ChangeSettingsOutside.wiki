@@ -18,13 +18,19 @@ USB devices are not cached. It is expected that USB devices will be plugged in a
 
 If you change a virtual machine's settings *outside of phpVirtualBox*, you may refresh its cache by highlighting the VM on the left hand side of phpVirtualBox. Then click on Machine (top menu item) -> Refresh. This will ensure that phpVirtualBox's cache is up-to-date. If you have changed a storage attachment setting (added / removed a hard disk for instance), or manipulated its snapshots, it is a good idea to also refresh the Mediums cache as described in the next section.
 
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbrefreshvm.png]
+
 == Mediums (Hard Disks, CD/DVD images, etc.) ==
 
 You may refresh phpVirtualBox's medium list by opening the Virtual Media Manager in phpVirtualBox and clicking on the Refresh button in the toolbar.
 
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbrefreshmediums.png]
+
 == VirtualBox host settings (host drives, host-only interfaces, etc.) ==
 
 If you change the VirtualBox host settings *outside of phpVirtualBox*, you may refresh its cache by highlighting the VirtualBox at the top of the left hand side of phpVirtualBox. Then click on Machine (top menu item) -> Refresh.
+
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbrefreshhost.png]
 
 The following are examples of tasks that may alter VirtualBox host settings:
   * Attaching a new CD/DVD drive to the host

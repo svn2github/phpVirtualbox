@@ -7,13 +7,13 @@ phpVirtualBox requires a web server with PHP >= 5.1.0 installed in order to run.
 
 == Windows ==
 
-On Windows, instead of mucking around with IIS, you may install XAMPP or XAMPPLite from [http://www.apachefriends.org/]. The installation is very straight-forward and includes a recent version of PHP (certainly greater than 5.2.0).
+On Windows, instead of mucking around with IIS, you may install XAMPP or XAMPPLite from [http://www.apachefriends.org/]. The installation is very straight-forward and includes a recent version of PHP (certainly greater than 5.1.0).
 
 After installation, launch the XAMPP control panel and click Start next to Apache. You can copy phpVirtualBox to XAMPP's htdocs folder. Typically C:\xampp\htdocs or C:\xampplite\htdocs.
 
 == Linux ==
 
-The details of installing a web server and PHP differ greatly from distribution to distribution. Please follow the instructions for your distribution as provided by the distribution maintainer(s). In most cases, you simply install apache2 and the apache2 php5 module using your distribution's package management system. E.g.
+The details of installing a web server and PHP differ greatly from distribution to distribution. *Please follow the instructions for your Linux distribution as provided by the distribution maintainer(s).* In most cases, you simply install apache2 and the apache2 php5 module using your distribution's package management system. E.g.
 
   apt-get install apache2
 

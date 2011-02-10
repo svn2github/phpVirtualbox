@@ -7,11 +7,9 @@ Many of the same modifications that can be made through the VirtualBox GUI when 
 
 = Removable (CD/DVD and Floppy) Media =
 
-To mount removable media to a running VM, click on the name of the current media (or the word Empty) in the Storage Controllers section. This will bring up the Mount dialog which will allow you to select a medium, a host drive, or to eject medium by selecting Empty.
+To mount removable media to a running VM, click on the name of the current media (or the word Empty) in the Storage Controllers section. This will bring up the Mount dialog which will allow you to select a medium, a host drive, or to eject medium by selecting Remove disk from virtual drive.
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbvmsettingsmount.png]
-
-Select the item you wish to mount, and click on the Mount button.
 
 = Network Adapter Settings =
 
@@ -36,4 +34,3 @@ To attach / detach USB devices to a running VM, click on the USB header link. Se
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbvmsettingsusb.png]
 
 Only available USB devices can be attached to a virtual machine.
-

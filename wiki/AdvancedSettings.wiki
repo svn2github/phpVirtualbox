@@ -75,6 +75,8 @@ A SATA Port Count setting is available in the Storage section when a SATA contro
 
 See the VBoxManage documentation at http://www.virtualbox.org for more information on these settings.
 
+_Note: if this is set below the maximum SATA port setting of the SATA controller's media attachments, the port count will automatically be corrected by phpVirtualBox when saving the VM's settings.
+
 == Media Selection has a Virtual Media Manager button ==
 
 All media selection buttons have a Virtual Media Manager button that will allow direct access to the Virtual Media Manager.

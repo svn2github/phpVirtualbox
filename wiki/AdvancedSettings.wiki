@@ -12,7 +12,7 @@ in config.php.
 
 = Details =
 
-*NOTE: hough the following sections reference VBoxManage (a command line tool distributed with VirtualBox), phpVirtualBox does not use VBoxManage to perform these actions. VBoxManage equivalent commands are provided for documentation reference only.*
+*NOTE: though the following sections reference VBoxManage (a command line tool distributed with VirtualBox), phpVirtualBox does not use VBoxManage to perform these actions. VBoxManage equivalent commands are provided for documentation reference only.*
 
 The following options / actions are exposed:
 

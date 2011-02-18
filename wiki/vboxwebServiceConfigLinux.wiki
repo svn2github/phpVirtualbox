@@ -7,7 +7,7 @@ On Linux systems, VirtualBox creates the init script */etc/init.d/vboxweb-servic
 
 = Details =
 
-In order for vboxweb-service start vboxwebsrv, the file */etc/vbox/vbox.cfg* must exist with correct settings. If this file does not exist on your system, create it now. This file has the format:
+In order for vboxweb-service start vboxwebsrv, the file */etc/default/virtualbox* must exist with correct settings. If this file does not exist on your system, create it now. This file has the format:
 
 {{{
 SETTING1=value
@@ -33,7 +33,7 @@ VBOXWEB_USER should be set to the user that runs VirtualBox virtual machines on 
 
 VBOXWEB_HOST should be set if phpVirtualBox (your web server) is not running on the same host as vboxwebsrv. If phpVirtualBox must communicate with vboxwebsrv across a network, this must be set to an IP address reachable by your web server. If your web server and vboxwebsrv are running on the same host, you may exclude this setting.
 
-Your */etc/vbox/vbox.cfg* may look like this:
+Your */etc/default/virtualbox* may look like this:
 
 {{{
 VBOXWEB_USER=vbox

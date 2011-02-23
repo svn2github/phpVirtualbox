@@ -1,5 +1,6 @@
 #summary How to translate phpVirtualBox
 #labels Design
+#sidebar TableOfContents
 
 = Basics =
 

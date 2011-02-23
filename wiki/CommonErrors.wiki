@@ -1,4 +1,5 @@
 #summary Common phpVirtualBox errors and issues
+#labels ErrorsAndIssues
 
 See also: [http://code.google.com/p/phpvirtualbox/wiki/ConnectivityDesign connectivity design].
 

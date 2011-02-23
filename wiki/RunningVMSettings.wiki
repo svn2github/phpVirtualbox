@@ -1,4 +1,5 @@
 #summary Modifying a running Virtual Machine
+#labels Manual
 
 = Introduction =
 

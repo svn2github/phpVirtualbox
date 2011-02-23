@@ -1,5 +1,8 @@
 #summary Modifying a running Virtual Machine
 #labels Manual
+#sidebar TableOfContents
+
+<wiki:toc max_depth="2" />
 
 = Introduction =
 

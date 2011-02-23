@@ -1,5 +1,8 @@
 #summary How to configure /etc/init.d/vboxweb-service (VirtualBox >= 4.0)
 #labels Deploy
+#sidebar TableOfContents
+
+<wiki:toc max_depth="2" />
 
 = Introduction =
 

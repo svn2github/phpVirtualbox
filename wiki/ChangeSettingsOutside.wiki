@@ -1,4 +1,5 @@
 #summary Changing VirtualBox settings outside of phpVirtualBox
+#labels Manual
 
 = Introduction =
 

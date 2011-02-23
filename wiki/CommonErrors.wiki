@@ -1,7 +1,8 @@
 #summary Common phpVirtualBox errors and issues
 #labels ErrorsAndIssues
+#sidebar TableOfContents
 
-See also: [http://code.google.com/p/phpvirtualbox/wiki/ConnectivityDesign connectivity design].
+<wiki:toc max_depth="2" />
 
 =Error Messages=
 

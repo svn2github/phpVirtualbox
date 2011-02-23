@@ -2,6 +2,8 @@
 #labels Manual
 #sidebar TableOfContents
 
+<wiki:toc max_depth="2" />
+
 = Introduction =
 
 Advanced settings that do not appear in the VirtualBox GUI have been added to phpVirtualBox. These can be enabled by setting or adding:
@@ -11,8 +13,6 @@ var $enableAdvancedConfig = true;
 }}}
 
 in config.php.
-
-<wiki:toc max_depth="2" />
 
 = Details =
 

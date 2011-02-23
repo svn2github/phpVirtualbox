@@ -1,4 +1,5 @@
 #summary Considerations when upgrading phpVirtualBox
+#labels Support
 
 = Introduction =
 

@@ -1,7 +1,6 @@
 #summary Connectivity Design of phpVirtualBox
 #labels Design
-
-#labels Design
+#sidebar TableOfContents
 
 The connectivity diagram below should aid in understanding of its interaction and why *user X* (the VirtualBox user that administers your VirtualBox installation) must be properly configured.
 

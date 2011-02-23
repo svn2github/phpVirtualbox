@@ -1,4 +1,5 @@
 #summary How to configure /etc/init.d/vboxweb-service (VirtualBox >= 4.0)
+#labels Deploy
 
 = Introduction =
 

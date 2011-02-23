@@ -1,4 +1,5 @@
 #summary Advanced Settings in phpVirtualBox
+#labels Support
 
 = Introduction =
 

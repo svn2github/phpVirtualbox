@@ -3,6 +3,8 @@
 
 #label Manual
 
+#sidebar TableOfContents
+
 = Introduction =
 
 Advanced settings that do not appear in the VirtualBox GUI have been added to phpVirtualBox. These can be enabled by setting or adding:

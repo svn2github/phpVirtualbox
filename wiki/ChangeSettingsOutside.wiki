@@ -1,5 +1,8 @@
 #summary Changing VirtualBox settings outside of phpVirtualBox
 #labels Manual
+#sidebar TableOfContents
+
+<wiki:toc max_depth="2" />
 
 = Introduction =
 

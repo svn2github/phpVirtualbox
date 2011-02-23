@@ -1,5 +1,8 @@
 #summary Considerations when upgrading phpVirtualBox
 #labels Support
+#sidebar TableOfContents
+
+<wiki:toc max_depth="2" />
 
 = Introduction =
 

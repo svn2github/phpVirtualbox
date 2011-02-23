@@ -1,6 +1,8 @@
 #summary Advanced Settings in phpVirtualBox
 #labels Manual
 
+#label Manual
+
 = Introduction =
 
 Advanced settings that do not appear in the VirtualBox GUI have been added to phpVirtualBox. These can be enabled by setting or adding:

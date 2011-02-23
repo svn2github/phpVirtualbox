@@ -1,4 +1,5 @@
 #summary Installation of phpVirtualBox
+#labels Deploy
 
 = VirtualBox Considerations =
 

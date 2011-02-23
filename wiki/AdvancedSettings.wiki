@@ -1,7 +1,6 @@
 #summary Advanced Settings in phpVirtualBox
 #labels Manual
 #sidebar TableOfContents
-#label Manual
 
 = Introduction =
 

@@ -1,5 +1,6 @@
 #summary Multiple server configuration example.
 #labels Manual
+#sidebar TableOfContents
 
 = Multiple server configuration of phpVirtualBox =
 

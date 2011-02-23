@@ -1,4 +1,5 @@
 #summary Web Server and PHP installation / configuration
+#labels Deploy
 
 = Introduction =
 

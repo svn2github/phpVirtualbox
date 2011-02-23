@@ -1,5 +1,8 @@
 #summary Web Server and PHP installation / configuration
 #labels Deploy
+#sidebar TableOfContents
+
+<wiki:toc max_depth="2" />
 
 = Introduction =
 

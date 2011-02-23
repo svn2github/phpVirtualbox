@@ -1,4 +1,5 @@
 #summary Multiple server configuration example.
+#labels Manual
 
 = Multiple server configuration of phpVirtualBox =
 

@@ -77,7 +77,7 @@ Contextualization solves this problem. Most sections of phpVirtualBox have their
 ||Virtual Media Manager dialog||vboxVMM||
 ||Virtual Machine Logs dialog||vboxVMLogs||
 ||Settings dialog||vboxSettings||
-||Virtual Machine Toolbar buttons||vboxVMList||
+||Virtual Machine Toolbar buttons and VM List tool tips||vboxVMList||
 ||Virtual Machine Snapshots tab||vboxSnapshots||
 ||Virtual Machine Console tab||vboxVMConsole||
 ||Mount Media dialog||vboxMountMediums||

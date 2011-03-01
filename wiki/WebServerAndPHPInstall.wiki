@@ -26,7 +26,7 @@ The details of installing a web server and PHP differ greatly from distribution 
 After installation, copy phpVirtualBox to the document root of your web server. This is typically /var/www or /usr/local/apache2/htdocs.
 
 == OS X ==
-On OS X, you may install XAMPP or XAMPPLite from [http://www.apachefriends.org/]. The installation is very straight-forward and includes a recent version of PHP (certainly greater than 5.2.0).
+On OS X, you may install XAMPP or XAMPPLite from [http://www.apachefriends.org/]. The installation is very straight-forward and includes a recent version of PHP (certainly greater than 5.1.0).
 
 After installation, launch the XAMPP control panel and click Start next to Apache. You can copy phpVirtualBox to XAMPP's htdocs folder. Typically /Applications/XAMPP/htdocs/.
 

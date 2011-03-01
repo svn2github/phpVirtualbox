@@ -78,9 +78,7 @@ Running /usr/bin/vboxwebsrv or not running the command from within /Applications
   # Unzip the downloaded file and copy the resulting files / folders to a folder accessible by your [http://code.google.com/p/phpvirtualbox/wiki/WebServerAndPHPInstall web server]
   # Rename config.php-example to config.php and edit to reflect your VirtualBox settings.
   # Navigate to the resulting folder in your web browser.
-
-==CentOS Considerations==
-CentOS ships with PHP 5.1.x while phpVirtualBox requires PHP >= 5.2.0. If you wish to use phpVirtualBox, you must upgrade PHP.
+  # Default login is admin / admin
 
 ==Arch Linux Considerations==
 In Arch Linux, be sure to edit /etc/php/php.ini, and uncomment the following lines:

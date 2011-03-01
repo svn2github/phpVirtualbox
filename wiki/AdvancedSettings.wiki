@@ -2,7 +2,7 @@
 #labels Manual
 #sidebar TableOfContents
 
-<wiki:toc max_depth="2" />
+<wiki:toc max_depth="3" />
 
 = Introduction =
 
@@ -13,8 +13,6 @@ var $enableAdvancedConfig = true;
 }}}
 
 in config.php.
-
-= Details =
 
 *NOTE: though the following sections reference VBoxManage (a command line tool distributed with VirtualBox), phpVirtualBox does not use VBoxManage to perform these actions. VBoxManage equivalent commands are provided for documentation reference only.*
 
@@ -54,6 +52,8 @@ Acceleration settings are available in the System section on the Acceleration ta
 || Enable VT-x/AMD-V || VBoxManage modifyvm --hwvirtex ||
 || Enable Nested Paging || VBoxManage modifyvm --nestedpaging ||
 || Enable Large Pages || VBoxManage modifyvm --largepages ||
+|| Enable exclusive use of the hardware virtualization extensions || VBoxManage modifyvm --hwvirtexexcl ||
+|| Enable VT-x VPID (Intel only) || VBoxManage modifyvm --vtxvpid ||
 
 See the VBoxManage documentation at http://www.virtualbox.org for more information on these settings.
 
@@ -68,6 +68,21 @@ A Net Address setting is available in the Display section on the Remote Display 
 
 See the VBoxManage documentation at http://www.virtualbox.org for more information on these settings.
 
+== Additional NAT Settings ==
+
+Additional NAT settings are available in the Network section of Virtual Machines' settings windows when a network adapter's Attached To setting is configured as NAT.
+
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/advnat.png]
+
+|| *Label* || *VBoxManage equivalent* ||
+|| Proxy Only || VBoxManage modifyvm --nataliasmode ||
+|| Same Ports || VBoxManage modifyvm --nataliasmode ||
+|| Pass DNS Domain || VBoxManage modifyvm --natdnspassdomain ||
+|| DNS Proxy || VBoxManage modifyvm --natdnsproxy ||
+|| Use Host Resolver || VBoxManage modifyvm --natdnshostresolver ||
+
+See the VBoxManage documentation at http://www.virtualbox.org for more information on these settings.
+
 == SATA Port Count ==
 
 A SATA Port Count setting is available in the Storage section when a SATA controller is selected on Virtual Machines' settings windows.
@@ -78,6 +93,8 @@ A SATA Port Count setting is available in the Storage section when a SATA contro
 || SATA Port Count || VBoxManage storagectl --sataportcount ||
 
 See the VBoxManage documentation at http://www.virtualbox.org for more information on these settings.
+
+*This drop-down list includes a setting labeled 'Automatic.' This setting will cause phpVirtualBox to set the SATA port count to the maximum port number of the devices attached to the SATA controller. This is the recommended setting.*
 
 _Note: if this is set below the maximum SATA port setting of the SATA controller's media attachments, the port count will automatically be corrected by phpVirtualBox when saving the VM's settings.
 
@@ -93,9 +110,14 @@ The Virtual Media Manager has additional buttons that will allow you to perform 
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/advvmmbuttons.png]
 
-  * New - Opens the New Hard Disk wizard
-  * Add - Allows you to add existing media to the global media registry
-  * Add iSCSI - Allows you to add an iSCSI disk to the global media registry
+===New===
+Opens the New Hard Disk wizard
+
+===Add===
+Allows you to add existing media to the global media registry
+
+===Add iSCSI===
+Allows you to add an iSCSI disk to the global media registry
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/advvmmiscsi.png]
 
@@ -119,9 +141,14 @@ The Virtual Media Manager has additional menu items under the Actions menu that 
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/advvmmtopmenu.png]
 
-  * Clone - Allows you to clone a hard disk
-  * Immutable - Makes a hard disk Immutable
-  * Normal - Sets the hard disk type back to Normal
+===Clone===
+Allows you to clone a hard disk.
+
+===Immutable===
+Makes a hard disk Immutable.
+
+===Normal===
+Sets the hard disk type back to Normal.
 
 || *Menu Item* || *VBoxManage equivalent* ||
 || Clone || VBoxManage clonehd ||

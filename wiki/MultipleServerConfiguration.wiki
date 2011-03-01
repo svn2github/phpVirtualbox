@@ -72,4 +72,8 @@ var $servers = array(
 );
 }}}
 
-One important implication of this is that phpVirtualBox will only be accessible if the authentication server is up - either the fist one in the list, or the one with the authMaster property.
+One important implication of this is that phpVirtualBox will only be accessible if the authentication server is up - either the fist one in the list, or the one with the authMaster property. In a bind, you may turn off authentication by adding the following line to config.php:
+
+{{{
+var $noAuth = true;
+}}}

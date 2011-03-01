@@ -6,7 +6,7 @@
 
 = Introduction =
 
-Many of the same modifications that can be made through the VirtualBox GUI when a virtual machine is running, can also be made through phpVirtualBox by selecting the VM in the VM list and clicking on the Settings button. This behaves much like the Devices menu in the window of a running virtual machine within VirtaulBox.
+Many of the same modifications that can be made through the VirtualBox GUI when a virtual machine is running, can also be made through phpVirtualBox by selecting the VM in the VM list and clicking on the Settings button. This behaves much like the Devices menu in the window of a running virtual machine in the VirtaulBox GUI.
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbrunningsettings.png]
 

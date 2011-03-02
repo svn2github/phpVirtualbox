@@ -1,5 +1,5 @@
+#summary Authentication in phpVirtualBox
 #labels Manual
-#Authentication in phpVirtualBox
 
 <wiki:toc max_depth="2" />
 

@@ -2,7 +2,7 @@
 #labels ErrorsAndIssues
 #sidebar TableOfContents
 
-*NOTE: If your problem is not fixed or mentioned on this Wiki page, please create an issue on the Issues tab.*
+*NOTE: If your problem is not fixed or mentioned on this Wiki page, please see [http://code.google.com/p/phpvirtualbox/w/edit.do#My_error_message_or_issue_is_not_covered_here this].*
 
 <wiki:toc max_depth="2" />
 
@@ -68,3 +68,13 @@ In Firefox, click on the Tools menu -> Options -> Content -> Advanced (next to E
 == Preview Box is Black and VM is running / saved ==
 
 The power or screen saver settings of the guest OS in the virtual machine is probably set to turn off the monitor or display a blank screen after a period of inactivity. Change this setting in the guest operating system of the virtual machine.
+
+=My error message or issue is not covered here=
+
+Chances are, you are not the first person to encounter a particular error message. Please search for existing (both open and closed) issues on the Issues tab:
+
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/allissues.png]
+
+If an existing issue  / resolution does not exist, or does not solve the problem, please *create a new* issue on the Issues tab.
+
+

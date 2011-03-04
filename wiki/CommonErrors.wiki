@@ -2,6 +2,8 @@
 #labels ErrorsAndIssues
 #sidebar TableOfContents
 
+*NOTE: If your problem is not fixed or mentioned on this Wiki page, please create an issue on the Issues tab.*
+
 <wiki:toc max_depth="2" />
 
 =Error Messages=
@@ -19,6 +21,27 @@ This typically indicates that the username and / or password is incorrect in con
 == Could not connect to host ==
 
 This indicates that phpVirtualBox could not connect to the vboxwebsrv server. Either the *location* setting in config.php is wrong or *vboxwebsrv* is not running on the VirtualBox host.
+
+
+== looks like we got no XML document ==
+
+This message occurs when the $location setting in config.php is incorrect. The most common cause is that it is set to the location of phpVirtualBox rather than the SOAP URL of vboxwebsrv.
+
+There are 2 locations involved. One is the URL that phpVirtualBox is accessible through, and the other is the URL through which phpVirtualBox communicates with vboxwebsrv. The $location setting in config.php needs to be set to the URL to vboxwebsrv.
+
+The setting probably looks something like this:
+
+{{{
+var $location = 'http://localhost/phpvirtualbox/';
+}}}
+
+but needs to look like this:
+
+{{{
+var $location = 'http://127.0.0.1:18083/';
+}}}
+
+The URL through which phpVirtualBox is accessible does not need to be specified.
 
 == The virtual machine 'vm name' has terminated unexpectedly during startup ==
 

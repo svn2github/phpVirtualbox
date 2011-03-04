@@ -2,7 +2,7 @@
 #labels ErrorsAndIssues
 #sidebar TableOfContents
 
-*NOTE: If your problem is not fixed or mentioned on this Wiki page, please see [http://code.google.com/p/phpvirtualbox/w/edit.do#My_error_message_or_issue_is_not_covered_here this].*
+*NOTE: If your problem is not fixed or mentioned on this Wiki page, please see [http://code.google.com/p/phpvirtualbox/wiki/CommonErrors#My_error_message_or_issue_is_not_covered_here this].*
 
 <wiki:toc max_depth="2" />
 
@@ -76,5 +76,3 @@ Chances are, you are not the first person to encounter a particular error messag
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/allissues.png]
 
 If an existing issue  / resolution does not exist, or does not solve the problem, please *create a new* issue on the Issues tab.
-
-

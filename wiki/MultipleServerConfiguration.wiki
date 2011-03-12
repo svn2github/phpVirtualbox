@@ -2,7 +2,7 @@
 #labels Manual
 #sidebar TableOfContents
 
-= Multiple server configuration of phpVirtualBox =
+= Basic Multiple server configuration of phpVirtualBox =
 
 Starting with phpVirtualBox 4-0, phpVirtualBox can be configured to interact with multiple VirtualBox installations. Provided that each is running its own vboxwebsrv instance. To do this, edit config.php in phpVirtualBox's folder and locate the following code:
 
@@ -76,4 +76,31 @@ One important implication of this is that phpVirtualBox will only be accessible 
 
 {{{
 var $noAuth = true;
+}}}
+
+= Advanced Multiple Server Configuration =
+
+Any settings available in phpVirtualBox's config.php can be also be added to a server configuration. E.g.
+
+{{{
+var $servers = array(
+	array(
+		'name' => 'London',
+		'username' => 'vbox',
+		'password' => 'secret1',
+		'location' => 'http://10.32.32.4:18083/',
+                'consoleHost' => '10.32.32.4',
+                'noPreview' => true,
+                'browserRestrictFolders' => array('/home/vbox','/mnt/media')
+
+	),
+	array(
+		'name' => 'New York',
+		'username' => 'vboxadmin',
+		'password' => 'secret2',
+		'location' => 'http://10.32.45.2:18083/',
+                'consoleHost' => '10.32.45.2',
+                'browserRestrictFolders' => array('/home/vboxadmin','/var/isos')
+	),
+);
 }}}

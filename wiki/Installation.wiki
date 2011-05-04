@@ -90,6 +90,14 @@ In Arch Linux, be sure to edit /etc/php/php.ini, and uncomment the following lin
 
 by removing the ';' at the beginning of each. Then restart apache.
 
+==Suse Considerations==
+Due to the complex dance between VirtualBox and PAM configurations, you will have to disable authentication between vboxwebsrv and the OS by running the following command as the same user that runs VirtualBox on your system:
+
+{{{
+VBoxManage setproperty websrvauthlibrary null
+}}}
+
+
 ==Windows Considerations==
 phpVirtualBox's location setting in config.php cannot be set to 'localhost' use 127.0.0.1 instead. E.g. http://127.0.0.1:18083/
 

@@ -1186,8 +1186,19 @@ function __vboxDisplayHostDetailsData(data) {
 			$(vboxDetailsTable).append(__vboxDetailRowIndented(trans('IPv6Addr'), data['networkInterfaces'][i].IPV6Address + ' / ' + data['networkInterfaces'][i].IPV6NetworkMaskPrefixLength));
 		}
 		$(vboxDetailsTable).append(__vboxDetailRowIndented(trans('netMediumType'),trans(data['networkInterfaces'][i].mediumType) + (data['networkInterfaces'][i].hardwareAddress ? ' (' + data['networkInterfaces'][i].hardwareAddress + ')' : '')));
+		
+		// VMs bound to nic
+		if(data['nics'][data['networkInterfaces'][i].name]) {
+			var vms = new Array()
+			for(var vmname in data['nics'][data['networkInterfaces'][i].name]) {
+				data['nics'][data['networkInterfaces'][i].name][vmname].sort();
+				vms[vms.length] = vmname + ' (' + data['nics'][data['networkInterfaces'][i].name][vmname].join(trans('LIST_SEP')) + ')';
+			}
+			vms.sort(strnatcasecmp);
+			$(vboxDetailsTable).append(__vboxDetailRowIndented('', vms.join(trans('LIST_SEP'))));
+		}
+		$(vboxDetailsTable).append(__vboxDetailRow('',''));
 	}
-	$(vboxDetailsTable).append(__vboxDetailRow('',''));
 	$('#vboxHostDetails').append(vboxDetailsTable);
 	
 	var storage = new vboxStorage();

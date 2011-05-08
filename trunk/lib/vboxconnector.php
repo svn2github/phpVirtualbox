@@ -579,6 +579,11 @@ class vboxconnector {
 			switch($args['networkAdapters'][$i]['attachmentType']) {
 				case 'Bridged':
 					$n->attachToBridgedInterface();
+					$n->hostInterface = $args['networkAdapters'][$i]['hostInterface'];
+					break;
+				case 'VDE':
+					$n->attachToVDE();
+					$n->VDENetwork = (string)$args['networkAdapters'][$i]['VDENetwork'];
 					break;
 				case 'Internal':
 					$n->attachToInternalNetwork();
@@ -586,6 +591,7 @@ class vboxconnector {
 					break;
 				case 'HostOnly':
 					$n->attachToHostOnlyInterface();
+					$n->hostInterface = $args['networkAdapters'][$i]['hostInterface'];
 					break;
 				case 'NAT':
 					$n->attachToNAT();
@@ -670,7 +676,10 @@ class vboxconnector {
 		$m->firmwareType = $args['firmwareType'];
 		if($args['chipsetType']) $m->chipsetType = $args['chipsetType']; 
 		if($m->snapshotFolder != $args['snapshotFolder']) $m->snapshotFolder = $args['snapshotFolder'];
-		if(@$this->settings['enableAdvancedConfig']) $m->hpetEnabled = intval($args['hpetEnabled']);
+		if(@$this->settings['enableAdvancedConfig']) {
+			$m->hpetEnabled = intval($args['hpetEnabled']);
+			$m->setExtraData("VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled", $args['disableHostTimeSync']);
+		}
 
 		$m->VRAMSize = $args['VRAMSize'];
 
@@ -1577,8 +1586,11 @@ class vboxconnector {
 		 */
 		$networks = array();
 		$vdenetworks = array();
+		$nics = array();
 		foreach($this->vbox->machines as $machine) {
 
+			$mname = $machine->name;
+			
 			for($i = 0; $i < $this->settings['nicMax']; $i++) {
 
 				try {
@@ -1593,6 +1605,14 @@ class vboxconnector {
 					} else if($this->settings['enableVDE'] && $h->VDENetwork) {
 						$vdenetworks[$h->VDENetwork] = 1;
 					}
+					if(!$h->enabled) continue;
+					$at = $h->attachmentType->__toString();
+					if($at == 'Bridged' || $at == 'HostOnly') {
+						$nic = $h->hostInterface;
+						if(!is_array($nics[$nic])) $nics[$nic] = array();
+						if(!is_array($nics[$nic][$mname])) $nics[$nic][$mname] = array();
+						$nics[$nic][$mname][] = ($i+1);
+					}
 					$h->releaseRemote();
 				} catch (Exception $e) {
 					// Ignore
@@ -1601,6 +1621,7 @@ class vboxconnector {
 			}
 			$machine->releaseRemote();
 		}
+		$response['data']['nics'] = $nics;
 		$response['data']['networks'] = array_keys($networks);
 		$response['data']['vdenetworks'] = array_keys($vdenetworks);
 
@@ -2095,7 +2116,15 @@ class vboxconnector {
 	public function getVMDetails($args, &$response, $snapshot=null) {
 
 		// Host instead of vm info
-		if($args['vm'] == 'host') return @$this->getHostDetails($args, array(&$response));
+		if($args['vm'] == 'host') {
+			$response['data'] = array();
+			$tmpstore = array('data'=>array());
+			$this->getHostDetails($args, array(&$tmpstore));
+			$response['data'] = array_merge($response['data'],$tmpstore['data']);
+			$this->getHostNetworking($args, array(&$tmpstore));
+			$response['data'] = array_merge($response['data'],$tmpstore['data']);
+			return true;
+		}
 
 
 		// Connect to vboxwebsrv
@@ -2739,7 +2768,8 @@ class vboxconnector {
 			'bootOrder' => $this->__getBootOrder($m),
 			'chipsetType' => $m->chipsetType->__toString(),
 			'GUI' => array('SaveMountedAtRuntime' => $m->getExtraData('GUI/SaveMountedAtRuntime')),
-			'AutoSATAPortCount' => $m->getExtraData('phpvb/AutoSATAPortCount')
+			'AutoSATAPortCount' => $m->getExtraData('phpvb/AutoSATAPortCount'),
+			'disableHostTimeSync' => intval($m->getExtraData("VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled"))
 		);
 
 	}

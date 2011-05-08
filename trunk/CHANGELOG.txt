@@ -1,4 +1,25 @@
 -------------------------------------
+	4.0-6	
+-------------------------------------
+Pressing Esc key now closes most dialog boxes.
+
+File / folder browser no longer shows "Access Denied" message
+when $restrictFolders is configured.
+
+Hard disks that are already attached to a VM are not elected to
+be attached when adding a Hard Disk attachment in VM settings.
+
+Pressing Enter key works on add user form.
+
+Fixed bug in appliance import wizard where changed values would
+not be reflected in the interface after changing them.
+
+Added simple authentication plugin framework.
+
+Added disableHostTimeSync option when $enableAdvancedConfig is
+set.
+
+-------------------------------------
 	4.0-5	2011-3-26
 -------------------------------------
 Added Norwegian translation.

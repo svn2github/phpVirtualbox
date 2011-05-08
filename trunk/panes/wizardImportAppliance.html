@@ -386,9 +386,9 @@ function vboxImportAppliancePropEditOptions(elm,desc) {
 	var s = $('<select />').attr({'id':'vboxImportAppSelect'}).css({'width':'100%'}).change(function(){
 		$(this).parent().data('descValue',$(this).val());
 		if(desc.display) {
-			$(this).siblings('div.vboxImportAppProp').html(desc.display($(this).val()));
+			$(this).siblings('span.vboxImportAppProp').html(desc.display($(this).val()));
 		} else {
-			$(this).siblings('div.vboxImportAppProp').text($(this).val());
+			$(this).siblings('span.vboxImportAppProp').text($(this).val());
 		}
 	});
 	var val = $(elm).data('descValue');
@@ -446,7 +446,7 @@ function vboxImportAppliancePropEditDialog(td) {
 	var buttons = {};
 	buttons[trans('OK')] = function(){
 		$(td).data('descValue',$('#vboxImportAppliancePropTextarea').val());
-		$(td).children('div.vboxImportAppProp').html($('<div />').text($('#vboxImportAppliancePropTextarea').val()).html());
+		$(td).children('span.vboxImportAppProp').html($('<div />').text($('#vboxImportAppliancePropTextarea').val()).html());
 		$(this).empty().remove();
 	}
 	buttons[trans('Cancel')] = function(){$(this).empty().remove();}
@@ -465,9 +465,9 @@ function vboxImportAppliancePropEdit(elm,desc) {
 		var val = (desc.postEdit ? desc.postEdit($(this).val(),$(this).parent().data('descValue')) : $(this).val());
 		$(this).parent().data('descValue',val);
 		if(desc.display) {
-			$(this).siblings('div.vboxImportAppProp').html(desc.display(val));
+			$(this).siblings('span.vboxImportAppProp').html(desc.display(val));
 		} else {
-			$(this).siblings('div.vboxImportAppProp').text(val);
+			$(this).siblings('span.vboxImportAppProp').text(val);
 		}
 		$(this).hide();
 		$(this).siblings().show();

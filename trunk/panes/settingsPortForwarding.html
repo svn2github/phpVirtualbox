@@ -156,21 +156,17 @@ function vboxSettingsPortForwardingEdit(td,type) {
 /* Edit protocol */
 function vboxSettingsPortForwardingEditProto(td) {
 	var ex = $(td).parent().data('vboxRule')[1];
-	var sel = $('<select />');
 	vboxSetLangContext('vboxPortForwarding');
-	sel.options[0] = new Option(trans('UDP'),'0',(ex == 0),(ex == 0));
-	sel.options[1] = new Option(trans('TCP'),'1',(ex == 1),(ex == 1));
+	
+	if(ex == 0) val = 1;
+	else val = 0;
+
+	$(td).parent().data('vboxRule')[1] = val;
+	
+	vboxSetLangContext('vboxPortForwarding');
+	$(td).html(val == '1' ? trans('TCP') : trans('UDP'));
 	vboxUnsetLangContext();
-	$(td).html('');
-	$(sel).change(function(){
-		var td = $(this).parent();
-		var val = $(this).val();
-		$(td).parent().data('vboxRule')[1] = val;
-		$(this).remove();
-		vboxSetLangContext('vboxPortForwarding');
-		$(td).html(val == '1' ? trans('TCP') : trans('UDP'));
-		vboxUnsetLangContext();
-	}).appendTo(td).focus().blur(function(){$(this).trigger('change');});	
+	
 }
 /* Add forwarding rule */
 function vboxSettingsPortForwardingAdd(r) {

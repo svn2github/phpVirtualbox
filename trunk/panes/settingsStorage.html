@@ -844,8 +844,11 @@ function vboxSettingsStorageElectDisk(bus) {
 	var atts = $('#vboxSettingsStorageTree').find('ul').find('table.vboxSettingsStorageAttachment');
 	for(var i = 0; i < atts.length; i++) {
 		var c = atts[i];
-		if($(c).data('attachment').medium && $(c).data('attachment').medium.id && $(c).data('attachment').medium.deviceType == 'HardDisk') {
-			attachedMediums[$(c).data('attachment').medium.base] = $(c).data('attachment').medium.id;
+		if($(c).data('attachment').medium && $(c).data('attachment').medium.id) {
+			var m = vboxSettingsStorageBusses.storage.getMediumById($(c).data('attachment').medium.id);
+			if(m.deviceType == 'HardDisk') {
+				attachedMediums[m.base] = m.id;
+			}
 		}
 	}
 
@@ -854,9 +857,10 @@ function vboxSettingsStorageElectDisk(bus) {
 	var attachedOtherMediums = {};
 	for(var i = 0; i < mediums.length; i++) {
 		if(mediums[i].deviceType != 'HardDisk') continue;
-		if(mediums[i].attachedTo.length && !attachedMediums[mediums[i].id]) {
-			attachedOtherMediums[mediums[i].id] = mediums[i].id;
-		} else if(!attachedMediums[mediums[i].id]) {
+		if(attachedMediums[mediums[i].base]) continue;
+		if(mediums[i].attachedTo.length) {
+			attachedOtherMediums[mediums[i].base] = mediums[i].id;
+		} else {
 			// Available medium. Just return it
 			return {'id':mediums[i].id,'available':true};
 		}
@@ -867,11 +871,6 @@ function vboxSettingsStorageElectDisk(bus) {
 		return {'id':i,'available':true};
 	}
 
-	// Last resort is storage already attached here
-	for(var i in attachedMediums) {
-		return {'id':i,'available':false};
-	}
-	
 	// No mediums?
 	return false;
 	

@@ -615,6 +615,7 @@ class vboxconnector {
 						$n->NatDriver->dnsProxy = intval($args['networkAdapters'][$i]['NatDriver']['dnsProxy']);
 						$n->NatDriver->dnsPassDomain = intval($args['networkAdapters'][$i]['NatDriver']['dnsPassDomain']);
 						$n->NatDriver->dnsUseHostResolver = intval($args['networkAdapters'][$i]['NatDriver']['dnsUseHostResolver']);
+						$n->NatDriver->hostIP = $args['networkAdapters'][$i]['NatDriver']['hostIP'];
 					}
 					
 					break;
@@ -700,6 +701,10 @@ class vboxconnector {
 			$m->setHWVirtExProperty('VPID', ($args['HWVirtExProperties']['VPID'] ? 1 : 0));
 			
 		}
+		
+		/* Custom Icon */
+		if($this->settings['enableCustomIcons'])
+			$m->setExtraData('phpvb/icon', $args['customIcon']);
 
 		$m->RTCUseUTC = ($args['RTCUseUTC'] ? 1 : 0);
 
@@ -870,6 +875,7 @@ class vboxconnector {
 					$ndiff = true;
 					break;
 				}
+				if(!$ndiff) $ndiff = ($args['networkAdapters'][$i]['NatDriver']['hostIP'] != $adapters[$i]['NatDriver']['hostIP']);
 				
 			}
 
@@ -931,6 +937,7 @@ class vboxconnector {
 						$n->NatDriver->dnsProxy = intval($args['networkAdapters'][$i]['NatDriver']['dnsProxy']);
 						$n->NatDriver->dnsPassDomain = intval($args['networkAdapters'][$i]['NatDriver']['dnsPassDomain']);
 						$n->NatDriver->dnsUseHostResolver = intval($args['networkAdapters'][$i]['NatDriver']['dnsUseHostResolver']);
+						$n->NatDriver->hostIP = $args['networkAdapters'][$i]['NatDriver']['hostIP'];
 					}
 
 					break;
@@ -1652,21 +1659,23 @@ class vboxconnector {
 			// Get DHCP Info
 			try {
 				$dhcp = $this->vbox->findDHCPServerByNetworkName($d->networkName);
-			} catch (Exception $e) {};
-
-			if($dhcp->handle) {
-				$dhcpserver = array(
-					'enabled' => $dhcp->enabled,
-					'IPAddress' => $dhcp->IPAddress,
-					'networkMask' => $dhcp->networkMask,
-					'networkName' => $dhcp->networkName,
-					'lowerIP' => $dhcp->lowerIP,
-					'upperIP' => $dhcp->upperIP
-				);
-				$dhcp->releaseRemote();
-			} else {
+				if($dhcp->handle) {
+					$dhcpserver = array(
+						'enabled' => $dhcp->enabled,
+						'IPAddress' => $dhcp->IPAddress,
+						'networkMask' => $dhcp->networkMask,
+						'networkName' => $dhcp->networkName,
+						'lowerIP' => $dhcp->lowerIP,
+						'upperIP' => $dhcp->upperIP
+					);
+					$dhcp->releaseRemote();
+				} else {
+					$dhcpserver = array();
+				}
+			} catch (Exception $e) {
 				$dhcpserver = array();
 			}
+
 			$response['data']['networkInterfaces'][] = array(
 				'id' => $d->id,
 				'IPV6Supported' => $d->IPV6Supported,
@@ -2326,6 +2335,8 @@ class vboxconnector {
 	 */
 	public function createVM($args, &$response) {
 
+		global $_SESSION;
+		
 		// Connect to vboxwebsrv
 		$this->__vboxwebsrvConnect();
 		
@@ -2356,6 +2367,7 @@ class vboxconnector {
 		// create machine
 		if ( $this->settings['enforceVMOwnership'] )
 			$args['name'] = $_SESSION['user'] . '_' . $args['name'];
+			
 		$m = $this->vbox->createMachine(null,$args['name'],$args['ostype'],null,null);
 
 		// Set memory
@@ -2566,19 +2578,16 @@ class vboxconnector {
 		foreach ($machines as $machine) {
 
 			try {
-				if ( ($owner = $machine->getExtraData("phpvb/sso/owner")) && $owner !== $_SESSION['user'] && !$_SESSION['admin'] )
-				{
-					// skip this VM as it is not owned by the user we're logged in as
-					continue;
-				}
 				$response['data']['vmlist'][] = array(
 					'name' => $this->settings['enforceVMOwnership'] ? preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $machine->name) : $machine->name,
 					'state' => $machine->state->__toString(),
 					'OSTypeId' => $machine->getOSTypeId(),
+					'owner' => ($this->settings['enforceVMOwnership'] ? $machine->getExtraData("phpvb/sso/owner") : ''),
 					'id' => $machine->id,
 					'lastStateChange' => floor($machine->lastStateChange/1000),
 					'sessionState' => $machine->sessionState->__toString(),
-					'currentSnapshot' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : '')
+					'currentSnapshot' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
+					'customIcon' => ($this->settings['enableCustomIcons'] ? $machine->getExtraData('phpvb/icon') : ''),
 				);
 				if($machine->currentSnapshot->handle) $machine->currentSnapshot->releaseRemote();
 
@@ -2666,8 +2675,8 @@ class vboxconnector {
 			'VDENetwork' => ($this->settings['enableVDE'] ? $n->VDENetwork : ''),
 			'cableConnected' => $n->cableConnected,
 			'NatDriver' => ($at == 'NAT' ? 
-				array('aliasMode' => intval($nd->aliasMode),'dnsPassDomain' => intval($nd->dnsPassDomain), 'dnsProxy' => intval($nd->dnsProxy), 'dnsUseHostResolver' => intval($nd->dnsUseHostResolver))
-				: array('aliasMode' => 0,'dnsPassDomain' => 0, 'dnsProxy' => 0, 'dnsUseHostResolver' => 0)),
+				array('aliasMode' => intval($nd->aliasMode),'dnsPassDomain' => intval($nd->dnsPassDomain), 'dnsProxy' => intval($nd->dnsProxy), 'dnsUseHostResolver' => intval($nd->dnsUseHostResolver), 'hostIP' => $nd->hostIP)
+				: array('aliasMode' => 0,'dnsPassDomain' => 0, 'dnsProxy' => 0, 'dnsUseHostResolver' => 0, 'hostIP' => '')),
 			'lineSpeed' => $n->lineSpeed,
 			'redirects' => (
 				$at == 'NAT' ?
@@ -2769,6 +2778,7 @@ class vboxconnector {
 			'chipsetType' => $m->chipsetType->__toString(),
 			'GUI' => array('SaveMountedAtRuntime' => $m->getExtraData('GUI/SaveMountedAtRuntime')),
 			'AutoSATAPortCount' => $m->getExtraData('phpvb/AutoSATAPortCount'),
+			'customIcon' => ($this->settings['enableCustomIcons'] ? $m->getExtraData('phpvb/icon') : ''),
 			'disableHostTimeSync' => intval($m->getExtraData("VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled"))
 		);
 
@@ -3517,7 +3527,44 @@ class vboxconnector {
 		}
 		return $response;
 	}
+
+	/*
+	 * get Medium Paths
+	 */
+	public function getRecentMediumPaths($args,&$response) {
+
+		// Connect to vboxwebsrv
+		$this->__vboxwebsrvConnect();
+
+		foreach(array(
+			array('type'=>'HardDisk','key'=>'GUI/RecentFolderHD'),
+			array('type'=>'DVD','key'=>'GUI/RecentFolderCD'),
+			array('type'=>'Floppy','key'=>'GUI/RecentFolderFD')) as $r) {
+			$response['data'][$r['type']] = $this->vbox->getExtraData($r['key']);
+		}
+		return $response;
+	}
 	
+
+	/*
+	 * update Medium Paths
+	 */
+	public function updateRecentMediumPath($args,&$response) {
+
+		// Connect to vboxwebsrv
+		$this->__vboxwebsrvConnect();
+
+		$types = array(
+			'HardDisk'=>'GUI/RecentFolderHD',
+			'DVD'=>'GUI/RecentFolderCD',
+			'Floppy'=>'GUI/RecentFolderFD'
+		);
+		
+		$this->vbox->setExtraData($types[$args['type']], $args['folder']);
+		
+		return ($response['data']['result'] = 1);
+	}
+		
 	/* Update recent mediums */
 	public function mediumRecentUpdate($args,&$response) {
 		

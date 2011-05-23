@@ -106,6 +106,7 @@ var vboxVMActions = {
 			if($('#vboxIndex').data('selectedVM').id == 'host') {
 				l.add('SystemProperties',function(d){$('#vboxIndex').data('vboxSystemProperties',d);},{'force_refresh':1});
 				l.add('VMSortOrder',function(d){return;},{'force_refresh':1});
+				l.add('HostOnlyNetworking',function(d){return;},{'force_refresh':1});
 			}
 			l.run();
     	},
@@ -813,6 +814,9 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	this.storage = new vboxStorage();
 	this.removeEnabled = true;
 
+	if(this.mediumPath == '') {
+		this.mediumPath = $('#vboxIndex').data('vboxRecentMediumPaths')[this.type];
+	}
 	
 	// Generate menu element ID
 	self.menu_id = function(){
@@ -957,6 +961,11 @@ function vboxMediaMenu(type,callback,mediumPath) {
 		// Only valid media that is not a host drive or iSCSI
 		if(!m || !m.location || m.hostDrive || m.format == 'iSCSI') return;
 		
+	    // Update recent path
+		vboxAjaxRequest('updateRecentMediumPath',{'type':self.type,'folder':vboxDirname(m.location)},function(){});
+		self.mediumPath = $('#vboxIndex').data('vboxRecentMediumPaths')[self.type] = vboxDirname(m.location);
+		
+		// Update recent mediums
 		var changed = vboxAddRecentMedium(m.location, $('#vboxIndex').data('vboxRecentMediums')[self.type]);
 		
 		if(changed) {

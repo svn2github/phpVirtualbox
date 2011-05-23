@@ -217,6 +217,7 @@ var tButtons = [
 				$('#vboxSnapshotDetailsDesc').val(d.description);
 				
 	  	  		// Display details
+	  	  		$('#vboxSnapshotDetailsVM').empty();
 	  	  		__vboxDisplayDetailsData(d.machine,$('#vboxSnapshotDetailsVM'),false);
 	  	  			  	  		
 			},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id});

@@ -65,6 +65,7 @@ function vboxVMList(anchorid) {
 	this.anchor = $('#'+anchorid);
 	this.interval = 5;
 	this.contextMenuItems = null;
+	this.enforceVMOwnership = $('#vboxIndex').data('vboxConfig').enforceVMOwnership;
 
 	// If there are multiple servers configured, setup menu
 	if($('#vboxIndex').data('vboxConfig').servers.length) {
@@ -143,12 +144,20 @@ function vboxVMList(anchorid) {
 		
 		
 		// Host machine added manually
-		host = new Array({'id':'host','state':'Hosting','name':$('#vboxIndex').data('vboxConfig').name,'OSTypeId':'VirtualBox_Host'});
+		host = new Array({'id':'host','state':'Hosting','owner':'','name':$('#vboxIndex').data('vboxConfig').name,'OSTypeId':'VirtualBox_Host'});
 		currVMList = host.concat(currVMList);
-
+		
+		// Enforce VM ownership
+        if(self.enforceVMOwnership && !$('#vboxIndex').data('vboxSession').admin) {
+        	currVMList = jQuery.grep(currVMList,function(vm,i){
+        		return (vm.owner == $('#vboxIndex').data('vboxSession').user);
+        	});
+		}
+	
 		// Each item in list
 		for(var i = 0; i < currVMList.length; i++) {	
 		
+			
 			// Does not exist, add to list
 			if(!self.vms[currVMList[i].id]) {
 				self.addVM(currVMList[i]);
@@ -190,7 +199,7 @@ function vboxVMList(anchorid) {
 	self.updateVM = function(vmUpdate,index) {
 
 		var changed = false;
-		var changedProps = ['currentSnapshot','state','sessionState','OSTypeId','name'];
+		var changedProps = ['currentSnapshot','state','sessionState','OSTypeId','name','customIcon'];
 		
 		for(var i = 0; i < changedProps.length; i++) {
 			if(self.vms[vmUpdate.id][changedProps[i]] != vmUpdate[changedProps[i]]) {
@@ -235,7 +244,11 @@ function vboxVMList(anchorid) {
 		var tr = $('<tr />');
 		
 		// VM OS type icon
-		$('<td />').attr({'rowspan':'2'}).html("<img src='images/vbox/" + vboxGuestOSTypeIcon(vmn.OSTypeId) + "' " + (vmn.id == 'host' ? "class='vboxHostIcon'" : "") + " />").appendTo(tr);
+		if($('#vboxIndex').data('vboxConfig').enableCustomIcons && vmn.customIcon) {
+			$('<td />').attr({'rowspan':'2'}).html("<img src='" + vmn.customIcon + "' class='vboxVMIcon' />").appendTo(tr);
+		} else {
+			$('<td />').attr({'rowspan':'2'}).html("<img src='images/vbox/" + vboxGuestOSTypeIcon(vmn.OSTypeId) + "' class='vboxVMIcon" + (vmn.id == 'host' ? " vboxHostIcon" : "") + "' />").appendTo(tr);
+		}
 		
 		
 		// VM Name
@@ -421,13 +434,17 @@ function vboxVMList(anchorid) {
 		 *
 		 */
 		if(self.contextMenuItems && self.contextMenuItems.length) {
+			
 			self.contextMenuId = 'vboxVMList-'+self.anchorid+'-contextMenu';
+			
 			var ul = $('<ul />').attr({'id':self.contextMenuId,'style':'display: none;'});
+			
 			for(var i = 0; i < self.contextMenuItems.length; i++) {
 				// Check for 16px icon
 				if(self.contextMenuItems[i].icon_16) self.contextMenuItems[i].icon = self.contextMenuItems[i].icon_16;
 				$('<li />').html("<a href='#" + self.contextMenuItems[i].name + "' style='background-image: url(images/vbox/" + self.contextMenuItems[i].icon +"_16px.png);' >"+trans(self.contextMenuItems[i].label)+"</a>").addClass((self.contextMenuItems[i].separator ? 'separator' : 'noseparator')).appendTo(ul);
 			}
+			
 			$('#vboxIndex').append(ul).bind('vmselect',function(e,vm){
 				for(var i = 0; i < self.contextMenuItems.length; i++) {
 					if(self.contextMenuItems[i].enabled(vm)) {
@@ -478,6 +495,9 @@ function vboxVMList(anchorid) {
 	}
 	
 	self.start = function() {
+		
+		self.enforceVMOwnership = $('#vboxIndex').data('vboxConfig').enforceVMOwnership;
+		
 		self.refresh();
 		// Run every X seconds?
 		self._running = window.setInterval(self.refresh,self.interval*1000);		

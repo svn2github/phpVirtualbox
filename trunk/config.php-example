@@ -66,6 +66,9 @@ var $servers = array(
 // http://www.wikipedia.org/wiki/Aspect_ratio_%28image%29#Previous_and_presently_used_aspect_ratios
 #var $previewAspectRatio = 1.6;
 
+// Enable custom VM icons
+#var $enableCustomIcons = true;
+
 /*
 Allow to prompt deletion harddisk files on removal from Virtual Media Manager.
 If this is not set, files are always kept. If this is set, you will be PROMPTED
@@ -73,17 +76,17 @@ to decide whether or not you would like to delete the harddisk file(s) when you
 remove a harddisk from virtual media manager. You may still choose not to delete
 the file when prompted.
 */
-#var $deleteOnRemove = true;
+var $deleteOnRemove = true;
 
 /*
  * File / Folder browser settings
  */
 
 // Restrict file types
-#var $browserRestrictFiles = array('.iso','.vdi','.vmdk','.img','.bin','.vhd','.hdd','.ovf','.ova','.xml','.vbox','.cdr','.dmg','.ima','.dsk','.vfd');
+var $browserRestrictFiles = array('.iso','.vdi','.vmdk','.img','.bin','.vhd','.hdd','.ovf','.ova','.xml','.vbox','.cdr','.dmg','.ima','.dsk','.vfd');
 
 // Restrict locations / folders
-#var $browserRestrictFolders = array('D:\\','C:\\Users\\Ian'); // Or something like '/home/vbox','/var/ISOs')
+#var $browserRestrictFolders = array('D:\\','C:\\Users\\Ian'); // Or something like array('/home/vbox','/var/ISOs')
 
 // Force use of local, webserver based file browser instead of going through vboxwebsrv
 #var $browserLocal = true;
@@ -117,10 +120,10 @@ Do not change / set unless you have a good reason.
 #var $disableTabVMConsole = true; // Console tab
 
 /* Screen resolutions for console tab */
-#var $consoleResolutions = array('640x480','800x600','1024x768','1280x720','1440x900');
+var $consoleResolutions = array('640x480','800x600','1024x768','1280x720','1440x900');
 
 /* Max number of network cards per VM. Do not set above VirtualBox's limit (typically 8) or below 1 */
-#var $nicMax = 4;
+var $nicMax = 4;
 
 /* Enable advanced configuration items (normally hidden in the VirtualBox GUI)
  * Note that some of these items may not be translated to languages other than english. 
@@ -156,10 +159,10 @@ Do not change / set unless you have a good reason.
 var $authLib = 'Builtin';
 
 // VM ownership
-var $enforceVMOwnership = false;
+#var $enforceVMOwnership = true;
 
 // Per-user VM quota
-// var $vmQuotaPerUser = 2;
+#var $vmQuotaPerUser = 2;
 
 
 // Allow VDE network configuration. This must be supported by the underlying VirtualBox installation!

@@ -883,10 +883,10 @@ function vboxSettingsStorageElectDisk(bus) {
 var mAttachToolbarHD = new vboxButtonMediaMenu('HardDisk',vboxSettingsControllerAttach,vboxDirname($('#vboxSettingsDialog').data('vboxMachineData').settingsFilePath));
 mAttachToolbarHD.addButton('vboxSettingsAddAttachmentsMenuHDDiv');
 
-var mAttachToolbarCD = new vboxButtonMediaMenu('DVD',vboxSettingsControllerAttach,vboxDirname($('#vboxSettingsDialog').data('vboxMachineData').settingsFilePath));
+var mAttachToolbarCD = new vboxButtonMediaMenu('DVD',vboxSettingsControllerAttach,'');
 mAttachToolbarCD.addButton('vboxSettingsAddAttachmentsMenuCDDiv');
 
-var mAttachToolbarFD = new vboxButtonMediaMenu('Floppy',vboxSettingsControllerAttach,vboxDirname($('#vboxSettingsDialog').data('vboxMachineData').settingsFilePath));
+var mAttachToolbarFD = new vboxButtonMediaMenu('Floppy',vboxSettingsControllerAttach,'');
 mAttachToolbarFD.addButton('vboxSettingsAddAttachmentsMenuFDDiv');
 
 

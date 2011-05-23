@@ -56,7 +56,7 @@ function vboxMountPostInit(bus,port,device) {
 	$('#vboxMountMediumLabel').html(storage.getMediumName(storage.getMediumById(medium)));
 
 	/* Media Menu */
-	var mAttachToolbar = new vboxButtonMediaMenu((type == 'DVD' ? type : 'Floppy'),vboxMountMedium,vboxDirname($('#vboxMountDialog').data('vboxMachineData').settingsFilePath));
+	var mAttachToolbar = new vboxButtonMediaMenu((type == 'DVD' ? type : 'Floppy'),vboxMountMedium,'');
 	mAttachToolbar.addButton('vboxMountToolbar');
 	/* Disable 'remove medium' menu item ? */
 	mAttachToolbar.menuUpdateRemoveMedia(medium);

@@ -47,7 +47,8 @@
 		<td>
 			<input type='checkbox' class='vboxCheckbox' class='vboxEnablerListen' name='vboxSettingsNetPassDNSDomain' /> <span class='translate vboxEnablerListen'>Pass DNS Domain</span><br />
 			<input type='checkbox' class='vboxCheckbox' class='vboxEnablerListen' name='vboxSettingsNetDNSProxy' /> <span class='translate vboxEnablerListen'>DNS Proxy</span><br />
-			<input type='checkbox' class='vboxCheckbox' class='vboxEnablerListen' name='vboxSettingsNetUseHostResolver' /> <span class='translate vboxEnablerListen'>Use Host Resolver</span>
+			<input type='checkbox' class='vboxCheckbox' class='vboxEnablerListen' name='vboxSettingsNetUseHostResolver' /> <span class='translate vboxEnablerListen'>Use Host Resolver</span><br />
+			<span class='translate vboxEnablerListen'>Bind to IP</span> <input type='text' class='vboxTextbox' class='vboxEnablerListen' name='vboxSettingsNetBindIp' size='16'/>
 		</td>
 	</tr>
 
@@ -237,6 +238,7 @@ for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
 		document.forms['frmVboxSettings'].elements['vboxSettingsNetPassDNSDomain'+a].checked = ($('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NatDriver.dnsPassDomain ? true : false);
 		document.forms['frmVboxSettings'].elements['vboxSettingsNetDNSProxy'+a].checked = ($('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NatDriver.dnsProxy ? true : false);
 		document.forms['frmVboxSettings'].elements['vboxSettingsNetUseHostResolver'+a].checked = ($('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NatDriver.dnsUseHostResolver ? true : false);
+		$(document.forms['frmVboxSettings'].elements['vboxSettingsNetBindIp'+a]).val($('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NatDriver.hostIP);
 	}
 
 
@@ -392,6 +394,7 @@ $('#vboxSettingsDialog').one('show',function(){
 			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NatDriver.dnsPassDomain = (document.forms['frmVboxSettings'].elements['vboxSettingsNetPassDNSDomain'+a].checked ? 1 : 0)
 			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NatDriver.dnsProxy = (document.forms['frmVboxSettings'].elements['vboxSettingsNetDNSProxy'+a].checked ? 1 : 0);
 			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NatDriver.dnsUseHostResolver = (document.forms['frmVboxSettings'].elements['vboxSettingsNetUseHostResolver'+a].checked ? 1 : 0);
+			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NatDriver.hostIP = $(document.forms['frmVboxSettings'].elements['vboxSettingsNetBindIp'+a]).val();
 		}
 
 		$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].adapterType = document.forms['frmVboxSettings'].elements['vboxSettingsNetAdapter'+a].value;

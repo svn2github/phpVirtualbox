@@ -168,6 +168,7 @@ table.vboxVertical input.vboxText, table.vboxVertical select { width: 100%; }
 table.vboxInvisible, table.vboxInvisible td { padding: 0px; margin: 0px; border: 0px; border-spacing: 0px; }
 .vboxOddRow { background-color: #efefef; }
 
+
 /* File / Folder select tables */
 table tr td.vboxFileFolderInput { white-space: nowrap; }
 table tr td.vboxFileFolderInput input.vboxText { width: 95%; }
@@ -389,6 +390,7 @@ ul.vboxMenuBar li {
 #vboxVMList table.vboxVMListVM span.vboxVMState { font-size: 0.9em; }
 #vboxVMList table.vboxVMListVM td.vboxVMSessionOpen { font-style: italic; }
 #vboxPaneVMList img.vboxHostIcon { border: 1px solid #999; }
+#vboxPaneVMList img.vboxVMIcon { height: 32px; width: 32px; }
 
 /* Toolbar above vm list */
 #vboxPaneToolbar { float: left; }

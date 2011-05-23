@@ -11,7 +11,7 @@ class phpvbAuthWebAuth {
 		);
 	
 	var $config = array(
-		'serverKey' => 'HTTP_X_WEBAUTH_USER',
+		'serverUserKey' => 'HTTP_X_WEBAUTH_USER',
 		'adminUser' => null
 	);
 	
@@ -25,22 +25,24 @@ class phpvbAuthWebAuth {
 	
 	function autoLoginHook()
 	{
+		global $_SESSION;
 		// WebAuth passthrough
-		if ( isset($_SERVER[$this->config['serverKey']]) )
+		if ( isset($_SERVER[$this->config['serverUserKey']]) )
 		{
 			$_SESSION['valid'] = true;
 			$_SESSION['webauth'] = true;
-			$_SESSION['user'] = $_SERVER[$this->config['serverKey']];
+			$_SESSION['user'] = $_SERVER[$this->config['serverUserKey']];
 			$_SESSION['admin'] = ($_SESSION['user'] === $this->config['adminUser']);
 			$_SESSION['authCheckHeartbeat'] = time();
-			$_SESSION['uHash'] = hash('sha512', $_SERVER[$this->config['serverKey']]);
+			$_SESSION['uHash'] = hash('sha512', $_SERVER[$this->config['serverUserKey']]);
 			
 		}
 	}
 	
 	function heartbeat()
 	{
-		if ( isset($_SERVER[$this->config['serverKey']]) )
+		global $_SESSION;
+		if ( isset($_SERVER[$this->config['serverUserKey']]) )
 		{
 			$_SESSION['valid'] = true;
 			$_SESSION['authCheckHeartbeat'] = time();

@@ -19,9 +19,9 @@
 				<option value='1024x768'>1024x768</option>
 				<option value='1280x1024'>1280x1024</option>
 			</select>
-		  	<input type='hidden' name='serverAddress' class='vboxRDPSet' value='' />
 		</div>
 	  	<p>
+	  		<input type='text' id='vboxConsoleAddr' name='serverAddress' class='vboxRDPSet' value='' />
 	  		<input name=connectionButton type=button value="Connect" onclick="vboxRDPConnect()" />
 	 		<input name=cadButton type=button value="Ctrl-Alt-Del" onClick="return vboxRDPsendCAD()" />
 	 		<input id='vboxVRDPDetachBtn' style='display: none' name='detach' type='button' value='Detach' onClick="vboxRDPDetach();" />
@@ -220,6 +220,7 @@ function RDPWebEventDisconnected(flashId) {
     vboxSetLangContext('vboxVMConsole');
     document.vboxRDPForm.connectionButton.value = trans("Connect");
     document.vboxRDPForm.connectionButton.onclick=function() {return vboxRDPConnect();}
+    $('#vboxConsoleAddr').css('display','');
     vboxUnsetLangContext();
     
     $('#vboxRDPFormContainer').css({'display':''});
@@ -233,13 +234,14 @@ function vboxRDPConnect() {
     var flash = RDPWebClient.getFlashById("FlashRDP");
     if (!flash) return;
 
-    $('#vboxRDPConnParams').css({'visibility':'hidden'});      
+    $('#vboxRDPConnParams').css({'visibility':'hidden'});
 
     vboxSetLangContext('vboxVMConsole');
     document.vboxRDPForm.connectionButton.value = trans("Disconnect");
     document.vboxRDPForm.connectionButton.onclick=function(){return vboxRDPDisconnect();}
     vboxUnsetLangContext();
     
+    $('#vboxConsoleAddr').css('display','none');
 	$('#FlashRDPContainer').css({'visibility':'visible'});
 
 
@@ -277,6 +279,7 @@ function vboxRDPDisconnect() {
 	document.vboxRDPForm.connectionButton.value = trans("Connect");
 	document.vboxRDPForm.connectionButton.onclick=function() {vboxRDPConnect();this.blur();}
 	$(flash).css({'height':'100px','width':'100px'});
+	$('#vboxConsoleAddr').css('display','');
 	vboxUnsetLangContext();
           
 }
@@ -291,7 +294,7 @@ function vboxRDPDetach() {
 	vboxRDPDisconnect();
 
 	var wh = $('#vboxRDPSize').val().split('x');
-	var newwin = window.open('about:blank','vboxConsoledatached','toolbar=0,menubar=0,location=0,directories=0,status=true,resize=true,width='+(parseInt(wh[0])+20)+',height='+(parseInt(wh[1])+20)+'');
+	var newwin = window.open('about:blank','vboxConsoleDetachedWin'+$('#vboxTabVMConsole').data('vmname'),'toolbar=0,menubar=0,location=0,directories=0,status=true,resize=true,width='+(parseInt(wh[0])+20)+',height='+(parseInt(wh[1])+20)+'');
 
 	vboxSetLangContext('vboxVMConsole');
 	newwin.document.open();	

@@ -33,6 +33,11 @@
 			<option value='Debian'>Debian</option>
 		</select></td>
 	</tr>
+	<tr id='vboxSettingsRowVMIcon' style='display:none'>
+		<th><span class='translate'>Icon URL</span>:</th>
+		<td><input name='vboxSettingsGeneralIcon' type='text' class='vboxText' /></td>
+		<td><img src='about:blank' id='vboxSettingsGeneralIconImg' height='32' width='32' /></td>
+	</tr>
 </table>
 </div>
 
@@ -93,6 +98,20 @@ if(!$('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
 } else {
 	$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputKeyboard).val($('#vboxSettingsDialog').data('vboxMachineData').keyboardHidType);
 	$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputMouse).val($('#vboxSettingsDialog').data('vboxMachineData').pointingHidType);
+}
+
+if($('#vboxIndex').data('vboxConfig').enableCustomIcons) {
+	
+	$('#vboxSettingsRowVMIcon').css('display','');
+	
+	if($('#vboxSettingsDialog').data('vboxMachineData').customIcon) {
+		$(document.forms['frmVboxSettings'].vboxSettingsGeneralIcon).val($('#vboxSettingsDialog').data('vboxMachineData').customIcon);
+		$('#vboxSettingsGeneralIconImg').attr('src',$('#vboxSettingsDialog').data('vboxMachineData').customIcon);
+	}
+	
+	$(document.forms['frmVboxSettings'].vboxSettingsGeneralIcon).blur(function(){
+		$('#vboxSettingsGeneralIconImg').attr('src',(this.value ? this.value : 'about:blank'));
+	});
 }
 
 /*
@@ -190,6 +209,9 @@ $('#vboxSettingsDialog').bind('save',function(){
 		$('#vboxSettingsDialog').data('vboxMachineData').keyboardHidType = $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputKeyboard).val();
 		$('#vboxSettingsDialog').data('vboxMachineData').pointingHidType = $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputMouse).val();
 	}
+
+	if($('#vboxIndex').data('vboxConfig').enableCustomIcons)
+		$('#vboxSettingsDialog').data('vboxMachineData').customIcon = $(document.forms['frmVboxSettings'].vboxSettingsGeneralIcon).val();
 
 	
 });

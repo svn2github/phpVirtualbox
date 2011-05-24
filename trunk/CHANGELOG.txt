@@ -1,5 +1,5 @@
 -------------------------------------
-	4.0-6	
+	4.0-6	2011-5-24
 -------------------------------------
 Pressing Esc key now closes most dialog boxes.
 http://code.google.com/p/phpvirtualbox/issues/detail?id=237
@@ -41,17 +41,26 @@ Fixed bug that would not correctly set the host network adapter of
 a running VM when changing the adapter to bridged mode.
 http://code.google.com/p/phpvirtualbox/issues/detail?id=245
 
-Port forwarding protocol is now selectable in advanced NAT options.
+Port forwarding protocol is now selectable in advanced NAT
+options.
 http://code.google.com/p/phpvirtualbox/issues/detail?id=263 
 
-Network adapters on the VirtualBox Host details page now shows which
-VMs (and their adapters) are attached.
+Network adapters on the VirtualBox Host details page now shows
+which VMs (and their adapters) are attached.
 http://code.google.com/p/phpvirtualbox/issues/detail?id=276
 
-Host / port setting is now exposed and editable on the console tab.
+Host / port setting is now exposed and editable on the console
+tab.
 
 Fixed bug when viewing snapshot details that would keep appending
 rows to the details pane rather than clearing then redrawing info.
+
+Fixed bug that would throw an exception when a DHCP server does not
+exist on a host-only interface.
+http://code.google.com/p/phpvirtualbox/issues/detail?id=278
+
+Fixed bug that would cause IPv6 information to not be displayed
+for host interfaces when viewing VirtualBox host details.
 
 -------------------------------------
 	4.0-5	2011-3-26

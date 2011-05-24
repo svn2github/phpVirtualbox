@@ -2040,6 +2040,7 @@ class vboxconnector {
 				'name' => $d->name,
 				'IPAddress' => $d->IPAddress,
 				'networkMask' => $d->networkMask,
+				'IPV6Supported' => $d->IPV6Supported,
 				'IPV6Address' => $d->IPV6Address,
 				'IPV6NetworkMaskPrefixLength' => $d->IPV6NetworkMaskPrefixLength,
 				'status' => $d->status->__toString(),

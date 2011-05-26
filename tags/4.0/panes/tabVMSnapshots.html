@@ -1,0 +1,480 @@
+<!-- 
+
+	VM Snapshots Pane
+	Copyright (C) 2011 Ian Moore (imoore76 at yahoo dot com)
+	
+	$Id$
+
+ -->
+<div id='vboxTabVMSnapshots' class='vboxInvisible' style='display: none; width:100%;'>
+
+	<table class='vboxInvisible' style='height: 99%; width: 99%'>
+		<tr style='vertical-align: top; height: 1%'>
+			<td><div id='vboxSnapshotToolbar'></div></td>
+		</tr>
+		<tr style='vertical-align: top;'>
+			<td><ul style='min-height: 400px' class='vboxBordered vboxTreeView' id='vboxSnapshotList'></ul></td>
+		</tr>
+	</table>
+<!-- 
+
+	New Snapshot Dialog
+
+ -->
+	<div id='vboxSnapshotNew' class='vboxDialogContent' style='display: none;'>
+		<table class='vboxVertical'>
+			<tr style='vertical-align: top'>
+				<th>
+					<img id='vboxSnapshotNewImg' src='images/vbox/os_other.png' />
+				</th>
+				<td>
+					<div style='height: 100%'>
+						<div class='translate'>Snapshot Name</div>
+						<input id='vboxSnapshotNewName' style='width: 100%'/>
+						<div class='translate'>Snapshot Description</div>
+						<textarea rows='10' id='vboxSnapshotNewDesc' style='width: 100%;'></textarea>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+
+<!-- 
+
+	Snapshot Details Dialog
+
+ -->
+	<div id='vboxSnapshotDetails' class='vboxDialogContent' style='display: none;'>
+		<table class='vboxVertical'>
+			<tr>
+				<th><span class='translate'>Name</span>:</th>
+				<td>
+					<input id='vboxSnapshotDetailsName' style='width: 100%'/>
+				</td>
+			</tr>
+			<tr>
+				<th><span class='translate'>Taken</span>:</th>
+				<td>
+					<span id='vboxSnapshotDetailsTaken'></span>
+				</td>
+			</tr>
+			<tr>
+				<th><span class='translate'>Description</span>:</th>
+				<td>
+					<textarea rows='12' id='vboxSnapshotDetailsDesc' name='vboxSnapshotDetailsDescElm'></textarea>
+				</td>
+			</tr>
+			<tr>
+				<th><span class='translate'>Details</span>:</th>
+				<td class='vboxSnapshotDetailsMachine'>
+					<div id='vboxSnapshotDetailsVM' style='overflow: auto; height: 100%'></div>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+
+
+<script type='text/javascript'>
+
+vboxSetLangContext('vboxSnapshots');
+vboxInitDisplay('vboxSnapshotNew');
+vboxInitDisplay('vboxSnapshotDetails');
+
+
+var tButtons = [
+            	
+  	{
+  		'name' : 'take_snapshot',
+  		'label' : 'Take Snapshot',
+  		'icon' : 'take_snapshot',
+  		'enabled' : function(item) {
+  			var vm = $('#vboxTabVMSnapshots').data('machine');
+  			return (item && $(item).data('state') == 'current' && vm.state != 'RestoringSnapshot' && vm.state != 'LiveSnapshotting' && vm.state != 'DeletingSnapshot');
+  		},
+  		'click' : function () {
+
+  			$('#vboxSnapshotNewImg').attr('src',"images/vbox/" + vboxGuestOSTypeIcon($('#vboxTabVMSnapshots').data('machine').OSTypeId));
+  			
+  			var snRegEx = new RegExp('^' + trans('Snapshot X').replace('%s','([0-9]+)') + '$');
+  			
+  			// Get max snapshot name
+  			var snMax = 0;
+  			var snList = $('#vboxSnapshotList').find('li');
+  			for(var i = 0; i < snList.length; i++) {
+  				var snNum = snRegEx.exec($(snList[i]).data('name'));
+  				if(snNum) snMax = Math.max(parseInt(snNum[1]), snMax);
+  			}
+  			$('#vboxSnapshotNewName').val(trans('Snapshot X').replace('%s',(snMax+1)));
+  			$('#vboxSnapshotNewDesc').val('');
+
+  			
+  			var buttons = {};
+  			buttons[trans('OK')] = function() {
+	  	  		var l = new vboxLoader();
+	  	  		l.mode = 'save';
+	  	  		l.add('snapshotTake',function(d){
+					if(d && d.progress) {
+						vboxProgress(d.progress,function(){
+							$('#vboxTabVMSnapshots').trigger('refresh');
+						},{},'progress_snapshot_create_90px.png',trans('Take Snapshot'));
+					} else if(d && d.error) {
+						vboxAlert(d.error);
+					}
+	 	  		},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'name':$('#vboxSnapshotNewName').val(),'description':$('#vboxSnapshotNewDesc').val()});
+	 	  		$(this).dialog('close');
+				l.run();
+  			};
+  			buttons[trans('Cancel')] = function() { $(this).dialog('close'); }
+  			
+  			$('#vboxSnapshotNew').dialog({'closeOnEscape':false,'width':'400px','height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/take_snapshot_16px.png" class="vboxDialogTitleIcon" />' + trans('Take Snapshot')});
+  			
+  	  	},
+  		'separator' : true
+  	},
+  	{
+  		'name' : 'discard_cur_state',
+  		'label' : 'Restore Snapshot',
+  		'icon' : 'discard_cur_state',
+  		'enabled' : function(item) {
+			var vm = $('#vboxTabVMSnapshots').data('machine');
+  			return ( item && $(item).data('name') && $(item).data('state') != 'current' && vm.state != 'Running');
+  		},
+  		'click' : function () {
+  	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data();
+			var buttons = {};
+			vboxSetLangContext('vboxSnapshots');
+			buttons[trans('Restore')] = function() {
+	  	  		var l = new vboxLoader();
+	  	  		l.mode = 'save';
+	  	  		l.add('snapshotRestore',function(d){
+					if(d && d.progress) {
+						vboxProgress(d.progress,function(){
+							$('#vboxTabVMSnapshots').trigger('refresh');
+						},{},'progress_snapshot_restore_90px.png',trans('Restore Snapshot'));
+					} else if(d && d.error) {
+						vboxAlert(d.error);
+					}
+	 	  		},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id});
+	  	  		$(this).empty().remove();
+				l.run();				
+			};
+			vboxUnsetLangContext();
+			vboxConfirm(trans('Restore Snapshot Message').replace('%s','<b>'+$('<div />').text(snapshot.name).html()+'</b>'),buttons);
+  	  	},
+  	},
+  	{
+  		'name' : 'delete_snapshot',
+  		'label' : 'Delete Snapshot',
+  		'icon' : 'delete_snapshot',
+  		'enabled' : function(item) {
+			var vm = $('#vboxTabVMSnapshots').data('machine');
+  			return (item && $(item).data('name') && $(item).data('state') != 'current' && $(item).data('children').length <= 1);
+  		},
+  		'click' : function () {
+  	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data();
+			var buttons = {};
+			vboxSetLangContext('vboxSnapshots');
+			buttons[trans('Delete')] = function() {
+	  	  		var l = new vboxLoader();
+	  	  		l.mode = 'save';
+	  	  		l.add('snapshotDelete',function(d){
+					if(d && d.progress) {
+						vboxProgress(d.progress,function(){
+							$('#vboxTabVMSnapshots').trigger('refresh');
+						},{},'progress_snapshot_discard_90px.png',trans('Delete Snapshot'));
+					} else if(d && d.error) {
+						vboxAlert(d.error);
+					}
+	 	  		},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id});
+	  	  		$(this).empty().remove();
+				l.run();				
+			};
+			vboxUnsetLangContext();
+			vboxConfirm(trans('Delete Snapshot Message1')+'<p>'+trans('Delete Snapshot Message2').replace('%s','<b>'+$('<div />').text(snapshot.name).html()+'</b>')+'</p>',buttons);  	  		
+  	  	},
+  		'separator' : true
+  	},
+  	{
+  		'name' : 'show_snapshot_details',
+  		'label' : 'Snapshot Details',
+  		'icon' : 'show_snapshot_details',
+  		'enabled' : function(item) { return (item && $(item).data('name') && $(item).data('state') != 'current'); },
+  		'click' : function () {
+
+  			// Current snapshot
+  	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data();
+  			
+			var l = new vboxLoader();
+			l.add('SnapshotDetails',function(d){
+
+				var sdate = new Date(d.timeStamp * 1000);
+				sdate = sdate.toLocaleString();
+				
+				$('#vboxSnapshotDetailsName').val(d.name);
+				$('#vboxSnapshotDetailsTaken').html(sdate);
+				$('#vboxSnapshotDetailsDesc').val(d.description);
+				
+	  	  		// Display details
+	  	  		$('#vboxSnapshotDetailsVM').empty();
+	  	  		__vboxDisplayDetailsData(d.machine,$('#vboxSnapshotDetailsVM'),false);
+	  	  			  	  		
+			},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id});
+			l.onLoad = function(){
+  			
+	  			var buttons = {};
+				buttons[trans('OK')] = function() {
+
+		  			// Current snapshot
+		  	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data();
+							
+		  	  		var l = new vboxLoader();
+		  	  		l.mode = 'save';
+		  	  		l.add('saveSnapshot',function(d){
+						$('#vboxTabVMSnapshots').trigger('refresh');
+		 	  		},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id,'name':$('#vboxSnapshotDetailsName').val(),'description':$('#vboxSnapshotDetailsDesc').val()});
+		 	  		$(this).dialog('close');
+					l.run();
+					
+				};
+				buttons[trans('Cancel')] = function(){
+					$(this).dialog('close');
+				};
+				
+				$('#vboxSnapshotDetails').dialog({'closeOnEscape':false,'width':'600px','height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_snapshot_details_16px.png" class="vboxDialogTitleIcon" /> '+trans('Snapshot Details')});
+			};
+			l.run();
+  	  	},
+  	}
+  	
+  	
+];
+
+
+/* Append Top Toolbar */
+snapshotToolbar = new vboxToolbarSmall(tButtons);
+snapshotToolbar.size = 22;
+snapshotToolbar.disabledString = 'dis';
+snapshotToolbar.addButtons('vboxSnapshotToolbar');
+
+// Hold timer and date vars
+snapshotToolbar._timer = null;
+snapshotToolbar._timeSpans = new Array();
+snapshotToolbar._timeSpans['days'] = 86400;
+snapshotToolbar._timeSpans['hours'] = 3600,
+snapshotToolbar._timeSpans['minutes'] = 60,
+snapshotToolbar._timeSpans['seconds'] = 1;
+snapshotToolbar._timeSpans.sort(function(a,b){return (a > b ? -1 : 1);});
+
+
+
+vboxInitDisplay('vboxSnapshotToolbar');
+
+vboxUnsetLangContext();
+
+$('#vboxSnapshotList').bind('select',snapshotToolbar.update);
+
+
+
+// Called when snapshot operation completes
+$('#vboxTabVMSnapshots').bind('refresh',function(){
+
+	$('#vboxIndex').trigger('vmselect',$('#vboxTabVMSnapshots').data('machine'));
+	
+});
+
+
+/* Loading VM */
+$('#vboxIndex').bind('vmloading',function(){
+
+	snapshotToolbar.disable();
+	
+	if(snapshotToolbar._timer) {
+		window.clearTimeout(snapshotToolbar._timer);
+		snapshotToolbar._timer = null;
+	}
+		
+	$('#vboxTabVMSnapshots').data('lastVM',0);
+	
+	$('#vboxSnapshotList').children().remove();
+	
+	$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots'));
+	
+	// Append spinner
+	$('#vboxSnapshotList').append($('<li />').attr({'class':'last'}).html("<div><img src='images/spinner.gif'></div>"));
+	
+/* VM Finished loading */
+}).bind('vmloaded',function(e,vm){
+
+	$('#vboxTabVMSnapshots').data('machine',vm);
+	
+	$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots') + (vm && vm.snapshotCount ? ' (' + vm.snapshotCount + ')' : ''));
+	
+	if(snapshotToolbar._timer)
+		window.clearTimeout(snapshotToolbar._timer);
+
+});
+
+
+// Load snapshots on show
+$('#vboxTabVMSnapshots').bind('show',function(e,vm){
+
+	if(snapshotToolbar._timer) {
+		window.clearTimeout(snapshotToolbar._timer);
+		snapshotToolbar._timer = null;
+	}
+
+	if(vm && vm.id) {
+		if($('#vboxTabVMSnapshots').data('lastVM') == vm.id) return;
+		$('#vboxTabVMSnapshots').data('lastVM',vm.id);
+	} else {
+		$('#vboxTabVMSnapshots').data('lastVM',0);
+	}
+	
+	$('#vboxSnapshotList').children().remove();
+	
+	if(!vm || vm.id == 'host') {
+		snapshotToolbar.disable();
+		return;
+	}
+
+	// Append spinner
+	$('#vboxSnapshotList').append($('<li />').attr({'class':'last'}).html("<div><img src='images/spinner.gif'></div>"));
+	
+	// Get snapshots
+	vboxAjaxRequest('getSnapshots',{'vm':vm.id},__vboxTabSnapshotsFill);
+
+	
+});
+
+/*
+ * Fill Snapshots
+*/
+function __vboxTabSnapshotsFill(s) {
+
+	var list = $('#vboxSnapshotList');
+	$(list).children().remove();
+
+	if(snapshotToolbar._timer) {
+		window.clearTimeout(snapshotToolbar._timer);
+		snapshotToolbar._timer = null;
+	}
+	
+	if(!s) return;
+
+	// Snapshots exist
+	if(s.name) {
+
+		// Traverse snapshots
+		$(list).append(__vboxTabSnapshot(s));
+	
+		// Append current state to last snapshot
+		if($('#vboxTabVMSnapshots').data('machine').currentSnapshot && $('#vboxTabVMSnapshots').data('machine').currentSnapshot.id) {
+	
+			// Has children
+			if($('#'+$('#vboxTabVMSnapshots').data('machine').currentSnapshot.id).children('ul').first().html()) {
+				$('#'+$('#vboxTabVMSnapshots').data('machine').currentSnapshot.id).children('ul').last().append(__vboxTabSnapshotCurrent());
+			} else {
+				$('#'+$('#vboxTabVMSnapshots').data('machine').currentSnapshot.id).append($('<ul />').append(__vboxTabSnapshotCurrent()));
+			}
+		}			
+		
+	// No snapshots. Append current state to list
+	} else {
+		$(list).append(__vboxTabSnapshotCurrent());
+	}
+	
+	// Init vbox tree list
+	$('#vboxSnapshotList').vbtree();
+	
+	snapshotToolbar.enable();
+
+	$('#vboxSnapshotList').trigger('select');
+
+	__vboxTabSnapshotTimestamps();	
+
+}
+
+/* Snapshot list item */
+function __vboxTabSnapshot(s) {
+
+	var li = $('<li />').attr({'id':s.id});
+	$(li).data(s);
+	
+	// Use timestamp
+	var t = '';
+	if(s.timeStampSplit['seconds'] == 0)
+		s.timeStampSplit['seconds'] = 1;
+	for(var i in s.timeStampSplit) {
+		t = trans('X ago').replace('%s',(s.timeStampSplit[i] + ' ' + trans(i)));
+		break;
+	}
+		
+	$(li).html(' <div class="vboxListItem"><img src="images/vbox/'+(s.online ? 'online' : 'offline')+'_snapshot_16px.png" /> ' + $('<div />').text(s.name).html()+' (<span class="timestamp" title="'+s.timeStamp +'">'+t+'</span>)</div>');
+	if(s.children.length) {
+		var ul = $('<ul />');
+		for(var i = 0; i < s.children.length; i++) {
+			$(ul).append(__vboxTabSnapshot(s.children[i]));
+		}
+		$(li).append(ul);
+	}
+		
+	
+	return li;
+}
+
+/* Current state list item */
+function __vboxTabSnapshotCurrent() {
+
+	// Add 'current state'
+	var li = $('<li />').data({'state':'current','name':trans('Current State')}).html(' <div class="vboxListItem"><img src="images/vbox/'+vboxMachineStateIcon($('#vboxTabVMSnapshots').data('machine').state)+'" /> ' + $('<div />').text(trans('Current State')).html()+'</div>');
+
+	if($('#vboxTabVMSnapshots').data('machine').currentStateModified) {
+		$(li).children().first().append(' (' + trans('changed') +')');
+	}
+	$(li).addClass('last').addClass('vboxSnapshotCurrent');
+	return li;
+}
+
+/* Update snapshot timestamps */
+function __vboxTabSnapshotTimestamps() {
+	
+	// Shorthand
+	var timeSpans = snapshotToolbar._timeSpans;
+	
+	// Keep minimum timestamp
+	var minTs = 60;
+
+	var currentTime = new Date();
+	currentTime = Math.floor(currentTime.getTime() / 1000);
+
+	$('#vboxTabVMSnapshots').find('span.timestamp').each(function(){
+		
+		var sts = parseInt($(this).attr('title'));
+		var t = Math.max(currentTime - sts, 1);
+		var ts = $(this).html();
+		
+		minTs = Math.min(minTs,t);
+		
+		// Check for max age.
+		if(Math.floor(t / 86400) > 30) {
+			var sdate = new Date(sts * 1000);
+			$(this).html(sdate.toLocaleString());
+			return;
+		}
+		
+		for(var i in timeSpans) {
+			if(Math.floor(t / timeSpans[i]) > 0) {
+				ts =  trans('X ago').replace('%s',(Math.floor(t / timeSpans[i]) + ' ' + trans(i)));
+				break;
+			}
+		}
+		$(this).html(ts);
+	});
+	
+	var timerSet = (minTs >= 60 ? 60 : 10);
+	snapshotToolbar._timer = window.setTimeout(__vboxTabSnapshotTimestamps,(timerSet * 1000));
+}
+</script>
+</div>

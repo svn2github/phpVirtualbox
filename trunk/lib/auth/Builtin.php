@@ -61,7 +61,7 @@ class phpvbAuthBuiltin {
 		
 		// Check to see if we only have 1 server or are already connected
 		// to the authentication master server
-		if($vbox->settings['authMaster'] || count($vbox->settings['servers']) == 1) {
+		if(@$vbox->settings['authMaster'] || count($vbox->settings['servers']) == 1) {
 			$vbcheck = &$vbox;
 		} else {
 			$vbcheck = new vboxconnector(true);
@@ -69,7 +69,7 @@ class phpvbAuthBuiltin {
 		
 		$vbcheck->connect();
 		$p = $vbcheck->vbox->getExtraData('phpvb/users/'.$_SESSION['user'].'/pass');
-		if(!$p || $_SESSION['uHash'] != $p) {
+		if(!@$p || @$_SESSION['uHash'] != $p) {
 			session_destroy();
 			unset($_SESSION['valid']);
 		} else {
@@ -77,7 +77,7 @@ class phpvbAuthBuiltin {
 			$_SESSION['authCheckHeartbeat'] = time();
 		}
 		
-		if(!$_SESSION['valid'])
+		if(!@$_SESSION['valid'])
 			throw new Exception(trans('Not logged in.'), vboxconnector::PHPVB_ERRNO_FATAL);
 	}
 	

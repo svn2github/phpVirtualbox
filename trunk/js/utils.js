@@ -129,7 +129,7 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 			if((!etext || !etext.length || etext == 'error') && run < 4) {
 				vboxAjaxRequest(fn,params,callback,xtra,(run+1));
 			} else {
-				if(etext != 'error') alert('ajax error: ' + etext);
+				if(etext != 'error') alert('ajax error: ' + etext); // debug - + " " + d.responseText);
 				callback(null,xtra);
 			}
 		});

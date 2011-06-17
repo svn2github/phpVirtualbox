@@ -68,7 +68,7 @@ var vboxVMActions = {
 			});
 			
 		},
-		'enabled' : function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Paused','Saved','Aborted']) > -1));}	
+		'enabled' : function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Paused','Saved','Aborted','Teleported']) > -1));}	
 	},
 	
 	/* VM Settings */

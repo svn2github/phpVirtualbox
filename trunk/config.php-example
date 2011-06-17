@@ -98,23 +98,6 @@ var $browserRestrictFiles = array('.iso','.vdi','.vmdk','.img','.bin','.vhd','.h
  * Misc
  */
 
-/* Session Security Level
-	
-The following options are valid:
-
-0 - Use only Browser's User-Agent string
-1 - Use first octet of client IP
-2 - Use second octet of client IP
-3 - Use third octet of client IP
-4 - Use entire client IP
-
-Each option stacks with previous options. For example, the default setting of 2 uses:
-	Browser's User-Agent string + first octet of client IP + second octet of client IP
-
-Do not change / set unless you have a good reason.
-*/
-#var $sessionSecurityLevel = 2;
- 
 /* Disable any of phpVirtualBox's main tabs */
 #var $disableTabVMSnapshots = true; // Snapshots tab
 #var $disableTabVMConsole = true; // Console tab

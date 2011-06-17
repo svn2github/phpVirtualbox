@@ -2,9 +2,11 @@
 /*
  * $Id$
  */
+
 require_once(dirname(dirname(__FILE__)).'/lib/language.php');
 
 error_reporting(0);
+
 
 header("Content-type: text/javascript; utf-8", true);
 

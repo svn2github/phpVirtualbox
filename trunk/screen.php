@@ -13,16 +13,16 @@ require_once(dirname(__FILE__).'/lib/vboxconnector.php');
 
 
 // Allow caching of some screenshot data
-Header('ETag: "' . $_REQUEST['vm'].'_'.$_REQUEST['randid'].'"');
+@Header('ETag: "' . $_REQUEST['vm'].'_'.$_REQUEST['randid'].'"');
 session_cache_limiter('private_no_expire');
 
 // Check for valid session
 global $_SESSION;
 session_init();
-if(!$_SESSION['valid']) return;
+if(!@$_SESSION['valid']) return;
 
 // Clean request
-$_REQUEST = array_merge($_GET,$_POST);
+$_REQUEST = array_merge(@$_GET,@$_POST);
 
 $settings = new phpVBoxConfigClass();
 $vbox = new vboxconnector();

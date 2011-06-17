@@ -1,4 +1,14 @@
 -------------------------------------
+	4.0-7	
+-------------------------------------
+Removed $sessionSecurityLevel setting and associated logic as it
+really provided no extra session security.
+
+Fixed session bug where another client running the same browser
+from the same subnet could inherit another user's session.
+http://code.google.com/p/phpvirtualbox/issues/detail?id=295
+
+-------------------------------------
 	4.0-6	2011-5-24
 -------------------------------------
 Pressing Esc key now closes most dialog boxes.

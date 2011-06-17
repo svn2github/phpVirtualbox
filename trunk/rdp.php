@@ -14,14 +14,14 @@ require_once(dirname(__FILE__).'/lib/utils.php');
 $_GET = clean_request();
 
 foreach(array('port','host','vm') as $g) {
-	$_GET[$g] = str_replace(array("\n","\r","\0"),'',$_GET[$g]);
+	@$_GET[$g] = str_replace(array("\n","\r","\0"),'',@$_GET[$g]);
 }
 
 
 /*
  * Check for port range or list of ports
  */
-if(preg_match('/[^\d]/',$_GET['port'])) {
+if(preg_match('/[^\d]/',@$_GET['port'])) {
 
 
 	require_once(dirname(__FILE__).'/lib/config.php');
@@ -33,11 +33,11 @@ if(preg_match('/[^\d]/',$_GET['port'])) {
 	$vbox = new vboxconnector();
 	$vbox->connect();
 
-	$args = array('vm'=>$_GET['vm']);
+	$args = array('vm'=>@$_GET['vm']);
 	$response = array();
 	$vbox->getVMDetails($args,$response);
 
-	$_GET['port'] = $response['data']['consolePort'];
+	$_GET['port'] = @$response['data']['consolePort'];
 }
 
 header("Content-type: application/x-rdp",true);
@@ -45,7 +45,7 @@ header("Content-disposition: attachment; filename=\"". str_replace(array('"','.'
 
 
 echo('
-full address:s:'.$_GET['host'].($_GET['port'] ? ':'.$_GET['port'] : '').'
+full address:s:'.@$_GET['host'].(@$_GET['port'] ? ':'.@$_GET['port'] : '').'
 compression:i:1
 displayconnectionbar:i:1
 ');

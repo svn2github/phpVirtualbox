@@ -149,7 +149,7 @@ function vboxVMListToolbarMediumMount(medium) {
 	mount.add('mediumMount',function(ret,xtra){
 		var l = new vboxLoader();
 		l.add('VMDetails',function(d){$('#vboxIndex').data('vboxMachineData',d);},{'vm':xtra.vm});
-		l.add('Mediums',function(d){$('#vboxIndex').data('vboxMediums',d);});
+		l.add('Media',function(d){$('#vboxIndex').data('vboxMedia',d);});
 		l.onLoad = function() {
 			$('#vboxIndex').trigger('vmselect',$('#vboxIndex').data('vboxMachineData'));
 		}
@@ -287,7 +287,6 @@ function vboxUpdateSettingsMenu(vm) {
 	if(vm && vm.storageControllers && vm.storageControllers.length) {
 		var dvdDevices = new Array();
 		var fdDevices = new Array();
-		var storage = new vboxStorage();
 		for(var a = 0; a < vm.storageControllers.length; a++) {
 			var icon = vm['storageControllers'][a].bus.toLowerCase();
 			if(vm['storageControllers'][a].bus == 'SAS') icon = 'sata';
@@ -297,11 +296,11 @@ function vboxUpdateSettingsMenu(vm) {
 				
 				vm['storageControllers'][a]['mediumAttachments'][b]['controller'] = vm['storageControllers'][a]['name'];
 				
-				var portName = storage[vm['storageControllers'][a].bus].slotName(vm['storageControllers'][a]['mediumAttachments'][b].port, vm['storageControllers'][a]['mediumAttachments'][b].device);
+				var portName = vboxStorage[vm['storageControllers'][a].bus].slotName(vm['storageControllers'][a]['mediumAttachments'][b].port, vm['storageControllers'][a]['mediumAttachments'][b].device);
 				var m = vm['storageControllers'][a]['mediumAttachments'][b].medium;
-				m = storage.getMediumById((m && m.id ? m.id : null));
+				m = vboxMedia.getMediumById((m && m.id ? m.id : null));
 				
-				var mName = storage.getMediumName(m);
+				var mName = vboxMedia.getMediumName(m);
 				mName = $('<div />').text(mName).html();
 				
 				

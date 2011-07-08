@@ -13,7 +13,7 @@
 		
 		/* Defaults */
 		if(!options.type) options.type = 'HardDisk';
-		if(!options.mediums) options.mediums = [];
+		if(!options.media) options.media = [];
 		
 		/* Select Medium */
 		function selectmedium(d,sel) {
@@ -172,9 +172,9 @@
 			var sel = $('#'+$(this).attr('id')+'-mediumselect');
 			var old = this;
 			
-			for(var i = 0; i < options.mediums.length; i++) {
-				if(options.mediums[i].base && options.mediums[i].id != options.mediums[i].base) continue;
-				$(list).append(listItem(options.mediums[i],sel,old,options.showdiff));
+			for(var i = 0; i < options.media.length; i++) {
+				if(options.media[i].base && options.media[i].id != options.media[i].base) continue;
+				$(list).append(listItem(options.media[i],sel,old,options.showdiff));
 			}
 
 			// Set initial text and styles

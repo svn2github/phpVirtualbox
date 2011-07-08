@@ -112,8 +112,7 @@ var vboxApplianceImportProps = {
  *
  */
 // Storage controllers
-var st = new vboxStorage();
-var stTypes = st.getBusTypes();
+var stTypes = vboxStorage.getBusTypes();
 vboxSetLangContext('vboxAppliance');
 for(var i = 0; i < stTypes.length; i++) {
 	
@@ -122,7 +121,7 @@ for(var i = 0; i < stTypes.length; i++) {
 	// Translate value
 	vboxApplianceImportProps['HardDiskController'+stTypes[i]]['display'] = function(val){return trans(val);};
 
-	var ctypes = st[stTypes[i]].types;
+	var ctypes = vboxStorage[stTypes[i]].types;
 	if(ctypes.length < 2) continue;
 	
 	var opts = {};

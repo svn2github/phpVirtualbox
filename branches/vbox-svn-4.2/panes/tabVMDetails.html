@@ -791,8 +791,6 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 		$(vboxDetailsTable).append(__vboxDetailHeader('hd_16px.png',"Storage"));
 	}
 
-	var storage = new vboxStorage();
-	
 	for(var a = 0; a < data['storageControllers'].length; a++) {
 		
 		var con = data['storageControllers'][a];
@@ -811,18 +809,18 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 		
 		for(var b = 0; b < data['storageControllers'][a]['mediumAttachments'].length; b++) {
 			
-			var portName = storage[data['storageControllers'][a].bus].slotName(data['storageControllers'][a]['mediumAttachments'][b].port, data['storageControllers'][a]['mediumAttachments'][b].device);
+			var portName = vboxStorage[data['storageControllers'][a].bus].slotName(data['storageControllers'][a]['mediumAttachments'][b].port, data['storageControllers'][a]['mediumAttachments'][b].device);
 
 			// Medium / host device info
-			var medium = (data['storageControllers'][a]['mediumAttachments'][b].medium && data['storageControllers'][a]['mediumAttachments'][b].medium.id ? storage.getMediumById(data['storageControllers'][a]['mediumAttachments'][b].medium.id) : null);
+			var medium = (data['storageControllers'][a]['mediumAttachments'][b].medium && data['storageControllers'][a]['mediumAttachments'][b].medium.id ? vboxMedia.getMediumById(data['storageControllers'][a]['mediumAttachments'][b].medium.id) : null);
 			
 			// Get base medium (snapshot -> virtual disk file)
 			if(medium && medium.base && (medium.base != medium.id)) {
-				medium = storage.getMediumById(medium.base);
+				medium = vboxMedia.getMediumById(medium.base);
 			}
 
 
-			portDesc = storage.mediumPrint(medium);
+			portDesc = vboxMedia.mediumPrint(medium);
 
 			// Link medium to mount?
 			if(links && data['storageControllers'][a]['mediumAttachments'][b].type != 'HardDisk' && (data.state == 'Running' || (data.state == 'PoweredOff' && data.sessionState == 'Unlocked'))) {
@@ -899,10 +897,10 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 					adp = trans('Not attached');
 					break;
 				case 'Bridged':
-					adp = trans('Bridged adapter, %s').replace('%s', nic.hostInterface);
+					adp = trans('Bridged adapter, %s').replace('%s', nic.bridgedInterface);
 					break;
 				case 'HostOnly':
-					adp = trans('Host-only adapter, \'%s\'').replace('%s', nic.hostInterface);
+					adp = trans('Host-only adapter, \'%s\'').replace('%s', nic.hostOnlyInterface);
 					break;
 				case 'NAT':
 					// 'NATNetwork' ?
@@ -911,6 +909,9 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 				case 'Internal':
 					adp = trans('Internal network, \'%s\'').replace('%s', nic.internalNetwork);
 					break;
+				case 'Generic':
+					adp = trans('Generic driver, \'%s\'').replace('%s', nic.genericDriver);
+					break;					
 				case 'VDE':
 					adp = trans('VDE network, \'%s\'').replace('%s', nic.VDENetwork);
 					break;
@@ -1205,8 +1206,6 @@ function __vboxDisplayHostDetailsData(data) {
 	}
 	$('#vboxHostDetails').append(vboxDetailsTable);
 	
-	var storage = new vboxStorage();
-
 	// CD/DVD Devices
 	if(data['DVDDrives'].length) {
 	
@@ -1214,9 +1213,9 @@ function __vboxDisplayHostDetailsData(data) {
 	
 		for(var i = 0; i < data['DVDDrives'].length; i++) {		
 			
-			var m = storage.getMediumById(data['DVDDrives'][i].id);
+			var m = vboxMedia.getMediumById(data['DVDDrives'][i].id);
 			
-			$(vboxDetailsTable).append(__vboxDetailRow(storage.getMediumName(m),''));
+			$(vboxDetailsTable).append(__vboxDetailRow(vboxMedia.getMediumName(m),''));
 			
 		}
 
@@ -1231,9 +1230,9 @@ function __vboxDisplayHostDetailsData(data) {
 	
 		for(var i = 0; i < data['floppyDrives'].length; i++) {		
 			
-			var m = storage.getMediumById(data['floppyDrives'][i].id);
+			var m = vboxMedia.getMediumById(data['floppyDrives'][i].id);
 			
-			$(vboxDetailsTable).append(__vboxDetailRow(storage.getMediumName(m),''));
+			$(vboxDetailsTable).append(__vboxDetailRow(vboxMedia.getMediumName(m),''));
 			
 		}
 

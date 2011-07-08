@@ -34,7 +34,7 @@ var vboxVMActions = {
 				l.add('addVM',function(){},{'file':f});
 				l.onLoad = function(){
 					var lm = new vboxLoader();
-					lm.add('Mediums',function(d){$('#vboxIndex').data('vboxMediums',d);});
+					lm.add('Media',function(d){$('#vboxIndex').data('vboxMedia',d);});
 					lm.onLoad = function() {$('#vboxIndex').trigger('vmlistreload');}
 					lm.run();
 				}
@@ -84,7 +84,17 @@ var vboxVMActions = {
 				$('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]);
 			});
 		},
-		'enabled':function(vm){ return vm && (vm.state == 'PoweredOff' || vm.state == 'Aborted'); }
+		'enabled' : function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Aborted','Teleported']) > -1));}
+	},
+
+	/* Clone VM */
+	'clone': {
+		'label':'Clone',
+		'icon':'vm_clone',
+		'icon_16':'vm_clone',
+		'icon_disabled':'vm_clone_disabled',
+		'click':function(){vboxWizardCloneVMInit(function(){return;},{'vm':$('#vboxIndex').data('selectedVM')})},
+		'enabled' : function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Aborted','Teleported','Saved']) > -1));}
 	},
 	
 	/* Refresh a VM */
@@ -163,7 +173,7 @@ var vboxVMActions = {
 			vboxConfirm(q,buttons);
     	
     	},
-		'enabled':function(vm){ return vm && (vm.state == 'PoweredOff' || vm.state == 'Aborted' || vm.state == 'Inaccessible'); }
+    	'enabled' : function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Aborted','Teleported','Inaccessible']) > -1));}
     },
     
     /* Discard VM State */
@@ -267,7 +277,138 @@ var vboxVMActions = {
     
 }
 	
+/*
+ * Medium actions
+ */
+var vboxMedia = {
 
+	// Returns printable medium name with size and type
+	mediumPrint : function(m,nosize) {
+		name = vboxMedia.getMediumName(m);
+		if(nosize || !m || m.hostDrive) return name;
+		return name + ' (' + (m.deviceType == 'HardDisk' ? trans(m.type) + trans('LIST_SEP') : '') + vboxMbytesConvert(m.logicalSize) + ')';
+	},
+
+	// Get medium name only
+	getMediumName : function(m) {
+		if(!m) return trans('Empty');
+		if(m.hostDrive) return trans('Host Drive')+(m.description ? " " + m.description + " ("+vboxBasename(m.location)+")" : " '"+m.location+"'");
+		return m.name;
+	},
+
+	/* Return media and drives available for attachment type */
+	mediaForAttachmentType : function(t,children) {
+	
+		var media = new Array();
+		
+		// DVD Drives
+		if(t == 'DVD') { media = media.concat($('#vboxIndex').data('vboxHostDetails').DVDDrives);
+		// Floppy Drives
+		} else if(t == 'Floppy') { 
+			media = media.concat($('#vboxIndex').data('vboxHostDetails').floppyDrives);
+		}
+		
+		// media
+		return media.concat(vboxTraverse($('#vboxIndex').data('vboxMedia'),'deviceType',t,true,children));
+	},
+
+	/* Return a medium by location */
+	getMediumByLocation : function(p) {		
+		return vboxTraverse($('#vboxIndex').data('vboxMedia'),'location',p,false,true);
+	},
+
+	/* Return a medium by ID */
+	getMediumById : function(id) {
+		return vboxTraverse($('#vboxIndex').data('vboxMedia').concat($('#vboxIndex').data('vboxHostDetails').DVDDrives.concat($('#vboxIndex').data('vboxHostDetails').floppyDrives)),'id',id,false,true);
+	},
+
+	// Update recent media menu and global recent media list
+	updateRecent : function(m) {
+		
+		// Only valid media that is not a host drive or iSCSI
+		if(!m || !m.location || m.hostDrive || m.format == 'iSCSI') return null;
+		
+	    // Update recent path
+		vboxAjaxRequest('updateRecentMediumPath',{'type':m.deviceType,'folder':vboxDirname(m.location)},function(){});
+		$('#vboxIndex').data('vboxRecentMediumPaths')[m.deviceType] = vboxDirname(m.location);
+		
+		// Update recent media
+		var changed = vboxAddRecentMedium(m.location, $('#vboxIndex').data('vboxRecentMedia')[m.deviceType]);
+		
+		if(changed) {
+			// Update Recent Media in background
+			vboxAjaxRequest('mediumRecentUpdate',{'type':m.deviceType,'list':$('#vboxIndex').data('vboxRecentMedia')[m.deviceType]},function(){});
+		}
+		
+		return changed;
+	},
+	
+	/*
+	 * Actions performed on Media in phpVirtualBox
+	 */
+	actions : {
+		
+		/*
+		 * Choose existing image
+		 */
+		choose : function(path,type,callback) {
+		
+			if(!path) path = $('#vboxIndex').data('vboxRecentMediumPaths')[type];
+
+			title = null;
+			icon = null;
+			switch(type) {
+				case 'HardDisk':
+					title = trans('Choose a virtual hard disk file...');
+					icon = 'images/vbox/hd_16px.png';
+					break;
+				case 'Floppy':
+					title = trans('Choose a virtual floppy disk file...');
+					icon = 'images/vbox/fd_16px.png';
+					break;
+				case 'DVD':
+					title = trans('Choose a virtual CD/DVD disk file...');
+					icon = 'images/vbox/cd_16px.png';
+					break;					
+			}
+			vboxFileBrowser(path,function(f){
+				if(!f) return;
+				var med = vboxMedia.getMediumByLocation(f);
+				if(med && med.deviceType == type) {
+					vboxMedia.updateRecent(med);
+					callback(med);
+					return;
+				} else if(med) {
+					return;
+				}
+				var ml = new vboxLoader();
+				ml.mode='save';
+				ml.add('mediumAdd',function(ret){
+					var l = new vboxLoader();
+					if(ret && ret.id) {
+						var med = vboxMedia.getMediumById(ret.id);
+						// Not registered yet. Refresh media.
+						if(!med)
+							l.add('Media',function(dret){$('#vboxIndex').data('vboxMedia',dret);});
+					}
+					l.onLoad = function() {
+						if(ret && ret.id) {
+							var med = vboxMedia.getMediumById(ret.id);
+							if(med && med.deviceType == type) {
+								vboxMedia.updateRecent(med);
+								callback(med);
+								return;
+							}
+						}
+					}
+					l.run();
+				},{'path':f,'type':type});
+				ml.run();
+			},false,title,icon);
+		} // </ choose >
+	
+	} // </ actions >
+}
 /*
  * Wizard (new HardDisk or VM)
  */
@@ -811,7 +952,6 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	this.type = type;
 	this.callback = callback;
 	this.mediumPath = mediumPath;
-	this.storage = new vboxStorage();
 	this.removeEnabled = true;
 
 	if(this.mediumPath == '') {
@@ -849,10 +989,10 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	self.menuAddDrives = function(ul) {
 		
 		// Add host drives
-		var meds = self.storage.mediumsForAttachmentType(self.type);
+		var meds = vboxMedia.mediaForAttachmentType(self.type);
 		for(var i =0; i < meds.length; i++) {
 			if(!meds[i].hostDrive) continue;
-			$('<li />').html("<a href='#"+meds[i].id+"'>"+self.storage.getMediumName(meds[i])+"</a>").appendTo(ul);
+			$('<li />').html("<a href='#"+meds[i].id+"'>"+vboxMedia.getMediumName(meds[i])+"</a>").appendTo(ul);
 		}
 		
 	}
@@ -932,12 +1072,12 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	this.menuUpdateRecent = function() {
 		
 		var elm = $('#'+self.menu_id());
-		var list = $('#vboxIndex').data('vboxRecentMediums')[self.type];
+		var list = $('#vboxIndex').data('vboxRecentMedia')[self.type];
 		elm.children('li.vboxMediumRecent').remove();
 		var ins = elm.children('li.vboxMediumRecentBefore').last();
 		for(var i = 0; i < list.length; i++) {
 			if(!list[i]) continue;
-			if(!self.storage.getMediumByLocation(list[i])) continue;
+			if(!vboxMedia.getMediumByLocation(list[i])) continue;
 			$('<li />').attr({'class':'vboxMediumRecent'}).html("<a href='#path:"+list[i]+"'>"+vboxBasename(list[i])+"</a>").insertBefore(ins);
 		}
 	}
@@ -961,18 +1101,12 @@ function vboxMediaMenu(type,callback,mediumPath) {
 		// Only valid media that is not a host drive or iSCSI
 		if(!m || !m.location || m.hostDrive || m.format == 'iSCSI') return;
 		
-	    // Update recent path
-		vboxAjaxRequest('updateRecentMediumPath',{'type':self.type,'folder':vboxDirname(m.location)},function(){});
+	    // Update medium path
 		self.mediumPath = $('#vboxIndex').data('vboxRecentMediumPaths')[self.type] = vboxDirname(m.location);
 		
-		// Update recent mediums
-		var changed = vboxAddRecentMedium(m.location, $('#vboxIndex').data('vboxRecentMediums')[self.type]);
-		
-		if(changed) {
+		if(vboxMedia.updateRecent(m)) { // returns true if recent media list has changed
 			// Update menu
 			self.menuUpdateRecent();
-			// Update Recent Mediums in background
-			vboxAjaxRequest('mediumRecentUpdate',{'type':m.deviceType,'list':$('#vboxIndex').data('vboxRecentMediums')[m.deviceType]},function(){});
 		}
 	}
 	
@@ -983,16 +1117,11 @@ function vboxMediaMenu(type,callback,mediumPath) {
 		
 			// Create hard disk
 			case 'createD':
-				vboxWizardNewHDInit(function(res,id){
+				vboxWizardNewHDInit(function(id){
 					if(!id) return;
-					var l = new vboxLoader();
-					l.add('Mediums',function(d){$('#vboxIndex').data('vboxMediums',d);});
-					l.onLoad = function() {
-						var med = self.storage.getMediumById(id);
-						self.callback(med);
-						self.updateRecent(med);
-					};
-					l.run();
+					var med = vboxMedia.getMediumById(id);
+					self.callback(med);
+					self.menuUpdateRecent(med);
 				},{'path':self.mediumPath+$('#vboxIndex').data('vboxConfig').DSEP}); 				
 				break;
 			
@@ -1001,9 +1130,9 @@ function vboxMediaMenu(type,callback,mediumPath) {
 				// vboxVMMDialogInit(callback,type,hideDiff,attached,vmPath)
 				vboxVMMDialogInit(function(m){
 					if(m && m.id) {
-						var med = self.storage.getMediumById(m.id);
+						var med = vboxMedia.getMediumById(m.id);
+						self.updateRecent(med);		
 						self.callback(med);
-						self.updateRecent(med);						
 					}
 				},self.type,false,{},self.mediumPath);
 				break;
@@ -1011,9 +1140,16 @@ function vboxMediaMenu(type,callback,mediumPath) {
 			// Choose medium file
 			case 'chooseD':
 				
+				vboxMedia.actions.choose(self.mediumPath,self.type,function(med){
+					self.callback(med);
+					self.updateRecent(med);
+				});
+				
+				return;
+				
 				vboxFileBrowser(self.mediumPath,function(f){
 					if(!f) return;
-					var med = self.storage.getMediumByLocation(f);
+					var med = vboxMedia.getMediumByLocation(f);
 					if(med && med.deviceType == self.type) {
 						self.callback(med);
 						self.updateRecent(med);
@@ -1026,14 +1162,14 @@ function vboxMediaMenu(type,callback,mediumPath) {
 					ml.add('mediumAdd',function(ret){
 						var l = new vboxLoader();
 						if(ret && ret.id) {
-							var med = self.storage.getMediumById(ret.id);
-							// Not registered yet. Refresh mediums.
+							var med = vboxMedia.getMediumById(ret.id);
+							// Not registered yet. Refresh media.
 							if(!med)
-								l.add('Mediums',function(data){$('#vboxIndex').data('vboxMediums',data);});
+								l.add('Media',function(data){$('#vboxIndex').data('vboxMedia',data);});
 						}
 						l.onLoad = function() {
 							if(ret && ret.id) {
-								var med = self.storage.getMediumById(ret.id);
+								var med = vboxMedia.getMediumById(ret.id);
 								if(med && med.deviceType == self.type) {
 									self.callback(med);
 									self.updateRecent(med);
@@ -1052,14 +1188,14 @@ function vboxMediaMenu(type,callback,mediumPath) {
 			default:
 				if(action.indexOf('path:') == 0) {
 					var path = action.substring(5);
-					var med = self.storage.getMediumByLocation(path);
+					var med = vboxMedia.getMediumByLocation(path);
 					if(med && med.deviceType == self.type) {
 						self.callback(med);
 						self.updateRecent(med);
 					}
 					return;
 				}
-				var med = self.storage.getMediumById(action);
+				var med = vboxMedia.getMediumById(action);
 				self.callback(med);
 				self.updateRecent(med);
 		}
@@ -1472,83 +1608,22 @@ function vboxParallelPorts() {
 }
 
 /*
- * 	Common storage / controller functions
+ * 	Common storage / controller ... stuff
  */
-function vboxStorage() {
-
-	// Returns printable medium name
-	this.mediumPrint = function(m,nosize) {
-		name = this.getMediumName(m);
-		if(nosize || !m || m.hostDrive) return name;
-		return name + ' (' + (m.deviceType == 'HardDisk' ? trans(m.type) + trans('LIST_SEP') : '') + vboxMbytesConvert(m.logicalSize) + ')';
-	}
-	
-	this.getMediumName = function(m) {
-		if(!m) return trans('Empty');
-		if(m.hostDrive) return trans('Host Drive')+(m.description ? " " + m.description + " ("+vboxBasename(m.location)+")" : " '"+m.location+"'");
-		return m.name;
-	}
+var vboxStorage = {
 
 	// Return list of bus types
-	this.getBusTypes = function() {
+	getBusTypes : function() {
 		var busts = [];
-		for(var i in this) {
+		for(var i in vboxStorage) {
 			if(typeof i == 'function') continue;
-			if(!this[i].maxPortCount) continue;
+			if(!vboxStorage[i].maxPortCount) continue;
 			busts[busts.length] = i;
 		}
 		return busts;
-	}
+	},
 	
-	/* Return mediums and drives available for attachment type */
-	this.mediumsForAttachmentType = function(t,children) {
-
-		var mediums = new Array();
-		
-		// DVD Drives
-		if(t == 'DVD') {
-			mediums = mediums.concat($('#vboxIndex').data('vboxHostDetails').DVDDrives);
-
-		// Floppy Drives
-		} else if(t == 'Floppy') {
-			mediums = mediums.concat($('#vboxIndex').data('vboxHostDetails').floppyDrives);
-		}
-		
-		
-		// media
-		return mediums.concat(this.__getLeaf($('#vboxIndex').data('vboxMediums'),'deviceType',t,true,children));
-	}
-
-	this.__getLeaf = function(tree,prop,val,all,children) {
-		var leafs = new Array();
-		for(var a in tree) {
-			if(tree[a][prop] == val) {
-				if(!all) return tree[a];
-				leafs[leafs.length] = tree[a];
-			}
-			if(children && tree[a].children && tree[a].children.length) {
-				var c = this.__getLeaf(tree[a].children,prop,val,all,children);
-				if(!all && c) { return c; }
-				else if(c && c.length) {
-					leafs = leafs.concat(c);
-				}
-			}
-		}
-		return (all ? leafs : null);
-	}
-	
-
-	/* Return a medium by location */
-	this.getMediumByLocation = function(p) {		
-		return this.__getLeaf($('#vboxIndex').data('vboxMediums'),'location',p,false,true);
-	}
-
-	/* Return a medium by ID */
-	this.getMediumById = function(id) {		
-		return this.__getLeaf($('#vboxIndex').data('vboxMediums').concat($('#vboxIndex').data('vboxHostDetails').DVDDrives.concat($('#vboxIndex').data('vboxHostDetails').floppyDrives)),'id',id,false,true);
-	}
-	
-	this.IDE = {
+	IDE : {
 		'maxPortCount' : 2,
 		'maxDevicesPerPortCount' : 2,
 		'types':['PIIX3','PIIX4','ICH6' ],
@@ -1562,9 +1637,9 @@ function vboxStorage() {
 		          	'1-0' : (trans('Secondary Master')),
 		          	'1-1' : (trans('Secondary Slave'))
 			}}
-	};
+	},
 		
-	this.SATA = {
+	SATA : {
 		'maxPortCount' : 30,
 		'maxDevicesPerPortCount' : 1,
 		'types' : ['IntelAhci'],
@@ -1577,9 +1652,9 @@ function vboxStorage() {
 					}
 					return s;
 				}
-	};
+	},
 		
-	this.SCSI = {
+	SCSI : {
 		'maxPortCount' : 16,
 		'maxDevicesPerPortCount' : 1,
 		'driveTypes' : ['disk'],
@@ -1592,34 +1667,32 @@ function vboxStorage() {
 						}
 						return s;				
 					}
-	};
+	},
 		
-	this.Floppy = {
+	Floppy : {
 		'maxPortCount' : 1,
 		'maxDevicesPerPortCount' : 2,
 		'types' : ['I82078'],
 		'driveTypes' : ['floppy'],
 		'slotName' : function(p,d) { return trans('Floppy Device %s').replace('%s',d); },
 		'slots' : function() { return { '0-0':trans('Floppy Device %s').replace('%s','0'), '0-1':trans('Floppy Device %s').replace('%s','1') }; }
-	};
+	},
 
 	
-	this.SAS = {
-			'maxPortCount' : 8,
-			'maxDevicesPerPortCount' : 1,
-			'types' : ['LsiLogicSas'],
-			'driveTypes' : ['disk'],
-			'slotName' : function(p,d) { return trans('SAS Port %s').replace('%s',p); },
-			'slots' : function() {
-							var s = {};
-							for(var i = 0; i < 8; i++) {
-								s[i+'-0'] = trans('SAS Port %s').replace('%s',i);
-							}
-							return s;				
-						},
-			'displayInherit' : 'SATA'
-		};
-	
-	
+	SAS : {
+		'maxPortCount' : 8,
+		'maxDevicesPerPortCount' : 1,
+		'types' : ['LsiLogicSas'],
+		'driveTypes' : ['disk'],
+		'slotName' : function(p,d) { return trans('SAS Port %s').replace('%s',p); },
+		'slots' : function() {
+						var s = {};
+						for(var i = 0; i < 8; i++) {
+							s[i+'-0'] = trans('SAS Port %s').replace('%s',i);
+						}
+						return s;				
+					},
+		'displayInherit' : 'SATA'
+	}
 
 }

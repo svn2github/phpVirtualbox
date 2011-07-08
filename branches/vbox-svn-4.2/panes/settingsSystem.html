@@ -105,7 +105,7 @@
 				<td style='width: 100%; border: 0px; margin: 0px; padding: 0px;'>
 				   <div style='margin-top: 4px' id='vboxSettingsSystemProcessor' class='slider'><div class='sliderScale'></div></div>
 				</td>
-				<td><input type='text' class='vboxText' name='vboxSettingsSystemProcessorValue' size='2' class='sliderValue' /> <span class='translate'>CPUs</span></td>
+				<td><input type='text' class='vboxText' name='vboxSettingsSystemProcessorValue' size='2' class='sliderValue' /></td>
 			</tr>
 			<tr style='vertical-align: top;'>
 				<td style='border: 0px; margin: 0px; padding: 0px;'>
@@ -122,6 +122,32 @@
 
 		</td>
 	</tr>
+	<tr>
+		<th style='text-align:right'><span class='translate'>CPU Execution Cap</span>:</th>
+		<td style='width: 100%; white-space: nowrap'>
+		<table style='width: 100%'>
+			<tr>
+				<td style='width: 100%; border: 0px; margin: 0px; padding: 0px;'>
+				   <div style='margin-top: 4px' id='vboxSettingsSystemProcessorCap' class='slider'><div class='sliderScale'></div></div>
+				</td>
+				<td><input type='text' class='vboxText' name='vboxSettingsSystemProcessorCapValue' size='2' class='sliderValue' /></td>
+			</tr>
+			<tr style='vertical-align: top;'>
+				<td style='border: 0px; margin: 0px; padding: 0px;'>
+                   <table width='100%; border: 0px; margin: 0px; padding: 0px;'>
+					<tr style='vertical-align: top'>
+						<td style='text-align: left;'><span class='vboxSliderMin'>1</span> <span class='translate'>%</span></td>
+						<td style='text-align: right;'><span class='vboxSliderMax'>100</span> <span class='translate'>%</span></td>
+					</tr>
+				   </table>
+				</td>
+				<td></td>
+			</tr>
+		</table>
+
+		</td>
+	</tr>
+	
 	<tr>
 		<th><span class='translate'>Extended Features</span>:</th>
 		<td><input type='checkbox' class='vboxCheckbox' name='vboxSettingsSystemPAE' /> <span class='translate'>Enable PAE/NX</span></td>
@@ -159,8 +185,10 @@
 
 $('#vboxSettingsSystemMemory').data('form','frmVboxSettings');
 $('#vboxSettingsSystemProcessor').data('form','frmVboxSettings');
+$('#vboxSettingsSystemProcessorCap').data('form','frmVboxSettings');
 $('#vboxSettingsSystemMemory').slider({'min':parseInt($('#vboxIndex').data('vboxSystemProperties').minGuestRAM),'max':parseInt($('#vboxSettingsDialog').data('vboxHostDetails').memorySize)});
 $('#vboxSettingsSystemProcessor').slider({'min':1,'max':$('#vboxSettingsDialog').data('vboxHostDetails').cpus.length});
+$('#vboxSettingsSystemProcessorCap').slider({'min':1,'max':100});
 
 
 /* System Default values from VM*/
@@ -169,6 +197,7 @@ document.forms['frmVboxSettings'].vboxSettingsSystemIOAPIC.checked = $('#vboxSet
 document.forms['frmVboxSettings'].vboxSettingsSystemEFI.checked = ($('#vboxSettingsDialog').data('vboxMachineData').firmwareType == 'EFI');
 document.forms['frmVboxSettings'].vboxSettingsSystemRTCUseUTC.checked = ($('#vboxSettingsDialog').data('vboxMachineData').RTCUseUTC);
 $('#vboxSettingsSystemProcessor').slider('value',parseInt($('#vboxSettingsDialog').data('vboxMachineData').CPUCount));
+$('#vboxSettingsSystemProcessorCap').slider('value',parseInt($('#vboxSettingsDialog').data('vboxMachineData').CPUExecutionCap));
 document.forms['frmVboxSettings'].vboxSettingsSystemPAE.checked = ($('#vboxSettingsDialog').data('vboxMachineData').CpuProperties.PAE);
 
 /* Only if acceleration config is enabled */
@@ -281,6 +310,7 @@ $('#vboxSettingsDialog').bind('save',function(){
 	$('#vboxSettingsDialog').data('vboxMachineData').BIOSSettings.IOAPICEnabled = (document.forms['frmVboxSettings'].vboxSettingsSystemIOAPIC.checked ? 1 : 0);
 	$('#vboxSettingsDialog').data('vboxMachineData').firmwareType = (document.forms['frmVboxSettings'].vboxSettingsSystemEFI.checked ? 'EFI' : 'BIOS');
 	$('#vboxSettingsDialog').data('vboxMachineData').CPUCount = parseInt($('#vboxSettingsSystemProcessor').slider('value'));
+	$('#vboxSettingsDialog').data('vboxMachineData').CPUExecutionCap = parseInt($('#vboxSettingsSystemProcessorCap').slider('value'));
 	$('#vboxSettingsDialog').data('vboxMachineData').CpuProperties.PAE = (document.forms['frmVboxSettings'].vboxSettingsSystemPAE.checked ? 1 : 0);
 	$('#vboxSettingsDialog').data('vboxMachineData').RTCUseUTC = (document.forms['frmVboxSettings'].vboxSettingsSystemRTCUseUTC.checked ? 1 : 0);
 

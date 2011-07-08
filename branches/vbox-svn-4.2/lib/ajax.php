@@ -10,7 +10,7 @@
 */
 
 # Turn off PHP errors
-error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_WARNING);
+error_reporting(E_ALL ^ E_NOTICE ^ E_STRICT ^ E_WARNING);
 
 
 //Set no caching
@@ -22,7 +22,6 @@ header("Pragma: no-cache");
 require_once(dirname(__FILE__).'/config.php');
 require_once(dirname(__FILE__).'/utils.php');
 require_once(dirname(__FILE__).'/vboxconnector.php');
-
 
 // Init session
 global $_SESSION;

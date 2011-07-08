@@ -1,4 +1,16 @@
 -------------------------------------
+	4.2-0	
+-------------------------------------
+VirtualBox 4.2.x compatibility.
+
+* Clone VM wizard
+* Make sure running vm changes are saved.
+* New HD wizard changes
+
+Fixed bug that would not allow you to edit more than one host-only
+networking adapter.
+
+-------------------------------------
 	4.0-7	
 -------------------------------------
 Removed $sessionSecurityLevel setting and associated logic as it

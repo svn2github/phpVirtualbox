@@ -26,8 +26,6 @@ Copyright (C) 2011 Ian Moore (imoore76 at yahoo dot com)
 <script type='text/javascript'>
 
 
-var storage = new vboxStorage();
-
 function vboxMountPostInit(bus,port,device) {
 	
 	
@@ -53,7 +51,7 @@ function vboxMountPostInit(bus,port,device) {
 	}
 
 	$('#vboxMountDialog').data({'bus':bus,'port':port,'device':device,'busName':busName});
-	$('#vboxMountMediumLabel').html(storage.getMediumName(storage.getMediumById(medium)));
+	$('#vboxMountMediumLabel').html(vboxMedia.getMediumName(vboxMedia.getMediumById(medium)));
 
 	/* Media Menu */
 	var mAttachToolbar = new vboxButtonMediaMenu((type == 'DVD' ? type : 'Floppy'),vboxMountMedium,'');
@@ -62,7 +60,7 @@ function vboxMountPostInit(bus,port,device) {
 	mAttachToolbar.menuUpdateRemoveMedia(medium);
 	
 	// This is set as the dialog's title
-	return busName + ' - ' + storage[bus].slotName(port,device);
+	return busName + ' - ' + vboxStorage[bus].slotName(port,device);
 
 }
 
@@ -79,7 +77,7 @@ function vboxMountMedium(medium) {
 	mount.add('mediumMount',function(ret,xtra){
 		var l = new vboxLoader();
 		l.add('VMDetails',function(d){$('#vboxIndex').data('vboxMachineData',d);},{'vm':xtra.vm});
-		l.add('Mediums',function(d){$('#vboxIndex').data('vboxMediums',d);});
+		l.add('Media',function(d){$('#vboxIndex').data('vboxMedia',d);});
 		l.onLoad = function() {
 			$('#vboxIndex').trigger('vmselect',$('#vboxIndex').data('vboxMachineData'));
 		}

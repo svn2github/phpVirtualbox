@@ -31,6 +31,26 @@ $(document).ready(function(){
 });
 
 /*
+ * Traverse a tree and return matching nodes
+ */
+function vboxTraverse(tree,prop,val,all,children) {
+	var leafs = new Array();
+	for(var a in tree) {
+		if(tree[a][prop] == val) {
+			if(!all) return tree[a];
+			leafs[leafs.length] = tree[a];
+		}
+		if(children && tree[a].children && tree[a].children.length) {
+			var c = vboxTraverse(tree[a].children,prop,val,all,children);
+			if(!all && c) { return c; }
+			else if(c && c.length) {
+				leafs = leafs.concat(c);
+			}
+		}
+	}
+	return (all ? leafs : null);
+}
+/*
  * jquery.post/json wrapper
  * 
  * Performs ajax request, alert()'s returned errors,
@@ -129,7 +149,10 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 			if((!etext || !etext.length || etext == 'error') && run < 4) {
 				vboxAjaxRequest(fn,params,callback,xtra,(run+1));
 			} else {
-				if(etext != 'error') alert('ajax error: ' + etext); // debug - + " " + d.responseText);
+				if(etext != 'error') {
+					vboxAjaxError({'error':'Ajax error: ' + etext,'details':d.responseText});
+					//alert('ajax error: ' + + " " + d.responseText);
+				}
 				callback(null,xtra);
 			}
 		});
@@ -281,7 +304,7 @@ function vboxMachineStateIcon(state)
 function browseFolder(root,fn) {
 	vboxFileBrowser(root,fn,true);
 }
-function vboxFileBrowser(root,fn,foldersonly) {
+function vboxFileBrowser(root,fn,foldersonly,title,icon) {
 
 	var buttons = { };
 	buttons[trans('OK')] = function(f) {
@@ -299,7 +322,7 @@ function vboxFileBrowser(root,fn,foldersonly) {
     	buttons[trans('OK')](f);
     }).appendTo(d1);
 	
-    $(d1).dialog({'closeOnEscape':true,'width':400,'height':600,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/jqueryFileTree/'+(foldersonly ? 'folder_open' : 'file')+'.png" class="vboxDialogTitleIcon" /> ' + trans((foldersonly ? 'Select Folder' : 'Select File'))}).bind("dialogbeforeclose",function(){
+    $(d1).dialog({'closeOnEscape':true,'width':400,'height':600,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="'+(icon ? icon : 'images/jqueryFileTree/'+(foldersonly ? 'folder_open' : 'file')+'.png') + '" class="vboxDialogTitleIcon" /> ' + (title ? title : trans((foldersonly ? 'Select Folder' : 'Select File')))}).bind("dialogbeforeclose",function(){
     	$(this).parent().find('span:contains("'+trans('Cancel')+'")').trigger('click');
     });			
 
@@ -595,9 +618,9 @@ function vboxInstallGuestAdditions(vmid) {
 			},{},'progress_install_guest_additions_90px.png',trans('Install Guest Additions'));
 		} else if(d && d.result && d.result == 'mounted') {
 
-			// Mediums and VM data must be refreshed
+			// Media and VM data must be refreshed
 			var ml = new vboxLoader();
-			ml.add('Mediums',function(dat){$('#vboxIndex').data('vboxMediums',dat);});
+			ml.add('Media',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
 			ml.onLoad = function() { $('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]); }
 			ml.run();
 			

@@ -154,8 +154,7 @@ var sButtons = new Array(
 			'click' : function () {
 				vboxFileBrowser($('#vboxIndex').data('vboxSystemProperties').defaultMachineFolder,function(f){
 					if(!f) return;
-					var storage = new vboxStorage();
-					var med = storage.getMediumByLocation(f);
+					var med = vboxMedia.getMediumByLocation(f);
 					if(med && med.base) {
 						vmNewFillExistingDisks(med.base);
 						return;
@@ -165,14 +164,14 @@ var sButtons = new Array(
 					ml.add('mediumAdd',function(ret){
 						var l = new vboxLoader();
 						if(ret && ret.id) {
-							var med = storage.getMediumById(ret.id);
-							// Not registered yet. Refresh mediums.
+							var med = vboxMedia.getMediumById(ret.id);
+							// Not registered yet. Refresh media.
 							if(!med)
-								l.add('Mediums',function(data){$('#vboxIndex').data('vboxMediums',data);});
+								l.add('Media',function(data){$('#vboxIndex').data('vboxMedia',data);});
 						}
 						l.onLoad = function() {
 							if(ret && ret.id) {
-								var med = storage.getMediumById(ret.id);
+								var med = vboxMedia.getMediumById(ret.id);
 								if(med) {
 									vmNewFillExistingDisks(med.base);
 								}
@@ -219,22 +218,22 @@ function vmNewFillExistingDisks(sel) {
 	
 	document.forms['frmwizardNewVM'].newVMDiskSelect.options.length = 0;
 	$(document.forms['frmwizardNewVM'].newVMDiskSelect).children().remove();
-	var st = new vboxStorage();
-	var s = st.mediumsForAttachmentType('HardDisk');
-	// Sort mediums
+	
+	var s = vboxMedia.mediaForAttachmentType('HardDisk');
+	// Sort media
 	s.sort(function(a,b){return strnatcasecmp(a.name,b.name);});
 	
 	var mediumSelects = [];
 	for(var i = 0; i < s.length; i++) {
-		document.forms['frmwizardNewVM'].newVMDiskSelect.options[i] = new Option(st.mediumPrint(s[i]),s[i].id);
+		document.forms['frmwizardNewVM'].newVMDiskSelect.options[i] = new Option(vboxMedia.mediumPrint(s[i]),s[i].id);
 		if(s[i].readOnly && s[i].deviceType == 'HardDisk') $(document.forms['frmwizardNewVM'].newVMDiskSelect.options[i]).addClass('vboxMediumReadOnly');
-		mediumSelects[i] = {'attachedId':s[i].id,'id':s[i].id,'base':s[i].base,'label':st.mediumPrint(s[i])};
+		mediumSelects[i] = {'attachedId':s[i].id,'id':s[i].id,'base':s[i].base,'label':vboxMedia.mediumPrint(s[i])};
 	}
 	if(sel) {
 		$(document.forms['frmwizardNewVM'].newVMDiskSelect).val(sel);
 	}
 	
-	$(document.forms['frmwizardNewVM'].newVMDiskSelect).mediumselect({'type':'HardDisk','showdiff':false,'mediums':mediumSelects});
+	$(document.forms['frmwizardNewVM'].newVMDiskSelect).mediumselect({'type':'HardDisk','showdiff':false,'media':mediumSelects});
 }
 
 vmNewFillExistingDisks();
@@ -370,20 +369,16 @@ $('#wizardNewVMStep5').bind('show',function(e,wiz){
 		// Recommended size
 		var size = newVMOSTypesObj[document.forms['frmwizardNewVM'].newVMOSType.options[document.forms['frmwizardNewVM'].newVMOSType.selectedIndex].value].recommendedHDD;
 		                 		
-		vboxWizardNewHDInit(function(res,id){
+		vboxWizardNewHDInit(function(id){
 
 			// Wizard errored
 			if(!id) { return; }
-
-			var l = new vboxLoader();
-			l.add('Mediums',function(d){$('#vboxIndex').data('vboxMediums',d);});
-			l.onLoad = function() {
-				vmNewFillExistingDisks(id);
-				document.forms['frmwizardNewVM'].newVMDisk[1].checked = 'checked';
-				$(document.forms['frmwizardNewVM'].newVMDisk[1]).trigger('click');
-				wiz.displayStep(5);
-			};
-			l.run();
+			
+			vmNewFillExistingDisks(id);
+			document.forms['frmwizardNewVM'].newVMDisk[1].checked = 'checked';
+			$(document.forms['frmwizardNewVM'].newVMDisk[1]).trigger('click');
+			wiz.displayStep(5);
+			
 		},{'name':jQuery.trim(document.forms['frmwizardNewVM'].newVMName.value),'size':size});
 
 		// Go back
@@ -396,8 +391,7 @@ $('#wizardNewVMStep5').bind('show',function(e,wiz){
 	if(!document.forms['frmwizardNewVM'].newVMDiskSelect.options.length)
 		$(document.forms['frmwizardNewVM'].newVMBootDisk).attr('checked','');
 	
-	var st = new vboxStorage();
-	var disk = st.mediumPrint(st.getMediumById($(document.forms['frmwizardNewVM'].newVMDiskSelect).val()));
+	var disk = vboxMedia.mediumPrint(vboxMedia.getMediumById($(document.forms['frmwizardNewVM'].newVMDiskSelect).val()));
 	$('#vmNewNameLabel').html($('<div />').text(jQuery.trim(document.forms['frmwizardNewVM'].newVMName.value)).html());
 	$('#vmNewOSTypeLabel').html(newVMOSTypesObj[document.forms['frmwizardNewVM'].newVMOSType.options[document.forms['frmwizardNewVM'].newVMOSType.selectedIndex].value].description);
 	$('#vmNewMemoryLabel').html(parseInt(document.forms['frmwizardNewVM'].wizardNewVMSizeValue.value) + ' ' + trans('MB'));

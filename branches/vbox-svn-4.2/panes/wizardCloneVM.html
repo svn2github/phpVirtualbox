@@ -1,0 +1,70 @@
+<!-- 
+
+	Panes for new virtual machine wizard. Logic in vboxWizard()
+	Copyright (C) 2011 Ian Moore (imoore76 at yahoo dot com)
+	
+	$Id$
+
+ -->
+<!-- Step 1 -->
+<div id='wizardCloneVMStep1' title='cloneVM Welcome' style='display: none'>
+
+	<span class='translate'>cloneVM Step1 Message1</span>
+
+	<p class='translate'>cloneVM Step1 Message2</p>
+	
+	<p class='translate'>cloneVM Step1 Message3</p>
+	
+	<input type='text' class='vboxText' name='cloneVMName' style='width: 95%' />
+
+</div>
+
+
+<!-- Step 2 -->
+<div id='wizardCloneVMStep2' title='Cloning Configuration' style='display: none'>
+
+	<span class='translate'>cloneVM Step2 Message1</span>
+	
+	<p class='translate'>cloneVM Step2 Message2</p>
+	
+	<table>
+		<tr style='vertical-align: middle;'>
+			<td><input type='radio' class='vboxRadio' checked='checked' name='vmState' value='current' /><span class='translate'>Current machine state</span></td>
+		</tr>
+		<tr style='vertical-align: middle;'>
+			<td><input type='radio' class='vboxRadio' name='vmState' value='all' /><span class='translate'>All machine states</span></td>
+		</tr>	
+	</table>
+
+	
+
+</div>
+
+
+
+<script type='text/javascript'>
+
+$('#wizardCloneVMStep1').bind('show',function(e,wiz){
+
+	// Already initialized?
+	if($('#wizardCloneVMStep1').data('init') || !wiz.args) return;
+	
+	$('#wizardCloneVMStep1').data('init',1);
+	
+	document.forms['frmwizardCloneVM'].elements.cloneVMName.value = trans('%s Clone').replace('%s',wiz.args.vm.name);
+
+});
+
+/* When going to step2, make sure a name is entered */
+$('#wizardCloneVMStep2').bind('show',function(e,wiz){
+
+	document.forms['frmwizardCloneVM'].elements.cloneVMName.value = jQuery.trim(document.forms['frmwizardCloneVM'].elements.cloneVMName.value);
+
+	if(!document.forms['frmwizardCloneVM'].elements.cloneVMName.value) {
+		// Go back
+		wiz.displayStep(1);
+	}
+
+});
+
+</script>

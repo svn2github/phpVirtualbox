@@ -27,6 +27,7 @@ vboxVMList.interval = ($('#vboxIndex').data('vboxConfig').listUpdateInterval ? $
 // VM List Context menu for each VM
 vboxVMList.contextMenuItems = [
 	$.extend({},vboxVMActions['settings'],{'name':'settings'}),
+	$.extend({},vboxVMActions['clone'],{'name':'clone'}),
 	$.extend({},vboxVMActions['remove'],{'name':'remove'}),
 	$.extend({},vboxVMActions['start'],{'name':'start','separator' : true}),
 	$.extend({},vboxVMActions['discard'],{'name':'discard'}),

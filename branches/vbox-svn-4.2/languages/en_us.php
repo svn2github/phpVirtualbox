@@ -178,7 +178,7 @@ public static $trans = array(
 'Delete Interface Message2' => 'Note: this interface may be in use by one or more virtual network adapters belonging to one of your VMs. After it is removed, these adapters will no longer be usable until you correct their settings by either choosing a different interface name or a different adapter attachment type.',
 
 'System' => 'System',
-'Base Memory' => 'Base Memory',
+'Base Memory' => 'Base Memory',/*removed*/
 'Memory' => 'Memory',
 'free' => 'free', // as in free/available memory
 'Enable IO APIC' => 'Enable IO APIC',
@@ -502,7 +502,9 @@ public static $trans = array(
 'Cloning Configuration' => 'Cloning Configuration',/*new*/
 'cloneVM Step2 Message1' => 'Please choose which parts of the virtual machine should be cloned.',/*new*/
 'cloneVM Step2 Message2' => 'If you select <b>Current machine state</b>, only the current state of the virtual machine is cloned. If you select <b>All states</b>, the current machine state and all snapshots are cloned.',/*new*/
+'cloneVM Step2 Message3' => 'If you select <b>Current machine state</b>, only the current state of the virtual machine is cloned. If you select <b>Current machine and all child states</b> the current state of the virtual machine and any states of child snapshots are cloned. If you select <b>All states</b>, the current machine state and all snapshots are cloned.',/*new*/
 'Current machine state' => 'Current machine state',/*new*/
+'Current machine and all child states' => 'Current machine and all child states',/*new*/
 'All states' => 'All states',/*new*/
 
 
@@ -539,22 +541,23 @@ public static $trans = array(
 'New Virtual Machine Wizard' => 'New Virtual Machine Wizard',
 'newVM Welcome' => 'Welcome to the New Virtual Machine Wizard!',
 'newVM Step1 Message1' => 'This wizard will guide you through the steps necessary to create a new virtual machine for VirtualBox.',
-'newVM Step1 Message2' => 'Use the Next button to go to the next page of the wizard and the Back button to return to the previous page.',
+'newVM Step1 Message2' => 'Use the <b>Next</b> button to go to the next page of the wizard and the <b>Back</b> button to return to the previous page. You can also press <b>Cancel</b> if you want to cancel the execution of this wizard.',/*new*/
 'VM Name and OS Type' => 'VM Name and OS Type',
 'newVM Step2 Message1' => 'Enter a name for the new virtual machine and select the type of guest operating system you plan to install onto the virtual machine.',
 'newVM Step2 Message2' => 'The name of the virtual machine usually indicates its software and hardware configuration. It will be used by all VirtualBox components to identify your virtual machine.',
 'newVM Step3 Message1' => 'Select the amount of base memory (RAM) in megabytes to be allocated to the virtual machine.',
 'newVM Step3 Message2' => 'The recommended base memory size is %s MB.', /* %s will be replaced with the recommended memory size at run time */
+'Base Memory Size' => 'Base Memory Size',/*new*/
 'Virtual Hard Disk' => 'Virtual Hard Disk',
 'Boot Hard Disk' => 'Boot Hard Disk',
 'Create new hard disk' => 'Create new hard disk',
 'Use existing hard disk' => 'Use existing hard disk',
-'newVM Step4 Message1' => 'Select the hard disk image to be used as the boot disk of the virtual machine. You can either create a new hard disk using the New button or select an existing hard disk image from the drop-down list or by pressing the Existing button (to invoke the Virtual Media Manager dialog).',
+'newVM Step4 Message1' => 'Select a virtual hard disk to be used as the boot hard disk of the virtual machine. You can either create a new hard disk or select an existing one from the drop-down list or by pressing corresponding button (to invoke file-open window).',/*new*/
 'newVM Step4 Message2' => 'If you need a more complicated hard disk setup, you can skip this step and attach hard disks later using the VM Settings dialog.',
 'newVM Step4 Message3' => 'The recommended size of the boot hard disk is %s.', /* %s will be replaced with the recommended memory size at run time */
 'newVM Step5 Message1' => 'You are going to create a new virtual machine with the following parameters:',
-'newVM Step5 Message2' => 'If the above is correct press the Finish button. Once you press it, a new virtual machine will be created.',
-'newVM Step5 Message3' => 'Note that you can alter these and all other setting of the created virtual machine at any time using the Settings dialog accessible through the menu of the main window.',
+'newVM Step5 Message2' => 'If the above is correct press the <b>Finish</b> button. Once you press it, a new virtual machine will be created.',
+'newVM Step5 Message3' => 'Note that you can alter these and all other setting of the created virtual machine at any time using the <b>Settings</b> dialog accessible through the menu of the main window.',
 
 /* VM Log files */
 'Show Log' => 'Show Log',

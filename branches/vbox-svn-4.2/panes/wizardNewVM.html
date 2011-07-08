@@ -23,12 +23,17 @@
 	
 	<p class='translate'>newVM Step2 Message2</p>
 	
-	<div class='vboxBordered' style='padding: 8px;'>
-		<table style='width: 100%'>
+	<span class='vboxTableLabel translate'>Name</span>
+	<div class='vboxBordered'>
+		<table class='vboxOptions' style='width:100%'>
 			<tr>
-				<th style='text-align: right'><span class='translate'>Name</span>:</th>
-				<td colspan='2' style='width: 100%'><input type='text' class='vboxText' name='newVMName' style='width: 95%' /></td>
+				<td colspan='2' style='width: 100%'><input type='text' class='vboxText' name='newVMName' style='width: 94%' /></td>
 			</tr>
+		</table>
+	</div>
+	<span class='vboxTableLabel translate'>OS Type</span>
+	<div class='vboxBordered' style='padding: 4px; padding-top: 6px;'>
+		<table class='vboxOptions'>	
 			<tr>
 				<th style='text-align: right'><span class='translate'>Operating System</span>:</th>
 				<td style='width: 100%'><select name='newVMOSFamily' id='newVMOSFamily' style='width: 100%'>
@@ -48,30 +53,33 @@
 
 
 <!-- Step 3 -->
-<div id='wizardNewVMStep3' title='Base Memory' style='display: none'>
+<div id='wizardNewVMStep3' title='Memory' style='display: none'>
 	<span class='translate'>newVM Step3 Message1</span>
 	<p id='newVMSizeLabel'>newVM Step3 Message2</p>
 	
-	<table style='width: 100%'>
-	<tr>
-		<td style='width: 100%; border: 0px; margin: 0px; padding: 0px;'>
-		   <div style='margin-top: 4px' id='wizardNewVMSize' class='slider'><div class='sliderScale'></div></div>
-		</td>
-		<td style='white-space: nowrap'><input type='text' class='vboxText' name='wizardNewVMSizeValue' size='5' class='sliderValue' /> <span class='translate'>MB</span></td>
-	</tr>
-	<tr style='vertical-align: top;'>
-		<td style='border: 0px; margin: 0px; padding: 0px;'>
-			<table width='100%; border: 0px; margin: 0px; padding: 0px;'>
-				<tr style='vertical-align: top'>
-					<td style='text-align: left;'><span id='wizardNewVMMin'>1</span> <span class='translate'>MB</span></td>
-					<td style='text-align: right;'><span id='wizardNewVMMax'>128</span> <span class='translate'>MB</span></td>
-				</tr>
-			</table>
-		</td>
-		<td></td>
-	</tr>
-</table>
-
+	<span class='vboxTableLabel translate'>Base Memory Size</span>
+	<div class='vboxBordered' style='padding: 4px; padding-top: 6px;'>
+	
+		<table style='width: 100%'>
+		<tr>
+			<td style='width: 100%; border: 0px; margin: 0px; padding: 0px;'>
+			   <div style='margin-top: 4px' id='wizardNewVMSize' class='slider'><div class='sliderScale'></div></div>
+			</td>
+			<td style='white-space: nowrap'><input type='text' class='vboxText' name='wizardNewVMSizeValue' size='5' class='sliderValue' /> <span class='translate'>MB</span></td>
+		</tr>
+		<tr style='vertical-align: top;'>
+			<td style='border: 0px; margin: 0px; padding: 0px;'>
+				<table width='100%; border: 0px; margin: 0px; padding: 0px;'>
+					<tr style='vertical-align: top'>
+						<td style='text-align: left;'><span id='wizardNewVMMin'>1</span> <span class='translate'>MB</span></td>
+						<td style='text-align: right;'><span id='wizardNewVMMax'>128</span> <span class='translate'>MB</span></td>
+					</tr>
+				</table>
+			</td>
+			<td></td>
+		</tr>
+		</table>
+	</div>
 	
 </div>
 
@@ -84,29 +92,28 @@
 
 	<p id='newVMHDSizeLabel'>newVM Step4 Message3</p>
 	
-	<table style='width: 100%'>
-		<tr style='vertical-align: middle'>
-			<td style='width: 1%; white-space: nowrap'><input type='checkbox' checked='checked' class='vboxCheckbox vboxEnablerCheckbox' name='newVMBootDisk' /> <span class='translate'>Boot Hard Disk</span></td>
-			<td style="width: 99%"><hr style='width: 100%' class='vboxSeperatorLine'/></td>
-		</tr>
-		<tr id='newVMHDTriggerBind' class='vboxEnablerTrigger'>
-			<td colspan="2" style='padding-left: 14px'><input type="radio" class="vboxRadio" name="newVMDisk" value="create" onClick="newVMToggleNewDisk(true)" checked='checked' /> <span class='translate vboxEnablerListen'>Create new hard disk</span></td>
-		</tr>
-		<tr>
-			<td colspan="2" style='padding-left: 14px'><input type="radio" class="vboxRadio" name="newVMDisk" value="existing" onClick="newVMToggleNewDisk(false)" /> <span class='translate vboxEnablerListen'>Use existing hard disk</span></td>
-		</tr>		
-		<tr>
-			<td colspan="2" style='padding-left: 34px; white-space: nowrap'>
-			<table class='vboxInvisible' style='width: 100%;'>
-				<tr>
-					<td><select id="newVMDiskSelectId" name="newVMDiskSelect" disabled='disabled'></select></td>
-					<td style='width:1%' id='newVMDiskVMM'></td>
-				</tr>
-			</table>
-			</td>
-		</tr>
-	</table>
-
+	<span class='vboxTableLabel'><input type='checkbox' checked='checked' class='vboxCheckbox vboxEnablerCheckbox' name='newVMBootDisk' /> <span class='translate'>Boot Hard Disk</span></span>
+	<div class='vboxBordered' style='padding: 2px; padding-top: 6px;'>
+	
+		<table class='vboxOptions' style='width:100%;'>
+			<tr id='newVMHDTriggerBind' class='vboxEnablerTrigger'>
+				<td style='padding:2px; padding-left: 14px'><input type="radio" class="vboxRadio" name="newVMDisk" value="create" onClick="newVMToggleNewDisk(true)" checked='checked' /> <span class='translate vboxEnablerListen'>Create new hard disk</span></td>
+			</tr>
+			<tr>
+				<td style='padding:2px; padding-left: 14px'><input type="radio" class="vboxRadio" name="newVMDisk" value="existing" onClick="newVMToggleNewDisk(false)" /> <span class='translate vboxEnablerListen'>Use existing hard disk</span></td>
+			</tr>		
+			<tr>
+				<td style='padding-left: 24px; white-space: nowrap'>
+				<table class='vboxInvisible' style='width: 99%;'>
+					<tr>
+						<td><select id="newVMDiskSelectId" name="newVMDiskSelect" disabled='disabled'></select></td>
+						<td style='width:1%' id='newVMDiskVMM'></td>
+					</tr>
+				</table>
+				</td>
+			</tr>
+		</table>
+	</div>
 </div>
 
 <!-- Step 5 -->
@@ -152,35 +159,9 @@ var sButtons = new Array(
 			'label' : 'Choose a virtual hard disk file...',
 			'icon' : 'select_file',
 			'click' : function () {
-				vboxFileBrowser($('#vboxIndex').data('vboxSystemProperties').defaultMachineFolder,function(f){
-					if(!f) return;
-					var med = vboxMedia.getMediumByLocation(f);
-					if(med && med.base) {
-						vmNewFillExistingDisks(med.base);
-						return;
-					}
-					var ml = new vboxLoader();
-					ml.mode='save';
-					ml.add('mediumAdd',function(ret){
-						var l = new vboxLoader();
-						if(ret && ret.id) {
-							var med = vboxMedia.getMediumById(ret.id);
-							// Not registered yet. Refresh media.
-							if(!med)
-								l.add('Media',function(data){$('#vboxIndex').data('vboxMedia',data);});
-						}
-						l.onLoad = function() {
-							if(ret && ret.id) {
-								var med = vboxMedia.getMediumById(ret.id);
-								if(med) {
-									vmNewFillExistingDisks(med.base);
-								}
-							}
-						}
-						l.run();
-					},{'path':f,'type':'HardDisk'});
-					ml.run();
-				});				
+				vboxMedia.actions.choose(null,'HardDisk',function(med){
+					if(med) vmNewFillExistingDisks(med.base);
+				});
 			}
 		}		
 );

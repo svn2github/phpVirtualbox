@@ -551,8 +551,9 @@ class vboxconnector {
 		$this->settings['enableAdvancedConfig'] = (@$this->settings['enableAdvancedConfig'] && @$args['enableAdvancedConfig']);
 		
 		// Network Adapters
-		$netprops = array('internalNetwork','NATNetwork','cableConnected','attachmentType');
-		
+		$netprops = array('enabled','attachmentType','adapterType','MACAddress','bridgedInterface','hostOnlyInterface','internalNetwork','NATNetwork','cableConnected','promiscModePolicy','genericDriver');
+		if(@$this->settings['enableVDE']) $netprops[] = 'VDENetwork';
+				
 		for($i = 0; $i < count($args['networkAdapters']); $i++) {
 
 			$n = $this->session->machine->getNetworkAdapter($i);
@@ -563,12 +564,8 @@ class vboxconnector {
 				continue;
 			}
 			
-			$n->cableConnected = intval($args['networkAdapters'][$i]['cableConnected']);
 			for($p = 0; $p < count($netprops); $p++) {
 				switch($netprops[$p]) {
-					case 'attachmentType':
-					case 'internalNetwork':
-					case 'VDENetwork':
 					case 'enabled':
 					case 'cableConnected':
 						break;
@@ -576,52 +573,32 @@ class vboxconnector {
 						$n->{$netprops[$p]} = $args['networkAdapters'][$i][$netprops[$p]];
 				}
 			}
+			$n->cableConnected = intval($args['networkAdapters'][$i]['cableConnected']);
 				
-			switch($args['networkAdapters'][$i]['attachmentType']) {
-				case 'Bridged':
-					$n->attachToBridgedInterface();
-					$n->bridgedInterface = $args['networkAdapters'][$i]['bridgedInterface'];
-					break;
-				case 'VDE':
-					$n->attachToVDE();
-					$n->VDENetwork = (string)$args['networkAdapters'][$i]['VDENetwork'];
-					break;
-				case 'Internal':
-					$n->attachToInternalNetwork();
-					$n->internalNetwork = (string)$args['networkAdapters'][$i]['internalNetwork'];
-					break;
-				case 'HostOnly':
-					$n->attachToHostOnlyInterface();
-					$n->hostOnlyInterface = $args['networkAdapters'][$i]['hostOnlyInterface'];
-					break;
-				case 'NAT':
-					$n->attachToNAT();
+			if($args['networkAdapters'][$i]['attachmentType'] == 'NAT') {
 
-					// Remove existing redirects
-					foreach($n->natDriver->getRedirects() as $r) {
-						$n->natDriver->removeRedirect(array_shift(split(',',$r)));
-					}
-					// Add redirects
-					foreach($args['networkAdapters'][$i]['redirects'] as $r) {
-						$r = split(',',$r);
-						$n->natDriver->addRedirect($r[0],$r[1],$r[2],$r[3],$r[4],$r[5]);
-					}
+				// Remove existing redirects
+				foreach($n->natDriver->getRedirects() as $r) {
+					$n->natDriver->removeRedirect(array_shift(split(',',$r)));
+				}
+				// Add redirects
+				foreach($args['networkAdapters'][$i]['redirects'] as $r) {
+					$r = split(',',$r);
+					$n->natDriver->addRedirect($r[0],$r[1],$r[2],$r[3],$r[4],$r[5]);
+				}
+				
+				// Advanced NAT settings
+				if(@$this->settings['enableAdvancedConfig']) {
+					$aliasMode = $n->natDriver->aliasMode & 1; 
+					if(intval($args['networkAdapters'][$i]['natDriver']['aliasMode'] & 2)) $aliasMode |= 2;
+					if(intval($args['networkAdapters'][$i]['natDriver']['aliasMode'] & 4)) $aliasMode |= 4;
+					$n->natDriver->aliasMode = $aliasMode;
+					$n->natDriver->dnsProxy = intval($args['networkAdapters'][$i]['natDriver']['dnsProxy']);
+					$n->natDriver->dnsPassDomain = intval($args['networkAdapters'][$i]['natDriver']['dnsPassDomain']);
+					$n->natDriver->dnsUseHostResolver = intval($args['networkAdapters'][$i]['natDriver']['dnsUseHostResolver']);
+					$n->natDriver->hostIP = $args['networkAdapters'][$i]['natDriver']['hostIP'];
+				}
 					
-					// Advanced NAT settings
-					if(@$this->settings['enableAdvancedConfig']) {
-						$aliasMode = $n->natDriver->aliasMode & 1; 
-						if(intval($args['networkAdapters'][$i]['natDriver']['aliasMode'] & 2)) $aliasMode |= 2;
-						if(intval($args['networkAdapters'][$i]['natDriver']['aliasMode'] & 4)) $aliasMode |= 4;
-						$n->natDriver->aliasMode = $aliasMode;
-						$n->natDriver->dnsProxy = intval($args['networkAdapters'][$i]['natDriver']['dnsProxy']);
-						$n->natDriver->dnsPassDomain = intval($args['networkAdapters'][$i]['natDriver']['dnsPassDomain']);
-						$n->natDriver->dnsUseHostResolver = intval($args['networkAdapters'][$i]['natDriver']['dnsUseHostResolver']);
-						$n->natDriver->hostIP = $args['networkAdapters'][$i]['natDriver']['hostIP'];
-					}
-					
-					break;
-				default:
-					$n->detach();
 			}
 			$n->releaseRemote();
 		}
@@ -647,16 +624,18 @@ class vboxconnector {
 		
 		$src = $this->vbox->findMachine($args['src']);
 
-		
+		if($args['snapshot'] && $args['snapshot']['id']) {
+			$nsrc = $src->findSnapshot($args['snapshot']['id']);
+			$src->releaseRemote();
+			$src = null;
+			$src = $nsrc->machine;			
+		}
 		$m = $this->vbox->createMachine($this->vbox->composeMachineFilename($args['name'],$this->vbox->systemProperties->defaultMachineFolder),$args['name'],null,null,false);
-				
-		$state = ($args['vmState'] == 'current' ? 'MachineState' : 'AllStates');
-		$cm = new CloneMode(null,$state);
-		$state = $cm->ValueMap[$state];
+
+		$cm = new CloneMode(null,$args['vmState']);
+		$state = $cm->ValueMap[$args['vmState']];
 		
-		
-		$opts = new CloneOptionsCollection($this->client,array());
-		
+		error_reporting(E_ALL);
 		$progress = $src->cloneTo($m->handle,$state,'KeepNATMACs');
 		
 		// Does an exception exist?

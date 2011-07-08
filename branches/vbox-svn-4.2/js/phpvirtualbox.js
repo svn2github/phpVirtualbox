@@ -721,13 +721,13 @@ function vboxToolbarSmall(buttons) {
 		if(b.noDisabledIcon)
 			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('display','').attr('disabled','');
 		else
-			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + b.icon + '_'+self.size+'px.png)').attr('disabled','');
+			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + (b.icon_exact ? b.icon : b.icon + '_'+self.size)+'px.png)').attr('disabled','');
 	}
 	self.disableButton = function(b) {
 		if(b.noDisabledIcon)
 			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('display','none').attr('disabled','disabled').removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton');
 		else
-			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + b.icon + '_'+self.disabledString+'_'+self.size+'px.png)').attr('disabled','disabled').removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton');
+			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + (b.icon_exact ? b.icon_disabled : b.icon + '_'+self.disabledString+'_'+self.size)+'px.png)').attr('disabled','disabled').removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton');
 	}
 
 	// Generate HTML element for button

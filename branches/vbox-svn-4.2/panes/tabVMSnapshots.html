@@ -197,6 +197,24 @@ var tButtons = [
   		'separator' : true
   	},
   	{
+  		'name' : 'clone',
+  		'label' : 'Clone',
+  		'icon' : 'vm_clone_16',
+  		'icon_disabled' : 'vm_clone_disabled_16',
+  		'icon_exact' : true,
+  		'separator' : true,
+  		'enabled' : function(item) { return (item && $(item).data('name')) && $('#vboxTabVMSnapshots').data('machine').state != 'Running'},
+  		'click' : function () {
+
+  			// Current snapshot
+  	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data();
+  			
+  	  		vboxWizardCloneVMInit(function(){},{'vm':$('#vboxTabVMSnapshots').data('machine'),'snapshot':snapshot});
+  			
+  	  	}
+  	},
+  	
+  	{
   		'name' : 'show_snapshot_details',
   		'label' : 'Snapshot Details',
   		'icon' : 'show_snapshot_details',
@@ -257,6 +275,9 @@ snapshotToolbar = new vboxToolbarSmall(tButtons);
 snapshotToolbar.size = 22;
 snapshotToolbar.disabledString = 'dis';
 snapshotToolbar.addButtons('vboxSnapshotToolbar');
+
+// special case for 'clone' button because it is 16px rather than 22px
+$('#vboxToolbarButton-vboxSnapshotToolbar-clone').css({'background-position':'6px 4px'});
 
 // Hold timer and date vars
 snapshotToolbar._timer = null;

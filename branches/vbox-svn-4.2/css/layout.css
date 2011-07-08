@@ -300,6 +300,9 @@ div.vboxWizard table.vboxWizard tr { vertical-align: top; }
 div.vboxWizard td.vboxWizardContent { padding: 0px 8px 0px 8px; }
 div.vboxWizard { border: 0px; padding: 0px; margin: 0px; }
 div.vboxWizard h3 { margin: 2px 0px 18px 0px; font-size: 16px; }
+div.vboxWizard table.vboxOptions { margin-top: 4px; }
+div.vboxWizard table.vboxOptions td { padding: 4px; }
+div.vboxWizard span.vboxTableLabel { position: relative; top: 7px; font-weight: bold; background: #fff; left: 8px; padding-left: 2px; padding-right: 2px;}
 
 /* Export Appliance */
 #vboxExportProps tr,#vboxExportProps td, #vboxExportProps td div { vertical-align: middle; height: 22px; line-height: 22px;} 

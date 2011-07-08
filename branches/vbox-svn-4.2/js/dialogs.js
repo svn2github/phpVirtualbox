@@ -204,6 +204,7 @@ function vboxWizardCloneVMInit(callback,args) {
 		var name = document.forms['frmwizardCloneVM'].elements.cloneVMName.value;
 		var vmState = $(document.forms['frmwizardCloneVM'].elements.vmState).val();
 		var src = vbw.args.vm.id;
+		var snapshot = vbw.args.snapshot;
 
 		var l = new vboxLoader();
 		l.mode = 'save';
@@ -224,7 +225,7 @@ function vboxWizardCloneVMInit(callback,args) {
 			} else {
 				callback();
 			}
-		},{'name':name,'vmState':vmState,'src':src});
+		},{'name':name,'vmState':vmState,'src':src,'snapshot':snapshot});
 		l.run();
 		
 		$(dialog).trigger('close').empty().remove();

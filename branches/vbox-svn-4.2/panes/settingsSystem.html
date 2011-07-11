@@ -123,7 +123,7 @@
 		</td>
 	</tr>
 	<tr>
-		<th style='text-align:right'><span class='translate'>CPU Execution Cap</span>:</th>
+		<th style='text-align:right'><span class='translate'>Execution Cap</span>:</th>
 		<td style='width: 100%; white-space: nowrap'>
 		<table style='width: 100%'>
 			<tr>
@@ -136,8 +136,8 @@
 				<td style='border: 0px; margin: 0px; padding: 0px;'>
                    <table width='100%; border: 0px; margin: 0px; padding: 0px;'>
 					<tr style='vertical-align: top'>
-						<td style='text-align: left;'><span class='vboxSliderMin'>1</span> <span class='translate'>%</span></td>
-						<td style='text-align: right;'><span class='vboxSliderMax'>100</span> <span class='translate'>%</span></td>
+						<td style='text-align: left;'><span class='vboxSliderMin'>1%</span></td>
+						<td style='text-align: right;'><span class='vboxSliderMax'>100%</span></td>
 					</tr>
 				   </table>
 				</td>
@@ -188,7 +188,12 @@ $('#vboxSettingsSystemProcessor').data('form','frmVboxSettings');
 $('#vboxSettingsSystemProcessorCap').data('form','frmVboxSettings');
 $('#vboxSettingsSystemMemory').slider({'min':parseInt($('#vboxIndex').data('vboxSystemProperties').minGuestRAM),'max':parseInt($('#vboxSettingsDialog').data('vboxHostDetails').memorySize)});
 $('#vboxSettingsSystemProcessor').slider({'min':1,'max':$('#vboxSettingsDialog').data('vboxHostDetails').cpus.length});
-$('#vboxSettingsSystemProcessorCap').slider({'min':1,'max':100});
+$('#vboxSettingsSystemProcessorCap').slider({'min':1,'max':100}).data('noMinMaxLabels',1);
+
+/* Processor Cap has %'s */
+var pt = $('#vboxSettingsSystemProcessorCap').closest('table');
+$(pt).find('.vboxSliderMin').html(trans('%s%').replace('%s','1'));
+$(pt).find('.vboxSliderMax').html(trans('%s%').replace('%s','100'));
 
 
 /* System Default values from VM*/
@@ -258,8 +263,8 @@ $("#vboxVMBootOrderList").children("li").click(function() {
 	var isLast = ($(this).parent().children().last().attr('id') == $(this).attr('id'));
 	
 	// update buttons
-	$(this).closest("table").find('input.imgMvUp').css('background-image', 'url(images/vbox/list_moveup' + (isFirst ? '_disabled' : '') + '_16px.png)').attr('disabled', (isFirst ? 'disabled' : ''));
-	$(this).closest("table").find('input.imgMvDn').css('background-image', 'url(images/vbox/list_movedown' + (isLast ? '_disabled' : '') + '_16px.png)').attr('disabled', (isLast ? 'disabled' : ''));
+	$(this).closest("table").find('input.imgMvUp').css('background-image', 'url(images/vbox/list_moveup' + (isFirst ? '_disabled' : '') + '_16px.png)').prop('disabled', isFirst);
+	$(this).closest("table").find('input.imgMvDn').css('background-image', 'url(images/vbox/list_movedown' + (isLast ? '_disabled' : '') + '_16px.png)').prop('disabled', isLast);
 					
 }).first().trigger('click');
 

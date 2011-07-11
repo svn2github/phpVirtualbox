@@ -731,6 +731,20 @@ class IVirtualBox extends VBox_ManagedObject {
        $response = $this->connection->__soapCall('IVirtualBox_getEventSource', array((array)$request));
        return new IEventSource ($this->connection, $response->returnval);
    }
+
+   public function getInternalNetworks() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IVirtualBox_getInternalNetworks', array((array)$request));
+       return (array)$response->returnval;
+   }
+
+   public function getGenericNetworkDrivers() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IVirtualBox_getGenericNetworkDrivers', array((array)$request));
+       return (array)$response->returnval;
+   }
 }
   
 /**
@@ -1313,6 +1327,20 @@ class IMachine extends VBox_ManagedObject {
        $request->device = $arg_device;
        $request->temporaryEject = $arg_temporaryEject;
        $response = $this->connection->__soapCall('IMachine_temporaryEjectDevice', array((array)$request));
+       
+       return ;
+  }
+
+   public function nonRotationalDevice($arg_name, $arg_controllerPort, $arg_device, $arg_nonRotational) { 
+       $request = new stdClass();
+       
+       $request->_this = $this->handle;
+       
+       $request->name = $arg_name;
+       $request->controllerPort = $arg_controllerPort;
+       $request->device = $arg_device;
+       $request->nonRotational = $arg_nonRotational;
+       $response = $this->connection->__soapCall('IMachine_nonRotationalDevice', array((array)$request));
        
        return ;
   }
@@ -3109,6 +3137,18 @@ class IConsole extends VBox_ManagedObject {
        
        $request->id = $arg_id;
        $response = $this->connection->__soapCall('IConsole_deleteSnapshotAndAllChildren', array((array)$request));
+       
+       return new IProgress ($this->connection, $response->returnval);
+  }
+
+   public function deleteSnapshotRange($arg_startId, $arg_endId) { 
+       $request = new stdClass();
+       
+       $request->_this = $this->handle;
+       
+       $request->startId = $arg_startId;
+       $request->endId = $arg_endId;
+       $response = $this->connection->__soapCall('IConsole_deleteSnapshotRange', array((array)$request));
        
        return new IProgress ($this->connection, $response->returnval);
   }
@@ -5039,6 +5079,13 @@ class IMedium extends VBox_ManagedObject {
        $this->connection->__soapCall('IMedium_setType', array((array)$request));
    }
 
+   public function getAllowedTypes() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IMedium_getAllowedTypes', array((array)$request));
+       return new MediumTypeCollection ($this->connection, (array)$response->returnval);
+   }
+
    public function getParent() {
        $request = new stdClass();
        $request->_this = $this->handle;
@@ -5715,10 +5762,10 @@ class INetworkAdapter extends VBox_ManagedObject {
        $this->connection->__soapCall('INetworkAdapter_setTraceFile', array((array)$request));
    }
 
-   public function getnatDriver() {
+   public function getNatDriver() {
        $request = new stdClass();
        $request->_this = $this->handle;
-       $response = $this->connection->__soapCall('INetworkAdapter_getnatDriver', array((array)$request));
+       $response = $this->connection->__soapCall('INetworkAdapter_getNatDriver', array((array)$request));
        return new INATEngine ($this->connection, $response->returnval);
    }
 
@@ -9425,6 +9472,8 @@ class IMediumAttachment extends VBox_Struct {
     
        protected $isEjected;
     
+       protected $nonRotational;
+    
        protected $bandwidthGroup;
     
     public function __construct($connection, $values) {
@@ -9438,6 +9487,7 @@ class IMediumAttachment extends VBox_Struct {
        $this->passthrough = $values->passthrough;
        $this->temporaryEject = $values->temporaryEject;
        $this->isEjected = $values->isEjected;
+       $this->nonRotational = $values->nonRotational;
        $this->bandwidthGroup = $values->bandwidthGroup;
     }
 
@@ -9472,6 +9522,10 @@ class IMediumAttachment extends VBox_Struct {
     
     public function getIsEjected() {
         return (bool)$this->isEjected;
+    }
+    
+    public function getNonRotational() {
+        return (bool)$this->nonRotational;
     }
     
     public function getBandwidthGroup() {

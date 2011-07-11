@@ -142,9 +142,12 @@ function RDPWebEventLoaded(flashid) {
 	FlashVersion = vboxRDPgetFlashProperty("FlashRDP", "version");
 	$("#vboxRDPStatus").html(trans("Version") + ": " + FlashVersion);
 	if(vboxConsoleDetached) window.status = $("#vboxRDPStatus").text();
-	
 
     var flash = RDPWebClient.getFlashById("FlashRDP");
+    
+	// Apply keyboard layout
+	flash.setProperty("keyboardLayout", ($('#vboxIndex').data('vboxConfig').consoleKeyboardLayout == 'DE' ? 'de' : 'en'));
+ 
 	if (window.addEventListener) {
 	    window.addEventListener("contextmenu", function(event) { return RDPWebClient._MozillaContextMenu(event); }, true);
 	    window.addEventListener("mousedown", function(event) { return RDPWebClient._MozillaMouse(event, true); }, true);

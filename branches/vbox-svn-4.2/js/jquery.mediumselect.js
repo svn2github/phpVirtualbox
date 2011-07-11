@@ -11,12 +11,18 @@
 
 	$.fn.mediumselect = function(options) {
 		
+		/* Public access to select medium */
+		if(options.selectMedium) {
+			$('#'+$(this).attr('id')+'-mediumselect-'+options.selectMedium).click();
+			return;
+		}
+		
 		/* Defaults */
 		if(!options.type) options.type = 'HardDisk';
 		if(!options.media) options.media = [];
 		
-		/* Select Medium */
-		function selectmedium(d,sel) {
+		/* Internal Select Medium */
+		function _selectmedium(d,sel) {
 						
 			if($(d).hasClass('vboxMediumReadOnly')) {
 				$(sel).addClass('vboxMediumSelectReadOnly').addClass('vboxMediumReadOnly');
@@ -38,6 +44,7 @@
 
 
 		}
+		
 		
 
 		/* Generate and return list item */
@@ -66,7 +73,7 @@
 			$(d).data('label',m.label);
 			$(d).data('id',m.attachedId);
 			
-			$(d).click(function(){selectmedium(this,sel);});
+			$(d).click(function(){_selectmedium(this,sel);});
 			
 			$(li).append(d);
 
@@ -181,9 +188,9 @@
 			var oldopt = $(this).children('option:eq('+Math.max($(this).attr('selectedIndex'),0)+')');
 			
 			if(!$(oldopt).val()) {
-				selectmedium($(list).find('div').first(), sel, old);
+				_selectmedium($(list).find('div').first(), sel, old);
 			} else {
-				selectmedium($('#'+$(sel).attr('id')+'-'+$(oldopt).val()), sel, old);
+				_selectmedium($('#'+$(sel).attr('id')+'-'+$(oldopt).val()), sel, old);
 			}
 		}); // </ .each() >
 	 

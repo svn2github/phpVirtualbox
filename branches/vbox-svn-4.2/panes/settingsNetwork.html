@@ -157,14 +157,14 @@ $('#vboxSettingsTabNetAdapter').find('input.vboxSettingsNetMacGen').click(functi
 
 	var t = $(this).siblings('input').first();
 	var oval = $(t).val();
-	$(t).val('...').attr('disabled','disabled');
+	$(t).val('...').prop('disabled',true);
 	
 	var l = new vboxLoader();
 	l.mode = 'save'; // don't prefix with 'get'
 	l.add('genMACAddress',function(d){
 		if(d && d.mac) $(t).val(d.mac);
 		else $(t).val(oval);
-		$(t).attr('disabled','');
+		$(t).prop('disabled',false);
 	});
 	l.hideRoot = false;
 	l.noLoadingScreen = true;
@@ -290,20 +290,21 @@ function vboxSettingsUpdateNetworkOptions(sel) {
 
 	// Promiscuous mode selection
 	if(sel.value == 'NAT' || sel.value == 'Null' || sel.value == 'Generic') {
-		$(ptable).find('.vboxSettingsNetPromiscuousMode').addClass('disabled').attr('disabled','disabled');
+		$(ptable).find('.vboxSettingsNetPromiscuousMode').addClass('disabled').prop('disabled',true);
 	} else {
-		$(ptable).find('.vboxSettingsNetPromiscuousMode').removeClass('disabled').attr('disabled','');
+		$(ptable).find('.vboxSettingsNetPromiscuousMode').removeClass('disabled').prop('disabled',false);
 	}
+
 	
 	// Port forward button
-	$(ptable).find('input.vboxSettingsNetPFButton').attr('disabled',(sel.value == 'NAT' ? '' : 'disabled'));
+	$(ptable).find('input.vboxSettingsNetPFButton').prop('disabled',(sel.value == 'NAT' ? false : true));
 	
 	if(sel.value == 'Null' || sel.value == 'NAT') {
 
 		$(th).addClass('vboxDisabled');
 		
 		$(nsel).children().remove();
-		$(nsel).attr('disabled','disabled');
+		$(nsel).prop('disabled',true);
 		
 		if(sel.value == 'NAT' && $('#vboxIndex').data('vboxConfig').enableAdvancedConfig) ptable.find('tr.vboxSettingsAdvancedNat').css('display','');
 		else ptable.find('tr.vboxSettingsAdvancedNat').css('display','none');
@@ -316,7 +317,7 @@ function vboxSettingsUpdateNetworkOptions(sel) {
 		$(th).removeClass('vboxDisabled');
 		
 		$(nsel).children().remove();
-		$(nsel).attr('disabled','');
+		$(nsel).prop('disabled',false);
 
 		// Special case for Internal and VDE network select
 		if(sel.value == 'Internal' || sel.value == 'VDE' || sel.value=='Generic') {
@@ -388,7 +389,7 @@ $('#vboxSettingsDialog').one('show',function(){
 		// Expand all advanced settings
 		$('#vboxSettingsDialog').find('input.netImgAdvanced').trigger('click');
 		// Disable mac address generation
-		$('#vboxSettingsDialog').find('input.vboxSettingsNetMacGen').attr('disabled','disabled');
+		$('#vboxSettingsDialog').find('input.vboxSettingsNetMacGen').prop('disabled',true);
 	}
 	
 /* Change settings onSave() */
@@ -445,7 +446,6 @@ $('#vboxSettingsDialog').one('show',function(){
 	}
 
 });
-
 
 </script>
 

@@ -618,6 +618,11 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 	
 	$(vboxDetailsTable).append(__vboxDetailRow(trans("Base Memory"), data['memorySize'] + " " + trans('MB'))).append(__vboxDetailRow(trans("Processors"), data['CPUCount']));
 	
+	// CPU Execution cap
+	if(parseInt(data['CPUExecutionCap']) < 100) {
+		$(vboxDetailsTable).append(__vboxDetailRow(trans("Execution Cap"), trans('%s%').replace('%s',parseInt(data['CPUExecutionCap']))));	
+	}
+	
 	// Boot Order
 	var bo = new Array();
 	for(var i = 0; i < data['bootOrder'].length; i++) {

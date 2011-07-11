@@ -1300,6 +1300,7 @@
           <xsd:element name="passthrough" type="xsd:boolean"/>
           <xsd:element name="temporaryEject" type="xsd:boolean"/>
           <xsd:element name="isEjected" type="xsd:boolean"/>
+          <xsd:element name="nonRotational" type="xsd:boolean"/>
           <xsd:element name="bandwidthGroup" type="xsd:string"/>
         </xsd:sequence>
       </xsd:complexType>
@@ -1822,6 +1823,36 @@
         </xsd:complexType>
       </xsd:element>
       <!--skipping attribute IExtPackManager for it is of a suppressed type-->
+      <!-- readonly attribute IVirtualBox::internalNetworks-->
+      <xsd:element name="IVirtualBox_getInternalNetworks">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="_this" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="IVirtualBox_getInternalNetworksResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="returnval" minOccurs="0" maxOccurs="unbounded" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <!-- readonly attribute IVirtualBox::genericNetworkDrivers-->
+      <xsd:element name="IVirtualBox_getGenericNetworkDrivers">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="_this" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="IVirtualBox_getGenericNetworkDriversResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="returnval" minOccurs="0" maxOccurs="unbounded" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
       <!-- method IVirtualBox::composeMachineFilename-->
       <xsd:element name="IVirtualBox_composeMachineFilename">
         <xsd:complexType>
@@ -4313,6 +4344,23 @@
           <xsd:sequence/>
         </xsd:complexType>
       </xsd:element>
+      <!-- method IMachine::nonRotationalDevice-->
+      <xsd:element name="IMachine_nonRotationalDevice">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="_this" type="xsd:string"/>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="controllerPort" type="xsd:int"/>
+            <xsd:element name="device" type="xsd:int"/>
+            <xsd:element name="nonRotational" type="xsd:boolean"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="IMachine_nonRotationalDeviceResponse">
+        <xsd:complexType>
+          <xsd:sequence/>
+        </xsd:complexType>
+      </xsd:element>
       <!-- method IMachine::setBandwidthGroupForDevice-->
       <xsd:element name="IMachine_setBandwidthGroupForDevice">
         <xsd:complexType>
@@ -5729,6 +5777,23 @@
         </xsd:complexType>
       </xsd:element>
       <xsd:element name="IConsole_deleteSnapshotAndAllChildrenResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="returnval" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <!-- method IConsole::deleteSnapshotRange-->
+      <xsd:element name="IConsole_deleteSnapshotRange">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="_this" type="xsd:string"/>
+            <xsd:element name="startId" type="xsd:string"/>
+            <xsd:element name="endId" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="IConsole_deleteSnapshotRangeResponse">
         <xsd:complexType>
           <xsd:sequence>
             <xsd:element name="returnval" type="xsd:string"/>
@@ -8247,6 +8312,21 @@
       <xsd:element name="IMedium_setTypeResponse">
         <xsd:complexType>
           <xsd:sequence/>
+        </xsd:complexType>
+      </xsd:element>
+      <!-- readonly attribute IMedium::allowedTypes-->
+      <xsd:element name="IMedium_getAllowedTypes">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="_this" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="IMedium_getAllowedTypesResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="returnval" minOccurs="0" maxOccurs="unbounded" type="vbox:MediumType"/>
+          </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
       <!-- readonly attribute IMedium::parent-->
@@ -13776,6 +13856,20 @@
     <part name="parameters" element="vbox:IVirtualBox_getEventSourceResponse"/>
   </message>
   <!--skipping attribute IExtPackManager for it is of a suppressed type-->
+  <!-- readonly attribute IVirtualBox::internalNetworks-->
+  <message name="IVirtualBox_getInternalNetworksRequestMsg">
+    <part name="parameters" element="vbox:IVirtualBox_getInternalNetworks"/>
+  </message>
+  <message name="IVirtualBox_getInternalNetworksResultMsg">
+    <part name="parameters" element="vbox:IVirtualBox_getInternalNetworksResponse"/>
+  </message>
+  <!-- readonly attribute IVirtualBox::genericNetworkDrivers-->
+  <message name="IVirtualBox_getGenericNetworkDriversRequestMsg">
+    <part name="parameters" element="vbox:IVirtualBox_getGenericNetworkDrivers"/>
+  </message>
+  <message name="IVirtualBox_getGenericNetworkDriversResultMsg">
+    <part name="parameters" element="vbox:IVirtualBox_getGenericNetworkDriversResponse"/>
+  </message>
   <!-- method IVirtualBox::composeMachineFilename-->
   <message name="IVirtualBox_composeMachineFilenameRequestMsg">
     <part name="parameters" element="vbox:IVirtualBox_composeMachineFilename"/>
@@ -14946,6 +15040,13 @@
   <message name="IMachine_temporaryEjectDeviceResultMsg">
     <part name="parameters" element="vbox:IMachine_temporaryEjectDeviceResponse"/>
   </message>
+  <!-- method IMachine::nonRotationalDevice-->
+  <message name="IMachine_nonRotationalDeviceRequestMsg">
+    <part name="parameters" element="vbox:IMachine_nonRotationalDevice"/>
+  </message>
+  <message name="IMachine_nonRotationalDeviceResultMsg">
+    <part name="parameters" element="vbox:IMachine_nonRotationalDeviceResponse"/>
+  </message>
   <!-- method IMachine::setBandwidthGroupForDevice-->
   <message name="IMachine_setBandwidthGroupForDeviceRequestMsg">
     <part name="parameters" element="vbox:IMachine_setBandwidthGroupForDevice"/>
@@ -15592,6 +15693,13 @@
   </message>
   <message name="IConsole_deleteSnapshotAndAllChildrenResultMsg">
     <part name="parameters" element="vbox:IConsole_deleteSnapshotAndAllChildrenResponse"/>
+  </message>
+  <!-- method IConsole::deleteSnapshotRange-->
+  <message name="IConsole_deleteSnapshotRangeRequestMsg">
+    <part name="parameters" element="vbox:IConsole_deleteSnapshotRange"/>
+  </message>
+  <message name="IConsole_deleteSnapshotRangeResultMsg">
+    <part name="parameters" element="vbox:IConsole_deleteSnapshotRangeResponse"/>
   </message>
   <!-- method IConsole::restoreSnapshot-->
   <message name="IConsole_restoreSnapshotRequestMsg">
@@ -16777,6 +16885,13 @@
   </message>
   <message name="IMedium_setTypeResultMsg">
     <part name="parameters" element="vbox:IMedium_setTypeResponse"/>
+  </message>
+  <!-- readonly attribute IMedium::allowedTypes-->
+  <message name="IMedium_getAllowedTypesRequestMsg">
+    <part name="parameters" element="vbox:IMedium_getAllowedTypes"/>
+  </message>
+  <message name="IMedium_getAllowedTypesResultMsg">
+    <part name="parameters" element="vbox:IMedium_getAllowedTypesResponse"/>
   </message>
   <!-- readonly attribute IMedium::parent-->
   <message name="IMedium_getParentRequestMsg">
@@ -19792,6 +19907,18 @@
       <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
     </operation>
     <!--skipping attribute IExtPackManager for it is of a suppressed type-->
+    <operation name="IVirtualBox_getInternalNetworks">
+      <input message="vbox:IVirtualBox_getInternalNetworksRequestMsg"/>
+      <output message="vbox:IVirtualBox_getInternalNetworksResultMsg"/>
+      <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
+      <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
+    </operation>
+    <operation name="IVirtualBox_getGenericNetworkDrivers">
+      <input message="vbox:IVirtualBox_getGenericNetworkDriversRequestMsg"/>
+      <output message="vbox:IVirtualBox_getGenericNetworkDriversResultMsg"/>
+      <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
+      <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
+    </operation>
     <operation name="IVirtualBox_composeMachineFilename">
       <input message="vbox:IVirtualBox_composeMachineFilenameRequestMsg"/>
       <output message="vbox:IVirtualBox_composeMachineFilenameResultMsg"/>
@@ -20840,6 +20967,12 @@
       <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
       <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
     </operation>
+    <operation name="IMachine_nonRotationalDevice">
+      <input message="vbox:IMachine_nonRotationalDeviceRequestMsg"/>
+      <output message="vbox:IMachine_nonRotationalDeviceResultMsg"/>
+      <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
+      <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
+    </operation>
     <operation name="IMachine_setBandwidthGroupForDevice">
       <input message="vbox:IMachine_setBandwidthGroupForDeviceRequestMsg"/>
       <output message="vbox:IMachine_setBandwidthGroupForDeviceResultMsg"/>
@@ -21394,6 +21527,12 @@
     <operation name="IConsole_deleteSnapshotAndAllChildren">
       <input message="vbox:IConsole_deleteSnapshotAndAllChildrenRequestMsg"/>
       <output message="vbox:IConsole_deleteSnapshotAndAllChildrenResultMsg"/>
+      <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
+      <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
+    </operation>
+    <operation name="IConsole_deleteSnapshotRange">
+      <input message="vbox:IConsole_deleteSnapshotRangeRequestMsg"/>
+      <output message="vbox:IConsole_deleteSnapshotRangeResultMsg"/>
       <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
       <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
     </operation>
@@ -22433,6 +22572,12 @@
     <operation name="IMedium_setType">
       <input message="vbox:IMedium_setTypeRequestMsg"/>
       <output message="vbox:IMedium_setTypeResultMsg"/>
+      <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
+      <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
+    </operation>
+    <operation name="IMedium_getAllowedTypes">
+      <input message="vbox:IMedium_getAllowedTypesRequestMsg"/>
+      <output message="vbox:IMedium_getAllowedTypesResultMsg"/>
       <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
       <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
     </operation>
@@ -25461,6 +25606,36 @@
       </fault>
     </operation>
     <!--skipping attribute IExtPackManager for it is of a suppressed type-->
+    <operation name="IVirtualBox_getInternalNetworks">
+      <soap:operation soapAction="" style="document"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="InvalidObjectFault">
+        <soap:fault name="InvalidObjectFault" use="literal"/>
+      </fault>
+      <fault name="RuntimeFault">
+        <soap:fault name="RuntimeFault" use="literal"/>
+      </fault>
+    </operation>
+    <operation name="IVirtualBox_getGenericNetworkDrivers">
+      <soap:operation soapAction="" style="document"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="InvalidObjectFault">
+        <soap:fault name="InvalidObjectFault" use="literal"/>
+      </fault>
+      <fault name="RuntimeFault">
+        <soap:fault name="RuntimeFault" use="literal"/>
+      </fault>
+    </operation>
     <operation name="IVirtualBox_composeMachineFilename">
       <soap:operation soapAction="" style="document"/>
       <input>
@@ -28021,6 +28196,21 @@
         <soap:fault name="RuntimeFault" use="literal"/>
       </fault>
     </operation>
+    <operation name="IMachine_nonRotationalDevice">
+      <soap:operation soapAction="" style="document"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="InvalidObjectFault">
+        <soap:fault name="InvalidObjectFault" use="literal"/>
+      </fault>
+      <fault name="RuntimeFault">
+        <soap:fault name="RuntimeFault" use="literal"/>
+      </fault>
+    </operation>
     <operation name="IMachine_setBandwidthGroupForDevice">
       <soap:operation soapAction="" style="document"/>
       <input>
@@ -29383,6 +29573,21 @@
       </fault>
     </operation>
     <operation name="IConsole_deleteSnapshotAndAllChildren">
+      <soap:operation soapAction="" style="document"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="InvalidObjectFault">
+        <soap:fault name="InvalidObjectFault" use="literal"/>
+      </fault>
+      <fault name="RuntimeFault">
+        <soap:fault name="RuntimeFault" use="literal"/>
+      </fault>
+    </operation>
+    <operation name="IConsole_deleteSnapshotRange">
       <soap:operation soapAction="" style="document"/>
       <input>
         <soap:body use="literal"/>
@@ -31898,6 +32103,21 @@
       </fault>
     </operation>
     <operation name="IMedium_setType">
+      <soap:operation soapAction="" style="document"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="InvalidObjectFault">
+        <soap:fault name="InvalidObjectFault" use="literal"/>
+      </fault>
+      <fault name="RuntimeFault">
+        <soap:fault name="RuntimeFault" use="literal"/>
+      </fault>
+    </operation>
+    <operation name="IMedium_getAllowedTypes">
       <soap:operation soapAction="" style="document"/>
       <input>
         <soap:body use="literal"/>

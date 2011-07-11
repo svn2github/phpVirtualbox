@@ -117,10 +117,10 @@ function vboxSettingsUpdatePPortOptions(sel) {
 
 	// IRQ and IO text boxes
 	if(sel.value == 'User-defined') {
-		$(sel).siblings('input').attr('disabled','');
+		$(sel).siblings('input').prop('disabled',false);
 		$(sel).siblings('span').removeClass('vboxDisabled');
 	} else {
-		$(sel).siblings('input').attr('disabled','disabled');
+		$(sel).siblings('input').prop('disabled',true);
 		$(sel).siblings('span').addClass('vboxDisabled');
 		for(var i = 0; i < vboxSP.ports.length; i++) {
 			if(vboxSP.ports[i].name == sel.value) {

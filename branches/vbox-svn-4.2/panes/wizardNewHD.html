@@ -43,7 +43,7 @@
 	<div class='vboxBordered'>
 		<table class='vboxOptions'>
 			<tr style='vertical-align: top;'>
-				<td><input type='radio' class='vboxRadio' checked='checked' name='newHardDiskType' value='dynamic' /><span class='translate'>Dynamically expanding</span></td>
+				<td><input type='radio' class='vboxRadio' checked='checked' name='newHardDiskType' value='dynamic' /><span class='translate'>Dynamically allocated</span></td>
 			</tr>
 			<tr style='vertical-align: top;'>
 				<td><input type='radio' class='vboxRadio' name='newHardDiskType' value='fixed' /><span class='translate'>Fixed size</span></td>
@@ -155,7 +155,7 @@ function wizardHDBrowseLocation() {
 $('#wizardNewHDStep4').bind('show',function(){
 
 	
-	$('#wizardNewHDTypeLabel').html((document.forms['frmwizardNewHD'].elements.newHardDiskType[1].checked ? trans('Fixed-size storage') : trans('Dynamically expanding storage')));
+	$('#wizardNewHDTypeLabel').html((document.forms['frmwizardNewHD'].elements.newHardDiskType[1].checked ? trans('Fixed size storage') : trans('Dynamically allocated storage')));
 
 	var loc = document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value;
 	if(loc.search(/[\/|\\]/) < 0) {

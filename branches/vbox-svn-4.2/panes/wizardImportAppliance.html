@@ -393,7 +393,7 @@ function vboxImportAppliancePropEditOptions(elm,desc) {
 	var val = $(elm).data('descValue');
 	vboxSetLangContext('vboxAppliance');
 	for(var i in desc.options) {
-		$(s).attr('options').add(new Option(trans(desc.options[i]),i,(i == val),(i == val)));
+		$(s).prop('options').add(new Option(trans(desc.options[i]),i,(i == val),(i == val)));
 	}
 	vboxUnsetLangContext();
 	$(elm).children().hide();

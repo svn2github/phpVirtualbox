@@ -404,6 +404,65 @@ function vboxWizardNewHDInit(callback,suggested) {
 
 /*
  * 
+ * 	Copy Virtual Disk wizard dialog
+ * 
+ * 
+ */
+function vboxWizardCopyHDInit(callback,suggested) {
+
+	var l = new vboxLoader();
+	l.add('SystemProperties',function(d){$('#vboxIndex').data('vboxSystemProperties',d);});
+	l.add('Media',function(d){$('#vboxIndex').data('vboxMedia',d);});
+	
+	l.onLoad = function() {
+		var vbw = new vboxWizard('wizardCopyHD',trans('Copy Virtual Disk'),'images/vbox/vmw_new_harddisk.png','images/vbox/vmw_new_harddisk_bg.png','hd');
+		vbw.steps = 5;
+		vbw.suggested = suggested;
+		vbw.onFinish = function(wiz,dialog) {
+
+
+			var src = $(document.forms['frmwizardCopyHD'].copyHDDiskSelect).val();
+			var type = (document.forms['frmwizardCopyHD'].elements.newHardDiskType[1].checked ? 'fixed' : 'dynamic');
+			var format = document.forms['frmwizardCopyHD'].elements['copyHDFileType'];
+			for(var i = 0; i < format.length; i++) {
+				if(format[i].checked) {
+					format=format[i].value;
+					break;
+				}
+			}
+			var location = $('#wizardCopyHDLocationLabel').text();
+			
+			$(dialog).trigger('close').empty().remove();
+
+			var l = new vboxLoader();
+			l.mode = 'save';
+			l.add('mediumCloneTo',function(d,e){
+				if(d && d.progress) {
+					vboxProgress(d.progress,function(ret,mid) {
+							var ml = new vboxLoader();
+							ml.add('Media',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
+							ml.onLoad = function() {
+								med = vboxMedia.getMediumById(mid);
+								vboxMedia.updateRecent(med);
+								callback(mid);
+							}
+							ml.run();
+					},d.id,'progress_media_create_90px.png',trans('Copy Virtual Disk'));
+				} else {
+					callback(d.id);
+				}
+			},{'src':src,'type':type,'format':format,'location':location});
+			l.run();
+			
+		};
+		vbw.run();
+	}
+	l.run();
+	
+}
+
+/*
+ * 
  * Initialize guest network dialog
  * 
  */

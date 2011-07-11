@@ -147,6 +147,10 @@
 								<td><span id='vboxSettingsHDasize'>30 GB</span></td>
 							</tr>
 							<tr>
+								<th><span class='translate'>Details</span>:</th>
+								<td><span id='vboxSettingsHDDetails'>Dynamic</span></td>
+							</tr>							
+							<tr>
 								<th><span class='translate'>Location</span>:</th>
 								<td><span id='vboxSettingsHDlocation'>/usr/local/blah/etc..</span></td>
 							</tr>
@@ -491,8 +495,9 @@ function vboxSettingsSelectAttachment(tbl) {
     switch(ma.type) {
     	case 'HardDisk':
         	label = 'HardDisk';
-    		$('#vboxSettingsControllerDeviceOptionRow').css('display','none');
-            $('#vboxSettingsControllerDeviceOptionLabel').removeClass('vboxDisabled');
+    		$('#vboxSettingsControllerDeviceOptionRow').css('display','');
+    		$('#vboxSettingsControllerDeviceOptionLabel').html(trans('Solid-state drive'));  
+    		document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.checked = (ma.nonRotational ? 'checked' : '');            
         	break;
     	case 'DVD':
         	label = 'DVD Drive';
@@ -508,8 +513,6 @@ function vboxSettingsSelectAttachment(tbl) {
     	case 'Floppy':
         	label = 'Floppy Drive';
         	$('#vboxSettingsControllerDeviceOptionRow').css('display','none');
-            if(ma.hostDrive) $('#vboxSettingsControllerDeviceOptionRow').css('display','');
-            else $('#vboxSettingsControllerDeviceOptionRow').css('display','none');        	
         	break;
     }
     $('#vboxSettingsControllerSlotLabel').html(trans(label));
@@ -553,6 +556,7 @@ function vboxSettingsSelectAttachment(tbl) {
     		
         $('#vboxSettingsHDvsize').html(vboxMbytesConvert(disp.logicalSize));
         $('#vboxSettingsHDasize').html(vboxBytesConvert(disp.size));
+        $('#vboxSettingsHDDetails').html(vboxMedia.getHardDiskVariant(disp));
         $('#vboxSettingsHDlocation').html(disp.location);
         $('#vboxSettingsHDtype').html(trans(disp.type) + ' (' + disp.format + ')');
         $('#vboxSettingsHDattached').html(vboxMediumAttachedTo(disp));            
@@ -564,6 +568,7 @@ function vboxSettingsSelectAttachment(tbl) {
         $('#vboxSettingsImageSize').html((m && !m.hostDrive ? vboxBytesConvert(m.size):'--'));
         $('#vboxSettingsImageLocation').html((m && !m.hostDrive ? m.location:'--'));
         $('#vboxSettingsImageAttached').html((m && !m.hostDrive ? vboxMediumAttachedTo(m) :'--'));
+        /*
         if(m && m.hostDrive) {
         	var passthrough = ma.passthrough;
             document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.disabled = false;
@@ -581,6 +586,7 @@ function vboxSettingsSelectAttachment(tbl) {
             document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.disabled = true;
             $('#vboxSettingsControllerDeviceOptionLabel').addClass('vboxDisabled');
         }
+        */
         
     }
 
@@ -632,6 +638,7 @@ $(document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption).click(fu
 	var ma = $('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first();
 	$(ma).data('attachment').passthrough = (this.checked ? 1 : 0);
 	$(ma).data('attachment').temporaryEject = (this.checked ? 1 : 0);
+	$(ma).data('attachment').nonRotational = (this.checked ? 1 : 0);
 	
 });
 

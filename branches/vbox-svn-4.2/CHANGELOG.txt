@@ -3,11 +3,10 @@
 -------------------------------------
 VirtualBox 4.2.x compatibility.
 
-Fixed bug that would not allow you to edit more than one host-only
-networking adapter.
+jquery upgrade to 1.6.2
 
 -------------------------------------
-	4.0-7	
+	4.0-7	2011-6-8
 -------------------------------------
 Removed $sessionSecurityLevel setting and associated logic as it
 really provided no extra session security.
@@ -15,6 +14,13 @@ really provided no extra session security.
 Fixed session bug where another client running the same browser
 from the same subnet could inherit another user's session.
 http://code.google.com/p/phpvirtualbox/issues/detail?id=295
+
+Fixed bug that would not allow you to edit more than one host-only
+networking adapter.
+http://code.google.com/p/phpvirtualbox/issues/detail?id=310
+
+Added $consoleKeyboardLayout setting.
+http://code.google.com/p/phpvirtualbox/issues/detail?id=248
 
 -------------------------------------
 	4.0-6	2011-5-24

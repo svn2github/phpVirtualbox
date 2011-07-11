@@ -501,9 +501,10 @@ function vboxInitDisplay(root) {
 		$(this).slider('value',$(this).slider('value'));
 		
 		// Min / Max labels
-		$(this).closest('table').find('.vboxSliderMin').html($(this).slider('option','min'));
-		$(this).closest('table').find('.vboxSliderMax').html($(this).slider('option','max'));
-	
+		if(!$(this).data('noMinMaxLabels')) {
+			$(this).closest('table').find('.vboxSliderMin').html($(this).slider('option','min'));
+			$(this).closest('table').find('.vboxSliderMax').html($(this).slider('option','max'));
+	}
 	});
 
 	
@@ -550,17 +551,15 @@ function vboxInitDisplay(root) {
 	
 			var roottbl = $(this).closest('table');
 			
-			$(roottbl).find('input:not(.vboxEnablerCheckbox)').attr('disabled',(this.checked ? '' : 'disabled'));
-			$(roottbl).find('select').attr('disabled',(this.checked ? '' : 'disabled'));
+			$(roottbl).find('input:not(.vboxEnablerCheckbox)').prop('disabled',!this.checked);
+			$(roottbl).find('select').prop('disabled',!this.checked);
 			(this.checked ? $(roottbl).find('th').removeClass('vboxDisabled') : $(roottbl).find('th').addClass('vboxDisabled'));
 			(this.checked ? $(roottbl).find('.vboxEnablerListen').removeClass('vboxDisabled') : $(roottbl).find('.vboxEnablerListen').addClass('vboxDisabled'));
 	
 			// Find any enabler / disabler listeners
 			$(roottbl).find('.vboxEnablerTrigger').trigger(this.checked ? 'enable' : 'disable');
 			
-			// Don't check / uncheck if not actually clicked
-			if(first) e.preventDefault();
-	
+			
 	}).trigger('click',true);
 	
 	

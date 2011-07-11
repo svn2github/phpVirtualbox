@@ -296,6 +296,25 @@ var vboxMedia = {
 		return m.name;
 	},
 
+	// Get medium format
+	getFormat : function (m) {
+		if(!m) return '';
+		switch(m.format.toLowerCase()) {
+			case 'vdi':
+				return trans('VDI (VirtualBox Disk Image)');
+			case 'vmdk':
+				return trans('VMDK (Virtual Machine Disk)');
+			case 'vhd':
+				return trans('VHD (Virtual Hard Disk)');
+		}
+	},
+	
+	// Get HD type
+	getHardDiskVariant : function(m) {
+		if(!m) return '';
+		return trans(m.fixed ? 'Fixed size storage': 'Dynamically allocated storage');
+	},
+
 	/* Return media and drives available for attachment type */
 	mediaForAttachmentType : function(t,children) {
 	
@@ -719,15 +738,15 @@ function vboxToolbarSmall(buttons) {
 	
 	self.enableButton = function(b) {
 		if(b.noDisabledIcon)
-			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('display','').attr('disabled','');
+			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('display','').prop('disabled',false);
 		else
-			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + (b.icon_exact ? b.icon : b.icon + '_'+self.size)+'px.png)').attr('disabled','');
+			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + (b.icon_exact ? b.icon : b.icon + '_'+self.size)+'px.png)').prop('disabled',false);
 	}
 	self.disableButton = function(b) {
 		if(b.noDisabledIcon)
-			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('display','none').attr('disabled','disabled').removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton');
+			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('display','none').prop('disabled',false).removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton');
 		else
-			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + (b.icon_exact ? b.icon_disabled : b.icon + '_'+self.disabledString+'_'+self.size)+'px.png)').attr('disabled','disabled').removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton');
+			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + (b.icon_exact ? b.icon_disabled : b.icon + '_'+self.disabledString+'_'+self.size)+'px.png)').prop('disabled',true).removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton');
 	}
 
 	// Generate HTML element for button
@@ -747,7 +766,7 @@ function vboxToolbarSmall(buttons) {
 		
 		if(!self.noHover) {
 			$(btn).hover(
-					function(){if($(this).attr('disabled')!='disabled'){$(this).addClass('vboxToolbarSmallButtonHover').removeClass('vboxToolbarSmallButton');}},
+					function(){if(!$(this).prop('disabled')){$(this).addClass('vboxToolbarSmallButtonHover').removeClass('vboxToolbarSmallButton');}},
 					function(){$(this).addClass('vboxToolbarSmallButton').removeClass('vboxToolbarSmallButtonHover');}		
 			);
 		

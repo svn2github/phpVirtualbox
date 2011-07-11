@@ -282,11 +282,11 @@ function vboxSettingsGlobalNetEditDialog() {
 	$('#vboxSettingsGlobalNetIPv6Mask').val(nic.IPV6NetworkMaskPrefixLength);
 
 	if(nic.IPV6Supported) {
-		$('#vboxSettingsGlobalNetIPv6').attr('disabled','');
-		$('#vboxSettingsGlobalNetIPv6Mask').attr('disabled','');
+		$('#vboxSettingsGlobalNetIPv6').prop('disabled',false);
+		$('#vboxSettingsGlobalNetIPv6Mask').prop('disabled',false);
 	} else {
-		$('#vboxSettingsGlobalNetIPv6').attr('disabled','disabled');
-		$('#vboxSettingsGlobalNetIPv6Mask').attr('disabled','disabled');		
+		$('#vboxSettingsGlobalNetIPv6').prop('disabled',true);
+		$('#vboxSettingsGlobalNetIPv6Mask').prop('disabled',true);		
 	}
 
 	if(nic.dhcpServer && nic.dhcpServer.networkName) {

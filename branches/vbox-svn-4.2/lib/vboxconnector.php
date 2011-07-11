@@ -848,6 +848,8 @@ class vboxconnector {
 						$m->passthroughDevice($name,$ma['port'],$ma['device'],($ma['passthrough'] ? true : false));
 					else 
 						$m->temporaryEjectDevice($name,$ma['port'],$ma['device'],($ma['temporaryEject'] ? true : false));
+				} else if($ma['type'] == 'HardDisk') {
+					$m->nonRotationalDevice($name,$ma['port'],$ma['device'],($ma['nonRotational'] ? true : false));
 				}
 				if(is_object($med)) $med->releaseRemote();
 			}
@@ -2979,7 +2981,8 @@ class vboxconnector {
 				'device' => $ma->device,
 				'type' => $ma->type->__toString(),
 				'passthrough' => $ma->passthrough,
-				'temporaryEject' => $ma->temporaryEject
+				'temporaryEject' => $ma->temporaryEject,
+				'nonRotational' => $ma->nonRotational
 			);
 		}
 
@@ -3278,11 +3281,11 @@ class vboxconnector {
 		// Connect to vboxwebsrv
 		$this->__vboxwebsrvConnect();
 
-		$format = strtoupper(preg_replace('/.*\./','',$args['file']));
-		if($format != 'VDI' && $format != 'VMDK') $format = 'VDI';
-		$target = $this->vbox->createHardDisk($format,$args['file']);
+		$format = strtoupper($args['format']);
+		$target = $this->vbox->createHardDisk($format,$args['location']);
+		$mid = $target->id;
 
-		$src = $this->vbox->findMedium($args['id'],'HardDisk');
+		$src = $this->vbox->findMedium($args['src'],'HardDisk');
 
 		$type = ($args['type'] == 'fixed' ? 'Fixed' : 'Standard');
 		$mv = new MediumVariant();
@@ -3304,7 +3307,7 @@ class vboxconnector {
 
 		$this->__storeProgress($progress,'getMedia');
 
-		$response['data'] = array('progress' => $progress->handle);
+		$response['data'] = array('progress' => $progress->handle, 'id' => $mid);
 
 		return true;
 	}
@@ -3742,6 +3745,9 @@ class vboxconnector {
 			$mid->releaseRemote();
 		}
 
+		// For $fixed value
+		$mv = new MediumVariant();
+		
 		return array(
 				'id' => $m->id,
 				'description' => $m->description,
@@ -3761,6 +3767,7 @@ class vboxconnector {
 				'autoReset' => $m->autoReset,
 				'hasSnapshots' => $hasSnapshots,
 				'lastAccessError' => $m->lastAccessError,
+				'fixed' => intval((intval($m->variant) & $mv->ValueMap['Fixed']) > 0),
 				'machineIds' => array(),
 				'attachedTo' => $attachedTo
 			);

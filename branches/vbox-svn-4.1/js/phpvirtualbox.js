@@ -252,7 +252,7 @@ var vboxVMActions = {
 	
 	/* Power Action Helper function */
 	'powerAction' : function(pa){
-		icon ='';
+		icon =null;
 		switch(pa) {
 			case 'powerdown': fn = 'setStateVMpowerDown'; icon='progress_poweroff_90px.png'; break;
 			case 'powerbutton': fn = 'setStateVMpowerButton'; break;

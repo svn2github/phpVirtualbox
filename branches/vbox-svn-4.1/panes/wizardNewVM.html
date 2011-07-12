@@ -92,10 +92,10 @@
 
 	<p id='newVMHDSizeLabel'>newVM Step4 Message3</p>
 	
-	<span class='vboxTableLabel'><input type='checkbox' checked='checked' class='vboxCheckbox vboxEnablerCheckbox' name='newVMBootDisk' /> <span class='translate'>Boot Hard Disk</span></span>
+	<span class='vboxTableLabel'><input type='checkbox' id='newVMBootDiskCheckbox' checked='checked' class='vboxCheckbox' name='newVMBootDisk' /> <span class='translate'>Boot Hard Disk</span></span>
 	<div class='vboxBordered' style='padding: 2px; padding-top: 6px;'>
 	
-		<table class='vboxOptions' style='width:100%;'>
+		<table class='vboxOptions' id='newVMBootDiskTable' style='width:100%;'>
 			<tr id='newVMHDTriggerBind' class='vboxEnablerTrigger'>
 				<td style='padding:2px; padding-left: 14px'><input type="radio" class="vboxRadio" name="newVMDisk" value="create" onClick="newVMToggleNewDisk(true)" checked='checked' /> <span class='translate vboxEnablerListen'>Create new hard disk</span></td>
 			</tr>
@@ -173,13 +173,16 @@ wizardNewVMToolbar.addButtons('newVMDiskVMM');
 /* Toggle new / existing */
 function newVMToggleNewDisk(dis) {
 	
-	if(dis) wizardNewVMToolbar.disable();
-	else wizardNewVMToolbar.enable();
+	if(dis) {
+		wizardNewVMToolbar.disable();
+		document.forms['frmwizardNewVM'].newVMDiskSelect.disabled = true;
+		$('#wizardNewVMStep4').find('.vboxMediumSelect').trigger('disable');
+	} else {
+		wizardNewVMToolbar.enable();
+		document.forms['frmwizardNewVM'].newVMDiskSelect.disabled = (document.forms['frmwizardNewVM'].newVMDiskSelect.options.length > 0 ? false : true);
+		$('#wizardNewVMStep4').find('.vboxMediumSelect').trigger('enable');
+	}
 	
-	document.forms['frmwizardNewVM'].newVMDiskSelect.disabled = (dis || !document.forms['frmwizardNewVM'].newVMDiskSelect.options.length) ? true : false;
-
-	// enable / disable mediumselect
-	$('#wizardNewVMStep4').find('.vboxMediumSelect').trigger((document.forms['frmwizardNewVM'].newVMDiskSelect.disabled ? 'disable' : 'enable'));
 } 
 
 /* Mem size slider */
@@ -324,6 +327,18 @@ $('#wizardNewVMStep3').bind('show',function(e,wiz){
 	} else {
 		$(document.forms['frmwizardNewVM'].newVMDisk[1]).trigger('click');
 	}
+});
+
+/* Boot disk checkbox enable / disable items */
+$('#newVMBootDiskCheckbox').bind('click',function(){
+	
+	$('#newVMBootDiskTable').find('input').prop('disabled',!this.checked);
+	$('#newVMBootDiskTable').find('select').prop('disabled',!this.checked);
+	(this.checked ? $('#newVMBootDiskTable').find('.vboxEnablerListen').removeClass('vboxDisabled') : $('#newVMBootDiskTable').find('.vboxEnablerListen').addClass('vboxDisabled'));
+
+	// Find any enabler / disabler listeners
+	$('#newVMBootDiskTable').find('.vboxEnablerTrigger').trigger(this.checked ? 'enable' : 'disable');
+	
 });
 
 /* When hard disk is enabled / disabled */

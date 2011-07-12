@@ -207,7 +207,7 @@ function wizardCopyHDUpdateName(sel) {
 $('#wizardCopyHDStep1').bind('show',function(e,wiz){
 
 	// Already initialized?
-	if($('#wizardCopyHDStep1').data('init') || !wiz.suggested) return;
+	if($('#wizardCopyHDStep1').data('init') || !wiz || !wiz.suggested) return;
 
 	
     if(wiz.suggested.medium)

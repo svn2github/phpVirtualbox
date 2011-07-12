@@ -4,8 +4,7 @@
  */
 
 # Turn off PHP notices
-error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT);
-
+error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_WARNING);
 
 require_once(dirname(__FILE__).'/lib/config.php');
 require_once(dirname(__FILE__).'/lib/utils.php');
@@ -139,7 +138,7 @@ try {
 
 		$vbox->session->unlockMachine();
 		$vbox->session->releaseRemote();
-
+		
 	} else {
 
 		// Let the browser cache saved state images
@@ -175,8 +174,7 @@ try {
 	header("Content-type: image/png",true);
 
 	foreach($imageraw as $i) {
-		if(is_array($i))
-			foreach($i as $b) echo(chr($b));
+		if(is_array($i)) echo(base64_decode($i[0]));
 	}
 
 

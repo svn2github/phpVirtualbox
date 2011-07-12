@@ -209,7 +209,7 @@ $('#wizardNewHDMax').html(vboxMbytesConvert(max));
 $('#wizardNewHDStep1').bind('show',function(e,wiz){
 
 	// Already initialized?
-	if($('#wizardNewHDStep1').data('init') || !wiz.suggested) return;
+	if($('#wizardNewHDStep1').data('init') || !wiz || !wiz.suggested) return;
 
 	if(wiz.suggested.name) {
 		document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value = wiz.suggested.name + '.vdi';

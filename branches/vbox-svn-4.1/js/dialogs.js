@@ -195,7 +195,7 @@ function vboxWizardNewVMInit(callback) {
  */
 function vboxWizardCloneVMInit(callback,args) {
 
-	var vbw = new vboxWizard('wizardCloneVM',trans('Clone a virtual machine'),'images/vbox/vmw_clone.png','new');
+	var vbw = new vboxWizard('wizardCloneVM',trans('Clone a virtual machine'),'images/vbox/vmw_clone.png',null,'vm_clone');
 	vbw.steps = 2;
 	vbw.args = args;
 	vbw.onFinish = function(wiz,dialog) {
@@ -316,6 +316,7 @@ function vboxVMMDialogInit(callback,type,hideDiff,attached,vmPath) {
 			$('#vboxVMMDialog').trigger('close').empty().remove();
 			if(callback) callback(null);
 		};
+
 		$("#vboxVMMDialog").dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/diskimage_16px.png" class="vboxDialogTitleIcon" /> '+trans('Virtual Media Manager')}).bind("dialogbeforeclose",function(){
 	    	$(this).parent().find('span:contains("'+trans('Close')+'")').trigger('click');
 	    });

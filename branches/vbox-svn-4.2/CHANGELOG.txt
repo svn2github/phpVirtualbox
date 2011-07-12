@@ -3,7 +3,11 @@
 -------------------------------------
 VirtualBox 4.2.x compatibility.
 
-jquery upgrade to 1.6.2
+jquery upgrade to 1.6.2.
+
+Fixed issue where exported disks would be incorrectly named when
+exporting a virtual machine.
+http://code.google.com/p/phpvirtualbox/issues/detail?id=307
 
 -------------------------------------
 	4.0-7	2011-6-8

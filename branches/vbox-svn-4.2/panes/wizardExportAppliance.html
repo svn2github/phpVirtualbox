@@ -170,12 +170,12 @@ $('#wizardExportApplianceStep2').bind('show',function(e,wiz){
 		wiz.displayStep(1);
 	}
 
-	if($('#vboxExportProps').children('tr.vboxTableParent').length > 1) {
+	if(vmSel.length > 1) {
 		var name = trans('Appliance');
 		document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLegacy.checked = false;
 		document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLegacy.disabled = 'disabled';
 	} else {
-		var name = ($('#vboxExportProps').find('td.vboxAppPropname').first().children().first().text() || trans('Appliance'));
+		var name = jQuery.trim($(vmSel[0]).text());
 		document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLegacy.disabled = false;
 	}
 	if($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val()) return;

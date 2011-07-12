@@ -21,8 +21,8 @@
 				<option value='COM4' class='translate'>COM4</option>
 				<option value='User-defined' class='translate'>User-defined</option>	
 			</select>
-			<span class='translate'>IRQ</span>: <input type='text' name='vboxSettingsSPortIRQ' size='2' disabled='disabled' />
-			<span class='translate'>I/O Port</span>: <input type='text' name='vboxSettingsSPortIO' size='5' disabled='disabled' />
+			<span><span class='translate'>IRQ</span>:</span> <input type='text' name='vboxSettingsSPortIRQ' size='2' disabled='disabled' />
+			<span><span class='translate'>I/O Port</span>:</span> <input type='text' name='vboxSettingsSPortIO' size='5' disabled='disabled' />
         </td>
 	</tr>
 	<tr>
@@ -86,7 +86,7 @@ for(var i = 0; i < parseInt($('#vboxIndex').data('vboxSystemProperties').serialP
 	/* tab content */
 	var newTab = $("#vboxSettingsTabSerialPort").clone(true);
 	newTab.attr({'id':vboxSettingsSPortTemplate.id + (i + 1)}).css({'display':'block'}).find('.vboxEnablerTrigger').bind('enable',function(){
-		$(this).children('select').trigger('change');
+		$(this).find('select').trigger('change');
 	});
 	
 	newTab.appendTo(vboxSettingsSPortContainer);

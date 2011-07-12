@@ -279,8 +279,8 @@ public static $trans = array(
 'I82078' => 'I82078',
 'LsiLogicSas' => 'LsiLogic SAS',
 'Differencing Disks' => 'Differencing Disks',
-'No unused media message 1' => 'There is no unused media available for the newly created attachment.',
-'No unused media message 2' => 'Press the Create button to start the New Virtual Disk wizard and create a new medium, or press Select if you wish to open the Virtual Media Manager.',
+'No unused media message 1' => 'There is no unused media available for the newly created attachment.',/*removed*
+'No unused media message 2' => 'Press the Create button to start the New Virtual Disk wizard and create a new medium, or press Select if you wish to open the Virtual Media Manager.',/*removed*/
 'storage attached indirectly' => 'Attaching this disk will be performed indirectly using a newly created differencing hard disk.',
 'base disk indirectly attached' => 'This base hard disk is indirectly attached using the following differencing hard disk:',
 'Attached to' => 'Attached to',
@@ -294,7 +294,7 @@ public static $trans = array(
 'Create a new hard disk...' => 'Create a new hard disk...',
 'Remove disk from virtual drive' => 'Remove disk from virtual drive',
 'Image' => 'Image', // CD/DVD or Floppy image
-// *new* Add attachment dialogs
+/*new* Add attachment dialogs */
 'You are about to add a virtual hard disk to controller %s.' => 'You are about to add a virtual hard disk to controller %s.',
 'Would you like to create a new, empty file to hold the disk contents or select an existing one?' => 'Would you like to create a new, empty file to hold the disk contents or select an existing one?',
 'Create new disk' => 'Create new disk',

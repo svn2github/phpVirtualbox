@@ -24,6 +24,7 @@ html,body,#vboxIndex,#vboxTableMain {
 
 
 /* Common */
+#vboxIndex table, div.vboxDialogContent table { width: 100%; }
 #vboxIndex img, div.vboxDialogContent img { vertical-align: middle; border: 0px; }
 #vboxIndex textarea, div.vboxDialogContent textarea { width: 100%; }
 #vboxIndex input, div.vboxDialogContent input { vertical-align: middle; }
@@ -175,6 +176,7 @@ table tr td.vboxFileFolderInput input.vboxText { width: 95%; }
 table tr td.vboxFileFolderInput input.vboxImgButton { width: 20px; margin-left: 2px;}
 
 /* Buttons and Toolbars */
+#vboxIndex table.vboxToolbar, div.vboxDialogContent table.vboxToolbar { width: auto; }
 .vboxToolbarButton { 
 	border: 1px solid transparent;
 	text-align: center;
@@ -303,6 +305,7 @@ div.vboxWizard h3 { margin: 2px 0px 18px 0px; font-size: 16px; }
 div.vboxWizard table.vboxOptions { margin-top: 4px; }
 div.vboxWizard table.vboxOptions td { padding: 4px; }
 div.vboxWizard span.vboxTableLabel { position: relative; top: 7px; font-weight: bold; background: #fff; left: 8px; padding-left: 2px; padding-right: 2px;}
+div.vboxWizard span.vboxTableLabel+div.vboxBordered { border: 1px solid #000; }
 
 /* Export Appliance */
 #vboxExportProps tr,#vboxExportProps td, #vboxExportProps td div { vertical-align: middle; height: 22px; line-height: 22px;} 

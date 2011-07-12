@@ -10,8 +10,6 @@
  *
  */
 
-error_reporting(0);
-
 
 /*
  * Load language file

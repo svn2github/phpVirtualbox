@@ -635,7 +635,6 @@ class vboxconnector {
 		$cm = new CloneMode(null,$args['vmState']);
 		$state = $cm->ValueMap[$args['vmState']];
 		
-		error_reporting(E_ALL);
 		$progress = $src->cloneTo($m->handle,$state,'KeepNATMACs');
 		
 		// Does an exception exist?
@@ -1539,10 +1538,11 @@ class vboxconnector {
 				// skip this VM as it is not owned by the user we're logged in as
 				continue;
 			}
-			$desc = $m->export($app->handle);
+			$desc = $m->export($app->handle, $args['file']);
 			$props = $desc->getDescription();
 			$ptypes = array();
 			foreach($props[0] as $p) {$ptypes[] = $p->__toString();}
+			$typecount = 0;
 			foreach($appProps as $k=>$v) {
 				// Check for existing property
 				if(($i=array_search($v,$ptypes)) !== false) {
@@ -1552,6 +1552,7 @@ class vboxconnector {
 					$props[3][] = $vm[$k];
 					$props[4][] = null;
 				}
+				$typecount++;
 			}
 			$enabled = array_pad(array(),count($props[3]),true);
 			foreach(array_keys($enabled) as $k) $enabled[$k] = (bool)$enabled[$k];
@@ -1601,7 +1602,7 @@ class vboxconnector {
 			for($i = 0; $i < $this->settings['nicMax']; $i++) {
 
 				try {
-					$h = &$machine->getNetworkAdapter($i);
+					$h = $machine->getNetworkAdapter($i);
 				} catch (Exception $e) {
 					break;
 				}
@@ -1864,7 +1865,7 @@ class vboxconnector {
 		$this->__vboxwebsrvConnect();
 
 		// Machine state
-		$machine = &$this->vbox->findMachine($vm);
+		$machine = $this->vbox->findMachine($vm);
 		$mstate = $machine->state->__toString();
 		
 		if ( ($owner = $machine->getExtraData("phpvb/sso/owner")) && $owner !== $_SESSION['user'] && !$_SESSION['admin'] )
@@ -1891,7 +1892,7 @@ class vboxconnector {
 		}
 
 		// Open session to machine
-		$this->session = &$this->websessionManager->getSessionObject($this->vbox->handle);
+		$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 
 		// Lock machine
 		$machine->lockMachine($this->session->handle,($states[$state]['lock'] == 'write' ? 'Write' : 'Shared'));
@@ -1972,7 +1973,7 @@ class vboxconnector {
 		# Try opening session for VM
 		try {
 			// create session
-			$this->session = &$this->websessionManager->getSessionObject($this->vbox->handle);
+			$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 
 			$progress = $machine->launchVMProcess($this->session->handle, 'headless', '');
 
@@ -2151,7 +2152,7 @@ class vboxconnector {
 
 		} else {
 
-			$machine = &$this->vbox->findMachine($args['vm']);
+			$machine = $this->vbox->findMachine($args['vm']);
 
 
 			// For correct caching, always use id
@@ -2221,7 +2222,7 @@ class vboxconnector {
 			if($data['state'] == 'Running') {
 				$console = $this->cache->get('__consolePort'.$args['vm'],120000);
 				if($console === false || intval($console['lastStateChange']) < $mdlm) {
-					$this->session = &$this->websessionManager->getSessionObject($this->vbox->handle);
+					$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 					$machine->lockMachine($this->session->handle, 'Shared');
 					$data['consolePort'] = $this->session->console->VRDEServerInfo->port;
 					$this->session->unlockMachine();
@@ -2938,7 +2939,7 @@ class vboxconnector {
 		
 		$response['data'] = array();
 
-		$this->session = &$this->websessionManager->getSessionObject($this->vbox->handle);
+		$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 		$machine = $this->vbox->findMachine($args['vm']);
 		$machine->lockMachine($this->session->handle,'Shared');
 
@@ -3047,7 +3048,7 @@ class vboxconnector {
 		try {
 
 			// Open session to machine
-			$this->session = &$this->websessionManager->getSessionObject($this->vbox->handle);
+			$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 
 			$machine = $this->vbox->findMachine($args['vm']);
 			$machine->lockMachine($this->session->handle,'Write');
@@ -3151,7 +3152,7 @@ class vboxconnector {
 		try {
 
 			// Open session to machine
-			$this->session = &$this->websessionManager->getSessionObject($this->vbox->handle);
+			$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 			$machine->lockMachine($this->session->handle, ($machine->sessionState->__toString() == 'Unlocked' ? 'Write' : 'Shared'));
 			$machine->releaseRemote();
 
@@ -3196,7 +3197,7 @@ class vboxconnector {
 		// Connect to vboxwebsrv
 		$this->__vboxwebsrvConnect();
 
-		$machine = &$this->vbox->findMachine($args['vm']);
+		$machine = $this->vbox->findMachine($args['vm']);
 
 		/* No snapshots? Empty array */
 		if($machine->snapshotCount < 1) {
@@ -3487,7 +3488,7 @@ class vboxconnector {
 			$response['data']['released'][] = $uuid;
 
 			// create session
-			$this->session = &$this->websessionManager->getSessionObject($this->vbox->handle);
+			$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 
 			// Hard disk requires machine to be stopped
 			if($args['type'] == 'HardDisk' || $state == 'Unlocked') {
@@ -3865,13 +3866,15 @@ class vboxconnector {
 
 		// Connect to vboxwebsrv
 		$this->__vboxwebsrvConnect();
-
+		
+		$response['data']['log'] = '';
+		
 		$m = $this->vbox->findMachine($args['vm']);
 		try {
-			$o = 0; $s = 8192; // 8k chunks
-			while($l = $m->readLog(intval($args['log']),$o,$s)) {
-				@$response['data']['log'] .= implode('',array_map('chr',$l));
-				$o+=count($l);
+			// Read in 8k chunks
+			while($l = $m->readLog(intval($args['log']),strlen($response['data']['log']),8192)) {
+				if(!count($l) || !strlen($l[0])) break;
+				@$response['data']['log'] .= base64_decode($l[0]);
 			}
 		} catch (Exception $null) {}
 		$m->releaseRemote();

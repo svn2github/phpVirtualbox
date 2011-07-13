@@ -1,4 +1,4 @@
-#summary Start vboxwebsrv as "service" in windows server 2008
+#summary Start vboxwebsrv as "service" in Windows Server 2008
 
 = Introduction =
 

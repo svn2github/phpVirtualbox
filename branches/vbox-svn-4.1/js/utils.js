@@ -257,6 +257,7 @@ function vboxGetVRDEAddress(vm) {
             case 'MacOS_64':			strIcon = "os_macosx_64.png"; break;
             case 'Oracle':			strIcon = "os_oracle.png"; break;
             case 'Oracle_64':			strIcon = "os_oracle_64.png"; break;
+            case 'JRockitVE':		strIcon = 'os_jrockitve.png'; break;
             case "VirtualBox_Host":	strIcon = "os_virtualbox.png"; break;
 
             default:

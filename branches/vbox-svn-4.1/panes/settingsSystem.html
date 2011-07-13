@@ -227,8 +227,7 @@ if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
 var bootItems = {};
 var bootList = $('#vboxVMBootOrderList');
 $(bootList).children('li').each(function(){
-	bootItems[$(this).attr('id')] = $(this).clone(true);
-	$(this).remove();
+	bootItems[$(this).attr('id')] = $(this).detach();
 });
 for(var i in $('#vboxSettingsDialog').data('vboxMachineData').bootOrder) {
 	$(bootList).append(bootItems[$('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]]);
@@ -256,8 +255,8 @@ if(!$('#vboxSettingsDialog').data('vboxMachineData').chipsetType || $('#vboxInde
 $("#vboxVMBootOrderList").children("li").click(function() {
 
 	// Update class
-	$(this).siblings().attr('className','vboxListItem');
-	$(this).attr('className','vboxListItemSelected');
+	$(this).siblings().prop('className','vboxListItem');
+	$(this).prop('className','vboxListItemSelected');
 
 	var isFirst = ($(this).parent().children().first().attr('id') == $(this).attr('id'));
 	var isLast = ($(this).parent().children().last().attr('id') == $(this).attr('id'));

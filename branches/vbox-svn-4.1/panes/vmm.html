@@ -677,7 +677,7 @@ function vboxVMMAddMedium(d,depth,hideDiff,attached,topLevelParent) {
 	}
 
 	// Title div
-	var span = $('<span />').html($('<div />').html(d.name).text() + (hideDiff === undefined && d.readOnly && d.deviceType == 'HardDisk' ? ' ('+trans('ro')+')' : ''));
+	var span = $('<span />').attr({'id':'vboxVMMMediaTitle-'+d.id}).html($('<div />').html(d.name).text());
 
 	// Add read-only or inaccessible class?
 	if(d.state == 'Inaccessible') {
@@ -926,6 +926,13 @@ function vmmChangeHDType(sel) {
 		if(ret && ret.result == 1) {
 			var l = new vboxLoader();
 			l.add('Media',function(data){$('#vboxIndex').data('vboxMedia',data);});
+			l.onLoad = function() {
+				if($('#vboxVirtualMediaManager').data('hideDiff')) {
+					var d = vboxMedia.getMediumById(m.id);
+					if(d.readOnly) $('#vboxVMMMediaTitle-'+d.id).addClass('vboxMediumReadOnly');
+					else $('#vboxVMMMediaTitle-'+d.id).removeClass('vboxMediumReadOnly');
+				}
+			}
 			l.run();
 		} else {
 			$(sel).val(m.type);

@@ -130,11 +130,15 @@
 				$(tbl).css({'padding':'0px','margin':'0px','border':'0px','width':'100%','border-spacing':'0px'});
 				var tr = document.createElement('tr');
 				var td = document.createElement('td');
-				$(td).css({'padding':'0px','margin':'0px','border':'0px','width':'100%'});
+				$(td).attr({'class':'vboxMediumSelectTableLeft'}).css({'padding':'0px','margin':'0px','width':'100%'});
 				$(td).append(sel);
 				$(tr).append(td);
-				td = document.createElement('td');
-				$(td).css({'padding':'0px','margin':'0px','border':'0px','width':'auto'});
+				var td = document.createElement('td');
+				$(td).attr({'class':'vboxMediumSelectTableRight'}).css({'padding':'0px','margin':'0px','width':'auto'});
+				$(td).click(function(){
+					$(this).closest('table').find('div.vboxMediumSelect').first().trigger('click');
+				});
+				
 				$(td).append(img);
 				$(tr).append(td);
 				$(tbl).append(tr);
@@ -148,7 +152,7 @@
 				
 				$(this).before(tbl);
 				
-				$(sel).click(function(){
+				$(sel).bind('click',function(){
 					if($('#'+$(this).data('origId')+'-table').hasClass('vboxDisabled')) return;
 					return showList(this);
 				});
@@ -164,13 +168,7 @@
 			// Hide list if it exists
 			$('#'+$(this).attr('id')+'-mediumselect-list').hide();
 					
-			// Set background image to medium attachment type	       
-			var bgimg = 'hd';
-			switch(options.type) {
-				case 'DVD': bgimg = 'cd'; break;
-				case 'Floppy': bgimg = 'fd'; break;
-			}
-			$('#'+$(this).attr('id')+'-mediumselectimg').css({'background-image':'url(images/vbox/'+bgimg+'_16px.png)'});
+			$('#'+$(this).attr('id')+'-mediumselectimg').css({'background-image':'url(images/downArrow.png)'});
 			
 			// Compile list
 			var list = $('#'+$(this).attr('id')+'-mediumselect-list');

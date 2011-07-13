@@ -307,6 +307,7 @@ var vboxMedia = {
 			case 'vhd':
 				return trans('VHD (Virtual Hard Disk)');
 		}
+		return m.format;
 	},
 	
 	// Get HD type
@@ -1148,12 +1149,12 @@ function vboxMediaMenu(type,callback,mediumPath) {
 			case 'vmm':
 				// vboxVMMDialogInit(callback,type,hideDiff,attached,vmPath)
 				vboxVMMDialogInit(function(m){
-					if(m && m.id) {
-						var med = vboxMedia.getMediumById(m.id);
+					if(m) {
+						var med = vboxMedia.getMediumById(m);
 						self.updateRecent(med);		
 						self.callback(med);
 					}
-				},self.type,false,{},self.mediumPath);
+				},self.type,true,{},self.mediumPath);
 				break;
 				
 			// Choose medium file

@@ -8,7 +8,7 @@
  * Import appliance wizard
  * 
  */
-function vboxImportApplianceDialogInit() {
+function vboxWizardImportApplianceInit() {
 
 	var l = new vboxLoader();
 	l.add('EnumNetworkAdapterType',function(d){$('#vboxIndex').data('vboxNetworkAdapterTypes',d);});
@@ -17,7 +17,6 @@ function vboxImportApplianceDialogInit() {
 
 		var vbw = new vboxWizard('wizardImportAppliance',trans('Appliance Import Wizard'),'images/vbox/vmw_ovf_import.png', 'images/vbox/vmw_ovf_import_bg.png','import');
 		vbw.steps = 2;
-		vbw.width = 900;
 		vbw.height = 500;
 		vbw.onFinish = function(wiz,dialog) {
 		
@@ -64,11 +63,10 @@ function vboxImportApplianceDialogInit() {
  * 
  * 
  */
-function vboxExportApplianceDialogInit() {
+function vboxWizardExportApplianceInit() {
 
 	var vbw = new vboxWizard('wizardExportAppliance',trans('Appliance Export Wizard'),'images/vbox/vmw_ovf_export.png','images/vbox/vmw_ovf_export_bg.png','export');
 	vbw.steps = 3;
-	vbw.width = 900;
 	vbw.height = 500;
 	vbw.onFinish = function(wiz,dialog) {
 
@@ -195,7 +193,7 @@ function vboxWizardNewVMInit(callback) {
  */
 function vboxWizardCloneVMInit(callback,args) {
 
-	var vbw = new vboxWizard('wizardCloneVM',trans('Clone a virtual machine'),'images/vbox/vmw_clone.png',null,'vm_clone');
+	var vbw = new vboxWizard('wizardCloneVM',trans('Clone a virtual machine'),'images/vbox/vmw_clone.png','images/vbox/vmw_clone_bg.png','vm_clone');
 	vbw.steps = 2;
 	vbw.args = args;
 	vbw.onFinish = function(wiz,dialog) {

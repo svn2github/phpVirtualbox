@@ -441,7 +441,7 @@ function vboxWizard(name, title, img, bg, icon) {
 	this.img = img;
 	this.finish = null;
 	this.width = 700;
-	this.height = 'auto';
+	this.height = 400;
 	this.bg = bg;
 	
 	// Initialize / display dialog
@@ -454,15 +454,20 @@ function vboxWizard(name, title, img, bg, icon) {
 		// main table
 		var tbl = $('<table />').attr({'class':'vboxWizard','style':'height: 100%; margin:0px; padding:0px;border:0px;'});
 		var tr = $('<tr />');
-		
+
+		/*
 		if(this.img) {
 			$('<td />').attr({'class':'vboxWizardImg'}).css({'background-image':'url(images/wizard_bg.png)','background-repeat':'repeat-y','padding':'0px','margin':'0px'}).append('<img src="' + self.img + '" style="width: 145px; height: 290px" />').appendTo(tr);
 		}
+		*/
+		
 		
 		var td = $('<td />').attr({'id':self.name+'Content','class':'vboxWizardContent'});
+		
 		if(self.bg) {
+			//$(d).css({'background':'url('+this.bg+') -10px -60px no-repeat','background-color':'#fff'});
+			$(d).css({'background':'url('+this.bg+') ' + (this.width - 360) +'px -60px no-repeat','background-color':'#fff'});
 			/*
-			 Disabled for now. Must run on Mac to see what Oracle was going for.
 			if($.browser.msie)
 				$(td).css({"filter":"progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled='true', src='"+this.bg+"', sizingMethod='scale')"});
 			else
@@ -511,7 +516,7 @@ function vboxWizard(name, title, img, bg, icon) {
 			vboxInitDisplay(self.name+'Content');
 			vboxUnsetLangContext();
 			
-			$(d).dialog({'closeOnEscape':false,'width':self.width,'height':self.height,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent vboxWizard','title':(icon ? '<img src="images/vbox/'+icon+'_16px.png" class="vboxDialogTitleIcon" /> ' : '') + self.title});
+			$(d).dialog({'closeOnEscape':true,'width':self.width,'height':self.height,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent vboxWizard','title':(icon ? '<img src="images/vbox/'+icon+'_16px.png" class="vboxDialogTitleIcon" /> ' : '') + self.title});
 
 			self.displayStep(1);
 		};

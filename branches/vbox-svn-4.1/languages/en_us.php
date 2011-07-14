@@ -499,11 +499,13 @@ public static $trans = array(
 'Format' => 'Format',/*new*/
 'Differencing' => 'Differencing',/*new*/
 
+/* Generic Wizard Message */
+'wizard buttons message' => 'Use the <b>%1</b> button to go to the next page of the wizard and the <b>%2</b> button to return to the previous page. You can also press <b>%3</b> if you want to cancel the execution of this wizard.',/*new*/
+
 /* Copy HD Wizard */
 'Copy Virtual Disk' => 'Copy Virtual Disk',/*new*/
 'Welcome to the virtual disk copying wizard' => 'Welcome to the virtual disk copying wizard',/*new*/
 'copyHD Step1 Message1' => 'This wizard will help you to copy a virtual disk.',/*new*/
-'copyHD Step1 Message2' => 'Use the <b>Next</b> button to go to the next page of the wizard and the <b>Back</b> button to return to the previous page. You can also press <b>Cancel</b> if you want to cancel the execution of this wizard.',/*new*/
 'copyHD Step1 Message3' => 'Please select the virtual disk which you would like to copy if it is not already selected. You can either choose one from the list or use the folder icon beside the list to select a virtual disk file',/*new*/
 'Virtual disk to copy' => 'Virtual disk to copy',/*new*/
 'Virtual disk file type' => 'Virtual disk file type',/*new*/
@@ -519,7 +521,6 @@ public static $trans = array(
 'Clone a virtual machine' => 'Clone a virtual machine', /*new*/
 'cloneVM Welcome' => 'Welcome to the virtual machine clone wizard', /*new*/
 'cloneVM Step1 Message1' => 'This wizard will help you to create a clone of your virtual machine', /*new*/
-'cloneVM Step1 Message2' => 'Use the <b>Next</b> button to go to the next page of the wizard and the <b>Back</b> button to return to the previous page. You can also press <b>Cancel</b> if you want to cancel the execution of this wizard.', /*new*/
 'cloneVM Step1 Message3' => 'Please choose a name for the new virtual machine:',/*new*/
 'Cloning Configuration' => 'Cloning Configuration',/*new*/
 'cloneVM Step2 Message1' => 'Please choose which parts of the virtual machine should be cloned.',/*new*/
@@ -532,9 +533,9 @@ public static $trans = array(
 
 /* New hard disk wizard */
 'Create New Virtual Disk' => 'Create New Virtual Disk',
-'newDisk Welcome' => 'Welcome virtual disk creation wizard', /*new*/
-'newDisk Step1 Message1' => 'This wizard will help you to create a new virtual hard disk for your virtual Machine.',/*new*/
-'newDisk Step1 Message2' => 'Use the <b>Next</b> button to go to the next page of the wizard and the <b>Back</b> button to return to the previous page. You can also press <b>Cancel</b> if you want to cancel the execution of this wizard.',/*new*/
+'newDisk Welcome' => 'Welcome to the virtual disk creation wizard', /*new*/
+'newDisk Step1 Message1' => 'This wizard will help you to create a new virtual hard disk for your virtual machine.',/*new*/
+'newDisk Step1 Message2' => 'Use the <b>Next</b> button to go to the next page of the wizard and the <b>Back</b> button to return to the previous page. You can also press <b>Cancel</b> if you want to cancel the execution of this wizard.',/*removed*/
 'newDisk Step1 Message3' => 'Please choose the type of file that you would like to use for the new virtual disk. If you do not need to use it with other virtualization software you can leave this setting unchanged.',/*new*/
 'File Type' => 'File Type',/*new*/
 'VDI (VirtualBox Disk Image)' => 'VDI (VirtualBox Disk Image)',/*new*/
@@ -563,7 +564,6 @@ public static $trans = array(
 'New Virtual Machine Wizard' => 'New Virtual Machine Wizard',
 'newVM Welcome' => 'Welcome to the New Virtual Machine Wizard!',
 'newVM Step1 Message1' => 'This wizard will guide you through the steps necessary to create a new virtual machine for VirtualBox.',
-'newVM Step1 Message2' => 'Use the <b>Next</b> button to go to the next page of the wizard and the <b>Back</b> button to return to the previous page. You can also press <b>Cancel</b> if you want to cancel the execution of this wizard.',/*new*/
 'VM Name and OS Type' => 'VM Name and OS Type',
 'newVM Step2 Message1' => 'Enter a name for the new virtual machine and select the type of guest operating system you plan to install onto the virtual machine.',
 'newVM Step2 Message2' => 'The name of the virtual machine usually indicates its software and hardware configuration. It will be used by all VirtualBox components to identify your virtual machine.',
@@ -591,7 +591,6 @@ public static $trans = array(
 'Appliance Export Wizard' => 'Appliance Export Wizard',
 'Appliance Export Wizard Welcome' => 'Welcome to the Appliance Export Wizard!',
 'appExport Step1 Message1' => 'This wizard will guide you through the process of exporting an appliance.',
-'appExport Step1 Message2' => 'Use the Next button to go to the next page of the wizard and the Back button to return to the previous page. You can also press Cancel if you want to cancel the execution of this wizard.',
 'appExport Step1 Message3' => 'Please select the virtual machines that should be added to the appliance. You can select more than one. Please note that these machines have to be turned off before they can be exported.',
 'Appliance Export Settings' => 'Appliance Export Settings',
 'appExport Step2 Message1' => 'Please choose a filename to export the OVF/OVA to. If you use an ova file name extension, then all the files will be combined into one Open Virtualization Format Archive. If you use an ovf extension, several files will be written separately. Other extensions are not allowed.',
@@ -600,7 +599,6 @@ public static $trans = array(
 'Appliance Import Wizard' => 'Appliance Import Wizard',
 'Appliance Import Wizard Welcome' => 'Welcome to the Appliance Import Wizard!',
 'appImport Step1 Message1' => 'This wizard will guide you through the process of importing an appliance.',
-'appImport Step1 Message2' => 'Use the Next button to go to the next page of the wizard and the Back button to return to the previous page. You can also press Cancel if you want to cancel the execution of this wizard.',
 'appImport Step1 Message3' => 'VirtualBox currently supports importing appliances saved in the Open Virtualization Format (OVF). To continue, select the file to import below:',
 'Appliance Import Settings' => 'Appliance Import Settings',
 'appImport Step2 Message1' => 'These are the virtual machines contained in the appliance and the suggested settings of the imported VirtualBox machines. You can change many of the properties shown by double-clicking on the items and disable others using the check boxes below.',

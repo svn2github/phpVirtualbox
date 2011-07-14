@@ -493,6 +493,8 @@ function vboxWizard(name, title, img, bg, icon) {
 			},self.name);
 		
 		l.onLoad = function(){
+		
+			$('#'+self.name+'Content').find('p.vboxWizButtonsMessage').html(trans('wizard buttons message').replace('%1',trans('Next')).replace('%2',trans('Back')).replace('%3',trans('Cancel')));
 			
 			// Opera hidden select box bug
 			////////////////////////////////

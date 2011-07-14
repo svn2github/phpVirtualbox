@@ -8,9 +8,12 @@
  -->
 <!-- Step 1 -->
 <div id='wizardCopyHDStep1' title='Welcome to the virtual disk copying wizard' style='display: none'>
-	<span class='translate'>newDisk Step1 Message1</span>
-	<p class='translate'>newDisk Step1 Message2</p>
-	<p class='translate'>newDisk Step1 Message3</p>
+	
+	<span class='translate'>copyHD Step1 Message1</span>
+	
+	<p class='vboxWizButtonsMessage'>wizard buttons message</p>
+	
+	<p class='translate'>copyHD Step1 Message3</p>
 
 	<span class='vboxTableLabel translate'>Virtual disk to copy</span>
 	<div class='vboxBordered'>
@@ -207,11 +210,13 @@ function wizardCopyHDUpdateName(sel) {
 $('#wizardCopyHDStep1').bind('show',function(e,wiz){
 
 	// Already initialized?
-	if($('#wizardCopyHDStep1').data('init') || !wiz || !wiz.suggested) return;
+	if($('#wizardCopyHDStep1').data('init')) return;
 
 	
-    if(wiz.suggested.medium)
+    if(wiz && wiz.suggested && wiz.suggested.medium)
     	$(document.forms['frmwizardCopyHD'].copyHDDiskSelect).mediumselect({'selectMedium':wiz.suggested.medium});
+    
+    $('#wizardCopyHDStep1').find('.vboxWizButtonsMessage').html(function(i,e){return e.replace('%1',trans('Next')).replace('%2',trans('Bck')).replace('%3',trans('Cancel'));});
     
 	$('#wizardCopyHDStep1').data('init',true);
 	

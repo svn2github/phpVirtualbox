@@ -25,9 +25,10 @@
 
 	<span class='translate'>cloneVM Step2 Message1</span>
 	
-	<p class='translate' id='vboxCloneWizStep2Msg2'>cloneVM Step2 Message2</p>
-	
-	<p class='translate' id='vboxCloneWizStep2Msg3'>cloneVM Step2 Message3</p>
+	<p><span class='translate'>Current machine state desc</span>
+		<span class='translate' id='wizardCloneVMCurrentAll'>Current machine and all child states desc</span>
+		<span class='translate'>All states desc</span>
+		</p>
 	
 	<table>
 		<tr style='vertical-align: bottom;'>
@@ -58,10 +59,8 @@ $('#wizardCloneVMStep1').bind('show',function(e,wiz){
 	
 	document.forms['frmwizardCloneVM'].elements.cloneVMName.value = trans('%s Clone').replace('%s',wiz.args.vm.name);
 	
-	if(wiz.args.snapshot && wiz.args.snapshot.children && wiz.args.snapshot.children.length) {
-		$('#vboxCloneWizStep2Msg2').hide();
-	} else {
-		$('#vboxCloneWizStep2Msg3').hide();
+	if(!(wiz.args.snapshot && wiz.args.snapshot.children && wiz.args.snapshot.children.length)) {
+		$('#wizardCloneVMCurrentAll').hide();
 		$('#vboxCloneCurrentAll').hide();
 	}
 

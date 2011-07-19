@@ -20,10 +20,12 @@ Copyright (C) 2011 Ian Moore (imoore76 at yahoo dot com)
 </form>
 </div>
 <script type='text/javascript'>
-$('#vboxLogin').find(".translate").html(function(i,h){return trans(h);}).removeClass('translate');
+
+$('#vboxLogin').find(".translate").html(function(i,h){return trans(h,'UIUsers');}).removeClass('translate');
+
 if($.browser.msie || $.browser.webkit) $('#vboxLoginBtnRow').css({'display':''});
 function vboxLoginSubmit() {
-	$('#vboxLogin').dialog( "option", "buttons" )[trans('Log in')]();
+	$('#vboxLogin').dialog( "option", "buttons" )[trans('Log in','UIUsers')]();
 	return false;
 }
 </script>

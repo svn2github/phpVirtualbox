@@ -379,6 +379,16 @@
           <xsd:enumeration value="WhiteOut"/>
         </xsd:restriction>
       </xsd:simpleType>
+      <!-- enum: ImportOptions -
+            KeepAllMACs: 1 -
+            KeepNATMACs: 2 -
+            -->
+      <xsd:simpleType name="ImportOptions">
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="KeepAllMACs"/>
+          <xsd:enumeration value="KeepNATMACs"/>
+        </xsd:restriction>
+      </xsd:simpleType>
       <!-- enum: VirtualSystemDescriptionType -
             Ignore: 1 -
             OS: 2 -
@@ -403,6 +413,7 @@
             NetworkAdapter: 21 -
             USBController: 22 -
             SoundCard: 23 -
+            SettingsFile: 24 -
             -->
       <xsd:simpleType name="VirtualSystemDescriptionType">
         <xsd:restriction base="xsd:string">
@@ -429,6 +440,7 @@
           <xsd:enumeration value="NetworkAdapter"/>
           <xsd:enumeration value="USBController"/>
           <xsd:enumeration value="SoundCard"/>
+          <xsd:enumeration value="SettingsFile"/>
         </xsd:restriction>
       </xsd:simpleType>
       <!-- enum: VirtualSystemDescriptionValueType -
@@ -475,12 +487,14 @@
             Link: 1 -
             KeepAllMACs: 2 -
             KeepNATMACs: 3 -
+            KeepDiskNames: 4 -
             -->
       <xsd:simpleType name="CloneOptions">
         <xsd:restriction base="xsd:string">
           <xsd:enumeration value="Link"/>
           <xsd:enumeration value="KeepAllMACs"/>
           <xsd:enumeration value="KeepNATMACs"/>
+          <xsd:enumeration value="KeepDiskNames"/>
         </xsd:restriction>
       </xsd:simpleType>
       <!-- enum: HostNetworkInterfaceMediumType -
@@ -2384,6 +2398,7 @@
         <xsd:complexType>
           <xsd:sequence>
             <xsd:element name="_this" type="xsd:string"/>
+            <xsd:element name="options" minOccurs="0" maxOccurs="unbounded" type="vbox:ImportOptions"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
@@ -7557,6 +7572,24 @@
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
+      <!-- method IGuest::fileQuerySize-->
+      <xsd:element name="IGuest_fileQuerySize">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="_this" type="xsd:string"/>
+            <xsd:element name="file" type="xsd:string"/>
+            <xsd:element name="userName" type="xsd:string"/>
+            <xsd:element name="password" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="IGuest_fileQuerySizeResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="returnval" type="xsd:long"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
       <!-- method IGuest::setProcessInput-->
       <xsd:element name="IGuest_setProcessInput">
         <xsd:complexType>
@@ -12351,6 +12384,21 @@
         </xsd:complexType>
       </xsd:element>
       <!--Interface IMachineDataChangedEvent-->
+      <!-- readonly attribute IMachineDataChangedEvent::temporary-->
+      <xsd:element name="IMachineDataChangedEvent_getTemporary">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="_this" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="IMachineDataChangedEvent_getTemporaryResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="returnval" type="xsd:boolean"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
       <!--Interface IMediumRegisteredEvent-->
       <!-- readonly attribute IMediumRegisteredEvent::mediumId-->
       <xsd:element name="IMediumRegisteredEvent_getMediumId">
@@ -16515,6 +16563,13 @@
   <message name="IGuest_fileExistsResultMsg">
     <part name="parameters" element="vbox:IGuest_fileExistsResponse"/>
   </message>
+  <!-- method IGuest::fileQuerySize-->
+  <message name="IGuest_fileQuerySizeRequestMsg">
+    <part name="parameters" element="vbox:IGuest_fileQuerySize"/>
+  </message>
+  <message name="IGuest_fileQuerySizeResultMsg">
+    <part name="parameters" element="vbox:IGuest_fileQuerySizeResponse"/>
+  </message>
   <!-- method IGuest::setProcessInput-->
   <message name="IGuest_setProcessInputRequestMsg">
     <part name="parameters" element="vbox:IGuest_setProcessInput"/>
@@ -18933,6 +18988,13 @@
         messages for interface IMachineDataChangedEvent
         *************************************
       -->
+  <!-- readonly attribute IMachineDataChangedEvent::temporary-->
+  <message name="IMachineDataChangedEvent_getTemporaryRequestMsg">
+    <part name="parameters" element="vbox:IMachineDataChangedEvent_getTemporary"/>
+  </message>
+  <message name="IMachineDataChangedEvent_getTemporaryResultMsg">
+    <part name="parameters" element="vbox:IMachineDataChangedEvent_getTemporaryResponse"/>
+  </message>
   <!--
         *************************************
         messages for interface IMediumRegisteredEvent
@@ -22249,6 +22311,12 @@
       <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
       <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
     </operation>
+    <operation name="IGuest_fileQuerySize">
+      <input message="vbox:IGuest_fileQuerySizeRequestMsg"/>
+      <output message="vbox:IGuest_fileQuerySizeResultMsg"/>
+      <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
+      <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
+    </operation>
     <operation name="IGuest_setProcessInput">
       <input message="vbox:IGuest_setProcessInputRequestMsg"/>
       <output message="vbox:IGuest_setProcessInputResultMsg"/>
@@ -24411,6 +24479,12 @@
           operations in portType for interface IMachineDataChangedEvent
           *************************************
         -->
+    <operation name="IMachineDataChangedEvent_getTemporary">
+      <input message="vbox:IMachineDataChangedEvent_getTemporaryRequestMsg"/>
+      <output message="vbox:IMachineDataChangedEvent_getTemporaryResultMsg"/>
+      <fault name="InvalidObjectFault" message="vbox:InvalidObjectFaultMsg"/>
+      <fault name="RuntimeFault" message="vbox:RuntimeFaultMsg"/>
+    </operation>
     <!--
           *************************************
           operations in portType for interface IMediumRegisteredEvent
@@ -31332,6 +31406,21 @@
         <soap:fault name="RuntimeFault" use="literal"/>
       </fault>
     </operation>
+    <operation name="IGuest_fileQuerySize">
+      <soap:operation soapAction="" style="document"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="InvalidObjectFault">
+        <soap:fault name="InvalidObjectFault" use="literal"/>
+      </fault>
+      <fault name="RuntimeFault">
+        <soap:fault name="RuntimeFault" use="literal"/>
+      </fault>
+    </operation>
     <operation name="IGuest_setProcessInput">
       <soap:operation soapAction="" style="document"/>
       <input>
@@ -36392,6 +36481,21 @@
           operations in portType for interface IMachineDataChangedEvent
           *************************************
         -->
+    <operation name="IMachineDataChangedEvent_getTemporary">
+      <soap:operation soapAction="" style="document"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="InvalidObjectFault">
+        <soap:fault name="InvalidObjectFault" use="literal"/>
+      </fault>
+      <fault name="RuntimeFault">
+        <soap:fault name="RuntimeFault" use="literal"/>
+      </fault>
+    </operation>
     <!--
           *************************************
           operations in portType for interface IMediumRegisteredEvent

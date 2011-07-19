@@ -42,7 +42,7 @@ Copyright (C) 2011 Ian Moore (imoore76 at yahoo dot com)
 </div>
 <script type='text/javascript'>
 
-$('#vboxUserEdit').find(".translate").html(function(i,h){return trans(h);}).removeClass('translate');
+$('#vboxUserEdit').find(".translate").html(function(i,h){return trans(h,'UIUsers');}).removeClass('translate');
 		
 $('#vboxUserEdit').bind('setMode',function(e,mode) {
 	$('#vboxUserEdit').find('table').first().find('tr:not(.'+mode+')').css('display','none');
@@ -50,7 +50,7 @@ $('#vboxUserEdit').bind('setMode',function(e,mode) {
 
 if($.browser.msie || $.browser.webkit) $('#vboxUserBtnRow').css({'display':''});
 function vboxUserFormSubmit() {
-	$('#vboxUserEdit').parent().find('span:contains("'+trans('OK')+'")').trigger('click');
+	$('#vboxUserEdit').parent().find('span:contains("'+trans('OK','QIMessageBox')+'")').trigger('click');
 	return false;
 }
 

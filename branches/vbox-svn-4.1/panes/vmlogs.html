@@ -20,7 +20,7 @@ function vboxShowLogsInit(vm) {
 	var logs = $('#vboxVMLogsDialog').data('logs');
 
 	if(!logs || !logs.length) {
-		$('#vboxVMLogTabs').html(trans('No logs found.'));
+		$('#vboxVMLogTabs').html(trans('<p>No log files found. Press the <b>Refresh</b> button to rescan the log folder <nobr><b>%1</b></nobr>.</p>','VBoxVMLogViewer').replace('%1',$('#vboxVMLogsDialog').data('logpath')));
 		return;
 	}
 

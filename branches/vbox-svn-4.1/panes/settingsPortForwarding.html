@@ -31,10 +31,11 @@
 /*
  * Translate
  */
-vboxSetLangContext('vboxPortForwarding');
+vboxSetLangContext('UIPortForwardingModel');
 $('#vboxSettingsPortForwarding').find('.translate').html(function(i,h){return trans(h);}).removeClass('translate');
 vboxUnsetLangContext();
 
+vboxSetLangContext('UIMachineSettingsPortForwardingDlg');
 /*
  * Init port forwarding buttons and toolbar
  */
@@ -49,7 +50,7 @@ var sButtons = new Array(
 			var rules = $('#vboxSettingsPortForwardingList').children('tr');
 			vboxSetLangContext('vboxPortForwarding');
 			for(var n = 1; n < 100; n++) {
-				var rname = trans('Rule') + ' ' + n;
+				var rname = trans('Rule %1').replace('%1',n);
 				for(var i = 0; i < rules.length; i++) {
 					if($(rules[i]).data('vboxRule')[0] == rname) {
 						rname = null;
@@ -75,6 +76,9 @@ var sButtons = new Array(
 );
 pfToolbar = new vboxToolbarSmall(sButtons);
 pfToolbar.addButtons('vboxSettingsPortForwardingToolbar');
+
+vboxUnsetLangContext();
+
 $('#vboxSettingsPortForwardingList').bind('select',pfToolbar.update);
 $('#vboxSettingsPortForwardingList').trigger('select');
 
@@ -94,6 +98,7 @@ function vboxSettingsPortForwardingEdit(td,type) {
 			case 2:
 			case 4:
 				$(this).val($(this).val().replace(/[^0-9\.]/,''));
+				/*
 				if($(this).val()) {
 					var ips = $(this).val().split('.');
 					if(ips.length != 4 || ips[0] < 1) {
@@ -116,6 +121,7 @@ function vboxSettingsPortForwardingEdit(td,type) {
 					}
 					$(this).val(ips.join('.'));
 				}
+				*/
 				break;
 			/* ports */
 			case 3:
@@ -164,7 +170,7 @@ function vboxSettingsPortForwardingEditProto(td) {
 	$(td).parent().data('vboxRule')[1] = val;
 	
 	vboxSetLangContext('vboxPortForwarding');
-	$(td).html(val == '1' ? trans('TCP') : trans('UDP'));
+	$(td).html(val == '1' ? trans('TCP','VBoxGlobal') : trans('UDP','VBoxGlobal'));
 	vboxUnsetLangContext();
 	
 }
@@ -192,7 +198,7 @@ function vboxSettingsPortForwardingAdd(r) {
 		}
 		$(this).parent().addClass('vboxListItemSelected').siblings().removeClass('vboxListItemSelected');
 		$('#vboxSettingsPortForwardingList').trigger('select',$(this).parent());
-	}).addClass('vboxProto').html(trans(rule[1] == 1 ? 'TCP' : 'UDP')).appendTo(tr);
+	}).addClass('vboxProto').html(trans(rule[1] == 1 ? 'TCP' : 'UDP','VBoxGlobal')).appendTo(tr);
 	
 	for(var i = 2; i < rule.length; i++) {
 		$('<td />').data('vboxIndex',i).click(function(){

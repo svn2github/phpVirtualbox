@@ -12,7 +12,7 @@
 		<td colspan='2'><input name='vboxSettingsNetEnabled' class='vboxCheckbox vboxEnablerCheckbox' type='checkbox' /> <span class='translate'>Enable Network Adapter</span></td>
 	</tr>
 	<tr>
-		<th style='min-width: 120px'><span class='translate'>Attached to</span>:</th>
+		<th style='min-width: 120px'><span class='translate'>Attached to:</span></th>
 		<td style='width: 100%' class='vboxEnablerTrigger'>
 			<select name='vboxSettingsNetAttachedTo' onchange='vboxSettingsUpdateNetworkOptions(this);' style='width: 100%'>
 				<option value='Null' class='translate'>Not attached</option>
@@ -26,7 +26,7 @@
         </td>
 	</tr>
 	<tr>
-		<th class='vboxSettingsNetAdapterNamedLabel'><span class='translate'>Name</span>:</th>
+		<th class='vboxSettingsNetAdapterNamedLabel'><span class='translate'>Name:</span></th>
 		<td>
              <select name='vboxSettingsNetName' class='vboxSettingsNetAdapterNamed' style='width: 100%'>
                 <option value=''></option>
@@ -37,7 +37,7 @@
 	
 	<!-- Advanced NAT Settings -->
 	<tr class='vboxSettingsAdvancedNat' style='display: none'>
-		<th><span class='translate'>NAT Alias Mode</span> :</th>
+		<th><span class='translate'>NAT Alias Mode:</span></th>
 		<td>
 			<input type='checkbox' class='vboxCheckbox' class='vboxEnablerListen' name='vboxSettingsNetAliasModeProxyOnly' /> <span class='translate vboxEnablerListen'>Proxy Only</span><br />
 			<input type='checkbox' class='vboxCheckbox' class='vboxEnablerListen' name='vboxSettingsNetAliasModeSamePorts' /> <span class='translate vboxEnablerListen'>Same Ports</span><br />
@@ -60,14 +60,14 @@
 		<td></td>
 	</tr>
 	<tr class='vboxSettingsNetToggleAdvanced' style='display: none'>
-		<th><span class='translate'>Adapter Type</span>:</th>
+		<th><span class='translate'>Adapter Type:</span></th>
 		<td>
 			<select name='vboxSettingsNetAdapter' style='width: 100%'>
 			</select>
 		</td>
 	</tr>
 	<tr class='vboxSettingsNetToggleAdvanced' style='display: none'>
-		<th class='vboxSettingsNetPromiscuousMode'><span class='translate'>Promiscuous Mode</span>:</th>
+		<th class='vboxSettingsNetPromiscuousMode'><span class='translate'>Promiscuous Mode:</span></th>
 		<td>
 			<select class='vboxSettingsNetPromiscuousMode' name='vboxSettingsNetAdapterPromiscuousMode' style='width: 100%'>
 				<option value='Deny' class='translate'>Deny</option>
@@ -77,7 +77,7 @@
 		</td>
 	</tr>	
 	<tr class='vboxSettingsNetToggleAdvanced' style='display: none'>
-		<th><span class='translate'>Mac Address</span>: </th>
+		<th><span class='translate'>Mac Address:</span></th>
 		<td style='white-space: nowrap'><input type='text' class='vboxText' style='width: 200px' name='vboxSettingsNetMAC' size='40' />
 			<input class="vboxSettingsNetMacGen vboxImgButton" style='background: url(images/vbox/refresh_16px.png) 1px 1px no-repeat; width: 18px; height: 18px; vertical-align:bottom' type="button"  value="" />
 		</td>
@@ -95,6 +95,11 @@
 </div>
 <script type='text/javascript'>
 
+/* Translations */
+$(document.forms['frmVboxSettings'].vboxSettingsNetAttachedTo).find('option').html(function(i,h){return trans(h,'VBoxGlobal');});
+$(document.forms['frmVboxSettings'].vboxSettingsNetAdapterPromiscuousMode).find('option').html(function(i,h){return trans(h,'VBoxGlobal');});
+
+
 /*
  * 
  * Setup data for networking options.
@@ -109,7 +114,7 @@ var vboxSettingsNetNetworks = new Array();
  */
 var nics = $('#vboxSettingsDialog').data('vboxNetworkAdapterTypes');
 for(var i = 1; i < nics.length; i++) { // index 0 is 'Null' and not used
-	var opt = new Option(nics[i],nics[i]); // translated later
+	var opt = new Option(trans(vboxNetworkAdapterTypeChipset(nics[i]),'VBoxGlobal'),nics[i]);
 	document.forms['frmVboxSettings'].vboxSettingsNetAdapter.options[document.forms['frmVboxSettings'].vboxSettingsNetAdapter.options.length] = opt;
 }
 
@@ -131,14 +136,7 @@ for(var i = 0; i < vboxHostNetworking.networkInterfaces.length; i++) {
 
 var vboxSettingsNetTemplate = document.getElementById('vboxSettingsTabNetAdapter');
 var vboxSettingsNetContainer = $(vboxSettingsNetTemplate).parent();
-
-// Translate buttons
-$(vboxSettingsNetTemplate).find('input.vboxButton').val(function(i,h){return trans(h);});
  
-/* translated adapter select values */
-for(var i = 0; i < document.forms['frmVboxSettings'].vboxSettingsNetAdapter.options.length; i++) {
-	document.forms['frmVboxSettings'].vboxSettingsNetAdapter.options[i].text = trans(document.forms['frmVboxSettings'].vboxSettingsNetAdapter.options[i].text) + ' (' + document.forms['frmVboxSettings'].vboxSettingsNetAdapter.options[i].text + ')';
-}
 
 /* Network advanced show / hide */
 $('#vboxSettingsTabNetAdapter').find('input.netImgAdvanced').toggle(
@@ -180,7 +178,7 @@ for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
 
 	
 	/* tab */
-	$(ul).append($('<li />').html('<a href="#' + vboxSettingsNetTemplate.id + (i + 1) +'"><span>' + trans('Adapter') + ' ' + (i + 1) + '</span></a>'));
+	$(ul).append($('<li />').html('<a href="#' + vboxSettingsNetTemplate.id + (i + 1) +'"><span>' + trans('Adapter %1','VBoxGlobal').replace('%1',(i + 1)) + '</span></a>'));
 
 	/* tab content */
 	var newTab = $("#vboxSettingsTabNetAdapter").clone(true);
@@ -254,7 +252,7 @@ for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
 			}
 			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[nicIndex].redirects = rules;
 		});
-	});
+	}).val(trans('Port Forwarding','UIMachineSettingsNetwork'));
 	
 	// Set Nat values
 	if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {

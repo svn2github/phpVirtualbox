@@ -62,12 +62,12 @@
 				<div id='vboxSettingsController' style='width: 100%; display: none;'>
 					<table style='width: 100%' class='vboxVertical'>
 						<tr>
-							<th><span class='translate'>Name</span>:</th>
+							<th><span class='translate'>Name:</span></th>
 							<td style='width: 100%'><input type='text' class='vboxText'
 								name='vboxSettingsStorageItemName' style='width: 100%' /></td>
 						</tr>
 						<tr>
-							<th><span class='translate'>Type</span>:</th>
+							<th><span class='translate'>Type:</span></th>
 							<td><select name='vboxSettingsStorageControllerType'
 								style='width: 100%'>
 								<option value='ICH6'>ICH6</option>
@@ -80,7 +80,7 @@
 								name='vboxSettingsStorageHostCache'/> <span class='translate'>Use host I/O cache</span></td>
 						</tr>
 						<tr id='vboxSettingsControllerPortCountRow' style='display: none'>
-							<th><span class='translate'>SATA Port Count</span>:</th>
+							<th><span class='translate'>Port Count:</span></th>
 							<td>
 								<select name='vboxSettingsControllerPortCount'>
 								</select>
@@ -93,7 +93,7 @@
 				<div id='vboxSettingsStorageAttachment' style='display: none'>
 					<table class='vboxVertical'>
 						<tr style='vertical-align: middle;'>
-							<th><span class='translate' id='vboxSettingsControllerSlotLabel'>HardDisk</span>:</th>
+							<th><span class='translate' id='vboxSettingsControllerSlotLabel'>HardDisk</span></th>
 							<td style='width: 100%'>
 								<table class='vboxInvisible' style='width: 100%'>
 									<tr style='vertical-align: middle'>
@@ -135,27 +135,27 @@
 					<div id='vboxSettingsHDInfo'>
 						<table class='vboxVertical'>
 							<tr>
-								<th><span class='translate'>Type (Format)</span>:</th>
+								<th><span class='translate'>Type (Format):</span></th>
 								<td><span id='vboxSettingsHDtype'>Image</span></td>
 							</tr>				
 							<tr>
-								<th><span class='translate'>Virtual Size</span>:</th>
+								<th><span class='translate'>Virtual Size:</span></th>
 								<td><span id='vboxSettingsHDvsize'>30 GB</span></td>
 							</tr>
 							<tr>
-								<th><span class='translate'>Actual Size</span>:</th>
+								<th><span class='translate'>Actual Size:</span></th>
 								<td><span id='vboxSettingsHDasize'>30 GB</span></td>
 							</tr>
 							<tr>
-								<th><span class='translate'>Details</span>:</th>
+								<th><span class='translate'>Details:</span></th>
 								<td><span id='vboxSettingsHDDetails'>Dynamic</span></td>
 							</tr>							
 							<tr>
-								<th><span class='translate'>Location</span>:</th>
+								<th><span class='translate'>Location:</span></th>
 								<td><span id='vboxSettingsHDlocation'>/usr/local/blah/etc..</span></td>
 							</tr>
 							<tr>
-								<th><span class='translate'>Attached to</span>:</th>
+								<th><span class='translate'>Attached To:</span></th>
 								<td><span id='vboxSettingsHDattached'>Some Virtual
 								Machine Name</span></td>
 							</tr>
@@ -166,19 +166,19 @@
 					<div id='vboxSettingsImageInfo'>
 						<table class='vboxVertical'>
 							<tr>
-								<th><span class='translate'>Type</span>:</th>
+								<th><span class='translate'>Type:</span></th>
 								<td><span id='vboxSettingsImageType'>Image</span></td>
 							</tr>		
 							<tr>
-								<th><span class='translate'>Size</span>:</th>
+								<th><span class='translate'>Size:</span></th>
 								<td><span id='vboxSettingsImageSize'>30 GB</span></td>
 							</tr>
 							<tr>
-								<th><span class='translate'>Location</span>:</th>
+								<th><span class='translate'>Location:</span></th>
 								<td><span id='vboxSettingsImageLocation'>/usr/local/blah/etc..</span></td>
 							</tr>
 							<tr>
-								<th><span class='translate'>Attached to</span>:</th>
+								<th><span class='translate'>Attached To:</span></th>
 								<td><span id='vboxSettingsImageAttached'>Some Virtual
 								Machine Name</span></td>
 							</tr>
@@ -273,20 +273,18 @@ for(var a = 0; a < cons.length; a++) {
 }
 
 /* Setup SATA port count */
-if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
-	var sel = document.forms['frmVboxSettings'].vboxSettingsControllerPortCount;
-	sel.options[0] = new Option(trans('Automatic'),0);
-	for(var i = 1; i <= vboxStorage.SATA.maxPortCount; i++) {
-		sel.options[sel.options.length] = new Option(i,i);
-	}
-	$(sel).change(function(){
-		$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().data('controller').portCount = $(this).val();
-		// Check for 'Auto'
-		if($(this).val() == 0) $('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount = 'yes';
-		else $('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount = 'no';
-		
-	});
+var sel = document.forms['frmVboxSettings'].vboxSettingsControllerPortCount;
+sel.options[0] = new Option(trans('Automatic'),0);
+for(var i = 1; i <= vboxStorage.SATA.maxPortCount; i++) {
+	sel.options[sel.options.length] = new Option(i,i);
 }
+$(sel).change(function(){
+	$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().data('controller').portCount = $(this).val();
+	// Check for 'Auto'
+	if($(this).val() == 0) $('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount = 'yes';
+	else $('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount = 'no';
+	
+});
 
 /* Pre-load storage images */
 var imgs = new Array();
@@ -375,7 +373,7 @@ function vboxSettingsAddController(con,list) {
     	if(dtypes[i] == 'dvd') {
 		    b = {
 				'name' : con.bus+'addcd',
-				'label' : trans('Add CD/DVD Device'),
+				'label' : 'Add CD/DVD Device',
 				'icon' : 'cd_add',
 				'enabled' : function (item) {
 					return true;
@@ -385,7 +383,7 @@ function vboxSettingsAddController(con,list) {
     	} else if(dtypes[i] == 'disk') {
 		    b = {
 		    		'name' : con.bus+'adddrive',
-		    		'label' : trans('Add Hard Disk'),
+		    		'label' : 'Add Hard Disk',
 		    		'icon' : 'hd_add',
 		    		'enabled' : function (item) {
 		    			return true;
@@ -394,16 +392,16 @@ function vboxSettingsAddController(con,list) {
 		    	};
     		
     	} else if(dtypes[i] == 'floppy') {
-    		b = {'label':trans('Add Floppy Device'),
+    		b = {'label':'Add Floppy Device',
 				'icon' : 'fd_add',
 				'click' : function (item) { vboxSettingsStorageAddMedium(con.bus,'Floppy'); }
 				};
     	}
+    	b.context = 'UIMachineSettingsStorage';
 	    var tb = new vboxToolbarSmall([b]);
 	   	tb.buttonStyle = 'margin:0px;padding:0px;border:0px;background-repeat:no-repeat;background-position:0px 0px;';
 	   	tb.noHover = true;
 	   	tb.addButtons('vboxSettingsController' + con.bus + 'BtnDrive');
-		
 	}
 
     	
@@ -492,15 +490,17 @@ function vboxSettingsSelectAttachment(tbl) {
     /* change labels */
     var label = null;
     var cbox = null;
+    
+    vboxSetLangContext('UIMachineSettingsStorage');
     switch(ma.type) {
     	case 'HardDisk':
-        	label = 'HardDisk';
+        	label = 'Hard Disk:';
     		$('#vboxSettingsControllerDeviceOptionRow').css('display','');
     		$('#vboxSettingsControllerDeviceOptionLabel').html(trans('Solid-state drive'));  
     		document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.checked = (ma.nonRotational ? 'checked' : '');            
         	break;
     	case 'DVD':
-        	label = 'DVD Drive';
+        	label = 'CD/DVD Drive:';
            	$('#vboxSettingsControllerDeviceOptionRow').css('display','');
             if(ma.medium && ma.medium.id && ma.medium.hostDrive) {
 	    		$('#vboxSettingsControllerDeviceOptionLabel').html(trans('Passthrough'));  
@@ -511,11 +511,12 @@ function vboxSettingsSelectAttachment(tbl) {
             }            	
         	break;
     	case 'Floppy':
-        	label = 'Floppy Drive';
+        	label = 'Floppy Drive:';
         	$('#vboxSettingsControllerDeviceOptionRow').css('display','none');
         	break;
     }
     $('#vboxSettingsControllerSlotLabel').html(trans(label));
+    vboxUnsetLangContext();
 
     
     /* Show / Hide HD/Media Info */
@@ -556,37 +557,18 @@ function vboxSettingsSelectAttachment(tbl) {
     		
         $('#vboxSettingsHDvsize').html(vboxMbytesConvert(disp.logicalSize));
         $('#vboxSettingsHDasize').html(vboxBytesConvert(disp.size));
-        $('#vboxSettingsHDDetails').html(vboxMedia.getHardDiskVariant(disp));
+        $('#vboxSettingsHDDetails').html(trans(vboxMedia.getHardDiskVariant(disp),'VBoxGlobal'));
         $('#vboxSettingsHDlocation').html(disp.location);
-        $('#vboxSettingsHDtype').html(trans(disp.type) + ' (' + disp.format + ')');
+        $('#vboxSettingsHDtype').html(trans(disp.type,'VBoxGlobal') + ' (' + disp.format + ')');
         $('#vboxSettingsHDattached').html(vboxMediumAttachedTo(disp));            
 
         
     } else {
         
-    	$('#vboxSettingsImageType').html(m ? trans((m.hostDrive ? 'Host Drive' : 'Image')): '--');
+    	$('#vboxSettingsImageType').html(m ? trans((m.hostDrive ? 'Host Drive' : 'Image'),'UIMachineSettingsStorage'): '--');
         $('#vboxSettingsImageSize').html((m && !m.hostDrive ? vboxBytesConvert(m.size):'--'));
         $('#vboxSettingsImageLocation').html((m && !m.hostDrive ? m.location:'--'));
         $('#vboxSettingsImageAttached').html((m && !m.hostDrive ? vboxMediumAttachedTo(m) :'--'));
-        /*
-        if(m && m.hostDrive) {
-        	var passthrough = ma.passthrough;
-            document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.disabled = false;
-            document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.checked = passthrough;
-            $('#vboxSettingsControllerDeviceOptionLabel').removeClass('vboxDisabled');
-            
-        } else if(ma.type == 'DVD') {
-        	
-            document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.disabled = false;
-            document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.checked = ma.temporaryEject;
-            $('#vboxSettingsControllerDeviceOptionLabel').removeClass('vboxDisabled');
-            
-        } else {
-            document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.checked = false;
-            document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.disabled = true;
-            $('#vboxSettingsControllerDeviceOptionLabel').addClass('vboxDisabled');
-        }
-        */
         
     }
 
@@ -732,7 +714,7 @@ function vboxSettingsSelectController(tbl) {
     document.forms['frmVboxSettings'].vboxSettingsStorageControllerType.options.length = 0;
 	$(document.forms['frmVboxSettings'].vboxSettingsStorageControllerType).children().remove();
     for(var i = 0; i < vboxStorage[busType].types.length; i++) {
-    	document.forms['frmVboxSettings'].vboxSettingsStorageControllerType.options[i] = new Option(trans(vboxStorage[busType].types[i]),vboxStorage[busType].types[i]);
+    	document.forms['frmVboxSettings'].vboxSettingsStorageControllerType.options[i] = new Option(trans(vboxStorageControllerType(vboxStorage[busType].types[i]),'VBoxGlobal'),vboxStorage[busType].types[i]);
     }
 
     /* Set default type */
@@ -743,14 +725,11 @@ function vboxSettingsSelectController(tbl) {
     $('#vboxSettingsMediaInfo').css('display','none');
     $('#vboxSettingsHDInfo').css('display','none');
     
-    // Show SATA port count?
-    if(busType == 'SATA' && $('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
+    // Show SATA port count
+    if(busType == 'SATA') {
 	    $(document.forms['frmVboxSettings'].vboxSettingsControllerPortCount).val($('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount == 'yes' ? 0 : $(tbl).data('controller').portCount);
-    	$('#vboxSettingsControllerPortCountRow').css('display','');
-	} else {
-		$('#vboxSettingsControllerPortCountRow').css('display','none');
+	   	$('#vboxSettingsControllerPortCountRow').css('display','');
 	}
-
 
     /* Enable / disable buttons */
 	if($(tbl).parent().find('ul').children('li').length < ($(tbl).data('controller').maxPortCount * $(tbl).data('controller').maxDevicesPerPortCount)) {
@@ -793,9 +772,9 @@ function vboxSettingsStorageAddMedium(bus, type) {
 	////////////////////////////
 	var buttons = {};
 
-	var msg1 = '';
-	var msg2 = '';
+	var msg = '';
 	
+	vboxSetLangContext('VBoxProblemReporter');
 	// Hard Disk buttons
 	if (type == 'HardDisk') {
 		
@@ -821,8 +800,7 @@ function vboxSettingsStorageAddMedium(bus, type) {
 			});
 		};
 		
-		msg1 = trans('You are about to add a virtual hard disk to controller %s.').replace('%s','<b>'+controller+'</b>');
-		msg2 = trans('Would you like to create a new, empty file to hold the disk contents or select an existing one?');
+		msg = trans('<p>You are about to add a virtual hard disk to controller <b>%1</b>.</p><p>Would you like to create a new, empty file to hold the disk contents or select an existing one?</p>').replace('%1',controller);
 	
 	// Floppy buttons
 	} else if(type == 'Floppy') {
@@ -846,8 +824,7 @@ function vboxSettingsStorageAddMedium(bus, type) {
 			$(this).remove();
 		}
 		
-		msg1 = trans('You are about to add a new floppy drive to controller %s.').replace('%s','<b>'+controller+'</b>');
-		msg2 = trans('Would you like to choose a virtual floppy disk to put in the drive or leave it empty for now?');
+		msg = trans('<p>You are about to add a new floppy drive to controller <b>%1</b>.</p><p>Would you like to choose a virtual floppy disk to put in the drive or to leave it empty for now?</p>').replace('%1',controller);
 		
 	// CD/DVD buttons
 	} else {
@@ -871,16 +848,17 @@ function vboxSettingsStorageAddMedium(bus, type) {
 			$(this).remove();
 		}
 		
-		msg1 = trans('You are about to add a new CD/DVD drive to controller %s.').replace('%s','<b>'+controller+'</b>');
-		msg2 = trans('Would you like to choose a virtual CD/DVD disk to put in the drive or leave it empty for now?');
+		msg = trans('<p>You are about to add a new CD/DVD drive to controller <b>%1</b>.</p><p>Would you like to choose a virtual CD/DVD disk to put in the drive or to leave it empty for now?</p>').replace('%1',controller);
 		
 	}
-	buttons[trans('Cancel')] = function() {
+	vboxUnsetLangContext();
+	
+	buttons[trans('Cancel','QIMessageBox')] = function() {
 		$(this).remove();
 	};
     $('<div />').attr({'id':'vboxSettingsStorageUnavailable','style':'display: none'}).html(
-    		'<div><img src="images/50px-Question_icon.svg.png" style="float: left; padding: 10px; " />'+msg1+'<p>'+msg2+'</p></div>'
-    ).dialog({'closeOnEscape':false,'width':500,'height':200,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'});			
+    		'<div><img src="images/50px-Question_icon.svg.png" style="float: left; padding: 10px; " />'+msg+'</div>'
+    ).dialog({'closeOnEscape':false,'width':600,'height':200,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'});			
 		
 
 }
@@ -1037,7 +1015,7 @@ $('#vboxSettingsStorageTree').bind('itemselect',function(e,item){
 
  			for(var i in used) {
  	 			
- 				$(ul).append($('<li />').html("<a href='#add"+i+"' style='background-image: url(images/vbox/"+(vboxStorage[i].displayInherit ? vboxStorage[i].displayInherit.toLowerCase() : i.toLowerCase())+"_add_"+(used[i]?"disabled_":"") + "16px.png);' >"+trans('Add '+i+' Controller')+"</a>"));
+ 				$(ul).append($('<li />').html("<a href='#add"+i+"' style='background-image: url(images/vbox/"+(vboxStorage[i].displayInherit ? vboxStorage[i].displayInherit.toLowerCase() : i.toLowerCase())+"_add_"+(used[i]?"disabled_":"") + "16px.png);' >"+trans('Add '+i+' Controller','UIMachineSettingsStorage')+"</a>"));
  	 			(used[i]? $('#vboxSettingsAddControllerMenu').disableContextMenuItems('#add'+i) : null); 	 			
  			}
  			return true;
@@ -1064,6 +1042,8 @@ $('#vboxSettingsStorageTree').bind('itemselect',function(e,item){
 
  );
 
+vboxSetLangContext('UIMachineSettingsStorage');
+
 scToolbar = new vboxToolbarSmall(sButtons);
 scToolbar.addButtons('vboxSettingsControllersButtons');
 $('#vboxSettingsStorageTree').bind('itemselect',scToolbar.update);
@@ -1084,7 +1064,7 @@ $("#vboxToolbarButton-vboxSettingsControllersButtons-addcontroller").contextMenu
  	function(action, el, pos) {
 
  		var bus = action.substring(3);
-		var c = {'name':trans(bus+' Controller'),'bus':bus,'mediumAttachments':[],'controllerType':vboxStorage[bus].types[0],'useHostIOCache':1,
+		var c = {'name':trans(bus+' Controller','UIMachineSettingsStorage'),'bus':bus,'mediumAttachments':[],'controllerType':vboxStorage[bus].types[0],'useHostIOCache':1,
 				'maxPortCount':vboxStorage[bus]['maxPortCount'],'maxDevicesPerPortCount':vboxStorage[bus]['maxDevicesPerPortCount']};
 
 		vboxSettingsAddController(c, $('#vboxSettingsStorageTree').children('ul').first());
@@ -1105,6 +1085,8 @@ if(!$('#vboxSettingsAddAttachmentsMenu').attr('id')) {
 	$('#vboxIndex').append(ul);
 
 }
+
+vboxUnsetLangContext();
 
  /* Add IDE attachment button menu initialization  */
 $("#vboxToolbarButton-vboxSettingsControllersButtons-addattach").contextMenu({

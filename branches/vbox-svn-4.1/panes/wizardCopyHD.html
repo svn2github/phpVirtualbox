@@ -9,13 +9,13 @@
 <!-- Step 1 -->
 <div id='wizardCopyHDStep1' title='Welcome to the virtual disk copying wizard' style='display: none'>
 	
-	<span class='translate'>copyHD Step1 Message1</span>
+	<span class='translate'>&lt;p&gt;This wizard will help you to copy a virtual disk.&lt;/p&gt;</span>
 	
 	<p class='vboxWizButtonsMessage'>wizard buttons message</p>
 	
-	<p class='translate'>copyHD Step1 Message3</p>
+	<p class='translate'>Please select the virtual disk which you would like to copy if it is not already selected. You can either choose one from the list or use the folder icon beside the list to select a virtual disk file.</p>
 
-	<span class='vboxTableLabel translate'>Virtual disk to copy</span>
+	<span class='vboxTableLabel translatepre'>Virtual disk to copy</span>
 	<div class='vboxBordered'>
 		<table class='vboxOptions'>
 			<tr style='vertical-align: top;'>
@@ -31,9 +31,9 @@
 <!-- Step 2 -->
 <div id='wizardCopyHDStep2' title='Virtual disk file type' style='display: none'>
 
-	<p class='translate'>copyHD Step2 Message1</p>
+	<span class='translate'>&lt;p&gt;Please choose the type of file that you would like to use for the new virtual disk. If you do not need to use it with other virtualization software you can leave this setting unchanged.&lt;/p&gt;</span>
 
-	<span class='vboxTableLabel translate'>File Type</span>
+	<span class='vboxTableLabel translate'>File type</span>
 	<div class='vboxBordered'>
 		<table class='vboxOptions'>
 			<tr style='vertical-align: top;'>
@@ -54,13 +54,14 @@
 
 <!-- Step 3 -->
 <div id='wizardCopyHDStep3' title='Virtual disk storage details' style='display: none'>
-	<span class='translate'>newDisk Step2 Message1</span>
+
+	<p class='translate'>Please choose whether the new virtual disk file should be allocated as it is used or if it should be created fully allocated.</p>
 	
-	<p class='translate'>newDisk Step2 dynamic</p>
+	<span class='translate'>&lt;p&gt;A &lt;b&gt;dynamically allocated&lt;/b&gt; virtual disk file will only use space on your physical hard disk as it fills up, although it will not shrink again automatically when space on it is freed.&lt;/p&gt;</span>
 	
-	<p class='translate'>newDisk Step2 fixed</p>
+	<span class='translate'>&lt;p&gt;A &lt;b&gt;fixed size&lt;/b&gt; virtual disk file may take longer to create on some systems but is often faster to use.&lt;/p&gt;</span>
 	
-	<span class='vboxTableLabel translate'>Storage detail</span>
+	<span class='vboxTableLabel translatevar'>Storage details</span>
 	<div class='vboxBordered'>
 		<table class='vboxOptions'>
 			<tr style='vertical-align: top;'>
@@ -76,7 +77,7 @@
 <!-- Step 4 -->
 <div id='wizardCopyHDStep4' title='Virtual disk file location' style='display: none'>
 
-	<div class='translate'>copyHD Step4 Message1</div>
+	<p class='translate'>Press the &lt;b&gt;Select&lt;/b&gt; button to select the location of a file to store the virtual disk data or type a file name in the entry field.</p>
 	
 	<span class='vboxTableLabel translate'>Location</span>
 	<div class='vboxBordered'>
@@ -97,33 +98,38 @@
 <!-- Step 5 -->
 <div id='wizardCopyHDStep5' title='Summary' style='display: none'>
 
-	<div class='translate'>copyHD Step5 Message1</div>
+	<p class='translate'>You are going to create a copied virtual disk with the following parameters:</p>
 	
 	<div style='padding: 4px; margin: 2px;' class='vboxBordered'>
 		<table class='vboxVertical' style='padding: 4px;'>
 			<tr>
-				<th style='text-align: right'><span class='translate'>File type</span>:</th>
+				<th style='text-align: right'><span class='translate'>File type</span></th>
 				<td id='wizardCopyHDTypeLabel'>Dynamically expanding storage</td>
 			</tr>
 			<tr>
-				<th style='text-align: right'><span class='translate'>Details</span>:</th>
+				<th style='text-align: right'><span class='translate'>Details</span></th>
 				<td id='wizardCopyHDDetailsLabel'>Dynamically expanding storage</td>
 			</tr>			
 			<tr>
-				<th style='text-align: right'><span class='translate'>Location</span>:</th>
+				<th style='text-align: right'><span class='translate'>Location</span></th>
 				<td id='wizardCopyHDLocationLabel'></td>
 			</tr>
 			<tr>
-				<th style='text-align: right'><span class='translate'>Size</span>:</th>
+				<th style='text-align: right'><span class='translate'>Size</span></th>
 				<td id='wizardCopyHDSizeLabel'></td>
 			</tr>		
 		</table>
 	</div>
-	<p class='translate'>newDisk Step4 Message2</p>
+	<p id='vboxWizCpHDFin'></p>
 
 </div>
 
 <script type='text/javascript'>
+
+$('#wizardCopyHDStep1').find('span.translatepre').html(function(i,h){return trans(h,'UINewHDWizardPageWelcome');});
+$('#wizardCopyHDStep3').find('span.translatevar').html(function(i,h){return trans(h,'UINewHDWizardPageVariant');});
+$('#vboxWizCpHDFin').html(trans('If the above settings are correct, press the <b>%1</b> button. Once you press it the new virtual disk file will be created.','UINewHDWizard').replace('%1',trans('Copy','UINewHDWizard')));
+
 
 var sButtons = new Array(
 		{
@@ -131,6 +137,7 @@ var sButtons = new Array(
 			'name' : 'mselecthdbtn',
 			'label' : 'Choose a virtual hard disk file...',
 			'icon' : 'select_file',
+			'context':'UINewHDWizardPageWelcome',
 			'click' : function () {
 				vboxMedia.actions.choose(null,'HardDisk',function(med){
 					if(med) copyHDFillDisks(med.base);
@@ -202,7 +209,7 @@ function wizardCopyHDUpdateName(sel) {
 	var n = $(sel).val();
 	var m = vboxMedia.getMediumById(n);
 	if(!m) return;
-	document.forms['frmwizardCopyHD'].elements.wizardCopyHDLocation.value = trans('%s_copy').replace('%s',m.name.replace(/\.[^\.]+?$/,''));
+	document.forms['frmwizardCopyHD'].elements.wizardCopyHDLocation.value = trans('%1_copy','UINewHDWizard').replace('%1',m.name.replace(/\.[^\.]+?$/,''));
 	document.forms['frmwizardCopyHD'].elements.wizardCopyHDSizeValue.value = m.logicalSize;
 }
 
@@ -216,14 +223,13 @@ $('#wizardCopyHDStep1').bind('show',function(e,wiz){
     if(wiz && wiz.suggested && wiz.suggested.medium)
     	$(document.forms['frmwizardCopyHD'].copyHDDiskSelect).mediumselect({'selectMedium':wiz.suggested.medium});
     
-    $('#wizardCopyHDStep1').find('.vboxWizButtonsMessage').html(function(i,e){return e.replace('%1',trans('Next')).replace('%2',trans('Bck')).replace('%3',trans('Cancel'));});
     
 	$('#wizardCopyHDStep1').data('init',true);
 	
 });
 
 /* When showing summary */
-$('#wizardCopyHDStep5').bind('show',function(){
+$('#wizardCopyHDStep5').bind('show',function(e,wiz){
 
 	var format = document.forms['frmwizardCopyHD'].elements['copyHDFileType'];
 	for(var i = 0; i < format.length; i++) {
@@ -236,7 +242,7 @@ $('#wizardCopyHDStep5').bind('show',function(){
 	$('#wizardCopyHDTypeLabel').html(vboxMedia.getFormat({'format':format}));
 
 	// Details label
-	$('#wizardCopyHDDetailsLabel').html((document.forms['frmwizardCopyHD'].elements.newHardDiskType[1].checked ? trans('Fixed size storage') : trans('Dynamically allocated storage')));
+	$('#wizardCopyHDDetailsLabel').html((document.forms['frmwizardCopyHD'].elements.newHardDiskType[1].checked ? trans('Fixed size storage','VBoxGlobal') : trans('Dynamically allocated storage','VBoxGlobal')));
 
 	var loc = document.forms['frmwizardCopyHD'].elements.wizardCopyHDLocation.value;
 	if(loc.search(/[\/|\\]/) < 0) {
@@ -249,11 +255,27 @@ $('#wizardCopyHDStep5').bind('show',function(){
 	if(loc.substring(loc.length-format.length-1).toLowerCase() != '.' + format) loc += '.' + format;
 	
 	$('#wizardCopyHDLocationLabel').html($('<div />').text(loc).html());
+	
+	/* Check to see if file exists */
+	var fileExists = false;
+	var l = new vboxLoader();
+	l.mode='save';
+	l.add('fileExists',function(d){
+		fileExists = d.exists;
+	},{'file':loc});
+	l.onLoad = function() { 
+		if(fileExists) {
+			vboxAlert(trans('<p>The hard disk storage unit at location <b>%1</b> already exists. You cannot create a new virtual hard disk that uses this location because it can be already used by another virtual hard disk.</p><p>Please specify a different location.</p>','VBoxProblemReporter').replace('%1',loc));
+			wiz.displayStep(4);
+		}
+	}
+	l.run();
+	
 
 	// Fix size if we need to
 	var mbytes = vboxConvertMbytes(document.forms['frmwizardCopyHD'].elements.wizardCopyHDSizeValue.value);
 	document.forms['frmwizardCopyHD'].elements.wizardCopyHDSizeValue.value = vboxMbytesConvert(mbytes);
-	$('#wizardCopyHDSizeLabel').html(document.forms['frmwizardCopyHD'].elements.wizardCopyHDSizeValue.value + ' ('+mbytes+' '+trans('MB')+')');
+	$('#wizardCopyHDSizeLabel').html(document.forms['frmwizardCopyHD'].elements.wizardCopyHDSizeValue.value + ' ('+mbytes+' '+trans('MB','VBoxGlobal')+')');
 });
  
 </script>

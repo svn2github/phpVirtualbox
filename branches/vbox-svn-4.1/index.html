@@ -210,7 +210,7 @@
 				
 				// Display error if we tried to log in
 				if(tried) {
-					vboxAlert('Invalid username or password.',{'width':'auto'});
+					vboxAlert(trans('Invalid username or password.','UIUsers'),{'width':'auto'});
 				}
 				
 			}
@@ -221,7 +221,7 @@
 			login.onLoad = function() {
 
 				var buttons = {};
-				buttons[trans('Log in')] = function() {
+				buttons[trans('Log in','UIUsers')] = function() {
 					var u = $('#vboxLogin').find('input[name=username]').val();
 					var p = $('#vboxLogin').find('input[name=password]').val();
 					if(!(u&&p)) return;
@@ -236,7 +236,7 @@
 				// Create but do not open dialog
 				if($.browser.webkit) heightadd = 5;
 				else heightadd = 0;
-				$('#vboxLogin').dialog({'closeOnEscape':false,'width':300,'height':'auto','buttons':buttons,'modal':true,'autoOpen':false,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox :: ' + trans('Log in')});
+				$('#vboxLogin').dialog({'closeOnEscape':false,'width':300,'height':'auto','buttons':buttons,'modal':true,'autoOpen':false,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox :: ' + trans('Log in','UIUsers')});
 				$('#vboxLogin').find('input[name=username]').first().focus();
 				
 				// Trick loader into not showing root pane again

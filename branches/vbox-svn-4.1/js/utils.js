@@ -103,11 +103,11 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 									for(var a = 0; a < servers.length; a++) {
 										servers[a] = "<a href='?server="+servers[a].name+"'>"+$('<div />').html(servers[a].name).text()+"</a>";
 									}
-									s = '<div style="display: block">'+trans('Server List')+': '+servers.join(', ')+'</div>';
+									s = '<div style="display: block">'+trans('Server List','phpVirtualBox')+': '+servers.join(', ')+'</div>';
 								}
 								if(s) vboxAlert(s);
 								vboxAjaxError(d.errors[i]);
-								vboxAlert('<p>'+trans('Fatal error')+'</p>'+s,{'width':'50%'});
+								vboxAlert('<p>'+trans('An error occurred communicating with your vboxwebsrv. No more requests will be sent by phpVirtualBox until the error is corrected and this page is refreshed. The details of this connection error should be displayed in a subsequent dialog box.','phpVirtualBox')+'</p>'+s,{'width':'50%'});
 								
 								
 							
@@ -308,23 +308,23 @@ function browseFolder(root,fn) {
 function vboxFileBrowser(root,fn,foldersonly,title,icon) {
 
 	var buttons = { };
-	buttons[trans('OK')] = function(f) {
+	buttons[trans('OK','QIMessageBox')] = function(f) {
 		if(typeof f != 'string') {
 			f = $('#vboxBrowseFolderList').find('.vboxListItemSelected').first().attr('name');
 		}
 		$('#vboxBrowseFolder').trigger('close').empty().remove();
 		fn(f);
 	};
-	buttons[trans('Cancel')] = function() { fn(null); $('#vboxBrowseFolder').trigger('close').empty().remove(); };
+	buttons[trans('Cancel','QIMessageBox')] = function() { fn(null); $('#vboxBrowseFolder').trigger('close').empty().remove(); };
 
 	var d1 = $('<div />').attr({'id':'vboxBrowseFolder','class':'vboxDialogContent','style':'display:none'});
 	
-	$('<div />').attr({'id':'vboxBrowseFolderList'}).fileTree({ 'root': (root ? root : '/'),'dirsOnly':(foldersonly ? 1 : 0),'loadMessage':trans('Loading ...'),'scrollTo':'#vboxBrowseFolder'},function(f){
-    	buttons[trans('OK')](f);
+	$('<div />').attr({'id':'vboxBrowseFolderList'}).fileTree({ 'root': (root ? root : '/'),'dirsOnly':(foldersonly ? 1 : 0),'loadMessage':trans('Loading ...','UIVMDesktop'),'scrollTo':'#vboxBrowseFolder'},function(f){
+    	buttons[trans('OK','QIMessageBox')](f);
     }).appendTo(d1);
 	
     $(d1).dialog({'closeOnEscape':true,'width':400,'height':600,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="'+(icon ? icon : 'images/jqueryFileTree/'+(foldersonly ? 'folder_open' : 'file')+'.png') + '" class="vboxDialogTitleIcon" /> ' + (title ? title : trans((foldersonly ? 'Select Folder' : 'Select File')))}).bind("dialogbeforeclose",function(){
-    	$(this).parent().find('span:contains("'+trans('Cancel')+'")').trigger('click');
+    	$(this).parent().find('span:contains("'+trans('Cancel','QIMessageBox')+'")').trigger('click');
     });			
 
 }
@@ -335,7 +335,8 @@ function vboxBytesConvert(bytes) {
 	var ext = new Array('B','KB','MB','GB','TB');
 	var unitCount;
 	for(unitCount=0; bytes >= 1024 && unitCount < ext.length; unitCount++) bytes = parseFloat(parseFloat(bytes)/1024);
-	return Math.round(parseFloat(bytes)*Math.pow(10,2))/Math.pow(10,2) + " " + trans(ext[unitCount]);
+	
+	return Math.round(parseFloat(bytes)*Math.pow(10,2))/Math.pow(10,2) + " " + trans(ext[unitCount], 'VBoxGlobal');
 }
 
 function vboxConvertMbytes(str) {
@@ -369,9 +370,9 @@ function vboxMediumAttachedTo(m,nullOnNone) {
 	var s = new Array();
 	if(!m.attachedTo) return (nullOnNone ? null : '<i>'+trans('Not Attached')+'</i>');
 	for(var i = 0; i < m.attachedTo.length; i++) {
-		s[s.length] = m.attachedTo[i].machine + (m.attachedTo[i].snapshots.length ? ' (' + m.attachedTo[i].snapshots.join(trans('LIST_SEP')) + ')' : '');
+		s[s.length] = m.attachedTo[i].machine + (m.attachedTo[i].snapshots.length ? ' (' + m.attachedTo[i].snapshots.join(', ') + ')' : '');
 	}
-	return s.join(trans('LIST_SEP'));
+	return s.join(', ');
 }
 
 function vboxMediumType(m) {
@@ -409,7 +410,7 @@ function vboxAjaxError(e) {
 	$(div).append(ddet);
 	
 	var buttons = { };
-	buttons[trans('OK')] = function(f) {$(this).trigger('close').empty().remove();};
+	buttons[trans('OK','QIMessageBox')] = function(f) {$(this).trigger('close').empty().remove();};
 
     $(div).dialog({'closeOnEscape':false,'width':400,'height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'});			
 	
@@ -421,7 +422,7 @@ function vboxAlert(msg,xtraOpts) {
 
 
 	var buttons = { };
-	buttons[trans('OK')] = function(f) {$(this).trigger('close').empty().remove();};
+	buttons[trans('OK','QIMessageBox')] = function(f) {$(this).trigger('close').empty().remove();};
 	
 	var dialogOpts = {'closeOnEscape':false,'width':'50%','height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'};
 
@@ -439,12 +440,14 @@ function vboxAlert(msg,xtraOpts) {
  * Confirmation dialog
  */
 // question, button text, callback function
-function vboxConfirm(q,buttons) {
+function vboxConfirm(q,buttons,cancelText) {
 
 	var div = $('<div />').attr({'class':'vboxDialogContent','style':'display: none; width: 500px;'}).html('<img src="images/50px-Question_icon.svg.png" style="height: 50px; width: 50px; float: left; padding: 10px;" />'+q);
-
-	buttons[trans('Cancel')] = function() { $(this).trigger('close').empty().remove(); };
-
+	
+	if(!cancelText) cancelText = trans('Cancel','QIMessageBox');
+	
+	buttons[cancelText] = function() { $(this).remove(); };
+	
     $(div).dialog({'closeOnEscape':false,'width':500,'height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'});			
 	
     return $(div);
@@ -503,8 +506,10 @@ function vboxInitDisplay(root) {
 		
 		// Min / Max labels
 		if(!$(this).data('noMinMaxLabels')) {
-			$(this).closest('table').find('.vboxSliderMin').html($(this).slider('option','min'));
-			$(this).closest('table').find('.vboxSliderMax').html($(this).slider('option','max'));
+			var min = $(this).slider('option','min');
+			var max = $(this).slider('option','max');
+			$(this).closest('table').find('.vboxSliderMin').html(function(i,h){return ' ' + trans(h).replace('%1',min);});
+			$(this).closest('table').find('.vboxSliderMax').html(function(i,h){return ' ' + trans(h).replace('%1',max);});
 	}
 	});
 
@@ -512,7 +517,7 @@ function vboxInitDisplay(root) {
 	/*
 	 * Translations
 	 */
-	$(root).find(".translate").html(function(i,h){return trans(h);}).removeClass('translate');
+	$(root).find(".translate").html(function(i,h){return trans($('<div />').html(h).text());}).removeClass('translate');
 
 
 	/*
@@ -615,7 +620,8 @@ function vboxInstallGuestAdditions(vmid) {
 		if(d && d.progress) {
 			vboxProgress(d.progress,function(){
 				$('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]);
-			},{},'progress_install_guest_additions_90px.png',trans('Install Guest Additions'));
+			},{},'progress_install_guest_additions_90px.png',trans('Install Guest Additions...','VBoxConsoleWnd').replace(/\./g,''));
+			
 		} else if(d && d.result && d.result == 'mounted') {
 
 			// Media and VM data must be refreshed
@@ -624,9 +630,9 @@ function vboxInstallGuestAdditions(vmid) {
 			ml.onLoad = function() { $('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]); }
 			ml.run();
 			
-			vboxAlert(trans('Guest Additions Mounted'));
+			//vboxAlert(trans('Guest Additions Mounted'));
 		} else if(d && d.result && d.result == 'nocdrom') {
-			vboxAlert(trans('Guest Additions No CDROM'));
+			//vboxAlert(trans('Guest Additions No CDROM'));
 		}
 	},{'vm':vmid});
 	l.run();
@@ -656,7 +662,7 @@ function vboxProgress(pid,callback,args,icon,title) {
 	// Cancel button
 	$('<div />').attr({'id':'vboxProgressCancel'}).css({'display':'none','padding':'8px'}).append(
 
-		$('<input />').attr('type','button').val(trans('Cancel')).data({'pid':pid}).click(function(){
+		$('<input />').attr('type','button').val(trans('Cancel','QIMessageBox')).data({'pid':pid}).click(function(){
 			this.disabled = 'disabled';
 			vboxAjaxRequest('cancelProgress',{'progress':$(this).data('pid')},function(d){return;});
 		})
@@ -674,14 +680,14 @@ function vboxProgress(pid,callback,args,icon,title) {
 	
 }
 // OnUnload warning
-function vboxOpInProgress() { return trans('Operation in progress');}
+function vboxOpInProgress() { return trans('Warning: A VirtualBox internal operation is in progress. Closing this window or navigating away from this web page may cause unexpected and undesirable results. Please wait for the operation to complete.','phpVirtualBox');}
 
 function vboxProgressUpdate(d,e) {
 	
 	// check for completed progress
 	if(!d || !d['progress'] || d['info']['completed'] || d['info']['canceled']) {
 		var args = $("#vboxProgressDialog").data('args');
-		if(d['info']['canceled']) vboxAlert(trans('Operation Canceled'),{'width':'auto','height':'auto'});
+		if(d['info']['canceled']) vboxAlert(trans('Operation Canceled','phpVirtualBox'),{'width':'auto','height':'auto'});
 		$("#vboxProgressDialog").data('callback')(d,args);
 		$("#vboxProgressDialog").empty().remove();
 		window.onbeforeunload = null;

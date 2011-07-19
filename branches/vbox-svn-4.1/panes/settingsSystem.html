@@ -9,7 +9,7 @@
 
 <ul>
 	<li><a href="#vboxSettingsTabSystemMotherboard"><span class='translate'>Motherboard</span></a></li>
-	<li><a href="#vboxSettingsTabSystemProcessor"><span class='translate'>Processors</span></a></li>
+	<li><a href="#vboxSettingsTabSystemProcessor"><span class='translate'>Processor</span></a></li>
 	<li id='settingsTabSystemAccelerationLink'><a href="#settingsTabSystemAcceleration"><span class='translate'>Acceleration</span></a></li>
 </ul>
 
@@ -17,7 +17,7 @@
 <div id='vboxSettingsTabSystemMotherboard' title='Motherboard'>
 <table style='width: 100%'>
 	<tr>
-		<th style='text-align:right'><span class='translate'>Base Memory</span>:</th>
+		<th style='text-align:right'><span class='translate'>Base Memory:</span></th>
 		<td style='width: 100%; white-space: nowrap'>
 			<table style='width: 100%'>
 			<tr>
@@ -41,16 +41,16 @@
 		</td>
 	</tr>
 	<tr style='vertical-align: top'>
-		<th style='text-align:right'><span class='translate'>Boot Order</span>:</th>
+		<th style='text-align:right'><span class='translate'>Boot Order:</span></th>
 		<td>
 			<table id='vboxVMBootOrder'>
 				<tr style='vertical-align: top'>
 					<td style='width: auto'>
 						<ul class='vboxList vboxHover vboxBordered' id='vboxVMBootOrderList' style='margin: 0px; padding: 2px; white-space: nowrap; width: 200px'>
-							<li id='HardDisk'><input type='checkbox' class='vboxCheckbox' name='vboxSettingsBootHardDisk' /> <img src="images/vbox/hd_16px.png" /> <span class='translate'>HardDisk</span></li>
-							<li id='DVD'><input type='checkbox' class='vboxCheckbox' name='vboxSettingsBootDVD' /> <img src="images/vbox/cd_16px.png" /> <span class='translate'>DVD</span></li>
-							<li id='Floppy'><input type='checkbox' class='vboxCheckbox' name='vboxSettingsBootFloppy' /> <img src="images/vbox/fd_16px.png" /> <span class='translate'>Floppy</span></li>
-							<li id='Network'><input type='checkbox' class='vboxCheckbox' name='vboxSettingsBootNetwork' /> <img src="images/vbox/nw_16px.png" /> <span class='translate'>Network</span></li>
+							<li id='HardDisk'><input type='checkbox' class='vboxCheckbox' name='vboxSettingsBootHardDisk' /> <img src="images/vbox/hd_16px.png" /> <span class='vboxBootOrderDevice'>HardDisk</span></li>
+							<li id='DVD'><input type='checkbox' class='vboxCheckbox' name='vboxSettingsBootDVD' /> <img src="images/vbox/cd_16px.png" /> <span class='vboxBootOrderDevice'>DVD</span></li>
+							<li id='Floppy'><input type='checkbox' class='vboxCheckbox' name='vboxSettingsBootFloppy' /> <img src="images/vbox/fd_16px.png" /> <span class='vboxBootOrderDevice'>Floppy</span></li>
+							<li id='Network'><input type='checkbox' class='vboxCheckbox' name='vboxSettingsBootNetwork' /> <img src="images/vbox/nw_16px.png" /> <span class='vboxBootOrderDevice'>Network</span></li>
 						</ul>
 					</td>
 					<td style='text-align: left; width: 100%'>
@@ -63,20 +63,20 @@
 		</td>
 	</tr>
 	<tr id='vboxSettingsSystemChipsetRow'>
-		<th style='text-align:right'><span class='translate'>Chipset</span>:</th>
+		<th style='text-align:right'><span class='translate'>Chipset:</span></th>
 		<td><select name='vboxSettingsSystemChipset'>
-				<option value='PIIX3' class='translate'>PIIX3</option>
-				<option value='ICH9' class='translate'>ICH9</option>
+				<option value='PIIX3'>PIIX3</option>
+				<option value='ICH9'>ICH9</option>
 			</select>
 		</td>
 	</tr>	
 	<tr>
-		<th style='text-align:right'><span class='translate'>Extended Features</span>:</th>
+		<th style='text-align:right'><span class='translate'>Extended Features:</span></th>
 		<td><input type='checkbox' class='vboxCheckbox' name='vboxSettingsSystemIOAPIC' /> <span class='translate'>Enable IO APIC</span></td>
 	</tr>
 	<tr>
 		<th></th>
-		<td><input type='checkbox' class='vboxCheckbox' name='vboxSettingsSystemEFI' /> <span class='translate'>Enable EFI</span></td>
+		<td><input type='checkbox' class='vboxCheckbox' name='vboxSettingsSystemEFI' /> <span class='translate'>Enable EFI (special OSes only)</span></td>
 	</tr>
 	<tr>
 		<th></th>
@@ -98,7 +98,7 @@
 <div id='vboxSettingsTabSystemProcessor' title='Processors'>
 <table style='width: 100%'>
 	<tr>
-		<th style='text-align:right'><span class='translate'>Processors</span>:</th>
+		<th style='text-align:right'><span class='translate'>Processor(s):</span></th>
 		<td style='width: 100%; white-space: nowrap'>
 		<table style='width: 100%'>
 			<tr>
@@ -111,8 +111,8 @@
 				<td style='border: 0px; margin: 0px; padding: 0px;'>
                    <table width='100%; border: 0px; margin: 0px; padding: 0px;'>
 					<tr style='vertical-align: top'>
-						<td style='text-align: left;'><span class='vboxSliderMin'>1</span> <span class='translate'>CPUs</span></td>
-						<td style='text-align: right;'><span class='vboxSliderMax'>8</span> <span class='translate'>CPUs</span></td>
+						<td style='text-align: left;'><span class='vboxSliderMin'>%1 CPU</span></td>
+						<td style='text-align: right;'><span class='vboxSliderMax'>%1 CPUs</span></td>
 					</tr>
 				   </table>
 				</td>
@@ -123,7 +123,7 @@
 		</td>
 	</tr>
 	<tr>
-		<th style='text-align:right'><span class='translate'>Execution Cap</span>:</th>
+		<th style='text-align:right'><span class='translate'>Execution Cap:</span></th>
 		<td style='width: 100%; white-space: nowrap'>
 		<table style='width: 100%'>
 			<tr>
@@ -136,8 +136,8 @@
 				<td style='border: 0px; margin: 0px; padding: 0px;'>
                    <table width='100%; border: 0px; margin: 0px; padding: 0px;'>
 					<tr style='vertical-align: top'>
-						<td style='text-align: left;'><span class='vboxSliderMin'>1%</span></td>
-						<td style='text-align: right;'><span class='vboxSliderMax'>100%</span></td>
+						<td style='text-align: left;'><span class='vboxSliderMin'>%1%</span></td>
+						<td style='text-align: right;'><span class='vboxSliderMax'>%1%</span></td>
 					</tr>
 				   </table>
 				</td>
@@ -149,7 +149,7 @@
 	</tr>
 	
 	<tr>
-		<th><span class='translate'>Extended Features</span>:</th>
+		<th><span class='translate'>Extended Features:</span></th>
 		<td><input type='checkbox' class='vboxCheckbox' name='vboxSettingsSystemPAE' /> <span class='translate'>Enable PAE/NX</span></td>
 	</tr>
 </table>
@@ -160,7 +160,7 @@
 <table>
 	<tr>
 		<th style='text-align:right'><span class='translate'>Hardware Virtualization</span>:</th>
-		<td><input type='checkbox' name='settingsSystemVT' /> <span class='translate'>Enable VCPU</span></td>
+		<td><input type='checkbox' name='settingsSystemVT' /> <span class='translate'>Enable VT-x/AMD-V</span></td>
 	</tr>
 	<tr>
 		<th></th>
@@ -183,17 +183,19 @@
 
 <script type='text/javascript'>
 
+/* Boot order devices */
+$('#vboxVMBootOrder').find("span.vboxBootOrderDevice").html(function(i,h){return trans(vboxDevice(h),'VBoxGlobal');});
+
+/* CHipsets */
+$('#vboxSettingsSystemChipsetRow').find('option').html(function(i,h){return trans(h,'VBoxGlobal');});
+
+
 $('#vboxSettingsSystemMemory').data('form','frmVboxSettings');
 $('#vboxSettingsSystemProcessor').data('form','frmVboxSettings');
 $('#vboxSettingsSystemProcessorCap').data('form','frmVboxSettings');
 $('#vboxSettingsSystemMemory').slider({'min':parseInt($('#vboxIndex').data('vboxSystemProperties').minGuestRAM),'max':parseInt($('#vboxSettingsDialog').data('vboxHostDetails').memorySize)});
 $('#vboxSettingsSystemProcessor').slider({'min':1,'max':$('#vboxSettingsDialog').data('vboxHostDetails').cpus.length});
-$('#vboxSettingsSystemProcessorCap').slider({'min':1,'max':100}).data('noMinMaxLabels',1);
-
-/* Processor Cap has %'s */
-var pt = $('#vboxSettingsSystemProcessorCap').closest('table');
-$(pt).find('.vboxSliderMin').html(trans('%s%').replace('%s','1'));
-$(pt).find('.vboxSliderMax').html(trans('%s%').replace('%s','100'));
+$('#vboxSettingsSystemProcessorCap').slider({'min':1,'max':100});
 
 
 /* System Default values from VM*/
@@ -336,7 +338,7 @@ $('#vboxSettingsDialog').bind('save',function(){
 	// Boot order
 	$('#vboxSettingsDialog').data('vboxMachineData').bootOrder = new Array();
 	$('#vboxVMBootOrderList').find('input').each(function(){
-		if(!$(this).attr('checked')) return;
+		if(!$(this).prop('checked')) return;
 		$('#vboxSettingsDialog').data('vboxMachineData').bootOrder[$('#vboxSettingsDialog').data('vboxMachineData').bootOrder.length] = $(this).attr('name').substring(16);
 	});
 		

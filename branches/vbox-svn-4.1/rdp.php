@@ -37,7 +37,7 @@ if(preg_match('/[^\d]/',@$_GET['port'])) {
 	$response = array();
 	$vbox->getVMDetails($args,$response);
 
-	$_GET['port'] = @$response['data']['consolePort'];
+	$_GET['port'] = @$response['data']['consoleInfo']['consolePort'];
 }
 
 header("Content-type: application/x-rdp",true);

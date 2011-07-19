@@ -870,11 +870,12 @@ class IAppliance extends VBox_ManagedObject {
        return ;
   }
 
-   public function importMachines() { 
+   public function importMachines($arg_options) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
        
+       $request->options = $arg_options;
        $response = $this->connection->__soapCall('IAppliance_importMachines', array((array)$request));
        
        return new IProgress ($this->connection, $response->returnval);
@@ -4317,6 +4318,19 @@ class IGuest extends VBox_ManagedObject {
        $response = $this->connection->__soapCall('IGuest_fileExists', array((array)$request));
        
        return (bool)$response->returnval;
+  }
+
+   public function fileQuerySize($arg_file, $arg_userName, $arg_password) { 
+       $request = new stdClass();
+       
+       $request->_this = $this->handle;
+       
+       $request->file = $arg_file;
+       $request->userName = $arg_userName;
+       $request->password = $arg_password;
+       $response = $this->connection->__soapCall('IGuest_fileQuerySize', array((array)$request));
+       
+       return (float)$response->returnval;
   }
 
    public function setProcessInput($arg_pid, $arg_flags, $arg_timeoutMS, $arg_data) { 
@@ -7856,6 +7870,13 @@ class IMachineStateChangedEventCollection extends VBox_ManagedObjectCollection {
 * Generated VBoxWebService Interface Wrapper
 */
 class IMachineDataChangedEvent extends IMachineEvent {
+
+   public function getTemporary() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IMachineDataChangedEvent_getTemporary', array((array)$request));
+       return (bool)$response->returnval;
+   }
 }
   
 /**
@@ -9908,9 +9929,24 @@ class VFSFileTypeCollection extends VBox_EnumCollection {
 /**
 * Generated VBoxWebService ENUM
 */
+class ImportOptions extends VBox_Enum {
+   public $NameMap = array(1 => 'KeepAllMACs', 2 => 'KeepNATMACs');
+   public $ValueMap = array('KeepAllMACs' => 1, 'KeepNATMACs' => 2);
+}
+
+/**
+* Generated VBoxWebService Enum Collection
+*/
+class ImportOptionsCollection extends VBox_EnumCollection {
+   protected $_interfaceName = "ImportOptions";
+}
+
+/**
+* Generated VBoxWebService ENUM
+*/
 class VirtualSystemDescriptionType extends VBox_Enum {
-   public $NameMap = array(1 => 'Ignore', 2 => 'OS', 3 => 'Name', 4 => 'Product', 5 => 'Vendor', 6 => 'Version', 7 => 'ProductUrl', 8 => 'VendorUrl', 9 => 'Description', 10 => 'License', 11 => 'Miscellaneous', 12 => 'CPU', 13 => 'Memory', 14 => 'HardDiskControllerIDE', 15 => 'HardDiskControllerSATA', 16 => 'HardDiskControllerSCSI', 17 => 'HardDiskControllerSAS', 18 => 'HardDiskImage', 19 => 'Floppy', 20 => 'CDROM', 21 => 'NetworkAdapter', 22 => 'USBController', 23 => 'SoundCard');
-   public $ValueMap = array('Ignore' => 1, 'OS' => 2, 'Name' => 3, 'Product' => 4, 'Vendor' => 5, 'Version' => 6, 'ProductUrl' => 7, 'VendorUrl' => 8, 'Description' => 9, 'License' => 10, 'Miscellaneous' => 11, 'CPU' => 12, 'Memory' => 13, 'HardDiskControllerIDE' => 14, 'HardDiskControllerSATA' => 15, 'HardDiskControllerSCSI' => 16, 'HardDiskControllerSAS' => 17, 'HardDiskImage' => 18, 'Floppy' => 19, 'CDROM' => 20, 'NetworkAdapter' => 21, 'USBController' => 22, 'SoundCard' => 23);
+   public $NameMap = array(1 => 'Ignore', 2 => 'OS', 3 => 'Name', 4 => 'Product', 5 => 'Vendor', 6 => 'Version', 7 => 'ProductUrl', 8 => 'VendorUrl', 9 => 'Description', 10 => 'License', 11 => 'Miscellaneous', 12 => 'CPU', 13 => 'Memory', 14 => 'HardDiskControllerIDE', 15 => 'HardDiskControllerSATA', 16 => 'HardDiskControllerSCSI', 17 => 'HardDiskControllerSAS', 18 => 'HardDiskImage', 19 => 'Floppy', 20 => 'CDROM', 21 => 'NetworkAdapter', 22 => 'USBController', 23 => 'SoundCard', 24 => 'SettingsFile');
+   public $ValueMap = array('Ignore' => 1, 'OS' => 2, 'Name' => 3, 'Product' => 4, 'Vendor' => 5, 'Version' => 6, 'ProductUrl' => 7, 'VendorUrl' => 8, 'Description' => 9, 'License' => 10, 'Miscellaneous' => 11, 'CPU' => 12, 'Memory' => 13, 'HardDiskControllerIDE' => 14, 'HardDiskControllerSATA' => 15, 'HardDiskControllerSCSI' => 16, 'HardDiskControllerSAS' => 17, 'HardDiskImage' => 18, 'Floppy' => 19, 'CDROM' => 20, 'NetworkAdapter' => 21, 'USBController' => 22, 'SoundCard' => 23, 'SettingsFile' => 24);
 }
 
 /**
@@ -9969,8 +10005,8 @@ class CloneModeCollection extends VBox_EnumCollection {
 * Generated VBoxWebService ENUM
 */
 class CloneOptions extends VBox_Enum {
-   public $NameMap = array(1 => 'Link', 2 => 'KeepAllMACs', 3 => 'KeepNATMACs');
-   public $ValueMap = array('Link' => 1, 'KeepAllMACs' => 2, 'KeepNATMACs' => 3);
+   public $NameMap = array(1 => 'Link', 2 => 'KeepAllMACs', 3 => 'KeepNATMACs', 4 => 'KeepDiskNames');
+   public $ValueMap = array('Link' => 1, 'KeepAllMACs' => 2, 'KeepNATMACs' => 3, 'KeepDiskNames' => 4);
 }
 
 /**

@@ -9,6 +9,11 @@ Fixed issue where exported disks would be incorrectly named when
 exporting a virtual machine.
 http://code.google.com/p/phpvirtualbox/issues/detail?id=307
 
+UI updates for wizards.
+
+Most translations are now taken from the VirtualBox source .qt
+files.
+
 -------------------------------------
 	4.0-7	2011-6-8
 -------------------------------------

@@ -16,7 +16,6 @@ var tButtons = [
 	/* All toolbar items need a 'name' property */
 	$.extend({},vboxVMActions['new'],{'name':'new'}),
 	$.extend({},vboxVMActions['settings'],{'name':'settings','enabled':function(vm){
-		vboxUpdateSettingsMenu(vm);
 		return ((vm && vm.state == 'Running') || vboxVMActions['settings'].enabled(vm));
 	}}),
 	$.extend({},vboxVMActions['start'],{'name':'start'}),
@@ -34,11 +33,12 @@ var tButtons = [
 ];
 
 /* Append Top Toolbar */
-vboxSetLangContext('vboxVMList');
+vboxSetLangContext('VBoxSelectorWnd');
 toolbarTop = new vboxToolbar(tButtons);
 toolbarTop.size = 32;
 toolbarTop.addButtons('vboxPaneToolbar');
 vboxUnsetLangContext();
+
 
 $('#vboxIndex').bind('vmloading',function(){
 	toolbarTop.update();
@@ -66,8 +66,13 @@ var vboxVMListSettingsMenu = {
 		'label' : 'Shared Folders...',
 		'icon' : 'shared_folder'
 	},
+	'RemoteDisplay' : {
+		'label' : 'Enable Remote Display',
+		'icon' : 'vrdp',
+		'separator' : true
+	},	
 	'GuestAdditions' : {
-		'label' : 'Install Guest Additions',
+		'label' : 'Install Guest Additions...',
 		'icon' : 'guesttools',
 		'separator' : true
 	}
@@ -78,6 +83,7 @@ var vboxVMListSettingsMenu = {
 /* 'Settings' menu */
 var ul = $('<ul />').attr({'class':'contextMenu','style':'display: none','id':'vboxVMSettingsMenu'});
 
+vboxSetLangContext('UIActionsPool');
 for(var i in vboxVMListSettingsMenu) {
 	
 	// add name
@@ -93,6 +99,7 @@ for(var i in vboxVMListSettingsMenu) {
 	$(ul).append(li);
 	
 }
+vboxUnsetLangContext();
 
 /* Append 'Settings' button Menu */
 $('#vboxIndex').append(ul);
@@ -117,19 +124,26 @@ $("#vboxToolbarButton-vboxPaneToolbar-settings").contextMenu({
 			return;
 		}
 		
-		if(a.indexOf('mount') == 0) {
-			var bpd = a.split('-');
-			vboxMountInit($('#vboxIndex').data('selectedVM').id,bpd[1],bpd[2],bpd[3]);
+		if(a == 'dvdDevices' || a == 'fdDevices') return;
+		
+		if(a == 'RemoteDisplay') {
+			var vm = $('#tabMainContent').data('machine');
+			var l = new vboxLoader();
+			l.mode = 'save';
+			l.add('updateVRDE',function(){
+				$('#vboxIndex').trigger('vmselect',$('#tabMainContent').data('machine'));
+			},{'vm':vm.id,'enabled':(vm.consoleInfo.enabled ? 0 : 1)});
+			l.run();
 			return;
 		}
 		
-		if(a == 'dvdDevices' || a == 'fdDevices') return;
-		
 		// Assume it was a storage action
-		if(vboxToolbarMediaLast.type == 'DVD') {
-			vboxToolbarMediaMenuDVD.menuCallback(a,el,pos);
-		} else {
-			vboxToolbarMediaMenuFD.menuCallback(a,el,pos);
+		if(vboxToolbarMediaLast) {
+			if(vboxToolbarMediaLast.type == 'DVD') {
+				vboxToolbarMediaMenuDVD.menuCallback(a,el,pos);
+			} else {
+				vboxToolbarMediaMenuFD.menuCallback(a,el,pos);
+			}
 		}
 	}
 );
@@ -193,10 +207,13 @@ function vboxVMListToolbarUSBUpdate(menu) {
 		$(menu).children().remove();
 		for(var i = 0; i < hostUSB.length; i++) {
 
-			if(!hostUSB[i].product)
-				var dname = trans('Unknown Device')+' '+hostUSB[i].vendorId+':'+hostUSB[i].productId;
-			else
+			if(!hostUSB[i].product) {
+				vboxSetLangContext('UIActionsPool');
+				var dname = trans('Unknown device %1:%2').replace('%1',hostUSB[i].vendorId).replace('%2',hostUSB[i].productId);
+				vboxUnsetLangContext();
+			} else {
 				var dname = hostUSB[i].manufacturer + ' ' + hostUSB[i].product;
+			}
 			dname += ' [' + hostUSB[i].revision + ']';
 			var capt = (hostUSB[i].state == 'Captured' && guestUSB[hostUSB[i].id]);
 			var avail = (capt || (hostUSB[i].state != 'NotSupported' && hostUSB[i].state != 'Unavailable' && hostUSB[i].state != 'Captured'));
@@ -209,20 +226,20 @@ function vboxVMListToolbarUSBUpdate(menu) {
 				if($(this).data('capt')) {
 					vboxAjaxRequest('usbDetachDevice',{'vm':$('#vboxIndex').data('selectedVM').id,'id':$(this).data('usbDevice')},function(d){
 						if(d.result) {
-							cbox.attr('checked','');
+							cbox.prop('checked',false);
 							cbox.data('capt',false);
 						} else {
-							cbox.attr('checked','checked');
+							cbox.prop('checked',true);
 						}
 					});
 				// Attach
 				} else {
 					vboxAjaxRequest('usbAttachDevice',{'vm':$('#vboxIndex').data('selectedVM').id,'id':$(this).data('usbDevice')},function(d){
 						if(d.result) {
-							cbox.attr('checked','checked');
+							cbox.prop('checked',true);
 							cbox.data('capt',true);
 						} else {
-							cbox.attr('checked','');
+							cbox.prop('checked',false);
 						}
 					});
 				}
@@ -233,7 +250,9 @@ function vboxVMListToolbarUSBUpdate(menu) {
 		
 		// No devices?
 		if(hostUSB.length == 0) {
-			$(menu).append($('<li />').html('<span>&lt;'+trans('no devices available')+'&gt;</span>'));
+			vboxSetLangContext('VBoxUSBMenu');
+			$(menu).append($('<li />').html('<span>'+$('<div />').text(trans('<no devices available>')).html()+'</span>'));
+			vboxUnsetLangContext();
 		}
 		$(menu).trigger('menuLoaded');
 	}
@@ -246,8 +265,10 @@ function vboxVMListToolbarUSBUpdate(menu) {
  * vboxVMList selection changes $('#vboxIndex').onvmselect
  *
  */
-function vboxUpdateSettingsMenu(vm) {
+function vboxUpdateSettingsMenu(e,vm) {
 
+	vboxSetLangContext('UIActionsPool');
+	
 	if(vm && vm.state == 'Running') {
 		$("#vboxToolbarButton-vboxPaneToolbar-settings").enableContextMenu();
 	} else {
@@ -341,7 +362,15 @@ function vboxUpdateSettingsMenu(vm) {
 	} else {
 		$('#vboxVMSettingsMenu').find('a[href=#Network]').parent().removeClass('separator');
 	}
-		
+	
+	// Enable remote display?
+	if(vm && vm.VRDEServer && vm.VRDEServer.VRDEExtPack) {
+		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp' + (vm.consoleInfo && vm.consoleInfo.enabled ? '_on' : '') + '_16px.png)'}).parent().removeClass('disabled');
+	} else {
+		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp_disabled_16px.png)'}).parent().addClass('disabled');
+	}	
+	
+	vboxUnsetLangContext();
 	
 }
 
@@ -360,7 +389,7 @@ var vboxVMListStopMenu = {
 
 /* 'Stop' menu */
 var ul = $('<ul />').attr({'class':'contextMenu','style':'display: none','id':'vboxStopMenu'});
-vboxSetLangContext('vboxVMList');
+vboxSetLangContext('UIActionsPool');
 for(var i in vboxVMListStopMenu) {
 	
 	// add name
@@ -419,5 +448,13 @@ function vboxUpdateStopMenu(vm) {
 	}
 	
 }
+
+// Disable menu items while vm is loading
+$('#vboxIndex').bind('vmloading',function(){
+	$('#vboxVMSettingsMenu').disableContextMenu();
+});
+
+// Update menu when vm is loaded
+$('#vboxIndex').bind('vmloaded',vboxUpdateSettingsMenu);
 
 </script>

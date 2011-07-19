@@ -237,6 +237,9 @@
 // Cookies used for show/hide boxes
 vboxParseCookies();
 
+// Translate loading div
+$('#vboxDetailsLoading').find('span.translate').html(trans('Loading ...','UIVMDesktop')).removeClass('translate');
+
 // Listen for events
 /////////////////////////////
 $('#vboxIndex').bind('vmloading',function(){
@@ -271,6 +274,8 @@ $('#vboxIndex').bind('vmloading',function(){
 	
 	$('#vboxVMDetails').data('vmusb', false);
 	
+	vboxSetLangContext('UIDetailsPagePrivate');
+
 	// vboxTabVMDetails
 	if(vm && vm.id) {
 		
@@ -309,7 +314,11 @@ $('#vboxIndex').bind('vmloading',function(){
 
 	
 	}
+	vboxUnsetLangContext();
+
 });
+
+vboxSetLangContext('UIDetailsPagePrivate');
 
 // Collapsable sections and link translations
 ///////////////////////////////////////////////
@@ -333,6 +342,7 @@ $('#vboxVMDetails').find('tr.vboxDetailsHead').each(function(){
 		function(){$(this).removeClass('hover');}
 	).disableSelection();
 }).disableSelection().find('.translate').html(function(i,h){return trans(h);}).removeClass('translate');
+
 
 // translate loading
 $('#vboxDetailsLoading').find('.translate').html(function(i,h){return trans(h);}).removeClass('translate');
@@ -388,19 +398,23 @@ function __vboxDetailHeader(icon,name,linkto,vm,boxes) {
 //Called from other functions
 function __vboxDetailRowReal(name,value,cssClass,html) {
 	
+	// convert to strings
+	name = ''+name;
+	value = ''+value;
+	
 	var tr = $('<tr />').attr({'class':'vboxDetailRow'});
-	if(html)
+	//if(html)
 		var th = $('<th />').html(name + (value && value.length && name.length ? ':' : ''));
-	else
-		var th = $('<th />').append(document.createTextNode(name + (value && value.length && name.length ? ':' : '')));
+	//else
+	//	var th = $('<th />').append(document.createTextNode(name + (value && value.length && name.length ? ':' : '')));
 	$(th).attr({'class':'vboxDetailContent ' + cssClass}).appendTo(tr);
 	
 	var td = $('<td />').attr({'class':'vboxDetailsValue'});
-	if(html) {
+	//if(html) {
 		$(td).html(value);
-	} else { 
-		$(td).append(document.createTextNode(value));
-	}
+	//} else { 
+	//	$(td).append(document.createTextNode(value));
+	//}
 	$(tr).append(td);
 
 	return tr;
@@ -525,7 +539,6 @@ function __vboxDrawPreview(fromSelf,state) {
 //Display details data table for VM
 //////////////////////////////////
 function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
-
 	
 	// Defaults
 	if(!targetdiv)
@@ -551,15 +564,17 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 		
 		targetdiv = $('#vboxDetailsVMInaccessible');
 		
-		$(targetdiv).html('<div style="width: 50%">'+trans('VM Inaccessible')+'</div>');
+		$(targetdiv).html('<div style="width: 50%">'+trans('The selected virtual machine is <i>inaccessible</i>. Please inspect the error message shown below and press the <b>Refresh</b> button if you want to repeat the accessibility check:')+'</div>');
 		
 		// Details Table
-		var vboxDetailsTable = $('<table />').attr({'style':'width: 50%','class':'vboxDetailsTable vboxDetailsTableError'}).append(__vboxDetailRow(trans("Error"), data.accessError['text'])).append(__vboxDetailRow(trans("Result Code"), data.accessError['resultCode'])).append(__vboxDetailRow(trans("Component"), data.accessError['component'])).appendTo(targetdiv);
-
+		vboxSetLangContext('VBoxProblemReporter');
+		var vboxDetailsTable = $('<table />').attr({'style':'width: 50%','class':'vboxDetailsTable vboxDetailsTableError'}).append(__vboxDetailRow(trans("Error"), data.accessError['text'])).append(__vboxDetailRow(trans('Result Code: '), data.accessError['resultCode'])).append(__vboxDetailRow(trans("Component: "), data.accessError['component'])).appendTo(targetdiv);
+		vboxUnsetLangContext();
+		
 		var d = $('<div />').attr({'style':'width: 50%; padding: 4px;'});
 		
 		$('<input />').attr({'type':'button',
-			'value':trans('Refresh'),
+			'value':trans('Refresh','VBoxSelectorWnd'),
 			'style':'background: url(images/vbox/refresh_16px.png) 2px 2px no-repeat; padding: 2px 2px 2px 18px; border: 1px solid #000; background-color: #eee;'
 		}).click(function(){
 			var l = new vboxLoader();
@@ -570,7 +585,7 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 		}).appendTo(d);
 
 		$(targetdiv).append(d);
-				
+		
 		return;
 	}
 
@@ -616,19 +631,27 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 		$(vboxDetailsTable).append(__vboxDetailHeader('chipset_16px.png',"System"));
 	}
 	
-	$(vboxDetailsTable).append(__vboxDetailRow(trans("Base Memory"), data['memorySize'] + " " + trans('MB'))).append(__vboxDetailRow(trans("Processors"), data['CPUCount']));
+	$(vboxDetailsTable).append(__vboxDetailRow(trans("Base Memory"), trans('<nobr>%1 MB</nobr>').replace('%1',data['memorySize'])));
+	
+	if(parseInt(data['CPUCount']) > 1)
+		$(vboxDetailsTable).append(__vboxDetailRow(trans("Processors"), data['CPUCount']));
 	
 	// CPU Execution cap
 	if(parseInt(data['CPUExecutionCap']) < 100) {
-		$(vboxDetailsTable).append(__vboxDetailRow(trans("Execution Cap"), trans('%s%').replace('%s',parseInt(data['CPUExecutionCap']))));	
+		$(vboxDetailsTable).append(__vboxDetailRow(trans("Execution Cap"), trans('<nobr>%1%</nobr>').replace('%1',parseInt(data['CPUExecutionCap']))));	
 	}
 	
 	// Boot Order
 	var bo = new Array();
 	for(var i = 0; i < data['bootOrder'].length; i++) {
-		bo[i] = trans(data['bootOrder'][i]);
+		bo[i] = trans(vboxDevice(data['bootOrder'][i]),'VBoxGlobal');
 	}
-	$(vboxDetailsTable).append(__vboxDetailRow(trans("Boot Order"), bo.join(trans('LIST_SEP'))));
+	$(vboxDetailsTable).append(__vboxDetailRow(trans("Boot Order"), bo.join(', ')));
+	
+	// Acceleration (PAE/NX)
+	if(data['CpuProperties']['PAE']) {
+		$(vboxDetailsTable).append(__vboxDetailRow(trans("Acceleration"), trans('PAE/NX')));
+	}
 
 	// HW advanced config enabled?
 	if(advancedView) {
@@ -750,28 +773,28 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 		$(vboxDetailsTable).append(__vboxDetailHeader('fullscreen_16px.png',"Display"));
 	}
 	 
-	$(vboxDetailsTable).append(__vboxDetailRow(trans("Video Memory"), data['VRAMSize'] + " " + trans('MB')));
+	$(vboxDetailsTable).append(__vboxDetailRow(trans("Video Memory"), trans('<nobr>%1 MB</nobr>').replace('%1',data['VRAMSize'])));
 	
 	// VRDE
 	if(data['VRDEServer'] && data['VRDEServer']['VRDEExtPack'] && data['VRDEServer']['enabled'] && data['VRDEServer']['ports']) {
-		if(data['VRDEServer']['netAddress']) {
-			$(vboxDetailsTable).append(__vboxDetailRow(trans("Net Address"), data['VRDEServer']['netAddress']));
-		}
+		
 		var chost = vboxGetVRDEAddress(data);
 		
 		if(links) {
-			tr = __vboxDetailRow(trans("Server Port"), data['VRDEServer']['ports']);
+			tr = __vboxDetailRow(trans("Remote Desktop Server Port"), data['VRDEServer']['ports']);
 			if(data['state'] == 'Running' || !data['VRDEServer']['ports'].match(/[^\d]/)) {
 				$(tr).children().eq(1).html("<a href='rdp.php?host=" + chost + '&port=' + data['VRDEServer']['ports'] + "&vm=" + encodeURIComponent(data['name']) + "'>" + data['VRDEServer']['ports'] + "</a>");
 			}
-			if(data['state'] == 'Running' && data['consolePort']) {
-				$(tr).children().eq(1).append(' <img src="images/vbox/blank.gif" style="vspace:0px;hspace:0px;height2px;width:10px;" /> (' + chost + ':' + data['consolePort'] + ')');
+			if(data['state'] == 'Running' && data['consoleInfo'] && parseInt(data['consoleInfo']['consolePort']) > 0) {
+				$(tr).children().eq(1).append(' <img src="images/vbox/blank.gif" style="vspace:0px;hspace:0px;height2px;width:10px;" /> (' + chost + ':' + data['consoleInfo']['consolePort'] + ')');
 			}
 			$(vboxDetailsTable).append(tr);
 		} else {
-			$(vboxDetailsTable).append(__vboxDetailRow(trans("Remote Console")+ ': ' +trans("Ports"), data['VRDEServer']['ports']));
+			$(vboxDetailsTable).append(__vboxDetailRow(trans("Remote Desktop Server Port"), data['VRDEServer']['ports'] + ' ('+chost+')'));
 		}
 		
+	} else {
+		$(vboxDetailsTable).append(__vboxDetailRow(trans("Remote Desktop Server"), trans('Disabled')));
 	}
 
 
@@ -827,12 +850,7 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 
 			portDesc = vboxMedia.mediumPrint(medium);
 
-			// Link medium to mount?
-			if(links && data['storageControllers'][a]['mediumAttachments'][b].type != 'HardDisk' && (data.state == 'Running' || (data.state == 'PoweredOff' && data.sessionState == 'Unlocked'))) {
-				portDesc = $('<div />').text(portDesc).html();
-				portDesc = '<a href="javascript:vboxMountInit(\''+data['id']+'\',\''+data['storageControllers'][a].bus+'\','+data['storageControllers'][a]['mediumAttachments'][b].port+','+data['storageControllers'][a]['mediumAttachments'][b].device+')">'+portDesc+'</a>';
-			}
-			$(vboxDetailsTable).append(__vboxDetailRowIndented(portName + (data['storageControllers'][a]['mediumAttachments'][b].type == 'DVD' ? ' (' + trans(data['storageControllers'][a]['mediumAttachments'][b].type) + ') ' : ''), portDesc,(data['storageControllers'][a]['mediumAttachments'][b].type != 'HardDisk' ? true : false)));
+			$(vboxDetailsTable).append(__vboxDetailRowIndented(portName + (data['storageControllers'][a]['mediumAttachments'][b].type == 'DVD' ? ' ' + trans('(CD/DVD)') : ''), portDesc,(data['storageControllers'][a]['mediumAttachments'][b].type != 'HardDisk' ? true : false)));
 			
 		}
 		
@@ -862,7 +880,7 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 	if(!data['audioAdapter']['enabled']) {
 		$(vboxDetailsTable).append(__vboxDetailRow('<span class="vboxDetailsNone">'+trans("Disabled")+'</span>', "", true));
 	} else {
-		$(vboxDetailsTable).append(__vboxDetailRow(trans("Host Audio Driver"), trans((data['audioAdapter']['audioDriver'] == 'Null' ? 'Null Audio Driver' : data['audioAdapter']['audioDriver'])))).append(__vboxDetailRow(trans("Audio Controller"), trans(data['audioAdapter']['audioController'])));
+		$(vboxDetailsTable).append(__vboxDetailRow(trans("Host Driver"), trans(vboxAudioDriver(data['audioAdapter']['audioDriver']),'VBoxGlobal'))).append(__vboxDetailRow(trans("Controller"), trans(vboxAudioController(data['audioAdapter']['audioController']),'VBoxGlobal')));
 	}
 
 
@@ -899,30 +917,30 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 			vboxDetailsTableNics++;
 			switch(nic.attachmentType) {
 				case 'Null':
-					adp = trans('Not attached');
+					adp = trans('Not attached','VBoxGlobal');
 					break;
 				case 'Bridged':
-					adp = trans('Bridged adapter, %s').replace('%s', nic.bridgedInterface);
+					adp = trans('Bridged adapter, %1','VBoxGlobal').replace('%1', nic.bridgedInterface);
 					break;
 				case 'HostOnly':
-					adp = trans('Host-only adapter, \'%s\'').replace('%s', nic.hostOnlyInterface);
+					adp = trans('Host-only adapter, \'%1\'','VBoxGlobal').replace('%1', nic.hostOnlyInterface);
 					break;
 				case 'NAT':
 					// 'NATNetwork' ?
-					adp = trans('NAT');
+					adp = trans('NAT','VBoxGlobal');
 					break;
 				case 'Internal':
-					adp = trans('Internal network, \'%s\'').replace('%s', nic.internalNetwork);
+					adp = trans('Internal network, \'%1\'','VBoxGlobal').replace('%1', nic.internalNetwork);
 					break;
 				case 'Generic':
-					adp = trans('Generic driver, \'%s\'').replace('%s', nic.genericDriver);
+					adp = trans('Generic driver, \'%1\'','UIDetailsPagePrivate').replace('%1', nic.genericDriver);
 					break;					
 				case 'VDE':
-					adp = trans('VDE network, \'%s\'').replace('%s', nic.VDENetwork);
+					adp = trans('VDE network, \'%1\'','VBoxGlobal').replace('%1', nic.VDENetwork);
 					break;
 			}
 
-			$(vboxDetailsTable).append(__vboxDetailRow(trans("Adapter") + " " + (i + 1), trans(nic.adapterType) + ' (' + adp + ')'));
+			$(vboxDetailsTable).append(__vboxDetailRow(trans("Adapter %1",'VBoxGlobal').replace('%1',(i + 1)), trans(vboxNetworkAdapterType(nic.adapterType)) + ' (' + adp + ')'));
 		}
 				
 	}
@@ -932,7 +950,7 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 		
 	// Link nic to guest networking info?
 	} else if(links && data['state'] == 'Running') {
-		var n  = '<a href="javascript:vboxGuestNetworkAdaptersDialogInit(\''+data['id']+'\','+i+')">('+trans('Guest Network Adapters')+')</a>';
+		var n  = '<a href="javascript:vboxGuestNetworkAdaptersDialogInit(\''+data['id']+'\','+i+')">('+trans('Guest Network Adapters','VBoxGlobal')+')</a>';
 		$(vboxDetailsTable).append(__vboxDetailRow('',n,true));
 	}
 
@@ -966,15 +984,15 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 		if(!p.enabled) continue;
 		
 		// compose extra info
-		var xtra = trans(vboxSP.getPortName(p.IRQ,p.IOBase));
+		var xtra = trans(vboxSP.getPortName(p.IRQ,p.IOBase),'VBoxGlobal');
 		
 		var mode = p.hostMode
-		xtra += ', ' + trans(mode)
+		xtra += ', ' + trans(vboxSerialMode(mode),'VBoxGlobal')
 		if(mode != 'Disconnected') {
 			xtra += ' (' + p.path + ')'
 		}
 		
-		$(vboxDetailsTable).append(__vboxDetailRow(trans("Port X").replace('%s',(i + 1)), xtra));
+		$(vboxDetailsTable).append(__vboxDetailRow(trans("Port %1",'VBoxGlobal').replace('%1',(i + 1)), xtra));
 		vboxDetailsTableSPorts++;
 				
 	}
@@ -1061,7 +1079,7 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 			tot++;
 			if(data['USBController'].deviceFilters[i].active) act++;
 		}
-		$(vboxDetailsTable).append(__vboxDetailRow(trans("Device Filters"), tot + ' (' + act + ' ' + trans('active') + ')'));
+		$(vboxDetailsTable).append(__vboxDetailRow(trans("Device Filters"), trans('%1 (%2 active)').replace('%1',tot).replace('%2',act)));
 	} else if(data['USBController']) {
 		$(vboxDetailsTable).append(__vboxDetailRow('<span class="vboxDetailsNone">'+trans("Disabled")+'</span>',"", true));
 	}
@@ -1090,9 +1108,7 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 	if(!data['sharedFolders'] || data['sharedFolders'].length < 1) {
 		$(vboxDetailsTable).append(__vboxDetailRow('<span class="vboxDetailsNone">'+trans('None')+'</span>', '', true));
 	} else {
-		for(var i = 0; i < data['sharedFolders'].length; i++) {
-			$(vboxDetailsTable).append(__vboxDetailRow(data['sharedFolders'][i].name + ' (' + trans(data['sharedFolders'][i].writable ? 'rw' : 'ro') + ')', data['sharedFolders'][i].hostPath));
-		}
+		$(vboxDetailsTable).append(__vboxDetailRow(trans('Shared Folders'), data['sharedFolders'].length));
 	}
 
 
@@ -1163,7 +1179,7 @@ function __vboxDisplayHostDetailsData(data) {
 	// General
 	$(vboxDetailsTable).append(__vboxDetailHeader("machine_16px.png",trans("General"),null,null,true));
 	if($('#vboxIndex').data('vboxConfig').servers.length) $(vboxDetailsTable).append(__vboxDetailRow(trans("Name"), $('#vboxIndex').data('vboxConfig').name));	
-	$(vboxDetailsTable).append(__vboxDetailRow(trans("OS Type"), data['operatingSystem'] + ' (' + data['OSVersion'] +')')).append(__vboxDetailRow("VirtualBox", $('#vboxIndex').data('vboxConfig').version.string+' ('+$('#vboxIndex').data('vboxConfig').version.revision+')')).append(__vboxDetailRow(trans("Base Memory"), data['memorySize'] + ' ' + trans('MB'))).append(__vboxDetailRow(trans("Processors"), data['cpus'][0] + ' (' + data['cpus'].length +')'));
+	$(vboxDetailsTable).append(__vboxDetailRow(trans("OS Type"), data['operatingSystem'] + ' (' + data['OSVersion'] +')')).append(__vboxDetailRow("VirtualBox", $('#vboxIndex').data('vboxConfig').version.string+' ('+$('#vboxIndex').data('vboxConfig').version.revision+')')).append(__vboxDetailRow(trans("Base Memory"), trans('<nobr>%1 MB</nobr>').replace('%1',data['memorySize']))).append(__vboxDetailRow(trans("Processors"), data['cpus'][0] + ' (' + data['cpus'].length +')'));
 	
 	// Processor features?
 	if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig && data.cpuFeatures) {
@@ -1173,7 +1189,7 @@ function __vboxDisplayHostDetailsData(data) {
 			cpuFeatures[cpuFeatures.length] = trans(f);
 		}
 		if(cpuFeatures.length) {
-			$(vboxDetailsTable).append(__vboxDetailRow('',cpuFeatures.join(trans('LIST_SEP'))));
+			$(vboxDetailsTable).append(__vboxDetailRow('',cpuFeatures.join(', ')));
 		}
 		
 	}
@@ -1186,26 +1202,26 @@ function __vboxDisplayHostDetailsData(data) {
 
 	for(var i = 0; i < data['networkInterfaces'].length; i++) {		
 		
-		$(vboxDetailsTable).append(__vboxDetailRow(data['networkInterfaces'][i].name + ' (' + trans(data['networkInterfaces'][i].status) + ')',''));
+		$(vboxDetailsTable).append(__vboxDetailRow(data['networkInterfaces'][i].name + ' (' + trans(data['networkInterfaces'][i].status,'VBoxGlobal') + ')',''));
 		
 		if(data['networkInterfaces'][i].IPAddress){
-			$(vboxDetailsTable).append(__vboxDetailRowIndented(trans('IPv4Addr'), data['networkInterfaces'][i].IPAddress + ' / ' + data['networkInterfaces'][i].networkMask));
+			$(vboxDetailsTable).append(__vboxDetailRowIndented(trans('IPv4 Address','UIGlobalSettingsNetwork'), data['networkInterfaces'][i].IPAddress + ' / ' + data['networkInterfaces'][i].networkMask));
 		}
 		
 		if(data['networkInterfaces'][i].IPV6Supported && data['networkInterfaces'][i].IPV6Address) {
-			$(vboxDetailsTable).append(__vboxDetailRowIndented(trans('IPv6Addr'), data['networkInterfaces'][i].IPV6Address + ' / ' + data['networkInterfaces'][i].IPV6NetworkMaskPrefixLength));
+			$(vboxDetailsTable).append(__vboxDetailRowIndented(trans('IPv6 Address','UIGlobalSettingsNetwork'), data['networkInterfaces'][i].IPV6Address + ' / ' + data['networkInterfaces'][i].IPV6NetworkMaskPrefixLength));
 		}
-		$(vboxDetailsTable).append(__vboxDetailRowIndented(trans('netMediumType'),trans(data['networkInterfaces'][i].mediumType) + (data['networkInterfaces'][i].hardwareAddress ? ' (' + data['networkInterfaces'][i].hardwareAddress + ')' : '')));
+		$(vboxDetailsTable).append(__vboxDetailRowIndented('',trans(data['networkInterfaces'][i].mediumType) + (data['networkInterfaces'][i].hardwareAddress ? ' (' + data['networkInterfaces'][i].hardwareAddress + ')' : '')));
 		
 		// VMs bound to nic
 		if(data['nics'][data['networkInterfaces'][i].name]) {
 			var vms = new Array()
 			for(var vmname in data['nics'][data['networkInterfaces'][i].name]) {
 				data['nics'][data['networkInterfaces'][i].name][vmname].sort();
-				vms[vms.length] = vmname + ' (' + trans("Adapter") + ' ' + data['nics'][data['networkInterfaces'][i].name][vmname].join(trans('LIST_SEP')+trans("Adapter") + ' ') + ')';
+				vms[vms.length] = vmname + ' (' + trans("Adapter") + ' ' + data['nics'][data['networkInterfaces'][i].name][vmname].join(', '+trans("Adapter") + ' ') + ')';
 			}
 			vms.sort(strnatcasecmp);
-			$(vboxDetailsTable).append(__vboxDetailRowIndented('', vms.join(trans('LIST_SEP'))));
+			$(vboxDetailsTable).append(__vboxDetailRowIndented('', vms.join(', ')));
 		}
 		$(vboxDetailsTable).append(__vboxDetailRow('',''));
 	}
@@ -1214,7 +1230,7 @@ function __vboxDisplayHostDetailsData(data) {
 	// CD/DVD Devices
 	if(data['DVDDrives'].length) {
 	
-		var vboxDetailsTable = $('<table />').attr({'class':'vboxDetailsTable vboxDetailsTableBox ui-corner-all'}).append(__vboxDetailHeader("cd_16px.png",trans("CD/DVD Devices"),null,null,true));
+		var vboxDetailsTable = $('<table />').attr({'class':'vboxDetailsTable vboxDetailsTableBox ui-corner-all'}).append(__vboxDetailHeader("cd_16px.png",trans("CD/DVD Devices",'UIActionsPool'),null,null,true));
 	
 		for(var i = 0; i < data['DVDDrives'].length; i++) {		
 			
@@ -1231,7 +1247,7 @@ function __vboxDisplayHostDetailsData(data) {
 	// Floppy Devices
 	if(data['floppyDrives'].length) {
 	
-		var vboxDetailsTable = $('<table />').attr({'class':'vboxDetailsTable vboxDetailsTableBox ui-corner-all'}).append(__vboxDetailHeader("fd_16px.png",trans("Floppy Devices"),null,null,true));
+		var vboxDetailsTable = $('<table />').attr({'class':'vboxDetailsTable vboxDetailsTableBox ui-corner-all'}).append(__vboxDetailHeader("fd_16px.png",trans("Floppy Devices",'UIActionsPool'),null,null,true));
 	
 		for(var i = 0; i < data['floppyDrives'].length; i++) {		
 			
@@ -1297,6 +1313,7 @@ for(var i = 0; i < sections.length; i++) {
 	$(li).append($('<span />').html(' ' + trans(sections[i]))).appendTo(ul);
 
 }
+
 $('#vboxIndex').append(ul);
 $('#vboxDetailsShowMenu').bind('contextmenu', function() { return false; })
 
@@ -1319,7 +1336,7 @@ var radio = $('<input />').attr({'class':'vboxRadio','type':'radio','name':'vbox
 	vboxSetCookie("vboxPreviewUpdate","0");
 });
 if($('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] == 0) {
-	$(radio).attr('checked','checked');
+	$(radio).prop('checked',true);
 }
 
 var li = $('<li />').hover(function(){
@@ -1328,7 +1345,8 @@ var li = $('<li />').hover(function(){
 	$(this).removeClass('hover');
 }).append(radio);
 
-$(li).append($('<span />').html(trans('Update Disabled')).click(function(){$(this).siblings('input').click();}));
+
+$(li).append($('<span />').html(trans('Update Disabled','UIVMPreviewWindow')).click(function(){$(this).siblings('input').click();}));
 
 $(ul).append(li);
 
@@ -1354,7 +1372,7 @@ for(var i = 0; i < ints.length; i++) {
 	});
 
 	if($('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] == ints[i])
-		$(radio).attr('checked','checked');
+		$(radio).prop('checked',true);
 	
 	var li = $('<li />');
 	if(i==0) $(li).attr('class','separator');
@@ -1364,7 +1382,7 @@ for(var i = 0; i < ints.length; i++) {
 		$(this).removeClass('hover');
 	});
 	
-	$('<span />').html(trans('Every X seconds').replace('%s',ints[i])).click(function(){
+	$('<span />').html(trans('Every %1 seconds','UIVMPreviewWindow').replace('%1',ints[i])).click(function(){
 		$(this).siblings('input').click();
 	}).appendTo(li);
 
@@ -1377,7 +1395,7 @@ for(var i = 0; i < ints.length; i++) {
 			$(this).removeClass('hover');
 		}).click(function(){
 			var newwin = window.open('screen.php?vm='+$('#vboxIndex').data('selectedVM').id+'&full=1','vboxSC','toolbar=1,menubar=0,location=0,directories=0,status=true,resize=true');
-		}).append($('<span />').html(trans('Open in new window'))).appendTo(ul);
+		}).append($('<span />').html(trans('Open in new window','UIVMPreviewWindow'))).appendTo(ul);
 	}
 }
 $('#vboxIndex').append(ul);
@@ -1416,5 +1434,6 @@ $("#vboxVMDetails").mouseup( function(e) {
 });
 $("#vboxVMDetails").bind('contextmenu', function() { return false; }).bind('click',function(e){return e.button!=2;});
 
+vboxUnsetLangContext();
 </script>
 </div>

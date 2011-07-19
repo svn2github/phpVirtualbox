@@ -7,15 +7,19 @@
 
  -->
 <!-- Step 1 -->
-<div id='wizardCloneVMStep1' title='cloneVM Welcome' style='display: none'>
+<div id='wizardCloneVMStep1' title='Welcome to the virtual machine clone wizard' style='display: none'>
 
-	<span class='translate'>cloneVM Step1 Message1</span>
+	<span class='translate'>&lt;p&gt;This wizard will help you to create a clone of your virtual machine.&lt;/p&gt;</span>
 
 	<p class='vboxWizButtonsMessage'></p>
 	
-	<p class='translate'>cloneVM Step1 Message3</p>
+	<span class='translate'>&lt;p&gt;Please choose a name for the new virtual machine:&lt;/p&gt;</span>
 	
 	<input type='text' class='vboxText' name='cloneVMName' style='width: 95%' />
+	
+	<p><input type='checkbox' class='vboxCheckbox' name='vboxCloneReinitNetwork' />
+		<span class='translate'>Reinitialize the MAC address of all network cards</span>
+	</p>
 
 </div>
 
@@ -23,11 +27,11 @@
 <!-- Step 2 -->
 <div id='wizardCloneVMStep2' title='Cloning Configuration' style='display: none'>
 
-	<span class='translate'>cloneVM Step2 Message1</span>
+	<p class='translate'>Please choose which parts of the virtual machine should be cloned.</p>
 	
-	<p><span class='translate'>Current machine state desc</span>
-		<span class='translate' id='wizardCloneVMCurrentAll'>Current machine and all child states desc</span>
-		<span class='translate'>All states desc</span>
+	<p><span class='translate'>If you select &lt;b&gt;Current machine state&lt;/b&gt;, only the current state of the virtual machine is cloned.</span>
+		<span class='translate' id='wizardCloneVMCurrentAll'>If you select &lt;b&gt;Current machine and all child states&lt;/b&gt; the current state of the virtual machine and any states of child snapshots are cloned.</span>
+		<span class='translate'>If you select &lt;b&gt;All states&lt;/b&gt;, the current machine state and all snapshots are cloned.</span>
 		</p>
 	
 	<table>
@@ -42,8 +46,6 @@
 		</tr>	
 	</table>
 
-	
-
 </div>
 
 
@@ -57,7 +59,7 @@ $('#wizardCloneVMStep1').bind('show',function(e,wiz){
 	
 	$('#wizardCloneVMStep1').data('init',1);
 	
-	document.forms['frmwizardCloneVM'].elements.cloneVMName.value = trans('%s Clone').replace('%s',wiz.args.vm.name);
+	document.forms['frmwizardCloneVM'].elements.cloneVMName.value = trans('%1 Clone','UICloneVMWizardPage1').replace('%1',wiz.args.vm.name);
 	
 	if(!(wiz.args.snapshot && wiz.args.snapshot.children && wiz.args.snapshot.children.length)) {
 		$('#wizardCloneVMCurrentAll').hide();

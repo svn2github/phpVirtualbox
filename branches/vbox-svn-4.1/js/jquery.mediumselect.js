@@ -183,7 +183,7 @@
 			}
 
 			// Set initial text and styles
-			var oldopt = $(this).children('option:eq('+Math.max($(this).attr('selectedIndex'),0)+')');
+			var oldopt = $(this).children('option:eq('+Math.max($(this).prop('selectedIndex'),0)+')');
 			
 			if(!$(oldopt).val()) {
 				_selectmedium($(list).find('div').first(), sel, old);

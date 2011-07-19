@@ -6,7 +6,7 @@
 
 *If you want to become a translator for phpVirtualBox, join the Google Group phpvbox-translate located at:* http://groups.google.com/group/phpvbox-translate
 
-phpVirtualBox uses VirtualBox's translations for most of its text. As a result, only languages available to VirtualBox may be translated for phpVirtualBox:
+phpVirtualBox uses VirtualBox's translations for most of its text. This reduces the amount of text one must translate for phpVirtualBox to less than 60 items. As a result, only languages available to VirtualBox may be translated for phpVirtualBox:
 
   * ﺎﻠﻋﺮﺒﻳﺓ    ar
   * Български (България)        bg

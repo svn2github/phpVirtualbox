@@ -88,21 +88,6 @@ Additional NAT settings are available in the Network section of Virtual Machines
 
 See the VBoxManage documentation at http://www.virtualbox.org for more information on these settings.
 
-== SATA Port Count ==
-
-A SATA Port Count setting is available in the Storage section when a SATA controller is selected on Virtual Machines' settings windows.
-
-[http://phpvirtualbox.googlecode.com/svn/wiki/images/advsata.png]
-
-|| *Label* || *VBoxManage equivalent* ||
-|| SATA Port Count || VBoxManage storagectl --sataportcount ||
-
-See the VBoxManage documentation at http://www.virtualbox.org for more information on these settings.
-
-*This drop-down list includes a setting labeled 'Automatic.' This setting will cause phpVirtualBox to set the SATA port count to the maximum port number of the devices attached to the SATA controller. This is the recommended setting.*
-
-_Note: if this is set below the maximum SATA port setting of the SATA controller's media attachments, the port count will automatically be corrected by phpVirtualBox when saving the VM's settings.
-
 == Media Selection has a Virtual Media Manager button ==
 
 All media selection buttons have a Virtual Media Manager button that will allow direct access to the Virtual Media Manager.
@@ -139,26 +124,3 @@ The following options are available when adding an iSCSI disk:
 || Password || VBoxManage storageattach --password ||
 
 See the VBoxManage documentation at http://www.virtualbox.org for more information on these settings.
-
-== Virtual Media Manager additional Action menu items ==
-
-The Virtual Media Manager has additional menu items under the Actions menu that will allow you to perform additional actions when a Hard Disk is selected in the list of media.
-
-[http://phpvirtualbox.googlecode.com/svn/wiki/images/advvmmtopmenu.png]
-
-===Clone===
-Allows you to clone a hard disk.
-
-===Immutable===
-Makes a hard disk Immutable.
-
-===Normal===
-Sets the hard disk type back to Normal.
-
-|| *Menu Item* || *VBoxManage equivalent* ||
-|| Clone || VBoxManage clonehd ||
-|| Immutable || VBoxManage modifyhd --type immutable ||
-|| Normal || VBoxManage modifyhd --type normal ||
-
-
-See the VBoxManage documentation at http://www.virtualbox.org for more information on these actions.

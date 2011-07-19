@@ -1218,7 +1218,11 @@ function __vboxDisplayHostDetailsData(data) {
 			var vms = new Array()
 			for(var vmname in data['nics'][data['networkInterfaces'][i].name]) {
 				data['nics'][data['networkInterfaces'][i].name][vmname].sort();
-				vms[vms.length] = vmname + ' (' + trans("Adapter") + ' ' + data['nics'][data['networkInterfaces'][i].name][vmname].join(', '+trans("Adapter") + ' ') + ')';
+				var ads = new Array();
+				for(var n = 0; n < data['nics'][data['networkInterfaces'][i].name][vmname].length; n++) {
+					ads[ads.length] = trans("Adapter %1",'VBoxGlobal').replace('%1',data['nics'][data['networkInterfaces'][i].name][vmname][n]);
+				}
+				vms[vms.length] = vmname + ' (' + ads.join(', ') + ')';
 			}
 			vms.sort(strnatcasecmp);
 			$(vboxDetailsTable).append(__vboxDetailRowIndented('', vms.join(', ')));

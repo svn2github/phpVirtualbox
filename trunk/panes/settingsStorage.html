@@ -274,15 +274,17 @@ for(var a = 0; a < cons.length; a++) {
 
 /* Setup SATA port count */
 var sel = document.forms['frmVboxSettings'].vboxSettingsControllerPortCount;
-sel.options[0] = new Option(trans('Automatic'),0);
+//sel.options[0] = new Option(trans('Automatic'),0);
 for(var i = 1; i <= vboxStorage.SATA.maxPortCount; i++) {
 	sel.options[sel.options.length] = new Option(i,i);
 }
 $(sel).change(function(){
 	$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().data('controller').portCount = $(this).val();
 	// Check for 'Auto'
+	/* Disabled for now
 	if($(this).val() == 0) $('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount = 'yes';
 	else $('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount = 'no';
+	*/
 	
 });
 
@@ -727,7 +729,8 @@ function vboxSettingsSelectController(tbl) {
     
     // Show SATA port count
     if(busType == 'SATA') {
-	    $(document.forms['frmVboxSettings'].vboxSettingsControllerPortCount).val($('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount == 'yes' ? 0 : $(tbl).data('controller').portCount);
+	    // disabled for now - $(document.forms['frmVboxSettings'].vboxSettingsControllerPortCount).val($('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount == 'yes' ? 0 : $(tbl).data('controller').portCount);
+	    $(document.forms['frmVboxSettings'].vboxSettingsControllerPortCount).val($(tbl).data('controller').portCount);
 	   	$('#vboxSettingsControllerPortCountRow').css('display','');
 	}
 

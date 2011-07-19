@@ -855,10 +855,11 @@ class vboxconnector {
 				$c->portCount = min(intval($c->maxPortCount),max(count($sc['mediumAttachments']),$max));
 				
 				// Check for "automatic" setting
-				if(intval(@$sc['portCount']) == 0)
-					$m->setExtraData('phpvb/AutoSATAPortCount','yes');
-				else
-					$m->setExtraData('phpvb/AutoSATAPortCount','no');
+				/*
+				 Disabled for now
+				if(intval(@$sc['portCount']) == 0) $m->setExtraData('phpvb/AutoSATAPortCount','yes');
+				else $m->setExtraData('phpvb/AutoSATAPortCount','no');
+				*/
 			}
 			$c->releaseRemote();
 			
@@ -2538,7 +2539,9 @@ class vboxconnector {
 			}
 			
 			// Auto-sata port count
+			/* Disabled for now
 			$this->session->machine->setExtraData('phpvb/AutoSATAPortCount','yes');
+			*/
 
 			$this->session->machine->saveSettings();
 			$this->session->unlockMachine();
@@ -2880,7 +2883,7 @@ class vboxconnector {
 			'bootOrder' => $this->__getBootOrder($m),
 			'chipsetType' => $m->chipsetType->__toString(),
 			'GUI' => array('SaveMountedAtRuntime' => $m->getExtraData('GUI/SaveMountedAtRuntime')),
-			'AutoSATAPortCount' => $m->getExtraData('phpvb/AutoSATAPortCount'),
+			// Disabled for now 'AutoSATAPortCount' => $m->getExtraData('phpvb/AutoSATAPortCount'),
 			'customIcon' => (@$this->settings['enableCustomIcons'] ? $m->getExtraData('phpvb/icon') : ''),
 			'disableHostTimeSync' => intval($m->getExtraData("VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled")),
 			'CPUExecutionCap' => intval($m->CPUExecutionCap)

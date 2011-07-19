@@ -18,7 +18,7 @@ var $location = 'http://127.0.0.1:18083/';
  * Can also be changed in File -> Preferences -> Language in
  * phpVirtualBox.
  */
-var $language = 'en_us';
+var $language = 'en';
 
 /*
  *

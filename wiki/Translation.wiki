@@ -6,55 +6,81 @@
 
 *If you want to become a translator for phpVirtualBox, join the Google Group phpvbox-translate located at:* http://groups.google.com/group/phpvbox-translate
 
-phpVirtualBox can be translated to any language. You may begin translating by copying the en_us.php file in the languages folder to a name appropriate for your locale. E.g. es_es.php. If you aren't sure of the name, just make one up and I'll look up the correct locale codes after it is submitted. Then change the language setting in config.php so that phpVirtualBox uses your new file. E.g. in config.php change:
+phpVirtualBox uses VirtualBox's translations for most of its text. As a result, only languages available to VirtualBox may be translated for phpVirtualBox:
+
+  * ﺎﻠﻋﺮﺒﻳﺓ    ar
+  * Български (България)        bg
+  * Català      ca
+  * Català (valencià)   ca_VA
+  * Čeština     cs
+  * Dansk       da
+  * ~~Deutsch     de~~
+  * Ελληνικά    el
+  * ~~Español     es~~
+  * Euskara     eu
+  * Suomi (Suomi)       fi
+  * ~~Français    fr~~
+  * Galego (España)     gl_ES
+  * Magyar      hu
+  * Bahasa Indonesia    id
+  * ~~Italiano    it~~
+  * ~~日本語      ja~~
+  * ខ្មែរ km_KH
+  * 한국어      ko
+  * Lietuvių    lt
+  * Nederlands  nl
+  * Polski      pl
+  * ~~Português (Brasil)  pt_BR~~
+  * Português   pt
+  * Română      ro
+  * ~~Русский     ru~~
+  * Slovenčina  sk
+  * Српски      sr
+  * Svenska     sv
+  * Türkçe      tr
+  * Українська  uk
+  * 简体中文 (中国)     zh_CN
+  * 正體中文 (臺灣)     zh_TW
+
+Languages ~~crossed out~~ above have already been translated for phpVirtualBox.
+
+To translate phpVirtualBox, locate a language XML file in phpVirtualBox's languages folder. For instance, de.xml. The file will have entries that look similar to:
 
 {{{
-var $language = 'en_us';
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<context>
+		<name>phpVirtualBox</name>
+		<message>
+			<source>Warning: A VirtualBox internal operation is in progress. Closing this window or navigating away from this web page may cause unexpected and undesirable results. Please wait for the operation to complete.</source>
+			<translation>Warnung: Interne Aktion läuft. Wenn Sie dieses Fenster schließen oder diese Seite verlassen, kann das zu unerwünschten oder unbeabsichtigten Effekten führen. Bitte warten Sie bis die Aktion abgeschlossen ist.</translation>
+		</message>
+		<message>
+			<source>Operation Canceled</source>
+			<translation>Aktion abgebrochen</translation>
+		</message>
+                 ......
 }}}
 
-to
+You will see translation messages such as: 
+{{{
+<message>
+   <source>Operation Canceled</source>
+   <translation>Aktion abgebrochen</translation>
+</message>
+}}}
+
+Text within the `<source>` tag is the text that is to be translated. The translated text goes in the `<translation>` tag. E.g.
 
 {{{
-var $language = 'es_es';
+<message>
+   <source>Operation Canceled</source>
+   <translation>Your translation of "Operation Canceled" goes here...</translation>
+</message>
 }}}
 
-Translations the language file look like:
 
-'TEXT' => 'TRANSLATED TEXT'
-
-Simply change lines like these:
-
-{{{
-'Up' => 'Up',
-'Down' => 'Down',
-'Yes' => 'Yes',
-'No' => 'No',
-}}}
-
-To something like this:
-
-{{{
-'Up' => 'Ariba',
-'Down' => 'Abajo',
-'Yes' => 'Si',
-'No' => 'No',
-}}}
-
-(excuse my Spanish). Open up your new language file in the text editor of your choice and translate away.
-
-= Single Quotes (apostrophes) =
-
-In the language file, single quotes within a translation must be escaped by prepending a back slash. For instance, in the French translation, "Operating System" contains an apostrophe.
-
-{{{
-'Operating System' => 'Système d'exploitation',
-}}}
-
-This will confuse PHP and cause phpVirtualBox to generate an "Unknown PHP error." This must be translated as:
-
-{{{
-'Operating System' => 'Système d\'exploitation',
-}}}
+Translate the file, then send it to the mailing list. It should appear in the next version of phpVirtualBox.
 
 = Character Encoding =
 
@@ -64,37 +90,3 @@ All translations should use UTF-8 encoding.
   * Using vi, you may enter the command *:set enc=utf-8*
 
 Other text editors should have some way to change / set the encoding used.
-
-= Contexts =
-
-Starting with phpVirtualBox 4-0, language translations are now given context. As one translator points out:
-
-`Label "New" in main form and in Virtual Media Manager must be different. In russian this is two different words "Новая" and "Новый";`
-
-Contextualization solves this problem. Most sections of phpVirtualBox have their own context. These are:
-
-|| *phpVirtualBox Section* || *Context Name* ||
-||Virtual Media Manager dialog||vboxVMM||
-||Virtual Machine Logs dialog||vboxVMLogs||
-||Settings dialog||vboxSettings||
-||Virtual Machine Toolbar buttons and VM List tool tips||vboxVMList||
-||Virtual Machine Snapshots tab||vboxSnapshots||
-||Virtual Machine Console tab||vboxVMConsole||
-||Mount Media dialog||vboxMountMediums||
-||Virtual Machine Guest Network Adapters dialog||vboxGuestNetAdapters||
-||Virtual Machine Port Forwarding dialog||vboxPortForwarding||
-||Import/Export Virtual Machine dialog||vboxAppliance||
-||New Hard Disk wizard||vboxwizardNewHD||
-||New Virtual Machine wizard||vboxwizardNewVM||
-
-You create a contextual translation by prepending *context name*:: to the translation in your language file. Using the noted example above, you may create a translation for "New" in the Virtual Media Manager by adding a line containing:
-
-{{{
-'vboxVMM::New' => 'Новый',
-}}}
-
-While leaving the default translation of "New" alone:
-
-{{{
-'New' => 'Новая',
-}}}

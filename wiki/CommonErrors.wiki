@@ -49,6 +49,14 @@ This is usually an indication of some sort of misconfiguration of the VM. For in
 
 If the cause is not apparent through the error message, post the issue on the forums over at http://www.virtualbox.org
 
+== Method 'ns1:.........' not implemented: method name or namespace not recognized ==
+
+You are probably using a version of phpVirtualBox that is incompatible with your version of VirtualBox. 
+
+phpVirtualBox versioning is aligned with VirtualBox versioning in that the major and minor release numbers will maintain compatibility. phpVirtualBox 4.0-x will only be compatible with VirtualBox 4.0.x. Regardless of what the latest x revision is. phpVirtualBox 4.1-x will only be compatible with VirtualBox 4.1.x. ..etc..
+
+Download and install the correct version of phpVirtualBox, restart apache, and clear your web browser's cache.
+
 =Issues=
 
 == Empty virtual machine list ==

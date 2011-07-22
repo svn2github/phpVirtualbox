@@ -57,6 +57,12 @@ phpVirtualBox versioning is aligned with VirtualBox versioning in that the major
 
 Download and install the correct version of phpVirtualBox, restart apache, and clear your web browser's cache.
 
+== Function (".....................") is not a valid method for this service ==
+
+The short answer is to restart apache.
+
+PHP caches the WSDL file for vboxwebsrv and is still using an older version. The default cache timeout set in php.ini is 1 day. Restarting apache should force PHP to refresh this file.
+
 =Issues=
 
 == Empty virtual machine list ==

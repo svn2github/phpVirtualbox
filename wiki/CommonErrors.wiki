@@ -49,7 +49,7 @@ This is usually an indication of some sort of misconfiguration of the VM. For in
 
 If the cause is not apparent through the error message, post the issue on the forums over at http://www.virtualbox.org
 
-== Method 'ns1:.........' not implemented: method name or namespace not recognized ==
+== Method 'ns1:xxxxxxxxxxx' not implemented: method name or namespace not recognized ==
 
 You are probably using a version of phpVirtualBox that is incompatible with your version of VirtualBox. 
 
@@ -57,11 +57,15 @@ phpVirtualBox versioning is aligned with VirtualBox versioning in that the major
 
 Download and install the correct version of phpVirtualBox, restart apache, and clear your web browser's cache.
 
-== Function (".....................") is not a valid method for this service ==
+== Function ("xxxxxxxxxxxxxxxxx") is not a valid method for this service ==
 
 The short answer is to restart apache.
 
 PHP caches the WSDL file for vboxwebsrv and is still using an older version. The default cache timeout set in php.ini is 1 day. Restarting apache should force PHP to refresh this file.
+
+== Undefined method: xxxxxxxxx ==
+
+You have probably upgraded phpVirtualBox and not cleared your web browser's cache. The version in your web browser's cache does not match the version on the server. Clear your browser's cache and refresh the page.
 
 =Issues=
 

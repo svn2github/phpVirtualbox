@@ -83,6 +83,32 @@ To enable screen shots and the Console tab, please install a VirtualBox extensio
 
 In Firefox, click on the Tools menu -> Options -> Content -> Advanced (next to Enable JavaScript), and enable the Disable or replace context menus option.
 
+== vboxwebsrv stops after some time ==
+
+-or- 
+
+== memory usage of vboxwebsrv grows constantly ==
+
+The fixes are easy, but the explanations around the fixes are long. The short answer is that this is a memory leak in pam_smbpass.so - a file used to sync samba passwords with system passwords. You have 2 options:
+
+*Disable authentication in vboxwebsrv.*
+
+*-or-*
+
+*Remove PAM references to this file so that it is not called for authentication*
+
+Each have their own gotchas. 
+
+  * Disable authentication in vboxwebsrv - The end-result of this is that a username / password is no longer required to interact with VirtualBox through vboxwebsrv. If you are running vboxwebsrv bound to localhost or 127.0.0.1, and you are not worried about other people on your system mucking with vboxwebsrv, or you are on a protected network, then this is probably not an issue. To disable authentication in vboxwebsrv, run:
+
+{{{
+VBoxManage setproperty websrvauthlibrary null
+}}}
+
+as the user that runs VirtualBox on your system. *_NOTE: a username / password will still be required to log into phpVirtualBox._* If you don't like that option, read on..
+
+  * Remove pam_smbpass.so or PAM references to it - pam_smbpass is a PAM module that can be used on conforming systems to keep the smbpasswd (Samba password) database in sync with the UNIX password file. If you do not use samba (a software suite used to integrate `*`nix with Windows), removing the samba package from your system is the easiest choice. If you do use samba, but don't care to keep your your samba user database in sync with system passwords, you can comment out any references to pam_smbpass in /etc/pam.d/`*`. If you use samba AND want to keep your samba user database in sync with system passwords, your only choice is to disable vboxwebsrv authentication.
+
 == Preview Box is Black and VM is running / saved ==
 
 The power or screen saver settings of the guest OS in the virtual machine is probably set to turn off the monitor or display a blank screen after a period of inactivity. Change this setting in the guest operating system of the virtual machine.

@@ -43,6 +43,10 @@ var $location = 'http://127.0.0.1:18083/';
 
 The URL through which phpVirtualBox is accessible does not need to be specified.
 
+== HTTP GET method not implemented ==
+
+You are navigating to the $location setting in config.php. This is the URL through which phpVirtualBox communicates with VirtualBox's vboxwebsrv. Instead you need to navigate to phpVirtualBox's folder on your web server. Probably something like: http://localhost/phpvirtualbox
+
 == The virtual machine 'vm name' has terminated unexpectedly during startup ==
 
 This is usually an indication of some sort of misconfiguration of the VM. For instance you may have enabled "Enable VT-x/AMD-V" in the VM's configuration, but your processor does not support it (just an example). Unfortunately the only way to get the correct error message is to start the VM using another VirtualBox interface such as the VirtualBox GUI, VBoxManage, or VBoxHeadless. These should print a more descriptive error.

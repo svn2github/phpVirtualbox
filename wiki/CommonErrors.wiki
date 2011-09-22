@@ -117,6 +117,10 @@ as the user that runs VirtualBox on your system. *_NOTE: a username / password w
 
 The power or screen saver settings of the guest OS in the virtual machine is probably set to turn off the monitor or display a blank screen after a period of inactivity. Change this setting in the guest operating system of the virtual machine.
 
+== 2D / 3D acceleration options do not exist ==
+
+These options have no effect in a headless environment (console via VRDE) and so are not displayed.
+
 =My error message or issue is not covered here=
 
 Chances are, you are not the first person to encounter a particular error message. Please search for existing (both open and closed) issues on the Issues tab:

@@ -29,7 +29,7 @@ phpVirtualBox uses VirtualBox's translations for most of its text. This reduces 
   * 한국어      ko
   * Lietuvių    lt
   * Nederlands  nl
-  * Polski      pl
+  * ~~Polski      pl~~
   * ~~Português (Brasil)  pt_BR~~
   * Português   pt
   * Română      ro

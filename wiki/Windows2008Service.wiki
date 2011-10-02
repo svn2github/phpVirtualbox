@@ -1,4 +1,4 @@
-#summary Start vboxwebsrv as "service" in Windows Server 2008
+#summary Start vboxwebsrv as "service" in Windows 7 / Server 2008 / Vista
 
 = Introduction =
 
@@ -24,4 +24,11 @@ The following is user-contributed documentation. I am unable to verify the valid
 
 8) check tabs conditions and settings for custom choices
 
-9) have fun, test rebooting your machine
+9) Also don't forget to make a directory junction, as suggested in comment #10 http://code.google.com/p/phpvirtualbox/issues/detail?id=43#c10
+
+If you don't do this, all your VMs will be inacessible
+
+Directory junction has to be created using this command (replace [username] with your user profile name)
+C:\Windows\System32\config\systemprofile>mklink /j .Virtualbox C:\Users\[username]\.VirtualBox
+
+10) have fun, test rebooting your machine

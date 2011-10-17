@@ -8,6 +8,10 @@
 
 =Error Messages=
 
+== Invalid username or password ==
+
+See: http://code.google.com/p/phpvirtualbox/wiki/Authentication
+
 == Error logging in or connecting to vboxwebsrv==
 
 This typically indicates that the username and / or password is incorrect in config.php. These must be set to the system username / password of the user that administers your VirtualBox virtual machines.

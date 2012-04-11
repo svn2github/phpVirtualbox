@@ -1,3 +1,0 @@
-#summary VirtualBox
-
-[http://www.virtualbox.org]

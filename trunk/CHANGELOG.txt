@@ -20,6 +20,8 @@ Fixed bug when creating HDD on drive letters under Windows.
 
 Fixed Windows Bug when selecting folder from Hard Drive List
 
+Added better support for IE9.
+
 -------------------------------------
 	4.1-7	2012-01-17
 -------------------------------------

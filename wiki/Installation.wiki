@@ -80,6 +80,17 @@ Running /usr/bin/vboxwebsrv or not running the command from within /Applications
   # Navigate to the resulting folder in your web browser.
   # Default login is admin / admin
 
+==SELinux Considerations==
+If SELinux is installed and you would like to keep it enabled, you may have to add a rule for vboxwebsrv.
+
+Install semanage (yum install policycoreutils-python) and run the command below:
+
+{{{
+semanage port -a -t http_port_t -p tcp 18083
+}}}
+
+This will add the VirtualBox's web service port (18083) to be accessible by a service running in an http context (eg. apache).
+
 ==Arch Linux Considerations==
 In Arch Linux, be sure to edit /etc/php/php.ini, and uncomment the following lines:
 

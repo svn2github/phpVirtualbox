@@ -24,7 +24,9 @@ This typically indicates that the username and / or password is incorrect in con
 
 == Could not connect to host ==
 
-This indicates that phpVirtualBox could not connect to the vboxwebsrv server. Either the *location* setting in config.php is wrong or *vboxwebsrv* is not running on the VirtualBox host.
+This indicates that phpVirtualBox could not connect to the vboxwebsrv server. Either the *location* setting in config.php is wrong, *vboxwebsrv* is not running on the VirtualBox host, or SELinux is blocking access to vboxwebsrv. If you have SELinux enabled, see:
+
+http://code.google.com/p/phpvirtualbox/wiki/Installation#SELinux_Considerations
 
 
 == looks like we got no XML document ==

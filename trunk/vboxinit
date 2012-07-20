@@ -34,6 +34,8 @@ start()
 	for UUID in $MACHINES; do
 		STARTUP=$($su_command "VBoxManage getextradata $UUID 'pvbx/startupMode'" | awk '{ print $NF }')
 		if [ "${STARTUP}" == "auto" ]; then
+			VMNAME=$($su_command "VBoxManage showvminfo $UUID | sed -n '0,/^Name:/s/^Name:[ \t]*//p'")
+			echo "$0: starting machine ${VMNAME} ..."
 			$su_command "VBoxManage startvm $UUID --type headless" >>/var/log/vb.log
 		fi
 	done
@@ -44,7 +46,8 @@ stop()
 	# vms are saved, instead of stopped.
 	MACHINES=$($su_command "VBoxManage list runningvms | awk '{ print \$NF }' | sed -e 's/[{}]//g'")
 	for UUID in $MACHINES; do
-		echo "$0: saving machine ${UUID} state"
+		VMNAME=$($su_command "VBoxManage showvminfo $UUID | sed -n '0,/^Name:/s/^Name:[ \t]*//p'")
+		echo "$0: saving machine ${VMNAME} state ..."
 		$su_command "VBoxManage controlvm $UUID savestate" >>/var/log/vb.log
 	done
 

@@ -4245,6 +4245,7 @@ class vboxconnector {
 
 		/* @var $hd IMedium */
 		$hd = $this->vbox->createHardDisk($format,$args['file']);
+		$hdid = $hd->id;
 
 		/* @var $progress IProgress */
 		$progress = $hd->createBaseStorage(intval($args['size'])*1024*1024,$type);
@@ -4260,7 +4261,7 @@ class vboxconnector {
 
 		$this->_util_progressStore($progress,'vboxGetMedia');
 
-		$response['data'] = array('progress' => $progress->handle,'id' => $hd->id);
+		$response['data'] = array('progress' => $progress->handle,'id' => $hdid);
 		$hd->releaseRemote();
 
 		return true;

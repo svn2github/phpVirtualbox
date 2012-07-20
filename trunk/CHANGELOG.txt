@@ -22,6 +22,10 @@ Fixed Windows Bug when selecting folder from Hard Drive List
 
 Added better support for IE9.
 
+Added LDAP authentication module.
+
+Cosmetic changes in init script output.
+
 -------------------------------------
 	4.1-7	2012-01-17
 -------------------------------------

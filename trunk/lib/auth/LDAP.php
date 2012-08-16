@@ -1,6 +1,7 @@
 <?php
 /*
  * $Id$
+ * Experimental!
  */
 class phpvbAuthLDAP implements phpvbAuth {
 	

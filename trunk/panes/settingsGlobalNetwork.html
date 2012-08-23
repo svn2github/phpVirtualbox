@@ -187,7 +187,7 @@ $('#vboxSettingsGlobalNetList').bind('select',netToolbar.update);
 
 $('#vboxSettingsGlobalNetList').bind('select',function(e,i){
 	if(i) {
-		$('#vboxSettingsGlobalNetAdapterLabel').html($(i).data('interface').dhcpEnabled ? trans('Automatically configured','UIGlobalSettingsNetwork') : trans('Manually configured','UIGlobalSettingsNetwork'));
+		$('#vboxSettingsGlobalNetAdapterLabel').html($(i).data('interface').DHCPEnabled ? trans('Automatically configured','UIGlobalSettingsNetwork') : trans('Manually configured','UIGlobalSettingsNetwork'));
 		$('#vboxSettingsGlobalNetDHCPLabel').html($(i).data('interface').dhcpServer.enabled ? trans('Enabled','UIGlobalSettingsNetwork') : trans('Disabled','UIGlobalSettingsNetwork'));
 	} else {
 		$('#vboxSettingsGlobalNetAdapterLabel').html('');

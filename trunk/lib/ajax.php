@@ -67,6 +67,7 @@ try {
 			$response['data'] = get_object_vars($settings);
 			$response['data']['host'] = parse_url($response['data']['location']);
 			$response['data']['host'] = $response['data']['host']['host'];
+			$response['data']['phpvboxver'] = @constant('PHPVBOX_VER');
 			
 			// Session
 			session_init();

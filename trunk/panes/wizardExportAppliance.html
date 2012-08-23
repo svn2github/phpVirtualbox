@@ -7,9 +7,9 @@
 
  -->
 <!-- Step 1 -->
-<div id='wizardExportApplianceStep1' title='Welcome to the Appliance Export Wizard!' style='display: none'>
+<div id='wizardExportApplianceStep1' title='Virtual machines to export' style='display: none'>
 
-	<span id='wizExportAppMsg'>&lt;p&gt;This wizard will guide you through the process of exporting an appliance.&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;Please select the virtual machines that should be added to the appliance. You can select more than one. Please note that these machines have to be turned off before they can be exported.&lt;/p&gt;</span>
+	<span class='translate'>&lt;p&gt;Please select the virtual machines that should be added to the appliance. You can select more than one. Please note that these machines have to be turned off before they can be exported.&lt;/p&gt;</span>
 	
 	<div id='vboxExportAppVMListContainer' style='overflow:auto;padding:0px;margin:0px;' class='vboxBordered'>
 		<ul style='width: 100%;margin:0px;' id='vboxExportAppVMList' class='vboxList'>
@@ -27,45 +27,38 @@
 </div>
 
 <!-- Step 3 -->
-<div id='wizardExportApplianceStep3' title='Appliance Export Settings' style='display: none; width: 100%;'>
+<div id='wizardExportApplianceStep3' title='Appliance settings' style='display: none; width: 100%;'>
 
-	<p class='translate'>Please choose a filename to export the OVF/OVA to. If you use an &lt;i&gt;ova&lt;/i&gt; file name extension, then all the files will be combined into one Open Virtualization Format Archive. If you use an &lt;i&gt;ovf&lt;/i&gt; extension, several files will be written separately. Other extensions are not allowed.</p>
-
-	<table style='width: 100%;' class='vboxInvisible'>
-		<tr>
-			<td style='width: 100%; white-space: nowrap' class='vboxFileFolderInput'>
-				<input type='text' class='vboxText' name='wizardExportApplianceLocation' />
-				<input type="button" class="vboxImgButton" style="background-image: url(images/vbox/select_file_16px.png)" onClick="wizardExportApplianceBrowseLocation()" />
-			</td>
-		</tr>
-	</table>
-
-	<p>
-	<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceLegacy'/>
-		<span class='translate'>Write legacy OVF 0.9</span></label>	
-	</p>
-	<p>
-	<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceManifest'/>
-		<span class='translate'>Write Manifest file</span></label>	
-	</p>
+	<span class='translate'>&lt;p&gt;Please choose a filename to export the OVF/OVA to.&lt;/p&gt;&lt;p&gt;If you use an &lt;i&gt;ova&lt;/i&gt; extension, then all the files will be combined into one Open Virtualization Format Archive.&lt;/p&gt;&lt;p&gt;If you use an &lt;i&gt;ovf&lt;/i&gt; extension, several files will be written separately.&lt;/p&gt;&lt;p&gt;Other extensions are not allowed.&lt;/p&gt;</span>
 	
+	<div class='vboxOptions'>
+		<table style='width: 100%;' class='vboxInvisible'>
+			<tr>
+				<td style='width: 100%; white-space: nowrap' class='vboxFileFolderInput'>
+					<input type='text' class='vboxText' name='wizardExportApplianceLocation' />
+					<input type="button" class="vboxImgButton" style="background-image: url(images/vbox/select_file_16px.png)" onClick="wizardExportApplianceBrowseLocation()" />
+				</td>
+			</tr>
+		</table>
+	
+		<p>
+		<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceLegacy'/>
+			<span class='translate'>Write legacy OVF 0.9</span></label>	
+		</p>
+		<p>
+		<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceManifest'/>
+			<span class='translate'>Write Manifest file</span></label>	
+		</p>
+	</div>	
 </div>
 
 <!-- Step 4 -->
-<div id='wizardExportApplianceStep4' title='Appliance Export Settings' style='display: none; width: 100%;'>
+<div id='wizardExportApplianceStep4' title='Appliance settings' style='display: none; width: 100%;'>
 
-	<div class='translate' style='margin-bottom:8px; width: 100%'>Here you can change additional configuration values of the selected virtual machines. You can modify most of the properties shown by double-clicking on the items.</div>
+	<div class='translate' style='margin-bottom:8px; width: 100%'>This is the descriptive information which will be added to the virtual appliance.  You can change it by double clicking on individual lines.</div>
 
 	<div class='vboxBordered' id='vboxExportPropsContainer' style='overflow: auto' style='width: 100%'>
 		<table class='vboxHorizontal' style='width: 100%;'>
-			<!--
-				<thead>
-					<tr>
-						<th style='text-align: left; width: 1%; padding-left: 10px' class='translate'>Description</th>
-						<th style='text-align: left; padding-left: 10px;' class='translate'>Configuration</th>
-					</tr>
-				</thead>
-			 -->
 			<tbody id='vboxExportProps'>
 			</tbody>
 		</table>
@@ -75,7 +68,6 @@
 
 <script type='text/javascript'>
 
-$('#wizExportAppMsg').html(trans('<p>This wizard will guide you through the process of exporting an appliance.</p><p>%1</p><p>Please select the virtual machines that should be added to the appliance. You can select more than one. Please note that these machines have to be turned off before they can be exported.</p>','UIExportApplianceWzdPage1').replace('%1','<span class="vboxWizButtonsMessage" />'));
 
 var l = new vboxLoader();
 l.add('vboxGetExportableMachines',function(d){$('#wizardExportApplianceStep1').data('vms',d);});
@@ -206,10 +198,8 @@ $('#wizardExportApplianceStep3').bind('show',function(e,wiz){
 	var name = '';
 	if(vmSel.length > 1) {
 		name = 'Appliance';
-		$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLegacy).prop({'checked':false,'disabled':true}).siblings().addClass('vboxDisabled');
 	} else {
 		name = jQuery.trim($(vmSel[0]).text());
-		$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLegacy).prop({'disabled':false}).siblings().removeClass('vboxDisabled');
 	}
 	if($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val()) return;
 	name = $('#vboxIndex').data('vboxConfig').version.settingsFilePath.substring(0,$('#vboxIndex').data('vboxConfig').version.settingsFilePath.length - 27) + $('#vboxIndex').data('vboxConfig').DSEP + name + '.ova';

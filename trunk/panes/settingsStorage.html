@@ -717,8 +717,10 @@ $('#vboxSettingsDialog').bind('save',function(){
 
 			var attch = $(elm).data('attachment');
 			
-			if(attch.medium && attch.medium.id)
-				attch.medium.hostDrive = vboxMedia.getMediumById(attch.medium.id).hostDrive;
+			if(attch.medium && attch.medium.id) {
+				var med = vboxMedia.getMediumById(attch.medium.id);
+				attch.medium = {'id':med.id,'hostDrive':med.hostDrive,'location':med.location};
+			}
 			
 			attachments[attachments.length] = attch;
 

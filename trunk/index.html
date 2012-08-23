@@ -193,6 +193,7 @@
 				l.add('hostGetDetails',function(d){$('#vboxIndex').data('vboxHostDetails',d);});
 				l.add('vboxRecentMediaGet',function(d){$('#vboxIndex').data('vboxRecentMedia',d);});
 				l.add('vboxRecentMediaPathsGet',function(d){$('#vboxIndex').data('vboxRecentMediaPaths',d);});
+				l.add('vboxGetEnumerationMap',function(d){$('#vboxIndex').data('vboxMediumVariants',d);},{'class':'MediumVariant','ValueMap':1});
 				
 				l.onLoad = function(){$('#vboxIndex').trigger('hostChanged');};
 
@@ -215,6 +216,7 @@
 				l.add('hostGetDetails',function(d){$('#vboxIndex').data('vboxHostDetails',d);});
 				l.add('vboxRecentMediaGet',function(d){$('#vboxIndex').data('vboxRecentMedia',d);});
 				l.add('vboxRecentMediaPathsGet',function(d){$('#vboxIndex').data('vboxRecentMediaPaths',d);});
+				l.add('vboxGetEnumerationMap',function(d){$('#vboxIndex').data('vboxMediumVariants',d);},{'class':'MediumVariant','ValueMap':1});
 	
 				// Load HTML panes and append them to their respective locations
 				l.addFileToDOM('panes/topmenu.html');

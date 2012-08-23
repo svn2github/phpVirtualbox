@@ -14,7 +14,7 @@ function vboxWizardImportApplianceInit() {
 	
 	l.onLoad = function() {
 
-		var vbw = new vboxWizard('wizardImportAppliance',trans('Appliance Import Wizard','UIImportApplianceWzd'),'images/vbox/vmw_ovf_import_bg.png','import');
+		var vbw = new vboxWizard('wizardImportAppliance',trans('Import Virtual Appliance','UIImportApplianceWzd'),'images/vbox/vmw_ovf_import_bg.png','import');
 		vbw.steps = 2;
 		vbw.height = 500;
 		vbw.finishText = trans('Import','UIImportApplianceWzd');
@@ -127,12 +127,25 @@ function vboxWizardImportApplianceInit() {
  */
 function vboxWizardExportApplianceInit() {
 
-	var vbw = new vboxWizard('wizardExportAppliance',trans('Appliance Export Wizard','UIExportApplianceWzd'),'images/vbox/vmw_ovf_export_bg.png','export');
+	var vbw = new vboxWizard('wizardExportAppliance',trans('Export Virtual Appliance','UIExportApplianceWzd'),'images/vbox/vmw_ovf_export_bg.png','export');
 	vbw.steps = 4;
 	vbw.height = 500;
 	vbw.context = 'UIExportApplianceWzd';
 	vbw.finishText = trans('Export','UIExportApplianceWzd');
 	vbw.perPageContext = 'UIExportApplianceWzdPage%1';
+	vbw.stepButtons = [
+	   {
+		   'name' : trans('Restore Defaults','UIExportApplianceWzd'),
+		   'steps' : [4],
+		   'click' : function(e) {
+			   // Remove export VM properties
+			   $('#vboxExportProps').children().remove();
+			   // Re-trigger adding them
+			   $('#wizardExportApplianceStep4').trigger('show',e,vbw);
+		   }
+	   }
+	];
+
 	vbw.onFinish = function(wiz,dialog) {
 		
 		function vboxExportApp(force) {
@@ -234,40 +247,82 @@ function vboxPortForwardConfigInit(rules,callback) {
 /**
  * Run the New Virtual Machine Wizard
  * @param {Function} callback - function to run after VM creation
+ * @param {String} vmgroup - VM group to add machine to
  */
-function vboxWizardNewVMInit(callback) {
+function vboxWizardNewVMInit(callback, vmgroup) {
 
 	var l = new vboxLoader();
 	l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 	
 	l.onLoad = function() {
 
-		var vbw = new vboxWizard('wizardNewVM',trans('Create New Virtual Machine','UINewVMWzd'),'images/vbox/vmw_new_welcome_bg.png','new');
-		vbw.steps = 5;
-		vbw.context = 'UINewHDWizard';
+		
+		var vbw = new vboxWizard('wizardNewVM',trans('Create Virtual Machine','UINewVMWzd'),'images/vbox/vmw_new_welcome_bg.png','new');
+		vbw.steps = 3;
+		vbw.vmgroup = vmgroup;
+		vbw.context = 'UINewVMWizard';
 		vbw.perPageContext = 'UINewVMWzdPage%1';
 		vbw.finishText = trans('Create','UINewVMWzd');
 		vbw.onFinish = function(wiz,dialog) {
 
-			// Get parameters
-			var disk = document.forms['frmwizardNewVM'].newVMDiskSelect.options[document.forms['frmwizardNewVM'].newVMDiskSelect.selectedIndex].value;
-			var name = jQuery.trim(document.forms['frmwizardNewVM'].newVMName.value);
-			var ostype = document.forms['frmwizardNewVM'].newVMOSType.options[document.forms['frmwizardNewVM'].newVMOSType.selectedIndex].value;
-			var mem = parseInt(document.forms['frmwizardNewVM'].wizardNewVMSizeValue.value);
-			if(!document.forms['frmwizardNewVM'].newVMBootDisk.checked || !disk) disk = '';
-
-			vboxAjaxRequest('machineCreate',{'disk':disk,'ostype':ostype,'memory':mem,'name':name},function(res){
-				if(res && res.result) {
-					$(dialog).trigger('close').empty().remove();
-					var lm = new vboxLoader();
-					lm.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
-					lm.onLoad = function(){
-						$('#vboxIndex').trigger('vmlistreload');
-						if(callback) callback();
-					};
-					lm.run();a
+			// Callback to finish wizard
+			var vboxNewVMFinish = function() {
+				
+				// Get parameters
+				var disk = '';
+				if(!document.forms['frmwizardNewVM'].newVMDisk[0].checked) {
+					disk = document.forms['frmwizardNewVM'].newVMDiskSelect.options[document.forms['frmwizardNewVM'].newVMDiskSelect.selectedIndex].value;
+					disk = vboxMedia.getMediumById(disk).location;
 				}
-			});			
+				var name = jQuery.trim(document.forms['frmwizardNewVM'].newVMName.value);
+				var ostype = document.forms['frmwizardNewVM'].newVMOSType.options[document.forms['frmwizardNewVM'].newVMOSType.selectedIndex].value;
+				var mem = parseInt(document.forms['frmwizardNewVM'].wizardNewVMSizeValue.value);
+				
+				
+				vboxAjaxRequest('machineCreate',{'disk':disk,'ostype':ostype,'memory':mem,'name':name,'group':vmgroup},function(res){
+					if(res && res.result) {
+						$(dialog).trigger('close').empty().remove();
+						var lm = new vboxLoader();
+						lm.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
+						lm.onLoad = function(){
+							$('#vboxIndex').trigger('vmlistreload');
+							if(callback) callback();
+						};
+						lm.run();
+					}
+				});			
+				
+			};
+
+			// Start new harddisk wizard if create new is selected
+			if(document.forms['frmwizardNewVM'].newVMDisk[1].checked) {
+				
+				// Recommended size
+				var size = newVMOSTypesObj[document.forms['frmwizardNewVM'].newVMOSType.options[document.forms['frmwizardNewVM'].newVMOSType.selectedIndex].value].recommendedHDD;
+				                 		
+				vboxWizardNewHDInit(function(med){
+
+					// Wizard errored or was cancelled
+					if(!med) { return; }
+					
+					// Add newly created disk as option and select it
+					vmNewFillExistingDisks(med);
+					
+					vboxNewVMFinish();
+					
+				},{'name':jQuery.trim(document.forms['frmwizardNewVM'].newVMName.value),'size':size});
+
+				return;
+				
+			} else if(document.forms['frmwizardNewVM'].newVMDisk[0].checked) {
+
+				buttons = {};
+				buttons[trans('Continue','UIMessageCenter')] = vboxNewVMFinish;
+				vboxConfirm(trans('You are about to create a new virtual machine without a hard drive. You will not be able to install an operating system on the machine until you add one. In the mean time you will only be able to start the machine using a virtual optical disk or from the network.','UIMessageCenter'), buttons, trans('Go Back','UIMessageCenter'));
+				return;
+			}
+			
+			vboxNewVMFinish();
 
 		};
 		vbw.run();
@@ -290,7 +345,7 @@ function vboxWizardCloneVMInit(callback,args) {
 	},{'vm':args.vm.id});
 	l.onLoad = function() {
 		
-		var vbw = new vboxWizard('wizardCloneVM',trans('Clone a virtual machine','UICloneVMWizard'),'images/vbox/vmw_clone_bg.png','vm_clone');		
+		var vbw = new vboxWizard('wizardCloneVM',trans('Clone Virtual Machine','UICloneVMWizard'),'images/vbox/vmw_clone_bg.png','vm_clone');		
 		vbw.steps = (args.vm.snapshotCount > 0 ? 3 : 2);
 		vbw.args = args;
 		vbw.finishText = trans('Clone','UICloneVMWizard');
@@ -436,7 +491,7 @@ function vboxVMMDialogInit(callback,type,hideDiff,mPath) {
 	l.onLoad = function() {
 		var buttons = {};
 		if(callback) {
-			buttons[trans('OK','QIMessageBox')] = function() {
+			buttons[trans('Select','UIMediumManager')] = function() {
 				var sel = null;
 				switch($("#vboxVMMTabs").tabs('option','selected')) {
 					case 0: /* HardDisks */
@@ -455,7 +510,7 @@ function vboxVMMDialogInit(callback,type,hideDiff,mPath) {
 				$('#vboxVMMDialog').trigger('close').empty().remove();
 			};
 		}
-		buttons[trans('Close','VBoxMediaManagerDlg')] = function() {
+		buttons[trans('Close','UIMediumManager')] = function() {
 			$('#vboxVMMDialog').trigger('close').empty().remove();
 			if(callback) callback(null);
 		};
@@ -505,12 +560,13 @@ function vboxWizardNewHDInit(callback,suggested) {
 	
 	// Compose folder if suggested name exists
 	if(suggested && suggested.name) {
-		l.add('vboxGetComposedMachineFilename',function(d){suggested.path = vboxDirname(d.file)+$('#vboxIndex').data('vboxConfig').DSEP;},{'name':suggested.name});
+		if(!suggested['group']) suggested.group = '';
+		l.add('vboxGetComposedMachineFilename',function(d){ suggested.path = vboxDirname(d.file)+$('#vboxIndex').data('vboxConfig').DSEP;},{'name':suggested.name, 'group':suggested.group});
 	}
 	l.onLoad = function() {
 		
-		var vbw = new vboxWizard('wizardNewHD',trans('Create New Virtual Disk','UINewHDWizard'),'images/vbox/vmw_new_harddisk_bg.png','hd');
-		vbw.steps = 4;
+		var vbw = new vboxWizard('wizardNewHD',trans('Create Virtual Hard Drive','UINewHDWizard'),'images/vbox/vmw_new_harddisk_bg.png','hd');
+		vbw.steps = 3;
 		vbw.suggested = suggested;
 		vbw.context = 'UINewHDWizard';
 		vbw.finishText = trans('Create','UINewHDWizard');
@@ -518,24 +574,69 @@ function vboxWizardNewHDInit(callback,suggested) {
 		
 		vbw.onFinish = function(wiz,dialog) {
 
-			var file = $('#wizardNewHDLocationLabel').text();
-			var size = vboxConvertMbytes(document.forms['frmwizardNewHD'].elements.wizardNewHDSizeValue.value);
-			var type = (document.forms['frmwizardNewHD'].elements.newHardDiskType[1].checked ? 'fixed' : 'dynamic');
+			// Fix size if we need to
+			var mbytes = vboxConvertMbytes(document.forms['frmwizardNewHD'].elements.wizardNewHDSizeValue.value);
+			document.forms['frmwizardNewHD'].elements.wizardNewHDSizeValue.value = vboxMbytesConvert(mbytes);
+			$('#wizardNewHDSizeLabel').html(document.forms['frmwizardNewHD'].elements.wizardNewHDSizeValue.value + ' ('+mbytes+' '+trans('MB','VBoxGlobal')+')');
+
+			// Determine file location
+			var file = document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value;
+			if(file.search(/[\/|\\]/) < 0) {
+				// just a name
+				if($('#wizardNewHDStep3').data('suggestedpath')) {
+					if($('#vboxIndex').data('vboxConfig').enforceVMOwnership==true){
+						file = $('#wizardNewHDStep3').data('suggestedpath') + $('#vboxIndex').data('vboxSession').user + "_" + file;	
+					}else{ file = $('#wizardNewHDStep3').data('suggestedpath') + file; }
+				} else{
+					if($('#vboxIndex').data('vboxConfig').enforceVMOwnership==true){
+						file = $('#vboxIndex').data('vboxSystemProperties').homeFolder + $('#vboxIndex').data('vboxConfig').DSEP + $('#vboxIndex').data('vboxSession').user + "_" + file;
+					}else{ file = $('#vboxIndex').data('vboxSystemProperties').homeFolder + $('#vboxIndex').data('vboxConfig').DSEP + file; }
+				}
+			}else{
+				// using a certain folder
+					if($('#vboxIndex').data('vboxConfig').enforceVMOwnership==true){
+						// has user ownership so use folderbased 
+						var nameIndex = file.lastIndexOf($('#vboxIndex').data('vboxConfig').DSEP);
+						var path = file.substr(0,nameIndex);
+						var name = file.substr(nameIndex+1,file.length);
+						file = path +$('#vboxIndex').data('vboxConfig').DSEP + $('#vboxIndex').data('vboxSession').user + "_" + name;
+					}
+			}
+
 			var format = document.forms['frmwizardNewHD'].elements['newHardDiskFileType'];
+			var formatOpts = {};
 			for(var i = 0; i < format.length; i++) {
 				if(format[i].checked) {
+					formatOpts = $(format[i]).closest('tr').data('vboxFormat');
 					format=format[i].value;
 					break;
 				}
 			}
-			var fsplit = (document.forms['frmwizardNewHD'].newHardDiskSplit.checked ? 1 : 0);
 
-			$(dialog).trigger('close').empty().remove();
+			// append filename ext?
+			if(jQuery.inArray(file.substring(file.lastIndexOf('.')+1).toLowerCase(),formatOpts.extensions) < 0) {
+				file += '.'+formatOpts.extensions[0];
+			}
 
+			/* Check to see if file exists */
+			var fileExists = false;
 			var l = new vboxLoader();
-			l.add('mediumCreateBaseStorage',function(d,e){
-				if(d && d.progress) {
-					vboxProgress(d.progress,function(ret,mid) {
+			l.add('fileExists',function(d){
+				fileExists = d.exists;
+			},{'file':loc});
+			l.onLoad = function() { 
+				if(fileExists) {
+					vboxAlert(trans('<p>The hard disk storage unit at location <b>%1</b> already exists. You cannot create a new virtual hard disk that uses this location because it can be already used by another virtual hard disk.</p><p>Please specify a different location.</p>','UIMessageCenter').replace('%1',loc));
+					return;
+				}
+				var fsplit = (document.forms['frmwizardNewHD'].newHardDiskSplit.checked ? 1 : 0);
+				var size = vboxConvertMbytes(document.forms['frmwizardNewHD'].elements.wizardNewHDSizeValue.value);
+				var type = (document.forms['frmwizardNewHD'].elements.newHardDiskType[1].checked ? 'fixed' : 'dynamic');
+				var nl = new vboxLoader();
+				nl.add('mediumCreateBaseStorage',function(d){
+					if(d && d.progress && d.id) {
+						mid = d.id;
+						vboxProgress(d.progress,function(ret) {
 							var ml = new vboxLoader();
 							ml.add('vboxGetMedia',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
 							ml.onLoad = function() {
@@ -544,11 +645,15 @@ function vboxWizardNewHDInit(callback,suggested) {
 								callback(mid);
 							};
 							ml.run();
-					},d.id,'progress_media_create_90px.png',trans('Create New Virtual Disk','UINewHDWizard'));
-				} else {
-					callback({},d.id);
-				}
-			},{'file':file,'type':type,'size':size,'format':format,'split':fsplit});
+						},d.id,'progress_media_create_90px.png',trans('Create New Virtual Disk','UINewHDWizard'));
+					} else {
+						callback({},d.id);
+					}
+				},{'file':file,'type':type,'size':size,'format':format,'split':fsplit});
+				nl.run();
+
+				$(dialog).trigger('close').empty().remove();
+			};
 			l.run();
 			
 		};
@@ -573,16 +678,26 @@ function vboxWizardCopyHDInit(callback,suggested) {
 	
 	l.onLoad = function() {
 		
-		var vbw = new vboxWizard('wizardCopyHD',trans('Copy Virtual Disk','UINewHDWizard'),'images/vbox/vmw_new_harddisk_bg.png','hd');
-		vbw.steps = 5;
+		var vbw = new vboxWizard('wizardCopyHD',trans('Copy Virtual Hard Drive','UIWizardCloneVD'),'images/vbox/vmw_new_harddisk_bg.png','hd');
+		vbw.steps = 4;
 		vbw.suggested = suggested;
-		vbw.context = 'UINewHDWizard';
-		vbw.finishText = trans('Copy','UINewHDWizard');
+		vbw.context = 'UIWizardCloneVD';
+		vbw.finishText = trans('Copy','UIWizardCloneVD');
 		vbw.height = 450;
 		
 		vbw.onFinish = function(wiz,dialog) {
 
 
+			var format = document.forms['frmwizardCopyHD'].elements['copyHDFileType'];
+			var formatOpts = {};
+			for(var i = 0; i < format.length; i++) {
+				if(format[i].checked) {
+					formatOpts = $(format[i]).closest('tr').data('vboxFormat');
+					break;
+				}
+			}
+
+			
 			var src = $(document.forms['frmwizardCopyHD'].copyHDDiskSelect).val();
 			var type = (document.forms['frmwizardCopyHD'].elements.newHardDiskType[1].checked ? 'fixed' : 'dynamic');
 			var format = document.forms['frmwizardCopyHD'].elements['copyHDFileType'];
@@ -593,14 +708,38 @@ function vboxWizardCopyHDInit(callback,suggested) {
 				}
 			}
 			var fsplit = (document.forms['frmwizardCopyHD'].newHardDiskSplit.checked && format == 'vmdk' ? 1 : 0);
-			var location = $('#wizardCopyHDLocationLabel').text();
-						
-			$(dialog).trigger('close').empty().remove();
 
-			var l = new vboxLoader();
-			l.add('mediumCloneTo',function(d,e){
-				if(d && d.progress) {
-					vboxProgress(d.progress,function(ret,mid) {
+			var loc = document.forms['frmwizardCopyHD'].elements.wizardCopyHDLocation.value;
+			if(loc.search(/[\/|\\]/) < 0) {
+				if($('#wizardCopyHDStep4').data('suggestedpath')) {
+					loc = $('#wizardCopyHDStep4').data('suggestedpath') + loc;
+				} else {
+					loc = vboxDirname(vboxMedia.getMediumById($(document.forms['frmwizardCopyHD'].copyHDDiskSelect).val()).location) + $('#vboxIndex').data('vboxConfig').DSEP + loc;
+				}
+			}
+
+			// append ext?
+			if(jQuery.inArray(loc.substring(loc.lastIndexOf('.')+1).toLowerCase(),formatOpts.extensions) < 0) {
+				loc += '.'+formatOpts.extensions[0];
+			}
+			
+			/* Check to see if file exists */
+			var fileExists = false;
+			var fe = new vboxLoader();
+			fe.add('fileExists',function(d){
+				fileExists = d.exists;
+			},{'file':loc});
+			fe.onLoad = function() { 
+				if(fileExists) {
+					vboxAlert(trans('<p>The hard disk storage unit at loc <b>%1</b> already exists. You cannot create a new virtual hard disk that uses this loc because it can be already used by another virtual hard disk.</p><p>Please specify a different loc.</p>','UIMessageCenter').replace('%1',loc));
+					return;
+				}
+				$(dialog).trigger('close').empty().remove();
+				
+				var l = new vboxLoader();
+				l.add('mediumCloneTo',function(d,e){
+					if(d && d.progress) {
+						vboxProgress(d.progress,function(ret,mid) {
 							var ml = new vboxLoader();
 							ml.add('vboxGetMedia',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
 							ml.onLoad = function() {
@@ -609,12 +748,15 @@ function vboxWizardCopyHDInit(callback,suggested) {
 								callback(mid);
 							};
 							ml.run();
-					},d.id,'progress_media_create_90px.png',trans('Copy Virtual Disk','UINewHDWizard'));
-				} else {
-					callback(d.id);
-				}
-			},{'src':src,'type':type,'format':format,'location':location,'split':fsplit});
-			l.run();
+						},d.id,'progress_media_create_90px.png',trans('Copy Virtual Hard Drive','UIWizardCloneVD'));
+					} else {
+						callback(d.id);
+					}
+				},{'src':vboxMedia.getMediumById(src).location,'type':type,'format':format,'location':loc,'split':fsplit});
+				l.run();
+			};
+			fe.run();
+
 			
 		};
 		vbw.run();

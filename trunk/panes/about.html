@@ -1,6 +1,6 @@
 <!-- $Id$ -->
 <div style='text-align: center'>
-<h3 align='center'>phpVirtualBox 4.1-8 -/- VirtualBox 4.1.x compatible</h3>
+<h3 align='center' id='vboxAboutHeader'>phpVirtualBox X -/- VirtualBox X compatible</h3>
 <p style='text-align: center'>Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com) - <a href='LICENSE.txt' target='_new'>LICENSE</a></p>
 <p style='text-align: center'><a target='_blank' href='http://code.google.com/p/phpvirtualbox/'>http://code.google.com/p/phpvirtualbox/</a></p>
 <p style='text-align: left'>
@@ -12,6 +12,7 @@ I affiliated with them in any way. If you find this program useful, I ask that y
 </p>
 <div style='margin-top: 10px; border-top: 1px solid #000;' id='vboxAboutVbox'><p>VirtualBox</p>
 	<script type='text/javascript'>
+		$('#vboxAboutHeader').html('phpVirtualBox '+$('#vboxIndex').data('vboxConfig').phpvboxver+' -/- VirtualBox '+$('#vboxIndex').data('vboxConfig').phpvboxver.substring(0,$('#vboxIndex').data('vboxConfig').phpvboxver.indexOf('-'))+'.x compatible');
 		$('#vboxAboutVbox').html('Virtual Box '+$('#vboxIndex').data('vboxConfig').version.string+' ('+$('#vboxIndex').data('vboxConfig').version.revision+')<br />' + $('#vboxIndex').data('vboxConfig').version.settingsFilePath);
 	</script>
 </div>

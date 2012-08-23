@@ -7,63 +7,63 @@
 
  -->
 <!-- Step 1 -->
-<div id='wizardCloneVMStep1' title='Welcome to the virtual machine clone wizard' style='display: none'>
+<div id='wizardCloneVMStep1' title='New machine name' style='display: none'>
 
-	<span class='translate'>&lt;p&gt;This wizard will help you to create a clone of your virtual machine.&lt;/p&gt;</span>
-
-	<p class='vboxWizButtonsMessage'></p>
+	<span id='vboxWizCloneMessage1'></span>
 	
-	<span class='translate'>&lt;p&gt;Please choose a name for the new virtual machine:&lt;/p&gt;</span>
+	<div class='vboxOptions' style='padding: 6px'>
+		<input type='text' class='vboxText' name='machineCloneName' style='width: 95%' />
+		
+		<p><label><input type='checkbox' class='vboxCheckbox' name='vboxCloneReinitNetwork' />
+			<span class='translate'>Reinitialize the MAC address of all network cards</span></label>
+		</p>
+	</div>
 	
-	<input type='text' class='vboxText' name='machineCloneName' style='width: 95%' />
-	
-	<p><label><input type='checkbox' class='vboxCheckbox' name='vboxCloneReinitNetwork' />
-		<span class='translate'>Reinitialize the MAC address of all network cards</span></label>
-	</p>
-
 </div>
 
 
 <!-- Step 2 -->
-<div id='wizardCloneVMStep2' title='Cloning Configuration' style='display: none'>
+<div id='wizardCloneVMStep2' title='Clone type' style='display: none'>
 
-	<span class='translate'>&lt;p&gt;Please select the type of the clone.&lt;/p&gt;&lt;p&gt;If you choose &lt;b&gt;Full Clone&lt;/b&gt; an exact copy (including all virtual disk images) of the original VM will be created. If you select &lt;b&gt;Linked Clone&lt;/b&gt;, a new VM will be created, but the virtual disk images will point to the virtual disk images of original VM.&lt;/p&gt;</span>
+	<span class='translate'>&lt;p&gt;Please choose the type of clone you wish to create.&lt;/p&gt;&lt;p&gt;If you choose &lt;b&gt;Full clone&lt;/b&gt;, an exact copy (including all virtual hard drive files) of the original virtual machine will be created.&lt;/p&gt;&lt;p&gt;If you choose &lt;b&gt;Linked clone&lt;/b&gt;, a new machine will be created, but the virtual hard drive files will be tied to the virtual hard drive files of original machine and you will not be able to move the new virtual machine to a different computer without moving the original as well.&lt;/p&gt;</span>
 	
-	<span class='translate' id='vboxCloneVMNewSnap'>&lt;p&gt;Note that a new snapshot within the source VM is created in case you select &lt;b&gt;Linked Clone&lt;/b&gt;.&lt;/p&gt;</span>
+	<span class='translate' id='vboxCloneVMNewSnap'>&lt;p&gt;If you create a &lt;b&gt;Linked clone&lt;/b&gt; then a new snapshot will be created in the original virtual machine as part of the cloning process.&lt;/p&gt;</span>
 	
-	<table>
-		<tr style='vertical-align: bottom;'>
-			<td><label><input type='radio' class='vboxRadio' checked='checked' name='vboxCloneType' value='Full' onclick='vboxCloneVMUpdateSteps(this.value)' /> <span class='translate'>Full Clone</span></label></td>
-		</tr>
-		<tr style='vertical-align: bottom;'>
-			<td><label><input type='radio' class='vboxRadio' name='vboxCloneType' value='Linked' onclick='vboxCloneVMUpdateSteps(this.value)' /> <span class='translate'>Linked Clone</span></label></td>
-		</tr>		
-	</table>
-
+	<div class='vboxOptions'>
+		<table>
+			<tr style='vertical-align: bottom;'>
+				<td><label><input type='radio' class='vboxRadio' checked='checked' name='vboxCloneType' value='Full' onclick='vboxCloneVMUpdateSteps(this.value)' /> <span class='translate'>Full Clone</span></label></td>
+			</tr>
+			<tr style='vertical-align: bottom;'>
+				<td><label><input type='radio' class='vboxRadio' name='vboxCloneType' value='Linked' onclick='vboxCloneVMUpdateSteps(this.value)' /> <span class='translate'>Linked Clone</span></label></td>
+			</tr>		
+		</table>
+	</div>
 </div>
 
 <!-- Step 3 -->
-<div id='wizardCloneVMStep3' title='Cloning Configuration' style='display: none'>
+<div id='wizardCloneVMStep3' title='Snapshots' style='display: none'>
 
-	<p class='translate'>Please choose which parts of the virtual machine should be cloned.</p>
+	<span class='translate'>&lt;p&gt;Please choose which parts of the snapshot tree should be cloned with the machine.&lt;/p&gt;</span>
 	
-	<p><span class='translate'>If you select &lt;b&gt;Current machine state&lt;/b&gt;, only the current state of the virtual machine is cloned.</span>
-		<span class='translate' id='wizardCloneVMCurrentAll' style='display: none;'>If you select &lt;b&gt;Current machine and all child states&lt;/b&gt; the current state of the virtual machine and any states of child snapshots are cloned.</span>
-		<span class='translate'>If you select &lt;b&gt;All states&lt;/b&gt;, the current machine state and all snapshots are cloned.</span>
+	<p><span class='translate'>&lt;p&gt;If you choose &lt;b&gt;Current machine state&lt;/b&gt;, the new machine will reflect the current state of the original machine and will have no snapshots.&lt;/p&gt;</span>
+		<span class='translate' id='wizardCloneVMCurrentAll' style='display: none;'>&lt;p&gt;If you choose &lt;b&gt;Current snapshot tree branch&lt;/b&gt;, the new machine will reflect the current state of the original machine and will have matching snapshots for all snapshots in the tree branch starting at the current state in the original machine.&lt;/p&gt;</span>
+		<span class='translate'>&lt;p&gt;If you choose &lt;b&gt;Everything&lt;/b&gt;, the new machine will reflect the current state of the original machine and will have matching snapshots for all snapshots in the original machine.&lt;/p&gt;</span>
 		</p>
 	
-	<table>
-		<tr style='vertical-align: bottom;'>
-			<td><label><input type='radio' class='vboxRadio' checked='checked' name='vmState' value='MachineState' /> <span class='translate'>Current machine state</span></label></td>
-		</tr>
-		<tr style='vertical-align: bottom; display:none;' id='vboxCloneCurrentAll'>
-			<td><label><input type='radio' class='vboxRadio' name='vmState' value='MachineAndChildStates' /> <span class='translate'>Current machine and all child states</span></label></td>
-		</tr>		
-		<tr style='vertical-align: bottom;'>
-			<td><label><input type='radio' class='vboxRadio' name='vmState' value='AllStates' /> <span class='translate'>All states</span></label></td>
-		</tr>	
-	</table>
-
+	<div class='vboxOptions'>
+		<table>
+			<tr style='vertical-align: bottom;'>
+				<td><label><input type='radio' class='vboxRadio' checked='checked' name='vmState' value='MachineState' /> <span class='translate'>Current machine state</span></label></td>
+			</tr>
+			<tr style='vertical-align: bottom; display:none;' id='vboxCloneCurrentAll'>
+				<td><label><input type='radio' class='vboxRadio' name='vmState' value='MachineAndChildStates' /> <span class='translate'>Current snapshot tree branch</span></label></td>
+			</tr>		
+			<tr style='vertical-align: bottom;'>
+				<td><label><input type='radio' class='vboxRadio' name='vmState' value='AllStates' /> <span class='translate'>Everything</span></label></td>
+			</tr>	
+		</table>
+	</div>
 </div>
 
 
@@ -86,6 +86,8 @@ $('#wizardCloneVMStep1').bind('show',function(e,wiz){
 	// Hide "new snapshot" message if we're cloning a snapshot
 	if(wiz.args && wiz.args.snapshot)
 		$('#vboxCloneVMNewSnap').hide();
+	
+	$('#vboxWizCloneMessage1').html(trans('<p>Please choose a name for the new virtual machine. The new machine will be a clone of the machine <b>%1</b>.</p>','UICloneVMWizardPage1').replace('%1',wiz.args.vm.name));
 	
 	document.forms['frmwizardCloneVM'].elements.machineCloneName.value = trans('%1 Clone','UICloneVMWizardPage1').replace('%1',wiz.args.vm.name);
 	

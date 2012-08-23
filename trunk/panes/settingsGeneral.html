@@ -128,8 +128,8 @@ if(!$('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
 	$('#vboxSettingsTabGeneralInputTab').remove();
 	$('#vboxSettingsTabGeneralInput').remove();
 } else {
-	$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputKeyboard).val($('#vboxSettingsDialog').data('vboxMachineData').keyboardHidType);
-	$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputMouse).val($('#vboxSettingsDialog').data('vboxMachineData').pointingHidType);
+	$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputKeyboard).val($('#vboxSettingsDialog').data('vboxMachineData').keyboardHIDType);
+	$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputMouse).val($('#vboxSettingsDialog').data('vboxMachineData').pointingHIDType);
 }
 
 if($('#vboxIndex').data('vboxConfig').enableCustomIcons) {
@@ -256,8 +256,8 @@ $('#vboxSettingsDialog').bind('save',function(){
 	$('#vboxSettingsDialog').data('vboxMachineData').description = 	$(document.forms['frmVboxSettings'].vboxSettingsGeneralDescription).val();
 	
 	if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
-		$('#vboxSettingsDialog').data('vboxMachineData').keyboardHidType = $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputKeyboard).val();
-		$('#vboxSettingsDialog').data('vboxMachineData').pointingHidType = $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputMouse).val();
+		$('#vboxSettingsDialog').data('vboxMachineData').keyboardHIDType = $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputKeyboard).val();
+		$('#vboxSettingsDialog').data('vboxMachineData').pointingHIDType = $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputMouse).val();
 	}
 
 	if($('#vboxIndex').data('vboxConfig').enableCustomIcons)

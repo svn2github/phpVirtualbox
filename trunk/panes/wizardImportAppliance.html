@@ -7,24 +7,26 @@
 
  -->
 <!-- Step 1 -->
-<div id='wizardImportApplianceStep1' title='Welcome to the Appliance Import Wizard!' style='display: none'>
+<div id='wizardImportApplianceStep1' title='Appliance to import' style='display: none'>
 
-	<p id='wizImportAppMsg'>&lt;p&gt;This wizard will guide you through importing an appliance.&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;VirtualBox currently supports importing appliances saved in the Open Virtualization Format (OVF). To continue, select the file to import below:&lt;/p&gt;</p>
+	<span class='translate'>&lt;p&gt;VirtualBox currently supports importing appliances saved in the Open Virtualization Format (OVF). To continue, select the file to import below.&lt;/p&gt;</span>
 	
-	<table style='width: 100%;' class='vboxInvisible'>
-		<tr>
-			<td style='width: 100%; white-space: nowrap' class='vboxFileFolderInput'>
-				<input type='text' class='vboxText' name='wizardImportApplianceLocation' />
-				<input type="button" class="vboxImgButton" style="background-image: url(images/vbox/select_file_16px.png)" onClick="wizardImportApplianceBrowseLocation()" />
-			</td>
-		</tr>
-	</table>
-	
+	<div class='vboxOptions'>
+		<table style='width: 100%;' class='vboxInvisible'>
+			<tr>
+				<td style='width: 100%; white-space: nowrap' class='vboxFileFolderInput'>
+					<input type='text' class='vboxText' name='wizardImportApplianceLocation' />
+					<input type="button" class="vboxImgButton" style="background-image: url(images/vbox/select_file_16px.png)" onClick="wizardImportApplianceBrowseLocation()" />
+				</td>
+			</tr>
+		</table>
+	</div>
+		
 </div>
 
 
 <!-- Step 2 -->
-<div id='wizardImportApplianceStep2' title='Appliance Import Settings' style='display: none; width: 100%;'>
+<div id='wizardImportApplianceStep2' title='Appliance Settings' style='display: none; width: 100%;'>
 
 	<div class='translate' style='margin-bottom:8px;'>These are the virtual machines contained in the appliance and the suggested settings of the imported VirtualBox machines. You can change many of the properties shown by double-clicking on the items and disable others using the check boxes below.</div>
 
@@ -49,9 +51,6 @@
 </div>
 <script type='text/javascript'>
 
-// Translations
-$('#wizImportAppMsg').html(trans('<p>This wizard will guide you through importing an appliance.</p><p>%1</p><p>VirtualBox currently supports importing appliances saved in the Open Virtualization Format (OVF). To continue, select the file to import below:</p>','UIImportApplianceWzdPage1').replace('%1','<span class="vboxWizButtonsMessage" />'));
-
 
 $('#wizardImportApplianceStep2').find('span.translateglob').html(function(i,h){
 	return trans(h,'UIApplianceEditorWidget');
@@ -63,6 +62,8 @@ $('#wizardImportApplianceStep2').find('span.translateglob').html(function(i,h){
  *
  */
 var vboxApplianceImportProps = {
+		'Name' : {'label':'Name','icon':'name','edit':'text'},
+		'Description' : {'label':'Description','icon':'description','edit':'textarea'},
 		'OS' : {'label':'Guest OS Type','icon':'os_type','edit':function(elm){
 			var input = $('<input />').attr({'type':'button','class':'vboxbutton'}).css({'width':($(elm).innerWidth()-12)+'px','margin':'0px'}).val($(elm).find('span.vboxApplianceOSTitle').html());
 			$(elm).children().hide();	
@@ -88,8 +89,6 @@ var vboxApplianceImportProps = {
 		},'display':function(val){
 			return $('<span />').append('<img class="vboxApplianceOSIcon" src="images/vbox/'+vboxGuestOSTypeIcon(val)+'" style="height: 16px; width: 16px; float: left; margin-top: 2px; margin-right: 4px; " /> <span class="vboxApplianceOSTitle">' + vboxSettingsOSTypesObj[val].description +'</span>').disableSelection().bind('selectstart',function(e){e.preventDefault();return false;});
 		}},
-		'Name' : {'label':'Name','icon':'name','edit':'text'},
-		'Description' : {'label':'Description','icon':'description','edit':'textarea'},
 		'CPU' : {'label':'CPU','icon':'cpu','edit':'text','postEdit':function(val,old){
 			val = parseInt(val);
 			if(isNaN(val)) return old;
@@ -105,12 +104,12 @@ var vboxApplianceImportProps = {
 		'SoundCard' : {'label':'Sound Card','icon':'sound','checkbox':true,'edit':'options','display':function(val){
 			return trans(vboxAudioController($('#vboxIndex').data('vboxAudioControllerTypes')[val]),'VBoxGlobal');
 		}},
+		'CDROM' : {'label':'DVD','icon':'cd','checkbox':true,'edit':'checkbox'},
 		'USBController' : {'label':'USB Controller','icon':'usb','checkbox':true},
 		'NetworkAdapter' : {'label':'Network Adapter','icon':'nw','checkbox':true,'edit':'options','option_offset':-1,'display':function(val){
 			return trans(vboxNetworkAdapterType($('#vboxIndex').data('vboxNetworkAdapterTypes')[val]),'VBoxGlobal');
 		}},
 		'Floppy' : {'label':'Floppy','icon':'floppy','checkbox':true},
-		'CDROM' : {'label':'DVD','icon':'cd','checkbox':true,'edit':'checkbox'},
 		'HardDiskControllerIDE' : {'label':'Hard Disk Controller (IDE)','icon':'ide','edit':''},
 		'HardDiskControllerSATA' : {'label':'Hard Disk Controller (SATA)','icon':'sata','edit':null},
 		'HardDiskControllerSAS' : {'label':'Hard Disk Controller (SAS)','icon':'scsi','edit':null},
@@ -523,7 +522,7 @@ function vboxImportAppliancePropEdit(elm,desc) {
 							var dname = vboxBasename($(tdc).data('descValue'));
 							$(tdc).data({'descValue':mfolder + dname}).find('span.vboxImportAppProp').text(mfolder + dname);
 						}
-					},{'name':val});
+					},{'name':val,'group':group});
 					mfd.run();
 				}
 			}

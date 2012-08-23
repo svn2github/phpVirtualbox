@@ -10,6 +10,12 @@
  * @see config.php-example
  * 
 */
+
+/*
+ * This version of phpVirtualBox
+ */
+define('PHPVBOX_VER', '4.2-1');
+
 class phpVBoxConfigClass {
 
 	/* DEFAULTS */

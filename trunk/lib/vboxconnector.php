@@ -163,7 +163,8 @@ class vboxconnector {
 		}
 
 		//Connect to webservice
-		$this->client = new SoapClient(dirname(__FILE__)."/vboxwebService-4.1.wsdl",
+		$pvbxver = substr(@constant('PHPVBOX_VER'),0,(strpos(@constant('PHPVBOX_VER'),'-')));
+		$this->client = new SoapClient(dirname(__FILE__)."/vboxwebService-".$pvbxver.".wsdl",
 		    array(
 		    	'features' => (SOAP_USE_XSI_ARRAY_TYPE + SOAP_SINGLE_ELEMENT_ARRAYS),
 		        'cache_wsdl' => WSDL_CACHE_BOTH,
@@ -716,25 +717,25 @@ class vboxconnector {
 			if($args['networkAdapters'][$i]['attachmentType'] == 'NAT') {
 
 				// Remove existing redirects
-				foreach($n->natDriver->getRedirects() as $r) {
-					$n->natDriver->removeRedirect(array_shift(explode(',',$r)));
+				foreach($n->NATEngine->getRedirects() as $r) {
+					$n->NATEngine->removeRedirect(array_shift(explode(',',$r)));
 				}
 				// Add redirects
 				foreach($args['networkAdapters'][$i]['redirects'] as $r) {
 					$r = explode(',',$r);
-					$n->natDriver->addRedirect($r[0],$r[1],$r[2],$r[3],$r[4],$r[5]);
+					$n->NATEngine->addRedirect($r[0],$r[1],$r[2],$r[3],$r[4],$r[5]);
 				}
 
 				// Advanced NAT settings
 				if(@$this->settings->enableAdvancedConfig) {
-					$aliasMode = $n->natDriver->aliasMode & 1;
-					if(intval($args['networkAdapters'][$i]['natDriver']['aliasMode'] & 2)) $aliasMode |= 2;
-					if(intval($args['networkAdapters'][$i]['natDriver']['aliasMode'] & 4)) $aliasMode |= 4;
-					$n->natDriver->aliasMode = $aliasMode;
-					$n->natDriver->dnsProxy = intval($args['networkAdapters'][$i]['natDriver']['dnsProxy']);
-					$n->natDriver->dnsPassDomain = intval($args['networkAdapters'][$i]['natDriver']['dnsPassDomain']);
-					$n->natDriver->dnsUseHostResolver = intval($args['networkAdapters'][$i]['natDriver']['dnsUseHostResolver']);
-					$n->natDriver->hostIP = $args['networkAdapters'][$i]['natDriver']['hostIP'];
+					$aliasMode = $n->NATEngine->aliasMode & 1;
+					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 2)) $aliasMode |= 2;
+					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 4)) $aliasMode |= 4;
+					$n->NATEngine->aliasMode = $aliasMode;
+					$n->NATEngine->DNSProxy = intval($args['networkAdapters'][$i]['NATEngine']['DNSProxy']);
+					$n->NATEngine->DNSPassDomain = intval($args['networkAdapters'][$i]['NATEngine']['DNSPassDomain']);
+					$n->NATEngine->DNSUseHostResolver = intval($args['networkAdapters'][$i]['NATEngine']['DNSUseHostResolver']);
+					$n->NATEngine->hostIP = $args['networkAdapters'][$i]['NATEngine']['hostIP'];
 				}
 
 			}
@@ -775,7 +776,7 @@ class vboxconnector {
 			$src = $nsrc->machine;
 		}
 		/* @var $m IMachine */
-		$m = $this->vbox->createMachine($this->vbox->composeMachineFilename($args['name'],$this->vbox->systemProperties->defaultMachineFolder),$args['name'],null,null,false);
+		$m = $this->vbox->createMachine($this->vbox->composeMachineFilename($args['name'],null,null),$args['name'],null,null,null,false);
 		$sfpath = $m->settingsFilePath;
 
 		/* @var $cm CloneMode */
@@ -918,7 +919,7 @@ class vboxconnector {
 								$md->releaseRemote();
 							}
 						} else {
-							$med = $this->vbox->findMedium($ma['medium']['id'],$ma['type']);
+							$med = $this->vbox->openMedium($ma['medium']['location'],$ma['type']);
 						}
 					} else {
 						$med = null;
@@ -1137,10 +1138,10 @@ class vboxconnector {
 				}
 			}
 
-			$m->hpetEnabled = intval($args['hpetEnabled']);
+			$m->HPETEnabled = intval($args['HPETEnabled']);
 			$m->setExtraData("VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled", $args['disableHostTimeSync']);
-			$m->keyboardHidType = $args['keyboardHidType'];
-			$m->pointingHidType = $args['pointingHidType'];
+			$m->keyboardHIDType = $args['keyboardHIDType'];
+			$m->pointingHIDType = $args['pointingHIDType'];
 			$m->setHWVirtExProperty('LargePages', (intval($args['HWVirtExProperties']['LargePages']) ? 1 : 0));
 			$m->setHWVirtExProperty('Exclusive', (intval($args['HWVirtExProperties']['Exclusive']) ? 1 : 0));
 			$m->setHWVirtExProperty('VPID', (intval($args['HWVirtExProperties']['VPID']) ? 1 : 0));
@@ -1282,7 +1283,7 @@ class vboxconnector {
 						}
 					} else {
 						/* @var $med IMedium */
-						$med = $this->vbox->findMedium($ma['medium']['id'],$ma['type']);
+						$med = $this->vbox->openMedium($ma['medium']['location'],$ma['type']);
 					}
 				} else {
 					$med = null;
@@ -1382,25 +1383,25 @@ class vboxconnector {
 			if($args['networkAdapters'][$i]['attachmentType'] == 'NAT') {
 
 				// Remove existing redirects
-				foreach($n->natDriver->getRedirects() as $r) {
-					$n->natDriver->removeRedirect(array_shift(explode(',',$r)));
+				foreach($n->NATEngine->getRedirects() as $r) {
+					$n->NATEngine->removeRedirect(array_shift(explode(',',$r)));
 				}
 				// Add redirects
 				foreach($args['networkAdapters'][$i]['redirects'] as $r) {
 					$r = explode(',',$r);
-					$n->natDriver->addRedirect($r[0],$r[1],$r[2],$r[3],$r[4],$r[5]);
+					$n->NATEngine->addRedirect($r[0],$r[1],$r[2],$r[3],$r[4],$r[5]);
 				}
 
 				// Advanced NAT settings
 				if(@$this->settings->enableAdvancedConfig) {
-					$aliasMode = $n->natDriver->aliasMode & 1;
-					if(intval($args['networkAdapters'][$i]['natDriver']['aliasMode'] & 2)) $aliasMode |= 2;
-					if(intval($args['networkAdapters'][$i]['natDriver']['aliasMode'] & 4)) $aliasMode |= 4;
-					$n->natDriver->aliasMode = $aliasMode;
-					$n->natDriver->dnsProxy = intval($args['networkAdapters'][$i]['natDriver']['dnsProxy']);
-					$n->natDriver->dnsPassDomain = intval($args['networkAdapters'][$i]['natDriver']['dnsPassDomain']);
-					$n->natDriver->dnsUseHostResolver = intval($args['networkAdapters'][$i]['natDriver']['dnsUseHostResolver']);
-					$n->natDriver->hostIP = $args['networkAdapters'][$i]['natDriver']['hostIP'];
+					$aliasMode = $n->NATEngine->aliasMode & 1;
+					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 2)) $aliasMode |= 2;
+					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 4)) $aliasMode |= 4;
+					$n->NATEngine->aliasMode = $aliasMode;
+					$n->NATEngine->DNSProxy = intval($args['networkAdapters'][$i]['NATEngine']['DNSProxy']);
+					$n->NATEngine->DNSPassDomain = intval($args['networkAdapters'][$i]['NATEngine']['DNSPassDomain']);
+					$n->NATEngine->DNSUseHostResolver = intval($args['networkAdapters'][$i]['NATEngine']['DNSUseHostResolver']);
+					$n->NATEngine->hostIP = $args['networkAdapters'][$i]['NATEngine']['hostIP'];
 				}
 
 			}
@@ -1495,10 +1496,10 @@ class vboxconnector {
 		$usbc = $this->_util_getCachedMachineData('_machineGetUSBController',$args['id'],$this->session->machine);
 
 		// controller properties
-		if((bool)$usbc['enabled'] != (bool)$args['USBController']['enabled'] || (bool)$usbc['enabledEhci'] != (bool)$args['USBController']['enabledEhci']) {
+		if((bool)$usbc['enabled'] != (bool)$args['USBController']['enabled'] || (bool)$usbc['enabledEHCI'] != (bool)$args['USBController']['enabledEHCI']) {
 			$usbchanged = true;
 			$m->USBController->enabled = (bool)$args['USBController']['enabled'];
-			$m->USBController->enabledEhci = (bool)$args['USBController']['enabledEhci'];
+			$m->USBController->enabledEHCI = (bool)$args['USBController']['enabledEHCI'];
 		}
 
 		// filters
@@ -1582,6 +1583,7 @@ class vboxconnector {
 
 		$this->connect();
 
+		
 		/* @var $m IMachine */
 		$m = $this->vbox->openMachine($args['file']);
 		$this->vbox->registerMachine($m->handle);
@@ -1847,7 +1849,7 @@ class vboxconnector {
 		
 		if(class_exists($args['class'])) {
 			$c = new $args['class'];
-			$response['data'] = $c->NameMap;
+			$response['data'] = (@isset($args['ValueMap']) ? $c->ValueMap : $c->NameMap);
 			return true;
 		}
 		
@@ -2250,7 +2252,7 @@ class vboxconnector {
 				'networkMask' => $d->networkMask,
 				'IPV6Address' => $d->IPV6Address,
 				'IPV6NetworkMaskPrefixLength' => $d->IPV6NetworkMaskPrefixLength,
-				'dhcpEnabled' => $d->dhcpEnabled,
+				'DHCPEnabled' => $d->DHCPEnabled,
 				'networkName' => $d->networkName,
 				'dhcpServer' => $dhcpserver
 			);
@@ -2282,11 +2284,11 @@ class vboxconnector {
 
 			// Common settings
 			if($nic->IPAddress != $nics[$i]['IPAddress'] || $nic->networkMask != $nics[$i]['networkMask']) {
-				$nic->enableStaticIpConfig($nics[$i]['IPAddress'],$nics[$i]['networkMask']);
+				$nic->enableStaticIPConfig($nics[$i]['IPAddress'],$nics[$i]['networkMask']);
 			}
 			if($nics[$i]['IPV6Supported'] &&
 				($nic->IPV6Address != $nics[$i]['IPV6Address'] || $nic->IPV6NetworkMaskPrefixLength != $nics[$i]['IPV6NetworkMaskPrefixLength'])) {
-				$nic->enableStaticIpConfigV6($nics[$i]['IPV6Address'],intval($nics[$i]['IPV6NetworkMaskPrefixLength']));
+				$nic->enableStaticIPConfigV6($nics[$i]['IPV6Address'],intval($nics[$i]['IPV6NetworkMaskPrefixLength']));
 			}
 
 			// Get DHCP Info
@@ -2951,7 +2953,7 @@ class vboxconnector {
 			$hds = array();
 			$delete = $machine->unregister('DetachAllReturnHardDisksOnly');
 			foreach($delete as $hd) {
-				$hds[] = $this->vbox->findMedium($hd->id,'HardDisk')->handle;
+				$hds[] = $this->vbox->openMedium($hd->location,'HardDisk')->handle;
 			}
 
 			/* @var $progress IProgress */
@@ -3034,7 +3036,7 @@ class vboxconnector {
 			$args['name'] = $_SESSION['user'] . '_' . $args['name'];
 
 		/* @var $m IMachine */
-		$m = $this->vbox->createMachine(null,$args['name'],$args['ostype'],null,null);
+		$m = $this->vbox->createMachine(null,$args['name'],$args['group'],$args['ostype'],null,null);
 
 		// Set memory
 		$m->memorySize = intval($args['memory']);
@@ -3071,7 +3073,7 @@ class vboxconnector {
 			$this->session->machine->setExtraData('GUI/SaveMountedAtRuntime', 'yes');
 			try {
 				$this->session->machine->USBController->enabled = true;
-				$this->session->machine->USBController->enabledEhci = true;
+				$this->session->machine->USBController->enabledEHCI = true;
 			} catch (Exception $e) {
 				// Ignore
 			}
@@ -3088,16 +3090,16 @@ class vboxconnector {
 
 			// Other defaults
 			$this->session->machine->BIOSSettings->IOAPICEnabled = $defaults->recommendedIOAPIC;
-			$this->session->machine->RTCUseUTC = $defaults->recommendedRtcUseUtc;
+			$this->session->machine->RTCUseUTC = $defaults->recommendedRTCUseUTC;
 			$this->session->machine->firmwareType = $defaults->recommendedFirmware->__toString();
 			$this->session->machine->chipsetType = $defaults->recommendedChipset->__toString();
 			if(intval($defaults->recommendedVRAM) > 0) $this->session->machine->VRAMSize = intval($defaults->recommendedVRAM);
-			$this->session->machine->setCpuProperty('PAE',$defaults->recommendedPae);
+			$this->session->machine->setCpuProperty('PAE',$defaults->recommendedPAE);
 
 			// USB input devices
-			if($defaults->recommendedUsbHid) {
-				$this->session->machine->pointingHidType = 'USBMouse';
-				$this->session->machine->keyboardHidType = 'USBKeyboard';
+			if($defaults->recommendedUSBHid) {
+				$this->session->machine->pointingHIDType = 'USBMouse';
+				$this->session->machine->keyboardHIDType = 'USBKeyboard';
 			}
 
 			/* Only if acceleration configuration is available */
@@ -3108,14 +3110,14 @@ class vboxconnector {
 			/*
 			 * Hard Disk and DVD/CD Drive
 			 */
-			$DVDbusType = $defaults->recommendedDvdStorageBus->__toString();
-			$DVDconType = $defaults->recommendedDvdStorageController->__toString();
+			$DVDbusType = $defaults->recommendedDVDStorageBus->__toString();
+			$DVDconType = $defaults->recommendedDVDStorageController->__toString();
 
 			// Attach harddisk?
 			if($args['disk']) {
 
-				$HDbusType = $defaults->recommendedHdStorageBus->__toString();
-				$HDconType = $defaults->recommendedHdStorageController->__toString();
+				$HDbusType = $defaults->recommendedHDStorageBus->__toString();
+				$HDconType = $defaults->recommendedHDStorageController->__toString();
 
 				$bus = new StorageBus(null,$HDbusType);
 				$sc = $this->session->machine->addStorageController(trans($HDbusType.' Controller','UIMachineSettingsStorage'),$bus->__toString());
@@ -3123,7 +3125,7 @@ class vboxconnector {
 				$sc->useHostIOCache = (bool)$this->vbox->systemProperties->getDefaultIoCacheSettingForStorageController($HDconType);
 				$sc->releaseRemote();
 
-				$m = $this->vbox->findMedium($args['disk'],'HardDisk');
+				$m = $this->vbox->openMedium($args['disk'],'HardDisk');
 
 				$this->session->machine->attachDevice(trans($HDbusType.' Controller','UIMachineSettingsStorage'),0,0,'HardDisk',$m->handle);
 
@@ -3190,7 +3192,7 @@ class vboxconnector {
 
 			// Avoid duplicate calls
 			$at = $n->attachmentType->__toString();
-			if($at == 'NAT') $nd = $n->natDriver; /* @var $nd INATEngine */
+			if($at == 'NAT') $nd = $n->NATEngine; /* @var $nd INATEngine */
 			else $nd = null;
 
 			$props = $n->getProperties();
@@ -3211,9 +3213,9 @@ class vboxconnector {
 				'promiscModePolicy' => $n->promiscModePolicy->__toString(),
 				'VDENetwork' => ($this->settings->enableVDE ? $n->VDENetwork : ''),
 				'cableConnected' => $n->cableConnected,
-				'natDriver' => ($at == 'NAT' ?
-					array('aliasMode' => intval($nd->aliasMode),'dnsPassDomain' => intval($nd->dnsPassDomain), 'dnsProxy' => intval($nd->dnsProxy), 'dnsUseHostResolver' => intval($nd->dnsUseHostResolver), 'hostIP' => $nd->hostIP)
-					: array('aliasMode' => 0,'dnsPassDomain' => 0, 'dnsProxy' => 0, 'dnsUseHostResolver' => 0, 'hostIP' => '')),
+				'NATEngine' => ($at == 'NAT' ?
+					array('aliasMode' => intval($nd->aliasMode),'DNSPassDomain' => intval($nd->DNSPassDomain), 'DNSProxy' => intval($nd->DNSProxy), 'DNSUseHostResolver' => intval($nd->DNSUseHostResolver), 'hostIP' => $nd->hostIP)
+					: array('aliasMode' => 0,'DNSPassDomain' => 0, 'DNSProxy' => 0, 'DNSUseHostResolver' => 0, 'hostIP' => '')),
 				'lineSpeed' => $n->lineSpeed,
 				'redirects' => (
 					$at == 'NAT' ?
@@ -3402,7 +3404,7 @@ class vboxconnector {
 		}
 		$r = array(
 			'enabled' => $u->enabled,
-			'enabledEhci' => $u->enabledEhci,
+			'enabledEHCI' => $u->enabledEHCI,
 			'deviceFilters' => $deviceFilters);
 		$u->releaseRemote();
 		return $r;
@@ -3424,11 +3426,11 @@ class vboxconnector {
 			'OSTypeId' => $m->OSTypeId,
 			'OSTypeDesc' => $this->vbox->getGuestOSType($m->OSTypeId)->description,
 			'CPUCount' => $m->CPUCount,
-			'hpetEnabled' => $m->hpetEnabled,
+			'HPETEnabled' => $m->HPETEnabled,
 			'memorySize' => $m->memorySize,
 			'VRAMSize' => $m->VRAMSize,
-			'pointingHidType' => $m->pointingHidType->__toString(),
-			'keyboardHidType' => $m->keyboardHidType->__toString(),
+			'pointingHIDType' => $m->pointingHIDType->__toString(),
+			'keyboardHIDType' => $m->keyboardHIDType->__toString(),
 			'accelerate3DEnabled' => $m->accelerate3DEnabled,
 			'accelerate2DVideoEnabled' => $m->accelerate2DVideoEnabled,
 			'BIOSSettings' => array(
@@ -4048,7 +4050,7 @@ class vboxconnector {
 		// Connect to vboxwebsrv
 		$this->connect();
 		
-		$m = $this->vbox->findMedium($args['mid'],'HardDisk');
+		$m = $this->vbox->openMedium($args['medium'],'HardDisk');
 
 		/* @var $progress IProgress */
 		$progress = $m->resize($args['bytes']);
@@ -4089,7 +4091,7 @@ class vboxconnector {
 		$mid = $target->id;
 
 		/* @var $src IMedium */
-		$src = $this->vbox->findMedium($args['src'],'HardDisk');
+		$src = $this->vbox->openMedium($args['src'],'HardDisk');
 
 		$type = ($args['type'] == 'fixed' ? 'Fixed' : 'Standard');
 		$mv = new MediumVariant();
@@ -4131,13 +4133,13 @@ class vboxconnector {
 		$this->connect();
 
 		/* @var $m IMedium */
-		$m = $this->vbox->findMedium($args['id'],'HardDisk');
+		$m = $this->vbox->openMedium($args['medium'],'HardDisk');
 		$m->type = $args['type'];
 		$m->releaseRemote();
 
 		$this->cache->expire('vboxGetMedia');
 
-		$response['data'] = array('result' => 1,'id' => $args['id']);
+		$response['data'] = array('result' => 1);
 
 		return true;
 	}
@@ -4219,7 +4221,7 @@ class vboxconnector {
 		// Connect to vboxwebsrv
 		$this->connect();
 
-		$response['data']['file'] = $this->vbox->composeMachineFilename($args['name'],$this->vbox->systemProperties->defaultMachineFolder);
+		$response['data']['file'] = $this->vbox->composeMachineFilename($args['name'],$args['group'],$this->vbox->systemProperties->defaultMachineFolder);
 
 		return true;
 
@@ -4280,7 +4282,8 @@ class vboxconnector {
 		$this->connect();
 
 		/* @var $m IMedium */
-		$m = $this->vbox->findMedium($args['id'],$args['type']);
+		$m = $this->vbox->openMedium($args['medium'],$args['type']);
+		$mediumid = $m->id;
 
 		// connected to...
 		$machines = $m->machineIds;
@@ -4297,7 +4300,7 @@ class vboxconnector {
 			$attach = $mach->mediumAttachments;
 			$remove = array();
 			foreach($attach as $a) {
-				if($a->medium->handle && $a->medium->id == $args['id']) {
+				if($a->medium->handle && $a->medium->id == $mediumid) {
 					$remove[] = array(
 						'controller' => $a->controller,
 						'port' => $a->port,
@@ -4365,7 +4368,7 @@ class vboxconnector {
 		if(!$args['type']) $args['type'] = 'HardDisk';
 
 		/* @var $m IMedium */
-		$m = $this->vbox->findMedium($args['id'],$args['type']);
+		$m = $this->vbox->openMedium($args['medium'],$args['type']);
 
 		if($args['delete'] && @$this->settings->deleteOnRemove && $m->deviceType->__toString() == 'HardDisk') {
 
@@ -4539,7 +4542,7 @@ class vboxconnector {
 			// Normal medium
 			} else {
 				/* @var $med IMedium */
-				$med = $this->vbox->findMedium($args['medium']['id'],$args['medium']['deviceType']);
+				$med = $this->vbox->openMedium($args['medium']['id'],$args['medium']['deviceType']);
 			}
 		}
 
@@ -4629,6 +4632,7 @@ class vboxconnector {
 				'autoReset' => $m->autoReset,
 				'hasSnapshots' => $hasSnapshots,
 				'lastAccessError' => $m->lastAccessError,
+				'variant' => $variant,
 				'fixed' => intval((intval($variant) & $mv->ValueMap['Fixed']) > 0),
 				'split' => intval((intval($variant) & $mv->ValueMap['VmdkSplit2G']) > 0),
 				'machineIds' => array(),

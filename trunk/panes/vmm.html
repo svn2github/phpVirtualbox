@@ -22,9 +22,9 @@
 	<td style='padding:0px;margin:0px;border:0px;' id='vboxVMMContainer'><div id='vboxVMMTabs' style=''>
 
 		<ul id='vboxVMMTabList'>
-			<li><a href="#vmmDisks"><span><img id='vmmDisksIcon' style="height:16px;width:16px;vertical-align: middle" src="images/vbox/hd_16px.png" border="0" /> <span class='translate'>Hard Disks</span></span></a></li>
-			<li><a href="#vmmCDs"><span><img id='vmmCDsIcon' style="height:16px;width:16px;vertical-align: middle" src="images/vbox/cd_16px.png" border="0" /> <span class='translate'>CD/DVD Images</span></span></a></li>
-			<li><a href="#vmmFloppys"><span><img id='vmmFloppysIcon' style="height:16px;width:16px;vertical-align: middle" src="images/vbox/fd_16px.png" border="0" /> <span class='translate'>Floppy Images</span></span></a></li>		
+			<li><a href="#vmmDisks"><span><img id='vmmDisksIcon' style="height:16px;width:16px;vertical-align: middle" src="images/vbox/hd_16px.png" border="0" /> <span class='translate'>Hard drives</span></span></a></li>
+			<li><a href="#vmmCDs"><span><img id='vmmCDsIcon' style="height:16px;width:16px;vertical-align: middle" src="images/vbox/cd_16px.png" border="0" /> <span class='translate'>Optical disks</span></span></a></li>
+			<li><a href="#vmmFloppys"><span><img id='vmmFloppysIcon' style="height:16px;width:16px;vertical-align: middle" src="images/vbox/fd_16px.png" border="0" /> <span class='translate'>Floppy disks</span></span></a></li>		
 		</ul>
 		
 		<!-- 
@@ -201,6 +201,9 @@
  * Translate
  */
  
+// These are translated under a different context for some reason
+$('#vboxVMMTabList').find(".translate").html(function(i,h){return trans(h,'UIMediumManager');}).removeClass('translate');
+
 $("#vboxVMMTabs").find(".translate").html(function(i,h){return trans(h,'VBoxMediaManagerDlg');}).removeClass('translate');
 
 /*
@@ -398,7 +401,7 @@ var vmmButtons = new Array(
 		'name' : 'vmmmodify',
 		'label' : 'Modify...',
 		'icon' : 'vdm_new',
-		'enabled' : function (item) {
+		'enabled' : function (item) { 
 			if(!item) return false;
 			if($("#vboxVMMTabs").tabs('option','selected')) return false;
 			var m = vboxMedia.getMediumById($(item).data('medium'));
@@ -423,7 +426,7 @@ var vmmButtons = new Array(
 					}
 				}
 
-				vboxAjaxRequest('mediumSetType',{'id':med.id,'type':mtype},function(ret){
+				vboxAjaxRequest('mediumSetType',{'medium':med.location,'type':mtype},function(ret){
 					
 					if(ret && ret.result == 1) {
 						var l = new vboxLoader();
@@ -514,7 +517,7 @@ var vmmButtons = new Array(
 				q = trans('<p>Do you want to delete the storage unit of the hard disk <nobr><b>%1</b></nobr>?</p><p>If you select <b>Delete</b> then the specified storage unit will be permanently deleted. This operation <b>cannot be undone</b>.</p><p>If you select <b>Keep</b> then the hard disk will be only removed from the list of known hard disks, but the storage unit will be left untouched which makes it possible to add this hard disk to the list later again.</p>','UIMessageCenter').replace('%1',m.location);
 				
 				buttons[trans('Delete','UIMessageCenter')] = function(){
-					vboxAjaxRequest('mediumRemove',{'id':m.id,'type':m.deviceType,'delete':1},function(ret){
+					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType,'delete':1},function(ret){
 						if(ret && ret.progress) {
 							vboxProgress(ret.progress,function(){
 								var l = new vboxLoader();
@@ -528,7 +531,7 @@ var vmmButtons = new Array(
 				};
 				
 				buttons[trans('Keep','UIMessageCenter')] = function(){
-					vboxAjaxRequest('mediumRemove',{'id':m.id,'type':m.deviceType},function(ret){
+					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType},function(ret){
 						var l = new vboxLoader();
 						l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 						l.onLoad = vboxVMMFillMedia;
@@ -544,7 +547,7 @@ var vmmButtons = new Array(
 				
 				buttons[trans('Remove','UIMessageCenter')] = function(){
 					var b = this;
-					vboxAjaxRequest('mediumRemove',{'id':m.id,'type':m.deviceType},function(ret){
+					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType},function(ret){
 						var l = new vboxLoader();
 						l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 						l.onLoad = vboxVMMFillMedia;
@@ -595,7 +598,7 @@ var vmmButtons = new Array(
 			var buttons = {};
 			buttons[trans('Release','UIMessageCenter')] = function(){
 				var b = this;
-				vboxAjaxRequest('mediumRelease',{'id':m.id,'type':m.deviceType},function(ret){
+				vboxAjaxRequest('mediumRelease',{'medium':m.location,'type':m.deviceType},function(ret){
 					// Check if current VM is in list
 					if($('#vboxIndex').data('selectedVM') && $('#vboxIndex').data('selectedVM').id && ret && ret.released.length) {
 						var vmid = $('#vboxIndex').data('selectedVM').id;

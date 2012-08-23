@@ -273,7 +273,7 @@ function vboxSettingsAddUSBFilter(f,noColor) {
 
 // set checkboxes for USB and EHCI
 document.forms['frmVboxSettings'].vboxSettingsUSBEnabled.checked = ($('#vboxSettingsDialog').data('vboxMachineData').USBController.enabled);
-document.forms['frmVboxSettings'].vboxSettingsUSBEnabledEHCI.checked = ($('#vboxSettingsDialog').data('vboxMachineData').USBController.enabledEhci);
+document.forms['frmVboxSettings'].vboxSettingsUSBEnabledEHCI.checked = ($('#vboxSettingsDialog').data('vboxMachineData').USBController.enabledEHCI);
 
 // clear list
 var list = $('#vboxSettingsUSBFilterList');
@@ -345,7 +345,7 @@ $('#vboxSettingsDialog').bind('save',function(){
 
 	
 	$('#vboxSettingsDialog').data('vboxMachineData').USBController.enabled = (document.forms['frmVboxSettings'].vboxSettingsUSBEnabled.checked ? 1 : 0);
-	$('#vboxSettingsDialog').data('vboxMachineData').USBController.enabledEhci = (document.forms['frmVboxSettings'].vboxSettingsUSBEnabledEHCI.checked ? 1 : 0);
+	$('#vboxSettingsDialog').data('vboxMachineData').USBController.enabledEHCI = (document.forms['frmVboxSettings'].vboxSettingsUSBEnabledEHCI.checked ? 1 : 0);
 
 	$('#vboxSettingsDialog').data('vboxMachineData').USBController.deviceFilters = new Array();
 

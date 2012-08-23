@@ -390,7 +390,11 @@ var vboxMedia = {
 			case 'parallels':
 			case 'hdd':
 				return trans('HDD (Parallels Hard Disk)','UINewHDWizard');
-		}
+			case 'qed':
+				return trans('QED (QEMU enhanced disk)','UINewHDWizard');
+			case 'qcow':
+				return trans('QCOW (QEMU Copy-On-Write)','UINewHDWizard');
+		}	
 		return m.format;
 	},
 	
@@ -399,11 +403,46 @@ var vboxMedia = {
 	 * @static
 	 */
 	getHardDiskVariant : function(m) {
-		if(!m) return '';
-		if(m.split) {
-			return trans(m.fixed ? 'Fixed size storage split into files of less than 2GB': 'Dynamically allocated storage split into files of less than 2GB','VBoxGlobal');
-		}
-		return trans(m.fixed ? 'Fixed size storage': 'Dynamically allocated storage','VBoxGlobal');
+		
+		var variants = $('#vboxIndex').data('vboxMediumVariants');
+		
+		
+/*			[Standard] => 0
+            [VmdkSplit2G] => 1
+            [VmdkRawDisk] => 2
+            [VmdkStreamOptimized] => 4
+            [VmdkESX] => 8
+            [Fixed] => 65536
+            [Diff] => 131072
+            [NoCreateDir] => 1073741824
+ */
+		
+		switch(m.variant) {
+
+			case variants.Standard:
+	            return trans("Dynamically allocated storage", "VBoxGlobal");
+	        case (variants.Standard | variants.Diff):
+	            return trans("Dynamically allocated differencing storage", "VBoxGlobal");
+	        case (variants.Standard | variants.Fixed):
+	            return trans("Fixed size storage", "VBoxGlobal");
+	        case (variants.Standard | variants.VmdkSplit2G):
+	            return trans("Dynamically allocated storage split into files of less than 2GB", "VBoxGlobal");
+	        case (variants.Standard | variants.VmdkSplit2G | variants.Diff):
+	            return trans("Dynamically allocated differencing storage split into files of less than 2GB", "VBoxGlobal");
+	        case (variants.Standard | variants.Fixed | variants.VmdkSplit2G):
+	            return trans("Fixed size storage split into files of less than 2GB", "VBoxGlobal");
+	        case (variants.Standard | variants.VmdkStreamOptimized):
+	            return trans("Dynamically allocated compressed storage", "VBoxGlobal");
+	        case (variants.Standard | variants.VmdkStreamOptimized | variants.Diff):
+	            return trans("Dynamically allocated differencing compressed storage", "VBoxGlobal");
+	        case (variants.Standard | variants.Fixed | variants.VmdkESX):
+	            return trans("Fixed size ESX storage", "VBoxGlobal");
+	        case (variants.Standard | variants.Fixed | variants.VmdkRawDisk):
+	            return trans("Fixed size storage on raw disk", "VBoxGlobal");
+	        default:
+	        	return trans("Dynamically allocated storage", "VBoxGlobal");
+	    }
+
 	},
 
 	/**

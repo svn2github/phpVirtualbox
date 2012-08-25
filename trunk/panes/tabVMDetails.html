@@ -13,106 +13,115 @@
 		<table class='vboxInvisible' style='width: 100%;'>
 			<tr style='vertical-align: top'>
 				<td style='width:100%'>
-					<table id='vboxDetailsTableBoxGeneral' class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
-						<tr class='vboxDetailsHead'>
+					<div class='vboxDetailsBorder'>
+						<table id='vboxDetailsTableBoxGeneral' class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
+							<tr class='vboxDetailsHead'>
+								<th class='vboxDetailsSection' colspan='2'>
+									<div>
+										<img style='float:left;  margin-right: 3px;' src='images/vbox/machine_16px.png' />
+										<span style='float:left'><a href="javascript:vboxDetailSettingsLink('General')" class='translate'>General</a></span>
+										<span class='vboxDetailsUpDnImgSpan' style='float:right'>
+											<img src='images/arrow_grad_up.png' />
+										</span>
+									</div>
+								</th>
+							</tr>
+						</table>
+					</div>
+					<div class='vboxDetailsBorder'>
+						<table id='vboxDetailsTableBoxSystem' class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
+							<tr class='vboxDetailsHead'>
 							<th class='vboxDetailsSection' colspan='2'>
 								<div>
-									<img style='float:left;  margin-right: 3px;' src='images/vbox/machine_16px.png' />
-									<span style='float:left'><a href="javascript:vboxDetailSettingsLink('General')" class='translate'>General</a></span>
+									<img style='float:left;  margin-right: 3px;' src='images/vbox/chipset_16px.png' />
+									<span style='float:left'><a href="javascript:vboxDetailSettingsLink('System');" class='translate'>System</a></span>
 									<span class='vboxDetailsUpDnImgSpan' style='float:right'>
 										<img src='images/arrow_grad_up.png' />
 									</span>
 								</div>
 							</th>
-						</tr>
-					</table>
-					<table id='vboxDetailsTableBoxSystem' class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
-						<tr class='vboxDetailsHead'>
-						<th class='vboxDetailsSection' colspan='2'>
-							<div>
-								<img style='float:left;  margin-right: 3px;' src='images/vbox/chipset_16px.png' />
-								<span style='float:left'><a href="javascript:vboxDetailSettingsLink('System');" class='translate'>System</a></span>
-								<span class='vboxDetailsUpDnImgSpan' style='float:right'>
-									<img src='images/arrow_grad_up.png' />
-								</span>
-							</div>
-						</th>
-						</tr>
-					</table>
+							</tr>
+						</table>
+					</div>
 				</td>
-				<td id='vboxDetailsTableBoxPreviewSpacer'>
+				<td class='vboxDetailsTableBoxPreviewSpacer'>
 					<!-- Spacer -->
-				<td>
 				</td>
 				<td>
-					<table id='vboxDetailsTableBoxPreview' class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
-						<tr class='vboxDetailsHead'>
-							<th class='vboxDetailsSection' colspan='2'>
-								<div>
-									<img style='float:left;  margin-right: 3px;' src='images/vbox/fullscreen_16px.png' />
-									<span style='float:left' class='translate'>Preview</span>
-									<span class='vboxDetailsUpDnImgSpan' style='float:right'>
-										<img src='images/arrow_grad_up.png' />
-									</span>
-								</div>
-							</th>
-						</tr>
-						<tr style='vertical-align: middle'>
-							<td style='text-align: center' colspan='2'>
-								<table class='vboxInvisible' style='margin-left:auto;margin-right:auto;'>
-									<tr style='vertical-align:bottom; padding:0px; margin:0px;'>
-										<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_tl.png' style='width:15px;height:17px;'/></td>
-										<td class='vboxInvisible'><img src='images/monitor_top.png' class='vboxPreviewMonitor' style='height:17px;'/></td>
-										<td class='vboxInvisible' style='text-align:left'><img src='images/monitor_tr.png' style='width:15px;height:17px;'/></td>
-									</tr>
-									<tr>
-										<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_left.png' style='width:15px;' class='vboxPreviewMonitorSide' /></td>
-										<td class='vboxInvisible'><div id='vboxDetailsPreviewWrap' style='text-align:center;background-color:#000;border:0px;display:table;#position:relative;background-repeat: no-repeat;padding:0px;margin:0px;'></div></td>
-										<td class='vboxInvisible' style='text-align:left' ><img src='images/monitor_right.png' style='width:14px;' class='vboxPreviewMonitorSide' /></td>
-									</tr>
-									<tr style='vertical-align:top;'>
-										<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_bl.png' style='width:15px;height:17px;'/></td>
-										<td class='vboxInvisible'><img src='images/monitor_bottom.png' class='vboxPreviewMonitor' style='height:17px;'/></td>
-										<td class='vboxInvisible' style='text-align:left'><img src='images/monitor_br.png' style='width:15px;height:17px;'/></td>
-									</tr>
-								</table>													
-							</td>
-						</tr>
-					</table>				
+					<div class='vboxDetailsBorder'>
+						<table class='vboxDetailsTableBoxPreview vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
+							<tr class='vboxDetailsHead'>
+								<th class='vboxDetailsSection' colspan='2'>
+									<div>
+										<img style='float:left;  margin-right: 3px;' src='images/vbox/fullscreen_16px.png' />
+										<span style='float:left' class='translate'>Preview</span>
+										<span class='vboxDetailsUpDnImgSpan' style='float:right'>
+											<img src='images/arrow_grad_up.png' />
+										</span>
+									</div>
+								</th>
+							</tr>
+							<tr style='vertical-align: middle'>
+								<td style='text-align: center' colspan='2'>
+									<table class='vboxInvisible' style='margin-left:auto;margin-right:auto;'>
+										<tr style='vertical-align:bottom; padding:0px; margin:0px;'>
+											<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_tl.png' style='width:15px;height:17px;'/></td>
+											<td class='vboxInvisible'><img src='images/monitor_top.png' class='vboxPreviewMonitor' style='height:17px;'/></td>
+											<td class='vboxInvisible' style='text-align:left'><img src='images/monitor_tr.png' style='width:15px;height:17px;'/></td>
+										</tr>
+										<tr>
+											<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_left.png' style='width:15px;' class='vboxPreviewMonitorSide' /></td>
+											<td class='vboxInvisible'><div id='vboxDetailsPreviewWrap' style='text-align:center;background-color:#000;border:0px;display:table;#position:relative;background-repeat: no-repeat;padding:0px;margin:0px;'></div></td>
+											<td class='vboxInvisible' style='text-align:left' ><img src='images/monitor_right.png' style='width:14px;' class='vboxPreviewMonitorSide' /></td>
+										</tr>
+										<tr style='vertical-align:top;'>
+											<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_bl.png' style='width:15px;height:17px;'/></td>
+											<td class='vboxInvisible'><img src='images/monitor_bottom.png' class='vboxPreviewMonitor' style='height:17px;'/></td>
+											<td class='vboxInvisible' style='text-align:left'><img src='images/monitor_br.png' style='width:15px;height:17px;'/></td>
+										</tr>
+									</table>													
+								</td>
+							</tr>
+						</table>				
+					</div>
 				</td>
 			</tr>
 		</table>
 		
 		<!-- Display -->
-		<table id='vboxDetailsTableBoxDisplay' class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
-			<tr class='vboxDetailsHead'>
-				<th class='vboxDetailsSection' colspan='2'>
-					<div>
-						<img style='float:left;  margin-right: 3px;' src='images/vbox/vrdp_16px.png' />
-						<span style='float:left'><a href='javascript:vboxDetailSettingsLink("Display");' class='translate'>Display</a></span>
-						<span class='vboxDetailsUpDnImgSpan' style='float:right'>
-							<img src='images/arrow_grad_up.png' />
-						</span>
-					</div>
-				</th>
-			</tr>
-		</table>
-
+		<div class='vboxDetailsBorder'>
+			<table id='vboxDetailsTableBoxDisplay' class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
+				<tr class='vboxDetailsHead'>
+					<th class='vboxDetailsSection' colspan='2'>
+						<div>
+							<img style='float:left;  margin-right: 3px;' src='images/vbox/vrdp_16px.png' />
+							<span style='float:left'><a href='javascript:vboxDetailSettingsLink("Display");' class='translate'>Display</a></span>
+							<span class='vboxDetailsUpDnImgSpan' style='float:right'>
+								<img src='images/arrow_grad_up.png' />
+							</span>
+						</div>
+					</th>
+				</tr>
+			</table>
+		</div>
+		
 		<!-- Storage -->
-		<table id='vboxDetailsTableBoxStorage' class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
-			<tr class='vboxDetailsHead'>
-				<th class='vboxDetailsSection' colspan='2'>
-					<div>
-						<img style='float:left;  margin-right: 3px;' src='images/vbox/hd_16px.png' />
-						<span style='float:left'><a href="javascript:vboxDetailSettingsLink('Storage');" class='translate'>Storage</a></span>
-						<span class='vboxDetailsUpDnImgSpan' style='float:right'>
-							<img src='images/arrow_grad_up.png' />
-						</span>
-					</div>
-				</th>
-			</tr>		
-		</table>
-			
+		<div class='vboxDetailsBorder'>
+			<table id='vboxDetailsTableBoxStorage' class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
+				<tr class='vboxDetailsHead'>
+					<th class='vboxDetailsSection' colspan='2'>
+						<div>
+							<img style='float:left;  margin-right: 3px;' src='images/vbox/hd_16px.png' />
+							<span style='float:left'><a href="javascript:vboxDetailSettingsLink('Storage');" class='translate'>Storage</a></span>
+							<span class='vboxDetailsUpDnImgSpan' style='float:right'>
+								<img src='images/arrow_grad_up.png' />
+							</span>
+						</div>
+					</th>
+				</tr>		
+			</table>
+		</div>
+					
 		<!-- Audio -->
 		<table id='vboxDetailsTableBoxAudio' class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
 			<tr class='vboxDetailsHead'>
@@ -337,16 +346,17 @@ $('#vboxTabVMDetails').bind('hide',function(){
 ///////////////////////////////////////////////
 $('#vboxVMDetails').find('tr.vboxDetailsHead').each(function(){
 	$(this).children('th').first().dblclick(function(e){
+		var src='';
 		if($(this).data('vboxHidden')) {
 			$(this).removeClass('vboxDetailsSectionCollapsed');
 			$(this).parent().siblings().css('display','');
 			$(this).data('vboxHidden',false);
-			var src = 'images/arrow_grad_up.png';
+			src = 'images/arrow_grad_up.png';
 		} else {
 			$(this).addClass('vboxDetailsSectionCollapsed');
 			$(this).parent().siblings().css('display','none');
 			$(this).data('vboxHidden',true);
-			var src = 'images/arrow_grad_dn.png';				
+			src = 'images/arrow_grad_dn.png';				
 		}
 		$(this).find('span.vboxDetailsUpDnImgSpan').children('img').attr('src',src);
 		return false;
@@ -366,7 +376,7 @@ $('#vboxVMDetails').find('tr.vboxDetailsHead').each(function(){
 if(!$('#vboxIndex').data('vboxConfig')['previewWidth'])
 	$('#vboxIndex').data('vboxConfig')['previewWidth'] = 180;
 
-$('#vboxDetailsTableBoxPreview').css('min-width',$('#vboxIndex').data('vboxConfig')['previewWidth']+'px');
+$('#vboxTabVMDetails .vboxDetailsTableBoxPreview').css('min-width',$('#vboxIndex').data('vboxConfig')['previewWidth']+'px');
 
 								
 // Returns link to settings
@@ -409,6 +419,7 @@ function __vboxDetailRowReal(name,value,cssClass,html) {
 	// convert to strings
 	name = ''+name;
 	value = ''+value;
+	
 	
 	var tr = $('<tr />').attr({'class':'vboxDetailRow'});
 	$('<th />').html(name + (value && value.length && name.length ? ':' : ''))
@@ -516,9 +527,9 @@ function __vboxDrawPreview(fromSelf,state) {
 			}
 			
 		}
-		$('#vboxDetailsPreviewWrap').css({'height':height+'px','width':width+'px'});
-		$('#vboxDetailsTableBoxPreview').find('img.vboxPreviewMonitor').css('width',width+'px');
-		$('#vboxDetailsTableBoxPreview').find('img.vboxPreviewMonitorSide').css('height',height+'px');
+		$('#vboxTabVMDetails .vboxDetailsPreviewWrap').css({'height':height+'px','width':width+'px'});
+		$('#vboxTabVMDetails .vboxDetailsTableBoxPreview').find('img.vboxPreviewMonitor').css('width',width+'px');
+		$('#vboxTabVMDetails .vboxDetailsTableBoxPreview').find('img.vboxPreviewMonitorSide').css('height',height+'px');
 	};
 
 	// Update disabled? State not Running or Saved
@@ -571,7 +582,7 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 		$(targetdiv).html('<div style="width: 50%">'+trans('The selected virtual machine is <i>inaccessible</i>. Please inspect the error message shown below and press the <b>Refresh</b> button if you want to repeat the accessibility check:','UIDetailsPagePrivate')+'</div>');
 		
 		// Details Table
-		var vboxDetailsTable = $('<table />').attr({'style':'width: 50%','class':'vboxDetailsTable vboxDetailsTableError'}).append(__vboxDetailRow(trans("VirtualBox - Error",'UIMessageCenter'), data.accessError['text'])).append(__vboxDetailRow(trans('Result Code: ','UIMessageCenter'), data.accessError['resultCode'])).append(__vboxDetailRow(trans("Component: ",'UIMessageCenter'), data.accessError['component'])).appendTo(targetdiv);
+		$('<table />').attr({'style':'width: 50%','class':'vboxDetailsTable vboxDetailsTableError'}).append(__vboxDetailRow(trans("VirtualBox - Error",'UIMessageCenter'), data.accessError['text'])).append(__vboxDetailRow(trans('Result Code: ','UIMessageCenter'), data.accessError['resultCode'])).append(__vboxDetailRow(trans("Component: ",'UIMessageCenter'), data.accessError['component'])).appendTo(targetdiv);
 		
 		var d = $('<div />').attr({'style':'width: 50%; padding: 4px;'});
 		
@@ -1505,7 +1516,7 @@ for(var i = 0; i < ints.length; i++) {
 		},function(){
 			$(this).removeClass('hover');
 		}).click(function(){
-			var newwin = window.open('screen.php?vm='+$('#vboxIndex').data('selectedVM').id+'&full=1','vboxSC','toolbar=1,menubar=0,location=0,directories=0,status=true,resize=true');
+			window.open('screen.php?vm='+$('#vboxIndex').data('selectedVM').id+'&full=1','vboxSC','toolbar=1,menubar=0,location=0,directories=0,status=true,resize=true');
 		}).append($('<span />').html(trans('Open in new window','UIVMPreviewWindow'))).appendTo(ul);
 	}
 }
@@ -1538,11 +1549,11 @@ $("#vboxVMDetails").mouseup( function(e) {
 		e.stopPropagation();
 		
 		return false;
-		
-	} else {
-		$('#vboxDetailsShowMenu').hide();
-		$('#vboxDetailsPreviewMenu').hide();
 	}
+	
+	$('#vboxDetailsShowMenu').hide();
+	$('#vboxDetailsPreviewMenu').hide();
+
 });
 $("#vboxVMDetails").bind('contextmenu', function() { return false; }).bind('click',function(e){return e.button!=2;});
 

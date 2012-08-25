@@ -477,42 +477,54 @@ table.vboxToolbar td.vboxDisabled { color: #999; }
 #vboxTabVMDetails ul.contextMenu { font-size: 110%; }
 #vboxTabVMDetails .vboxDetailsNone { font-style: italic; }
 #vboxDetailsWelcome { background: #fff; }
-table.vboxDetailsTable { width: auto; }
+table.vboxDetailsTable {
+		width: auto;
+}
 table.vboxDetailsTableBox tr.vboxDetailsHead th { white-space: nowrap; }
-table.vboxDetailsTable td { padding: 2px; }
+table.vboxDetailsTable td { padding: 2px;}
 table.vboxDetailsTable a, table.vboxDetailsTable a:visited { color: #0000FF; }
-table.vboxDetailsTable tr th.vboxDetailsSection { text-align: left; font-weight: bold; margin-top: 10px }
+table.vboxDetailsTable tr th.vboxDetailsSection { text-align: left; font-weight: bold; }
 table.vboxDetailsTable tr th.vboxDetailName { text-align: left; white-space: nowrap; padding-left: 20px; font-weight: normal; }
 table.vboxDetailsTable tr th.vboxDetailNameIndent { text-align: left; white-space: nowrap; padding-left: 35px; font-weight: normal;}
 table.vboxDetailsTable tr td.vboxDetailsValue { text-align: left; white-space: normal; width: 100%; padding-left: 35px; }
 table.vboxDetailsTableError { background: #eee; margin-top: 8px;; border: 2px solid #aaa; }
 table.vboxDetailsTableError tr { vertical-align: top; }
 /* Details table boxes */
-table.vboxDetailsTableBox { background: #fff; margin-bottom: 10px; width: 100%; border-collapse: collapse; border-spacing: 0px;
-	-moz-border-radius-topleft: 4px/*{cornerRadius}*/; -webkit-border-top-left-radius: 4px/*{cornerRadius}*/; border-top-left-radius: 4px/*{cornerRadius}*/; -moz-border-radius-topright: 4px/*{cornerRadius}*/; -webkit-border-top-right-radius: 4px/*{cornerRadius}*/; border-top-right-radius: 4px/*{cornerRadius}*/;
+table.vboxDetailsTableBox { background: #fff; margin: 0px; width: 100%; border-collapse: collapse; border-spacing: 0px;
+	border-radius: 8px;
+	-moz-border-radius: 8px;
 }
 /* Safari / Chrome "fix" */
 table.vboxDetailsTableBox img::selection { color: transparent; }
 
 table.vboxDetailsTableBox tr.vboxDetailsHead {
-	-moz-border-radius-topleft: 4px/*{cornerRadius}*/; -webkit-border-top-left-radius: 4px/*{cornerRadius}*/; border-top-left-radius: 4px/*{cornerRadius}*/; -moz-border-radius-topright: 4px/*{cornerRadius}*/; -webkit-border-top-right-radius: 4px/*{cornerRadius}*/; border-top-right-radius: 4px/*{cornerRadius}*/;
+	-moz-border-radius-topleft: 8px/*{cornerRadius}*/; -webkit-border-top-left-radius: 8px/*{cornerRadius}*/; border-top-left-radius: 8px/*{cornerRadius}*/; -moz-border-radius-topright: 8px/*{cornerRadius}*/; -webkit-border-top-right-radius: 8px/*{cornerRadius}*/; border-top-right-radius: 8px/*{cornerRadius}*/;
 }
 table.vboxDetailsTableBox tr.vboxDetailsHead th.vboxDetailsSection {
-	-moz-border-radius-topleft: 4px/*{cornerRadius}*/; -webkit-border-top-left-radius: 4px/*{cornerRadius}*/; border-top-left-radius: 4px/*{cornerRadius}*/; -moz-border-radius-topright: 4px/*{cornerRadius}*/; -webkit-border-top-right-radius: 4px/*{cornerRadius}*/; border-top-right-radius: 4px/*{cornerRadius}*/;
-	padding: 1px;
+	-moz-border-radius-topleft: 8px/*{cornerRadius}*/; -webkit-border-top-left-radius: 8px/*{cornerRadius}*/; border-top-left-radius: 8px/*{cornerRadius}*/; -moz-border-radius-topright: 8px/*{cornerRadius}*/; -webkit-border-top-right-radius: 8px/*{cornerRadius}*/; border-top-right-radius: 8px/*{cornerRadius}*/;
+	padding: 0px;
 	margin: 0px;
 	background-color: #cccccc;
 }
 table.vboxDetailsTableBox tr.vboxDetailsHead th.vboxDetailsSection div {
-	-moz-border-radius-topleft: 4px/*{cornerRadius}*/; -webkit-border-top-left-radius: 4px/*{cornerRadius}*/; border-top-left-radius: 4px/*{cornerRadius}*/; -moz-border-radius-topright: 4px/*{cornerRadius}*/; -webkit-border-top-right-radius: 4px/*{cornerRadius}*/; border-top-right-radius: 4px/*{cornerRadius}*/;
+	-moz-border-radius-topleft: 8px/*{cornerRadius}*/; -webkit-border-top-left-radius: 8px/*{cornerRadius}*/; border-top-left-radius: 8px/*{cornerRadius}*/; -moz-border-radius-topright: 8px/*{cornerRadius}*/; -webkit-border-top-right-radius: 8px/*{cornerRadius}*/; border-top-right-radius: 8px/*{cornerRadius}*/;
 	background-image: url(../images/header_grad.png);
 	background-color: #cccccc;
-	padding: 3px 3px 3px 6px;
+	padding: 4px 4px 4px 8px;
 	margin: 0px;
 	height: 16px;
 }
-table.vboxDetailsTableBox tr.vboxDetailsHead th.vboxDetailsSectionCollapsed {
-	-moz-border-radius-bottomleft: 4px/*{cornerRadius}*/; -webkit-border-bottom-left-radius: 4px/*{cornerRadius}*/; border-bottom-left-radius: 4px/*{cornerRadius}*/; -moz-border-radius-bottomright: 4px/*{cornerRadius}*/; -webkit-border-bottom-right-radius: 4px/*{cornerRadius}*/; border-bottom-right-radius: 4px/*{cornerRadius}*/;
+#vboxTabVMDetails div.vboxDetailsBorder {
+	border-radius: 8px;
+	-moz-border-radius: 8px;
+	border: 2px solid #bbb;
+	margin-bottom: 2px;
+}
+
+table.vboxDetailsTableBox tr.vboxDetailsHead th.vboxDetailsSectionCollapsed, table.vboxDetailsTableBox tr.vboxDetailsHead th.vboxDetailsSectionCollapsed div {
+	-webkit-border-radius: 8px;
+	border-radius: 8px;
+	-moz-border-radius: 8px;
 }
 
 table.vboxDetailsTableBox tr.vboxDetailsHead a, table.vboxDetailsTableBox tr.vboxDetailsHead th.hover div.vboxNoLinks a {
@@ -527,7 +539,7 @@ table.vboxDetailsTableBox tr.vboxDetailsHead th.hover a {
 table.vboxDetailsTableBox tr.vboxDetailsHead th span.vboxDetailsUpDnImgSpan { display: none; }
 table.vboxDetailsTableBox tr.vboxDetailsHead th.hover span.vboxDetailsUpDnImgSpan { display: inline; cursor: pointer; }
 
-table.vboxDetailsTableBox tr.vboxDetailsHead th { padding: 4px; padding-left: 8px; }
+table.vboxDetailsTableBox tr.vboxDetailsHead th { padding: 6px; padding-left: 8px; }
 table.vboxDetailsTableBox tr.vboxDetailsHead img { padding-right: 4px; }
 /* same as th.vboxDetailName */
 table.vboxDetailsTable td.vboxDetailDescriptionCell { padding-left: 20px; }
@@ -537,9 +549,9 @@ table.vboxDetailsTable td.vboxDetailDescriptionCell { padding-left: 20px; }
 #vboxDetailsShowMenu li input, #vboxDetailsPreviewMenu li input { display: inline; padding: 0px; margin: 0px; margin-right: 4px; margin-left: 4px;}
 
 /* preview box */
-#vboxDetailsTableBoxPreviewSpacer { padding: 4px; }
-#vboxDetailsTableBoxPreview { text-align: center; }
-#vboxDetailsTableBoxPreview table, #vboxDetailsTableBoxPreview td, #vboxDetailsTableBoxPreview img { padding: 0px; margin: 0px; border: 0px; }
+#vboxTabVMDetails .vboxDetailsTableBoxPreviewSpacer { padding: 1px; }
+#vboxTabVMDetails .vboxDetailsTableBoxPreview { text-align: center; }
+#vboxTabVMDetails .vboxDetailsTableBoxPreview table, #vboxTabVMDetails .vboxDetailsTableBoxPreview td, #vboxTabVMDetails .vboxDetailsTableBoxPreview img { padding: 0px; margin: 0px; border: 0px; }
 div.vboxPreviewSaved {
 	background-color:#000;
 }
@@ -567,10 +579,6 @@ div.vboxPreviewSaved img {
 #vboxHostMemUsed span { background-color:transparent; padding-left: 2px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px; margin: 0px; color: #ffffff; white-space: nowrap;}
 #vboxHostMemUsed div { padding:0px; margin: 0px; height: 14px; width: 1px; }
 
-
-/* Description tab */
-#vboxTabVMDescription input { margin: 8px; }
-#vboxTabVMDescription textarea { width: 100%; display: block; }
 
 /* Settings Dialogs */
 #vboxSettingsDialog, div.vboxSettingsDialog div.ui-dialog-buttonpane { 

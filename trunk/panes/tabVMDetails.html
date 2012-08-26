@@ -10,6 +10,26 @@
 	<div id='vboxHostDetails' class='vboxInvisible' style='display: none'></div>
 	<div id='vboxDetailsVMInaccessible' class='vboxInvisible' style='display: none'></div>
 	<div id='vboxVMDetails' style='height: 100%; display: none; min-height:100px;' class='vboxInvisible'>
+
+	<!--
+		Section Template
+	-->
+	<div id='vboxVMDetailsBoxTemplate' class='vboxDetailsBorder' style='display: none'>
+		<table class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
+			<tr class='vboxDetailsHead'>
+				<th class='vboxDetailsSection' colspan='2'>
+					<div>
+						<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/>
+						<span style='float:left'><a href="javascript:vboxDetailSettingsLink('%2')">%3</a></span>
+						<span class='vboxDetailsUpDnImgSpan' style='float:right'>
+							<img src='images/arrow_grad_up.png' />
+						</span>
+					</div>
+				</th>
+			</tr>
+		</table>
+	</div>
+
 		<table class='vboxInvisible' style='width: 100%;'>
 			<tr style='vertical-align: top'>
 				<td style='width:100%'>
@@ -226,8 +246,8 @@
 				</th>
 			</tr>
 		</table>
-	
 	</div>
+	
 	<!-- Loading... -->
 	<div id='vboxDetailsLoading' class='vboxInvisible' style='#position:absolute;#top:50%;display:none;vertical-align:middle;width:100%;height:100%;padding:0px;margin:0px'>
 		<div style='#position:relative;#top:-50%;padding:4px;text-align:center;width:100%'>
@@ -242,6 +262,43 @@
 	</div>
 	
 <script type='text/javascript'>
+
+
+/*
+ * VM Details section template setup
+ *
+ * %1 = icon
+ * %2 = settings link
+ * %3 = title
+ */
+ 
+// Add events to template
+$('#vboxVMDetailsBoxTemplate').find('tr.vboxDetailsHead').each(function(){
+	$(this).children('th').first().dblclick(function(e){
+		var src='';
+		if($(this).data('vboxHidden')) {
+			$(this).removeClass('vboxDetailsSectionCollapsed');
+			$(this).parent().siblings().css('display','');
+			$(this).data('vboxHidden',false);
+			src = 'images/arrow_grad_up.png';
+		} else {
+			$(this).addClass('vboxDetailsSectionCollapsed');
+			$(this).parent().siblings().css('display','none');
+			$(this).data('vboxHidden',true);
+			src = 'images/arrow_grad_dn.png';				
+		}
+		$(this).find('span.vboxDetailsUpDnImgSpan').children('img').attr('src',src);
+		return false;
+	}).hover(function(){
+		$(this).addClass('hover');},
+		function(){$(this).removeClass('hover');}
+	).disableSelection().find('span.vboxDetailsUpDnImgSpan').click(function(){
+		$(this).closest('th').dblclick();
+	});
+	
+}).disableSelection();
+
+var vboxVMDetailsSectionTemplate = $('#vboxVMDetailsBoxTemplate').clone(true);
 
 // Translate loading div
 $('#vboxDetailsLoading').find('span.translate').html(trans('Loading ...','UIVMDesktop')).removeClass('translate');
@@ -435,6 +492,43 @@ function __vboxDetailRow(name,value,html) {
 //Return indented detail row
 function __vboxDetailRowIndented(name,value,html) {
 	return __vboxDetailRowReal(name,value,'vboxDetailNameIndent',html);
+}
+//Draw rows to table
+function __vboxDetailAddRows(data, rows, table) {
+	
+	// Is rows a function?
+	if(typeof(rows) == 'function') rows = rows();
+	
+	for(var i = 0; i < rows.length; i++) {
+		
+		// Check if row has condition
+		if(rows[i].condition && !rows[i].condition(data)) continue;
+		
+		// hold row data
+		var rowData = '';
+		
+		// Check for row attribute
+		if(rows[i].attrib) {
+			if(!data[rows[i].attrib]) continue
+			rowData = data[rows[i].attrib];
+		
+		// Check for row callback
+		} else if(rows[i].callback) {
+			rowData = rows[i].callback(d);
+
+		// Static data
+		} else {
+			rowData = rows[i].data;
+		}
+
+		if(rows[i].rawRow) {
+			$(table).append(data);	
+		} else {
+			$(table).append(__vboxDetailRowReal(rows[i].title, rowData, 'vboxDetailName' + (rows[i].indented ? 'Indent' : ''), rows[i].html));
+		}
+		
+	}
+	
 }
 
 // Draw preview scren
@@ -896,24 +990,56 @@ function __vboxDisplayDetailsData(data,targetdiv,links,boxes) {
 		// append blank footer row
 		$(vboxDetailsTable).append(__vboxDetailRow('',''));
 		
-		var vboxDetailsTable = $('#vboxDetailsTableBoxAudio');
-		$(vboxDetailsTable).find('tr.vboxDetailRow').empty().remove();
-
-		if($('#vboxIndex').data('vboxCookies')["vboxSectionShowAudio"] == 0) {
-			$(vboxDetailsTable).hide();
+		var section = vboxVMDetailsSections.audio;
+		var sectionName = 'audio';
+		
+		/*
+	<div id='vboxVMDetailsBoxTemplate' class='vboxDetailsBorder' style='display: none'>
+		<table class='vboxDetailsTable vboxDetailsTableBox ui-corner-all'>
+			<tr class='vboxDetailsHead'>
+				<th class='vboxDetailsSection' colspan='2'>
+					<div>
+						<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/>
+						<span style='float:left'><a href="javascript:vboxDetailSettingsLink('%2')">%3</a></span>
+						<span class='vboxDetailsUpDnImgSpan' style='float:right'>
+							<img src='images/arrow_grad_up.png' />
+						</span>
+					</div>
+				</th>
+			</tr>
+		</table>
+	</div>
+	
+	
+	<table class="vboxDetailsTable vboxDetailsTableBox"><tbody>
+		<tr colspan="2" class="vboxDetailsSection"><img style="float:left;  margin-right: 3px;" src="images/vbox/sound_16px.png" class="vboxDetailsSectionIcon"><span style="float:left"><a href="javascript:vboxDetailSettingsLink('Audio')">Audio</a></span><span class="vboxDetailsUpDnImgSpan" style="float:right"><img src="images/arrow_grad_up.png"></span></tr><tr class="vboxDetailRow"><th class="vboxDetailContent vboxDetailName"><span class="vboxDetailsNone">Disabled</span></th><td class="vboxDetailsValue"></td></tr></tbody></table>
+		*/
+		var ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'><a href=\"javascript:vboxDetailSettingsLink('%2')\">%3</a></span><span class='vboxDetailsUpDnImgSpan' style='float:right'><img src='images/arrow_grad_up.png' /></span>";
+		var vboxDetailsSection = $('<div />').attr({'class':'vboxDetailsBorder vboxVMDetailsBox'+sectionName});
+		var vboxDetailsTable = $('<table />').attr({'class':'vboxDetailsTable vboxDetailsTableBox'}).empty()
+			.append($('<tr />').attr({'class':'vboxDetailsHead'})
+					.append($('<th />').attr({'class':'vboxDetailsSection','colspan':'2'})
+						.append($('<div />')
+							.html(ttemplate.replace('%1',section.icon).replace('%2', section.settingsLink).replace('%3', section.title))
+						)
+					)
+			);
+		
+		if($('#vboxIndex').data('vboxCookies')["vboxSectionShow"+sectionName] == 0) {
+			$(vboxDetailsSection).hide();
 		} else {
-			$(vboxDetailsTable).show();
+			$(vboxDetailsSection).show();
 		}
+
+		__vboxDetailAddRows(data, section.rows, vboxDetailsTable);
+		
+		$(targetdiv).append(vboxDetailsSection.append(vboxDetailsTable));
 
 	} else {
 		$(vboxDetailsTable).append(__vboxDetailHeader('sound_16px.png',trans("Audio")));
+		__vboxDetailAddRows(data, section.rows, vboxDetailsTable);
 	}
-	
-	if(!data['audioAdapter']['enabled']) {
-		$(vboxDetailsTable).append(__vboxDetailRow('<span class="vboxDetailsNone">'+trans("Disabled",'VBoxGlobal',null,'details report (audio)')+'</span>', "", true));
-	} else {
-		$(vboxDetailsTable).append(__vboxDetailRow(trans("Host Driver"), trans(vboxAudioDriver(data['audioAdapter']['audioDriver']),'VBoxGlobal'))).append(__vboxDetailRow(trans("Controller"), trans(vboxAudioController(data['audioAdapter']['audioController']),'VBoxGlobal')));
-	}
+
 
 
 	// Network

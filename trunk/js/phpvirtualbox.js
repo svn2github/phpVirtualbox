@@ -513,12 +513,14 @@ var vboxVMDetailsSections = {
 		icon: 'description_16px.png',
 		title: trans('Description', 'UIDetailsPagePrivate'),
 		settingsLink: 'General:2',
-		fullRow: true,
 		rows : function(d) {
 			return [{
 				title: '',
-				data: data.description.length ? $('<div />').html(data.description).text() : '<span class="vboxDetailsNone">'+trans("None",null,null,'details report (description)')+'</span>',
-				html: true
+				data: $('<tr />').attr({'class':'vboxDetailRow'}).append(
+						$('<td />').attr({'class':'vboxDetailDescriptionCell','colspan':'2'})
+							.html(data.description.length ? $('<div />').html(data.description).text() : '<span class="vboxDetailsNone">'+trans("None",null,null,'details report (description)')+'</span>')
+				),
+				rawRow: true
 			}];
 		}
 	}

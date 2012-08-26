@@ -270,7 +270,7 @@ function vboxWizardNewVMInit(callback, vmgroup) {
 				
 				// Get parameters
 				var disk = '';
-				if(!document.forms['frmwizardNewVM'].newVMDisk[0].checked) {
+				if(document.forms['frmwizardNewVM'].newVMDisk[2].checked) {
 					disk = document.forms['frmwizardNewVM'].newVMDiskSelect.options[document.forms['frmwizardNewVM'].newVMDiskSelect.selectedIndex].value;
 					disk = vboxMedia.getMediumById(disk).location;
 				}

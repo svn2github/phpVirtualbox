@@ -116,6 +116,13 @@ class phpVBoxConfigClass {
 	 * @var boolean
 	 */
 	var $warnDefault = false;
+
+	/**
+	 * Set the standard VRDE port number range to be used when
+	 * creating new VMs
+	 * @var string
+	 */
+	var $vrdeports = '9000-9010';
 	
 	/**
 	 * Key used to uniquely identify the current server in this

@@ -243,11 +243,9 @@
 	
 <script type='text/javascript'>
 
-// Cookies used for show/hide boxes
-vboxParseCookies();
-
 // Translate loading div
 $('#vboxDetailsLoading').find('span.translate').html(trans('Loading ...','UIVMDesktop')).removeClass('translate');
+
 
 // Listen for events
 /////////////////////////////
@@ -1397,31 +1395,38 @@ function __vboxDisplayHostDetailsData(data) {
  *
  */
 var ul = $('<ul />').attr({'class':'contextMenu contextMenuNoBG','style':'display: none','id':'vboxDetailsShowMenu'});
-var sections = new Array('General','System','Preview','Display','Storage','Audio','Network','Serial Ports','Parallel Ports','USB','Shared Folders','Description');
-for(var i = 0; i < sections.length; i++) {
 
+var sections = new Array('General','System','Preview','Display','Storage','Audio','Network','Serial Ports','Parallel Ports','USB','Shared Folders','Description');
+for(var i in vboxVMDetailsSections) {
+
+	if(typeof(i) != 'string') continue;
+	
+	// Skip if we shouldn't display
+	if(vboxVMDetailsSections[i].condition && !vboxVMDetailsSections[i].condition())
+		continue;
 	
 	// Preview is not enabled?
-	if($('#vboxIndex').data('vboxConfig').noPreview && sections[i] == 'Preview')
+	if($('#vboxIndex').data('vboxConfig').noPreview && i == 'preview')
 		continue;
 
 	// checked?
 	var checked = true;
-	if($('#vboxIndex').data('vboxCookies')["vboxSectionShow"+sections[i].replace(' ','')] == 0)
+	if($('#vboxIndex').data('vboxCookies')["vboxSectionShow"+i] == 0)
 		checked = false;
 	
-	var li = $('<li />').attr('id','vboxDetailsShowMenuItem'+sections[i].replace(' ',''));
+	var li = $('<li />').attr('id','vboxDetailsShowMenuItem'+i.replace(' ',''));
 
-	$(li).append($('<label />').append($('<input />').attr({'type':'checkbox','class':'vboxCheckbox','name':sections[i].replace(' ','')}).prop('checked',checked).click(function(){
+	$(li).append($('<label />').append($('<input />').attr({'type':'checkbox','class':'vboxCheckbox','name':i}).prop('checked',checked).click(function(){
 
 		vboxSetCookie("vboxSectionShow"+$(this).attr('name'),(this.checked ? 1 : 0));
-		$('#vboxDetailsTableBox'+$(this).attr('name')).css('display',(this.checked ? '' : 'none'));
+		$('#vboxTabVMDetails .vboxDetailsTableBox'+$(this).attr('name')).css('display',(this.checked ? '' : 'none'));
 		$('#vboxIndex').data('vboxCookies')["vboxSectionShow"+$(this).attr('name')] = (this.checked ? 1 : 0);
 
 		// Special case for Preview
-		if($(this).attr('name') == 'Preview') {
+		/*
+		if($(this).attr('name') == 'preview') {
 			if(this.checked && $('#vboxIndex').data('selectedVM').id != 'host') {
-				$('#vboxDetailsTableBoxPreviewSpacer').show();
+				$('.vboxDetailsTableBoxPreview').show();
 				__vboxDrawPreview(false, $('#vboxIndex').data('selectedVM').state);
 			} else {
 				$('#vboxDetailsTableBoxPreviewSpacer').hide();
@@ -1432,8 +1437,9 @@ for(var i = 0; i < sections.length; i++) {
 				}
 			}				
 		}
+		*/
 		
-	})).append($('<span />').html(trans(sections[i],'UIDetailsPagePrivate'))).disableSelection()).appendTo(ul);
+	})).append($('<span />').html(vboxVMDetailsSections[i].title)).disableSelection()).appendTo(ul);
 
 
 }

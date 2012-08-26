@@ -5,6 +5,524 @@
  * @copyright Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
  */
 
+/**
+ * VM details sections used on details tab and snapshot pages
+ * @namespace vboxVMDetailsInfo
+ */
+
+var vboxVMDetailsSections = {
+	
+	/*
+	 * General 
+	 */
+	general: {
+		icon:'machine_16px.png',
+		title:trans('General', 'UIDetailsPagePrivate'),
+		settingsLink: 'General',
+		rows : [
+		   {
+			   title: trans('Name', 'UIDetailsPagePrivate'),
+			   attrib: 'name'
+		   },
+		   {
+			   title: trans('OS Type'),
+			   attrib: 'OSTypeDesc'
+		   },
+		   {
+			   title: trans('Guest Additions Version'),
+			   attrib: 'guestAdditionsVersion'
+		   },
+		   
+		]
+	},
+	
+	/*
+	 * System
+	 */
+	system : {
+		icon:'chipset_16px.png',
+		title:trans('System', 'UIDetailsPagePrivate'),
+		settingsLink: 'System',
+		rows : [
+		   {
+			   title: trans('Base Memory'),
+			   callback: function(d) {
+				   return trans('<nobr>%1 MB</nobr>').replace('%1',d['memorySize']);
+			   }
+		   },{
+			   title: trans("Processors",'UIDetailsPagePrivate'),
+			   attrib: 'CPUCount',
+			   condition: function(d) { return d.CPUCount > 1; }
+		   },{
+			   title: trans("Execution Cap"),
+			   callback: function(d) {
+				   return trans('<nobr>%1%</nobr>').replace('%1',parseInt(d['CPUExecutionCap']));
+			   },
+			   condition: function(d) { return d.CPUExecutionCap < 100; }
+		   },{
+			   title: trans("Boot Order"),
+			   callback: function(d) {
+					var bo = new Array();
+					for(var i = 0; i < data['bootOrder'].length; i++) {
+						bo[i] = trans(vboxDevice(data['bootOrder'][i]),'VBoxGlobal');
+					}
+					return bo.join(', ');
+			   }
+		   },{
+			   title: trans("Acceleration",'UIDetailsPagePrivate'),
+			   callback: function(d) { return trans('PAE/NX'); },
+		   	   condition: function(d) { return d['CpuProperties']['PAE']; }
+		   },{
+			   title: trans("VCPU"),
+			   callback: function(d) {
+				   return (d['HWVirtExProperties'].Enabled ? trans('Enabled') : trans('Disabled'));
+			   },
+			   advancedViewOnly: true
+		   },{
+			   title: trans("Nested Paging"),
+			   callback: function(d) {
+				   return (d['HWVirtExProperties'].NestedPaging ? trans('Enabled') : trans('Disabled'));
+			   },
+			   advancedViewOnly: true
+		   },{
+			   title: trans("Large Pages"),
+			   callback: function(d) {
+				   return (d['HWVirtExProperties'].LargePages? trans('Enabled') : trans('Disabled'));
+			   },
+			   advancedViewOnly: true
+		   },{
+			   title: trans("Exclusive use of the hardware virtualization extensions"),
+			   callback: function(d) {
+				   return (d['HWVirtExProperties'].Exclusive ? trans('Enabled') : trans('Disabled'));
+			   },
+			   advancedViewOnly: true
+		   }
+		]
+	},
+	
+	/*
+	 * Preview box
+	 */
+	preview : {
+		icon:'fullscreen_16px.png',
+		title:trans('Preview', 'UIDetailsPagePrivate'),
+		settingsLink: 'Display',
+		rows: []
+	},
+	
+	/*
+	 * Display
+	 */
+	display : {
+		icon: 'vrdp_16px.png',
+		title:trans('Display', 'UIDetailsPagePrivate'),
+		settingsLink: 'Display',
+		rows: [
+		   {
+			   title: trans("Video Memory"),
+			   callback: function(d) {
+				   return trans('<nobr>%1 MB</nobr>').replace('%1',d['VRAMSize']);
+			   }
+		   },{
+			   title: trans('Remote Desktop Server Port'),
+			   callback: function(d, config) {
+				   
+				   var chost = vboxGetVRDEAddress(data);
+				
+				   var rowStr = data['VRDEServer']['ports'];
+				
+				   // Display links?
+				   
+				   if(config.links) {						
+					   if(d['state'] == 'Running' || !d['VRDEServer']['ports'].match(/[^\d]/)) {
+						   rowStr = " <a href='rdp.php?host=" + chost + '&port=' + d['VRDEServer']['ports'] + "&id=" + d['id'] + "&vm=" + encodeURIComponent(d['name']) + "'>" + d['VRDEServer']['ports'] + "</a>";
+					   }
+					   if(d['state'] == 'Running' && d['consoleInfo'] && parseInt(d['consoleInfo']['consolePort']) > 0) {
+						   rowStr += ' <img src="images/vbox/blank.gif" style="vspace:0px;hspace:0px;height2px;width:10px;" /> (' + chost + ':' + d['consoleInfo']['consolePort'] + ')';
+					   }
+				   } else {
+					   rowStr += ' ('+chost+')';
+				   }
+				   return rowStr;
+				   
+  
+			   },
+			   html: true,
+			   condition: function(d) {
+				   return (d['VRDEServer'] && d['VRDEServer']['VRDEExtPack'] && d['VRDEServer']['enabled'] && d['VRDEServer']['ports']);
+			   }
+		   },{
+			   title: trans("Remote Desktop Server"),
+			   callback: function(d) {
+				   return trans('Disabled','VBoxGlobal',null,'details report (VRDE Server)');
+			   },
+			   condition: function(d) {
+				   return !(d['VRDEServer'] && d['VRDEServer']['VRDEExtPack'] && d['VRDEServer']['enabled'] && d['VRDEServer']['ports']);
+			   }
+		   }
+		]
+	},
+	
+	/*
+	 * Storage controllers
+	 */
+	storage : {
+		icon:'hd_16px.png',
+		title: trans('Storage', 'UIDetailsPagePrivate'),
+		settingsLink: 'Storage',
+		rows: function(d,config) {
+			
+			var rows = new Array();
+			
+			for(var a = 0; a < data['storageControllers'].length; a++) {
+				
+				var con = data['storageControllers'][a];
+				
+				// Controller name
+				rows[rows.length] = {
+						title: $('<div />').text(con.name).html() + ((con.bus == 'SATA' && config.advancedView) ? ' (' + con.portCount + ')' : ''),
+						callback: function() { return ''; }
+				};
+						
+				// Each attachment.
+				for(var b = 0; b < data['storageControllers'][a]['mediumAttachments'].length; b++) {
+					
+					var portName = vboxStorage[data['storageControllers'][a].bus].slotName(data['storageControllers'][a]['mediumAttachments'][b].port, data['storageControllers'][a]['mediumAttachments'][b].device);
+
+					// Medium / host device info
+					var medium = (data['storageControllers'][a]['mediumAttachments'][b].medium && data['storageControllers'][a]['mediumAttachments'][b].medium.id ? vboxMedia.getMediumById(data['storageControllers'][a]['mediumAttachments'][b].medium.id) : null);
+					
+					// Do we need to reload media?
+					if(data['storageControllers'][a]['mediumAttachments'][b].medium && data['storageControllers'][a]['mediumAttachments'][b].medium.id && medium === null) {
+						
+						// Already tried to reload media, don't get caught in a loop
+						if(!$('#vboxTabVMDetails').data('vboxMediaReload')) {
+							
+							$('#vboxTabVMDetails').data('vboxMediaReload', 1);
+							
+							$('#vboxIndex').trigger('vmloading');
+							
+							var l = new vboxLoader();
+							l.add('machineGetDetails',function(d){return;},{'vm':$('#vboxIndex').data('selectedVM').id,'force_refresh':1});
+							l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);},{'force_refresh':1});
+							l.onLoad = function() {
+								$('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]);
+							};
+							l.run();
+							return;
+						}
+					}
+					
+					
+					// Get base medium (snapshot -> virtual disk file)
+					var it = false;
+					if(medium && medium.base && (medium.base != medium.id)) {
+						it = true;
+						medium = vboxMedia.getMediumById(medium.base);
+					}
+
+
+					portDesc = vboxMedia.mediumPrint(medium,false,it);
+
+					rows[rows.length] = {
+						title: portName + (data['storageControllers'][a]['mediumAttachments'][b].type == 'DVD' ? ' ' + trans('(CD/DVD)') : ''),
+						indented: true,
+						data: portDesc,
+						html: true
+					};
+					
+				}
+				
+			}
+			$('#vboxTabVMDetails').data('vboxMediaReload', 0);
+			return rows;
+		}
+	},
+	
+	/*
+	 * Audio
+	 */
+	audio : {
+		icon:'sound_16px.png',
+		title: trans('Audio', 'UIDetailsPagePrivate'),
+		settingsLink: 'Audio',
+		rows: [
+		    {
+			    title: '<span class="vboxDetailsNone">'+trans("Disabled",'VBoxGlobal',null,'details report (audio)')+'</span>',
+			    html: true,
+			    condition: function(d) { return !d['audioAdapter']['enabled']; },
+			    data: ''
+		    },{
+		    	title: trans("Host Driver"),
+		    	callback: function(d) {
+		    		return trans(vboxAudioDriver(d['audioAdapter']['audioDriver']),'VBoxGlobal');
+		    	},
+		    	condition: function(d) { return d['audioAdapter']['enabled']; },
+		    },{
+		    	title: trans("Controller"),
+		    	callback: function (d) {
+		    		return trans(vboxAudioController(d['audioAdapter']['audioController']),'VBoxGlobal');
+		    	},
+		    	condition: function(d) { return d['audioAdapter']['enabled']; },
+		    }
+		]
+	},
+	
+	/*
+	 * Network adapters
+	 */
+	network : {
+		icon: 'nw_16px.png',
+		title: trans('Network', 'UIDetailsPagePrivate'),
+		settingsLink: 'Network',
+		rows: function(d) {
+			
+			var vboxDetailsTableNics = 0;
+			var rows = [];
+			
+			for(var i = 0; i < d['networkAdapters'].length; i++) {
+				
+				nic = d['networkAdapters'][i];
+				
+				// compose extra info
+				var adp = '';
+
+				if(nic.enabled) {
+					vboxDetailsTableNics++;
+					switch(nic.attachmentType) {
+						case 'Null':
+							adp = trans('Not attached','VBoxGlobal');
+							break;
+						case 'Bridged':
+							adp = trans('Bridged adapter, %1','VBoxGlobal').replace('%1', nic.bridgedInterface);
+							break;
+						case 'HostOnly':
+							adp = trans('Host-only adapter, \'%1\'','VBoxGlobal').replace('%1', nic.hostOnlyInterface);
+							break;
+						case 'NAT':
+							// 'NATNetwork' ?
+							adp = trans('NAT','VBoxGlobal');
+							break;
+						case 'Internal':
+							adp = trans('Internal network, \'%1\'','VBoxGlobal').replace('%1', $('<div />').text(nic.internalNetwork).html());
+							break;
+						case 'Generic':
+							// Check for properties
+							if(nic.properties) {
+								adp = trans('Generic driver, \'%1\' { %2 }','UIDetailsPagePrivate').replace('%1', $('<div />').text(nic.genericDriver).html());
+								var np = nic.properties.split("\n");
+								adp = adp.replace('%2', np.join(" ,"));
+								break;
+							}
+							adp = trans('Generic driver, \'%1\'','UIDetailsPagePrivate').replace('%1', $('<div />').text(nic.genericDriver).html());
+							break;					
+						case 'VDE':
+							adp = trans('VDE network, \'%1\'','VBoxGlobal').replace('%1', $('<div />').text(nic.VDENetwork).html());
+							break;
+					}
+
+					rows[rows.length] = {
+						title: trans("Adapter %1",'VBoxGlobal').replace('%1',(i + 1)),
+						data: trans(vboxNetworkAdapterType(nic.adapterType)).replace(/\(.*\)/,'') + ' (' + adp + ')'
+					};
+				}
+						
+			}
+			
+			// No enabled nics
+			if(vboxDetailsTableNics == 0) {
+				
+				rows[rows.length] = {
+					title: '<span class="vboxDetailsNone">'+trans('Disabled','VBoxGlobal',null,'details report (network)')+'</span>',
+					html: true
+				};
+				
+			// Link nic to guest networking info?
+			} else if(links && d['state'] == 'Running') {
+				
+				rows[rows.length] = {
+					title: '',
+					data: '<a href="javascript:vboxGuestNetworkAdaptersDialogInit(\''+d['id']+'\')">('+trans('Guest Network Adapters','VBoxGlobal')+')</a>',
+					html: true
+				};
+				
+			}
+			
+			return rows;
+
+		}
+	},
+	
+	/*
+	 * Serial Ports
+	 */
+	serialports : {
+		icon: 'serial_port_16px.png',
+		title: trans('Serial Ports', 'UIDetailsPagePrivate'),
+		settingsLink: 'SerialPorts',
+		rows: function(d) {
+			
+			var rows = [];
+			
+			var vboxDetailsTableSPorts = 0;
+			var vboxSP = new vboxSerialPorts();
+			for(var i = 0; i < d['serialPorts'].length; i++) {
+				
+				p = d['serialPorts'][i];
+				
+				if(!p.enabled) continue;
+				
+				// compose extra info
+				var xtra = vboxSP.getPortName(p.IRQ,p.IOBase);
+				
+				var mode = p.hostMode;
+				xtra += ', ' + trans(vboxSerialMode(mode),'VBoxGlobal');
+				if(mode != 'Disconnected') {
+					xtra += ' (' + $('<div />').text(p.path).html() + ')';
+				}
+				
+				rows[rows.length] = {
+					title: trans("Port %1",'VBoxGlobal',null,'details report (serial ports)').replace('%1',(i + 1)),
+					data: xtra,
+					html: true
+				};
+				
+				vboxDetailsTableSPorts++;
+						
+			}
+			
+			if(vboxDetailsTableSPorts == 0) {
+				rows[rows.length] = {
+					title: '<span class="vboxDetailsNone">'+trans('Disabled','VBoxGlobal',null,'details report (serial ports)')+'</span>',
+					data: '',
+					html: true
+				};
+			}
+		
+		}
+	},
+	
+	/*
+	 * Parallel ports
+	 */
+	parallelports: {
+		icon: 'parallel_port_16px.png',
+		title: trans('Parallel Ports'),
+		settingsLink: 'ParallelPorts',
+		condition: function() { return $('#vboxIndex').data('vboxConfig').enableLPTConfig; },
+		rows: function(d) {
+			
+			var rows = [];
+			
+			var vboxDetailsTableSPorts = 0;
+			var vboxSP = new vboxParallelPorts();
+			for(var i = 0; i < d['parallelPorts'].length; i++) {
+				
+				p = d['parallelPorts'][i];
+				
+				if(!p.enabled) continue;
+				
+				// compose extra info
+				var xtra = trans(vboxSP.getPortName(p.IRQ,p.IOBase));
+				xtra += ' (' + $('<div />').text(p.path).html() + ')';
+				
+				rows[rows.length] = {
+					title: trans("Port %1",'VBoxGlobal',null,'details report (parallel ports)').replace('%1',(i + 1)),
+					data: xtra
+				};
+				vboxDetailsTableSPorts++;
+						
+			}
+			
+			if(vboxDetailsTableSPorts == 0) {
+				rows[0] = {
+					title: '<span class="vboxDetailsNone">'+trans('Disabled','VBoxGlobal',null,'details report (parallel ports)')+'</span>',
+					html: true
+				};
+			}
+			return rows;
+			
+		}
+	},
+	
+	/*
+	 * USB
+	 */
+	usb : {
+		icon: 'usb_16px.png',
+		title: trans('USB', 'UIDetailsPagePrivate'),
+		settingsLink: 'USB',
+		rows: function(d) {
+			
+			var rows = [];
+			
+			if(d['USBController'] && d['USBController']['enabled']) {
+				var tot = 0;
+				var act = 0;
+				for(var i = 0; i < d['USBController'].deviceFilters.length; i++) {
+					tot++;
+					if(d['USBController'].deviceFilters[i].active) act++;
+				}
+				
+				rows[0] = {
+					title: trans("Device Filters"),
+					data: trans('%1 (%2 active)').replace('%1',tot).replace('%2',act)
+				};
+				
+			} else {
+				
+				rows[0] = {
+					title: '<span class="vboxDetailsNone">'+trans("Disabled",null,null,'details report (USB)')+'</span>',
+					html: true
+				};
+			}
+			
+			return rows;
+
+		}
+	},
+	
+	/*
+	 * Shared folders list
+	 */
+	sharedfolders : {
+		icon: 'shared_folder_16px.png',
+		title: trans('Shared Folders', 'UIDetailsPagePrivate', 0, 'details report (shared folders)'),
+		settingsLink: 'SharedFolders',
+		rows: function(d) {
+
+			if(!d['sharedFolders'] || d['sharedFolders'].length < 1) {
+				return [{
+					title: '<span class="vboxDetailsNone">'+trans('None',null,null,'details report (shared folders)')+'</span>',
+					html: true
+				}];
+			} else {
+				return [{
+					title: trans('Shared Folders'),
+					data: d['sharedFolders'].length
+				}];
+			}
+
+		}
+	},
+	
+	/*
+	 * VM Description
+	 */
+	description: {
+		icon: 'description_16px.png',
+		title: trans('Description', 'UIDetailsPagePrivate'),
+		settingsLink: 'General:2',
+		fullRow: true,
+		rows : function(d) {
+			return [{
+				title: '',
+				data: data.description.length ? $('<div />').html(data.description).text() : '<span class="vboxDetailsNone">'+trans("None",null,null,'details report (description)')+'</span>',
+				html: true
+			}];
+		}
+	}
+};
 
 /**
  * Common VM Actions - These assume that they will be run on the

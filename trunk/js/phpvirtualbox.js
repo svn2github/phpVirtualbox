@@ -10,6 +10,277 @@
  * @namespace vboxVMDetailsInfo
  */
 
+var vboxHostDetailsSections = {
+	
+	/*
+	 * General 
+	 */
+	hostgeneral: {
+		icon:'machine_16px.png',
+		title:'General',
+		settingsLink: 'General',
+		multiSelectDetailsTable: true,
+		rows : [
+		   {
+			   title: trans('Name', 'UIDetailsPagePrivate'),
+			   callback: function() { return $('#vboxIndex').data('vboxConfig').name; },
+			   condition: function() { return $('#vboxIndex').data('vboxConfig').servers.length; }
+		   },
+		   {
+			   title: trans('OS Type'),
+			   callback: function(d) {
+				   return d['operatingSystem'] + ' (' + d['OSVersion'] +')';
+			   }
+		   },
+		   {
+			   title: 'VirtualBox',
+			   callback: function() {
+				   return $('#vboxIndex').data('vboxConfig').version.string+' ('+$('#vboxIndex').data('vboxConfig').version.revision+')';
+			   }
+		   },{
+			   title: trans('Base Memory'),
+			   callback: function(d) {
+				   return trans('<nobr>%1 MB</nobr>').replace('%1',d['memorySize']);
+			   }
+		   },{
+			   title: '',
+			   data: '<span id="vboxHostMemUsed"><div style="background-color:#a33" id="vboxHostMemUsedPct"><div style="background-color:#a93;float:right;" id="vboxHostMemResPct"></div></div><div style="width:100%;position:relative;top:-14px;left:0px;z-index:2;text-align:center;"><span id="vboxHostMemUsedLblPct" style="float:left" /><span id="vboxHostMemFreeLbl" style="float:right" /></div></span>'
+		   },{
+			   title: trans("Processors",'UIDetailsPagePrivate'),
+			   callback: function(d) {
+				   return d['cpus'][0] + ' (' + d['cpus'].length +')';
+			   }
+		   },{
+			   title: '',
+			   callback: function(d) {
+			
+				   // Processor features?
+					var cpuFeatures = new Array();
+					for(var f in d.cpuFeatures) {
+						if(!d.cpuFeatures[f]) continue;
+						cpuFeatures[cpuFeatures.length] = trans(f);
+					}
+					return cpuFeatures.join(', ');
+					
+			   },
+			   condition: function(d) {
+				   if(!d.cpuFeatures) return false;
+				   for(var f in d.cpuFeatures) {
+					   if(!d.cpuFeatures[f]) continue;
+					   return true;
+					}
+					return false;
+			   }
+		}],
+		
+		onRender: function(d) {
+			
+			// See if timer is already set
+			var eTimer = $('#vboxVMDetails').data('vboxHostMemInfoTimer');
+			if(eTimer != null) {
+				$('#vboxVMDetails').data('vboxHostMemInfoTimer',null);
+				window.clearInterval(eTimer);
+			}
+
+			
+			var showFree = $('#vboxIndex').data('vboxConfig').hostMemInfoShowFreePct;
+			var memRes = $('#vboxIndex').data('vboxConfig').vmMemoryOffset;
+			if(!memRes || parseInt(memRes) < 1) memRes = 0;
+			
+			// Memory used function
+			var vboxHostShowMemInfo = function(avail) {
+
+				// If target div no longer exists, stop updating
+				if($('#vboxHostMemFreeLbl')[0] == null) {
+					var eTimer = $('#vboxVMDetails').data('vboxHostMemInfoTimer');
+					$('#vboxVMDetails').data('vboxHostMemInfoTimer',null);
+					window.clearInterval(eTimer);
+					return;
+				}
+				
+				// Subtract reserved memory?
+				avail -= memRes;
+				avail = Math.max(0,avail);
+				
+				var mUsed = d['memorySize'] - (avail + memRes);
+				var mUsedPct = Math.round(parseInt((mUsed / d['memorySize']) * 100));
+				var memResPct = 0;
+				if(memRes > 0) {
+					memResPct = Math.round(parseInt((memRes / d['memorySize']) * 100));
+				}
+				
+				// Add tooltip with info
+				var tip = trans('<nobr>%1 MB</nobr>').replace('%1',mUsed);
+				if(memResPct) tip += ' | ' + trans('<nobr>%1 MB</nobr>').replace('%1',memRes);
+				tip += ' | ' + trans('<nobr>%1 MB</nobr>').replace('%1',avail);
+				$('#vboxHostMemUsed').tipped({'source':tip,'position':'mouse'});
+				
+				// Update tooltip content in case tooltip is already showing
+				var cid = $($('#tipped').data('original')).attr('id');
+				if(cid && cid == 'vboxHostMemUsed') $('#tipped-content').html(tip);
+				
+				// Width(s)
+				$('#vboxHostMemUsedPct').css({'width':((mUsedPct+memResPct)*2)+'px'});
+				if(memRes > 0) {
+					$('#vboxHostMemResPct').css({'width':''+(memResPct*2)+'px'});
+				} else {
+					$('#vboxHostMemResPct').hide();
+				}
+
+				// Labels
+				if(!showFree) {
+					$('#vboxHostMemUsedLblPct').html(trans('<nobr>%1 MB</nobr>').replace('%1',(mUsed)) + ' ('+trans('<nobr>%1%</nobr>').replace('%1',mUsedPct)+')');
+					$('#vboxHostMemFreeLbl').html(trans('<nobr>%1 MB</nobr>').replace('%1',avail));			
+				} else {
+					$('#vboxHostMemUsedLblPct').html(trans('<nobr>%1 MB</nobr>').replace('%1',mUsed));
+					$('#vboxHostMemFreeLbl').html('('+trans('<nobr>%1%</nobr>').replace('%1',Math.round(parseInt((avail / d['memorySize']) * 100)))+') ' + trans('<nobr>%1 MB</nobr>').replace('%1',avail));
+				}
+			};
+			
+			// Refresh at configured intervals
+			var interval = 5;
+			try {
+				interval = Math.max(3,parseInt($('#vboxIndex').data('vboxConfig').hostMemInfoRefreshInterval));
+			} catch (e) {
+				interval = 5;
+			}
+			
+			var vboxHostUpdateMeminfo = function() {
+				vboxAjaxRequest('hostGetMeminfo',{},function(d){
+					vboxHostShowMemInfo(d.memoryAvailable);		
+				});
+			};
+			vboxHostUpdateMeminfo();
+			
+			// Failsafe
+			if(isNaN(interval) || interval < 3) interval = 5;
+			
+			$('#vboxVMDetails').data('vboxHostMemInfoTimer',window.setInterval(vboxHostUpdateMeminfo,interval*1000));
+		
+		}
+
+	},
+		   
+	hostnetwork: {
+		title: 'Network',
+		icon: 'nw_16px.png',
+		rows: function(d) {
+			
+			var netRows = [];
+			
+			for(var i = 0; i < d['networkInterfaces'].length; i++) {		
+				
+				/* Interface Name*/
+				netRows[netRows.length] = {
+					title: d['networkInterfaces'][i].name + ' (' + trans(d['networkInterfaces'][i].status,'VBoxGlobal') + ')',
+					data: ''
+				};
+				
+
+				/* IPv4 Addr */
+				if(d['networkInterfaces'][i].IPAddress){
+					
+					netRows[netRows.length] = {
+						title: trans('IPv4 Address','UIGlobalSettingsNetwork'),
+						data: d['networkInterfaces'][i].IPAddress + ' / ' + d['networkInterfaces'][i].networkMask,
+						indented: true
+					};
+					
+				}
+				
+				/* IPv6 Address */
+				if(d['networkInterfaces'][i].IPV6Supported && d['networkInterfaces'][i].IPV6Address) {
+					
+					netRows[netRows.length] = {
+						title: trans('IPv6 Address','UIGlobalSettingsNetwork'),
+						data: d['networkInterfaces'][i].IPV6Address + ' / ' + d['networkInterfaces'][i].IPV6NetworkMaskPrefixLength,
+						indented: true
+					};
+				}
+				
+				/* Physical info */
+				netRows[netRows.length] = {
+					title: '',
+					data: trans(d['networkInterfaces'][i].mediumType) + (d['networkInterfaces'][i].hardwareAddress ? ' (' + d['networkInterfaces'][i].hardwareAddress + ')' : ''),
+					indented: true
+				};
+				
+				
+				/* VMs bound to NIC */
+				if(d['nics'][d['networkInterfaces'][i].name]) {
+					var vms = new Array();
+					for(var vmname in d['nics'][d['networkInterfaces'][i].name]) {
+						d['nics'][d['networkInterfaces'][i].name][vmname].sort();
+						var ads = new Array();
+						for(var n = 0; n < d['nics'][d['networkInterfaces'][i].name][vmname].length; n++) {
+							ads[ads.length] = trans("Adapter %1",'VBoxGlobal').replace('%1',d['nics'][d['networkInterfaces'][i].name][vmname][n]);
+						}
+						vms[vms.length] = vmname + ' (' + ads.join(', ') + ')';
+					}
+					vms.sort(strnatcasecmp);
+					
+					netRows[netRows.length] = {
+						title: '',
+						data: vms.join(', '),
+						indented: true
+					};
+				}
+				
+			}
+			return netRows;
+		}
+	},
+
+	hostdvddrives : {
+		title: 'CD/DVD Devices',
+		translationContext: 'UIActionPool',
+		icon: 'cd_16px.png',
+		condition: function(d) {
+			return d['DVDDrives'].length;
+		},
+		rows: function(d) {
+
+			var dvdRows = [];
+			
+			for(var i = 0; i < d['DVDDrives'].length; i++) {
+				dvdRows[dvdRows.length] = {
+					title: vboxMedia.getName(vboxMedia.getMediumById(d['DVDDrives'][i].id)),
+					data: ''
+				};
+			}
+			
+			return dvdRows;
+		}
+	},
+	
+	hostfloppydrives: {
+		title:'Floppy Devices',
+		translationContext: 'UIActionPool',
+		icon: "fd_16px.png",
+		condition: function(d) { return d['floppyDrives'].length; },
+		rows: function(d) {
+			
+			var fRows = [];
+			
+			for(var i = 0; i < d['floppyDrives'].length; i++) {		
+				
+				fRows[fRows.length] = {
+						title: vboxMedia.getName(vboxMedia.getMediumById(d['floppyDrives'][i].id)),
+						data: ''
+				};
+				
+			}
+
+			return fRows;
+		}
+	}
+};
+
+/**
+ * VM details sections used on details tab and snapshot pages
+ * @namespace vboxVMDetailsInfo
+ */
+
 var vboxVMDetailsSections = {
 	
 	/*
@@ -17,8 +288,9 @@ var vboxVMDetailsSections = {
 	 */
 	general: {
 		icon:'machine_16px.png',
-		title:trans('General', 'UIDetailsPagePrivate'),
+		title:'General',
 		settingsLink: 'General',
+		multiSelectDetailsTable: true,
 		rows : [
 		   {
 			   title: trans('Name', 'UIDetailsPagePrivate'),
@@ -41,8 +313,9 @@ var vboxVMDetailsSections = {
 	 */
 	system : {
 		icon:'chipset_16px.png',
-		title:trans('System', 'UIDetailsPagePrivate'),
+		title:'System',
 		settingsLink: 'System',
+		multiSelectDetailsTable: true,
 		rows : [
 		   {
 			   title: trans('Base Memory'),
@@ -63,8 +336,8 @@ var vboxVMDetailsSections = {
 			   title: trans("Boot Order"),
 			   callback: function(d) {
 					var bo = new Array();
-					for(var i = 0; i < data['bootOrder'].length; i++) {
-						bo[i] = trans(vboxDevice(data['bootOrder'][i]),'VBoxGlobal');
+					for(var i = 0; i < d['bootOrder'].length; i++) {
+						bo[i] = trans(vboxDevice(d['bootOrder'][i]),'VBoxGlobal');
 					}
 					return bo.join(', ');
 			   }
@@ -77,25 +350,25 @@ var vboxVMDetailsSections = {
 			   callback: function(d) {
 				   return (d['HWVirtExProperties'].Enabled ? trans('Enabled') : trans('Disabled'));
 			   },
-			   advancedViewOnly: true
+			   condition: function() { return $('#vboxIndex').data('vboxConfig').enableAdvancedView; }
 		   },{
 			   title: trans("Nested Paging"),
 			   callback: function(d) {
 				   return (d['HWVirtExProperties'].NestedPaging ? trans('Enabled') : trans('Disabled'));
 			   },
-			   advancedViewOnly: true
+			   condition: function() { return $('#vboxIndex').data('vboxConfig').enableAdvancedView; }
 		   },{
 			   title: trans("Large Pages"),
 			   callback: function(d) {
 				   return (d['HWVirtExProperties'].LargePages? trans('Enabled') : trans('Disabled'));
 			   },
-			   advancedViewOnly: true
+			   condition: function() { return $('#vboxIndex').data('vboxConfig').enableAdvancedView; }
 		   },{
 			   title: trans("Exclusive use of the hardware virtualization extensions"),
 			   callback: function(d) {
 				   return (d['HWVirtExProperties'].Exclusive ? trans('Enabled') : trans('Disabled'));
 			   },
-			   advancedViewOnly: true
+			   condition: function() { return $('#vboxIndex').data('vboxConfig').enableAdvancedView; } 
 		   }
 		]
 	},
@@ -105,9 +378,283 @@ var vboxVMDetailsSections = {
 	 */
 	preview : {
 		icon:'fullscreen_16px.png',
-		title:trans('Preview', 'UIDetailsPagePrivate'),
+		title:'Preview',
 		settingsLink: 'Display',
-		rows: []
+		condition: function() {
+			return !($('#vboxIndex').data('vboxConfig').noPreview);
+		},
+
+		/*
+		 * 
+		 * Preivew Update Menu
+		 *
+		 */
+		contextMenu : function() {
+			
+			var menu = $('#vboxDetailsPreviewMenu');
+			if(menu[0]) return menu;
+			
+			// Set defaults
+			if($('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] === undefined) {
+				if($('#vboxIndex').data('vboxConfig').previewUpdateInterval)
+					$('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] = $('#vboxIndex').data('vboxConfig').previewUpdateInterval;
+				else
+					$('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] = 3;
+			}
+			
+
+			/* Menu List */
+			var ul = $('<ul />')
+				.attr({'class':'contextMenu contextMenuNoBG','style':'display: none','id':'vboxDetailsPreviewMenu'})
+				.click(function(){$(this).hide();})
+				.bind('contextmenu', function() { return false; })
+				
+				// Menu setup for "open in new window"
+				.bind('beforeshow', function(e, d) {
+					
+					
+					if(d.state == 'Saved' || d.state == 'Running') {
+						$('#vboxDetailsViewSavedSS')
+							.css('display','')
+							.data({'vmid':d.id});
+					} else {
+						$('#vboxDetailsViewSavedSS').css('display', 'none');
+					}
+				});
+						
+
+			// Menu item to disable update
+			$('<li />')
+				.hover(function(){$(this).addClass('hover');},function(){$(this).removeClass('hover');})
+				.append(
+
+					$('<label />').append(
+
+						$('<input />')
+							.attr({'class':'vboxRadio','type':'radio','name':'vboxPreviewRadio','value':0})
+							.click(function(){vboxSetCookie("vboxPreviewUpdate","0");})
+							.prop('checked', $('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] == 0)
+						
+					).append(
+							
+						$('<span />')
+							.html(trans('Update Disabled','UIVMPreviewWindow'))
+					)
+					
+				).appendTo(ul);
+
+
+			// Update intervals
+			var ints = [3,5,10,20,30,60];
+			
+			// check for update interval
+			if($('#vboxIndex').data('vboxConfig').previewUpdateInterval && jQuery.inArray($('#vboxIndex').data('vboxConfig').previewUpdateInterval, ints) < 0) {
+				ints[ints.length] = $('#vboxIndex').data('vboxConfig').previewUpdateInterval;
+			}
+			if($('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] && $('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] > 0 && jQuery.inArray(parseInt($('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"]), ints) < 0) {
+				ints[ints.length] = $('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"];
+			}
+			ints.sort(function(a,b){
+				if(a == b) return 0;
+				return (a > b ? 1 : -1);
+			});
+
+			// Add each interval to menu
+			for(var i = 0; i < ints.length; i++) {
+				
+				var li = $('<li />');
+				
+				if(i==0) $(li).attr('class','separator');
+
+				var radio = $('<input />').attr({'class':'vboxRadio','type':'radio','name':'vboxPreviewRadio','value':ints[i]}).click(function(){
+					vboxSetCookie("vboxPreviewUpdate",$(this).val());		
+				}).prop('checked', $('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] == ints[i]);
+				
+				$('<label />')
+					.append(radio)
+					.append(
+						$('<span />')
+							.html(trans('Every %1 seconds','UIVMPreviewWindow').replace('%1',ints[i]))
+					)
+					.appendTo(li);
+
+				$(ul).append(li);
+				
+			}
+
+			/* Append "Open in new window" */
+			$('<li />')
+				.attr({'id':'vboxDetailsViewSavedSS','class':'separator','style':'display:none;text-align: center;'})
+				.click(function(){
+					window.open('screen.php?vm='+$(this).data('vmid')+'&full=1','vboxSC','toolbar=1,menubar=0,location=0,directories=0,status=true,resize=true');
+				}).append(
+					$('<span />')
+						.html(trans('Open in new window','UIVMPreviewWindow'))
+				).appendTo(ul);
+			
+			/* Hover */
+			$(ul).children().hover(
+				function(){$(this).addClass('hover');},
+				function(){$(this).removeClass('hover');}
+			);
+
+						
+			$(document).click(function(e){if(e.button!=2)$(ul).hide();});
+			
+			$('#vboxTabVMDetails').append(ul);
+			
+			return $('#vboxDetailsPreviewMenu');
+
+		},
+		noSnapshot: true,
+		multiSelectDetailsTable: true,
+		noFooter: true,
+		
+		/* For preview window fix for webkit based browsers */
+		__getBase64Image: function(img) {
+		    var canvas = document.createElement("canvas");
+		    canvas.width = img.width;
+		    canvas.height = img.height;
+		    var ctx = canvas.getContext("2d");
+		    ctx.drawImage(img, 0, 0);
+		    return canvas.toDataURL("image/png");
+		},
+		
+		onRender : function(d) {
+			
+			var w = $('#vboxIndex').data('vboxConfig')['previewWidth'];
+			
+			if(d.state != 'Running' && d.state != 'Saved')
+				return;
+			
+			__vboxDrawPreviewImg = new Image();			
+			__vboxDrawPreviewImg.onload = function() {
+
+				var baseStr = 'vboxDetailsGeneralTable-'+d.id;
+				var height = 0;
+				var width = 0;
+					
+				
+				// Error or machine not running
+				if(this.height <= 1) {
+
+					$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'none'}).attr('src','images/vbox/blank.gif');
+					$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','');
+					
+					width = $('#vboxIndex').data('vboxConfig')['previewWidth'];
+					height = width / $('#vboxIndex').data('vboxConfig')['previewAspectRatio'];
+					
+										
+				} else {
+
+					// Calculate height based on width
+					width = $('#vboxIndex').data('vboxConfig')['previewWidth'];
+					factor = width / this.width;
+					if(!factor) factor = 1;
+					height = this.height * factor;
+					
+					$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','none');
+					$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'','height':height+'px','width':width+'px'});
+					
+					// IE uses filter
+					if($.browser.msie) {
+						
+						if(d.state == 'Running') {
+							
+							// Setting background URL keeps image from being requested again, but does not allow us to set
+							// the size of the image. This is fine, since the image is returned in the size requested.
+							$('#'+baseStr+' img.vboxDetailsPreviewImg').css({"filter":""}).parent().css({'background':'url('+this.src+')'});
+						
+						} else {
+							
+							// This causes the image to be requested again, but is the only way to size the background image.
+							// Saved preview images are not returned in the size requested and must be resized at runtime by
+							// the browser.
+							$('#'+baseStr+' img.vboxDetailsPreviewImg').css({"filter":"progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled='true', src='"+this.src+"', sizingMethod='scale')"}).parent().css({'background':'#000'});
+						}
+						
+					// Webkit based browsers will re-download the image if we just set the image source
+					} else if($.browser.webkit) {
+						
+						$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'background-image':'url('+vboxVMDetailsSections.preview.__getBase64Image(this)+')'});
+					
+					} else {
+
+						$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'background-image':'url('+this.src+')','background-size':(width+1) +'px ' + (height+1)+'px'});
+						
+					}
+					
+				}
+				$('#'+baseStr+' div.vboxDetailsPreviewWrap').css({'height':height+'px','width':width+'px'});
+				$('#'+baseStr+' img.vboxPreviewMonitor').css('width',width+'px');
+				$('#'+baseStr+' img.vboxPreviewMonitorSide').css('height',height+'px');
+			};
+
+			// Update disabled? State not Running or Saved
+			if($('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] == 0 || (d.state != 'Running' && d.state != 'Saved')) {
+				__vboxDrawPreviewImg.height = 0;
+				__vboxDrawPreviewImg.onload();
+			} else {
+				// Running VMs get random numbers. Saved are based on last state change.
+				// Try to let the browser cache Saved screen shots
+				var randid = d.lastStateChange;
+				if(d.state == 'Running') {
+					var currentTime = new Date();
+					randid = Math.floor(currentTime.getTime() / 1000);			
+				}
+				__vboxDrawPreviewImg.src = 'screen.php?width='+(w)+'&vm='+d.id+'&randid='+randid;
+			}
+
+
+		},
+		rows: function(d) {
+
+			var width = $('#vboxIndex').data('vboxConfig')['previewWidth'];
+			if(!width) width = $('#vboxIndex').data('vboxConfig')['previewWidth'] = 180;
+
+			var height = width / $('#vboxIndex').data('vboxConfig')['previewAspectRatio'];
+
+			var divOut1 = "<div class='vboxDetailsPreviewVMName' style='overflow:hidden;position:relative;height:"+height+"px;width:"+width+"px' >" +
+				"<div style='position:relative;left:0px;display:table-cell;vertical-align:middle;padding:4px;color:#fff;font-weight:bold;text-align:center;height:"+height+"px;width:"+width+"px;" +
+				($.browser.msie ? "filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=\"true\", src=\"images/monitor_glossy.png\", sizingMethod=\"scale\")" : "" +
+					"background:url(images/monitor_glossy.png) top left no-repeat;-moz-background-size:100% 100%;background-size:"+(width+1) +"px " + (height+1)+"px;-webkit-background-size:100% 100%") +
+				"'>"+$('<div />').html(d.name).text()+"</div>"+
+				"</div>";
+
+			return [
+			        {
+			        	data : "<tr style='vertical-align: middle'>"+
+							"<td style='text-align: center' colspan='2'>"+
+								"<table class='vboxInvisible vboxPreviewTable' style='margin-left:auto;margin-right:auto;'>"+
+									"<tr style='vertical-align:bottom; padding:0px; margin:0px;'>"+
+										"<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_tl.png' style='width:15px;height:17px;'/></td>"+
+										"<td class='vboxInvisible'><img src='images/monitor_top.png' class='vboxPreviewMonitor' style='height:17px;width:"+width+"px'/></td>"+
+										"<td class='vboxInvisible' style='text-align:left'><img src='images/monitor_tr.png' style='width:15px;height:17px;'/></td>"+
+									"</tr>"+
+									"<tr>"+
+										"<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_left.png' style='width:15px;height:"+height+"px' class='vboxPreviewMonitorSide' /></td>"+
+										"<td class='vboxInvisible'><div class='vboxDetailsPreviewWrap "+ (d.state == 'Saved' ? 'vboxPreviewSaved' : '') +"' style='width: "+width+"px; height:"+height+"px; text-align:center;background-color:#000;border:0px;display:table;#position:relative;background-repeat: no-repeat;padding:0px;margin:0px;'>"+
+											"<img class='vboxDetailsPreviewImg' src='images/monitor_glossy.png' vspace='0px' hspace='0px' "+
+											"style='display:none;top:0px;margin:0px;border:0px;padding;0px;"+
+											"background-position:top left;background-repeat:no-repeat;"+
+											"-moz-background-size:100% 100%;background-size:100% 100%;-webkit-background-size:100% 100%;background-spacing:0px 0px;"+
+											"position:relative;height:"+height+"px;width:"+width+"px;float:left' />"+
+											divOut1+
+										"</div></td>"+
+										"<td class='vboxInvisible' style='text-align:left' ><img src='images/monitor_right.png' style='width:14px;height:"+height+"px' class='vboxPreviewMonitorSide' /></td>"+
+									"</tr>"+
+									"<tr style='vertical-align:top;'>"+
+										"<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_bl.png' style='width:15px;height:17px;'/></td>"+
+										"<td class='vboxInvisible'><img src='images/monitor_bottom.png' class='vboxPreviewMonitor' style='height:17px;width:"+width+"px'/></td>"+
+										"<td class='vboxInvisible' style='text-align:left'><img src='images/monitor_br.png' style='width:15px;height:17px;'/></td>"+
+									"</tr>"+
+								"</table>"+													
+							"</td>"+
+						"</tr>",
+						rawRow: true
+			        }
+				];
+		}
 	},
 	
 	/*
@@ -115,21 +662,21 @@ var vboxVMDetailsSections = {
 	 */
 	display : {
 		icon: 'vrdp_16px.png',
-		title:trans('Display', 'UIDetailsPagePrivate'),
+		title:'Display',
 		settingsLink: 'Display',
 		rows: [
 		   {
-			   title: trans("Video Memory"),
+			   title: "Video Memory",
 			   callback: function(d) {
 				   return trans('<nobr>%1 MB</nobr>').replace('%1',d['VRAMSize']);
 			   }
 		   },{
-			   title: trans('Remote Desktop Server Port'),
+			   title: 'Remote Desktop Server Port',
 			   callback: function(d, config) {
 				   
-				   var chost = vboxGetVRDEAddress(data);
+				   var chost = vboxGetVRDEAddress(d);
 				
-				   var rowStr = data['VRDEServer']['ports'];
+				   var rowStr = d['VRDEServer']['ports'];
 				
 				   // Display links?
 				   
@@ -152,7 +699,7 @@ var vboxVMDetailsSections = {
 				   return (d['VRDEServer'] && d['VRDEServer']['VRDEExtPack'] && d['VRDEServer']['enabled'] && d['VRDEServer']['ports']);
 			   }
 		   },{
-			   title: trans("Remote Desktop Server"),
+			   title: "Remote Desktop Server",
 			   callback: function(d) {
 				   return trans('Disabled','VBoxGlobal',null,'details report (VRDE Server)');
 			   },
@@ -168,32 +715,34 @@ var vboxVMDetailsSections = {
 	 */
 	storage : {
 		icon:'hd_16px.png',
-		title: trans('Storage', 'UIDetailsPagePrivate'),
+		title: 'Storage',
 		settingsLink: 'Storage',
-		rows: function(d,config) {
+		rows: function(d) {
+			
+			var advancedView = $('#vboxIndex').data('vboxConfig').enableAdvancedConfig;
 			
 			var rows = new Array();
 			
-			for(var a = 0; a < data['storageControllers'].length; a++) {
+			for(var a = 0; a < d['storageControllers'].length; a++) {
 				
-				var con = data['storageControllers'][a];
+				var con = d['storageControllers'][a];
 				
 				// Controller name
 				rows[rows.length] = {
-						title: $('<div />').text(con.name).html() + ((con.bus == 'SATA' && config.advancedView) ? ' (' + con.portCount + ')' : ''),
+						title: $('<div />').text(con.name).html() + ((con.bus == 'SATA' && advancedView) ? ' (' + con.portCount + ')' : ''),
 						callback: function() { return ''; }
 				};
 						
 				// Each attachment.
-				for(var b = 0; b < data['storageControllers'][a]['mediumAttachments'].length; b++) {
+				for(var b = 0; b < d['storageControllers'][a]['mediumAttachments'].length; b++) {
 					
-					var portName = vboxStorage[data['storageControllers'][a].bus].slotName(data['storageControllers'][a]['mediumAttachments'][b].port, data['storageControllers'][a]['mediumAttachments'][b].device);
+					var portName = vboxStorage[d['storageControllers'][a].bus].slotName(d['storageControllers'][a]['mediumAttachments'][b].port, d['storageControllers'][a]['mediumAttachments'][b].device);
 
 					// Medium / host device info
-					var medium = (data['storageControllers'][a]['mediumAttachments'][b].medium && data['storageControllers'][a]['mediumAttachments'][b].medium.id ? vboxMedia.getMediumById(data['storageControllers'][a]['mediumAttachments'][b].medium.id) : null);
+					var medium = (d['storageControllers'][a]['mediumAttachments'][b].medium && d['storageControllers'][a]['mediumAttachments'][b].medium.id ? vboxMedia.getMediumById(d['storageControllers'][a]['mediumAttachments'][b].medium.id) : null);
 					
 					// Do we need to reload media?
-					if(data['storageControllers'][a]['mediumAttachments'][b].medium && data['storageControllers'][a]['mediumAttachments'][b].medium.id && medium === null) {
+					if(d['storageControllers'][a]['mediumAttachments'][b].medium && d['storageControllers'][a]['mediumAttachments'][b].medium.id && medium === null) {
 						
 						// Already tried to reload media, don't get caught in a loop
 						if(!$('#vboxTabVMDetails').data('vboxMediaReload')) {
@@ -203,10 +752,10 @@ var vboxVMDetailsSections = {
 							$('#vboxIndex').trigger('vmloading');
 							
 							var l = new vboxLoader();
-							l.add('machineGetDetails',function(d){return;},{'vm':$('#vboxIndex').data('selectedVM').id,'force_refresh':1});
+							l.add('machineGetDetails',function(d){return;},{'vm':d.id,'force_refresh':1});
 							l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);},{'force_refresh':1});
 							l.onLoad = function() {
-								$('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]);
+								$('#vboxIndex').trigger('vmselect',[d.id]);
 							};
 							l.run();
 							return;
@@ -225,7 +774,7 @@ var vboxVMDetailsSections = {
 					portDesc = vboxMedia.mediumPrint(medium,false,it);
 
 					rows[rows.length] = {
-						title: portName + (data['storageControllers'][a]['mediumAttachments'][b].type == 'DVD' ? ' ' + trans('(CD/DVD)') : ''),
+						title: portName + (d['storageControllers'][a]['mediumAttachments'][b].type == 'DVD' ? ' ' + trans('(CD/DVD)') : ''),
 						indented: true,
 						data: portDesc,
 						html: true
@@ -244,7 +793,7 @@ var vboxVMDetailsSections = {
 	 */
 	audio : {
 		icon:'sound_16px.png',
-		title: trans('Audio', 'UIDetailsPagePrivate'),
+		title:'Audio',
 		settingsLink: 'Audio',
 		rows: [
 		    {
@@ -253,13 +802,13 @@ var vboxVMDetailsSections = {
 			    condition: function(d) { return !d['audioAdapter']['enabled']; },
 			    data: ''
 		    },{
-		    	title: trans("Host Driver"),
+		    	title: "Host Driver",
 		    	callback: function(d) {
 		    		return trans(vboxAudioDriver(d['audioAdapter']['audioDriver']),'VBoxGlobal');
 		    	},
 		    	condition: function(d) { return d['audioAdapter']['enabled']; },
 		    },{
-		    	title: trans("Controller"),
+		    	title: "Controller",
 		    	callback: function (d) {
 		    		return trans(vboxAudioController(d['audioAdapter']['audioController']),'VBoxGlobal');
 		    	},
@@ -273,7 +822,7 @@ var vboxVMDetailsSections = {
 	 */
 	network : {
 		icon: 'nw_16px.png',
-		title: trans('Network', 'UIDetailsPagePrivate'),
+		title: 'Network',
 		settingsLink: 'Network',
 		rows: function(d) {
 			
@@ -338,7 +887,7 @@ var vboxVMDetailsSections = {
 				};
 				
 			// Link nic to guest networking info?
-			} else if(links && d['state'] == 'Running') {
+			} else if(d['state'] == 'Running') {
 				
 				rows[rows.length] = {
 					title: '',
@@ -358,14 +907,13 @@ var vboxVMDetailsSections = {
 	 */
 	serialports : {
 		icon: 'serial_port_16px.png',
-		title: trans('Serial Ports', 'UIDetailsPagePrivate'),
+		title: 'Serial Ports',
 		settingsLink: 'SerialPorts',
 		rows: function(d) {
 			
 			var rows = [];
 			
 			var vboxDetailsTableSPorts = 0;
-			var vboxSP = new vboxSerialPorts();
 			for(var i = 0; i < d['serialPorts'].length; i++) {
 				
 				p = d['serialPorts'][i];
@@ -373,7 +921,7 @@ var vboxVMDetailsSections = {
 				if(!p.enabled) continue;
 				
 				// compose extra info
-				var xtra = vboxSP.getPortName(p.IRQ,p.IOBase);
+				var xtra = vboxSerialPorts.getPortName(p.IRQ,p.IOBase);
 				
 				var mode = p.hostMode;
 				xtra += ', ' + trans(vboxSerialMode(mode),'VBoxGlobal');
@@ -398,6 +946,8 @@ var vboxVMDetailsSections = {
 					html: true
 				};
 			}
+			
+			return rows;
 		
 		}
 	},
@@ -407,7 +957,7 @@ var vboxVMDetailsSections = {
 	 */
 	parallelports: {
 		icon: 'parallel_port_16px.png',
-		title: trans('Parallel Ports'),
+		title: 'Parallel Ports',
 		settingsLink: 'ParallelPorts',
 		condition: function() { return $('#vboxIndex').data('vboxConfig').enableLPTConfig; },
 		rows: function(d) {
@@ -415,7 +965,6 @@ var vboxVMDetailsSections = {
 			var rows = [];
 			
 			var vboxDetailsTableSPorts = 0;
-			var vboxSP = new vboxParallelPorts();
 			for(var i = 0; i < d['parallelPorts'].length; i++) {
 				
 				p = d['parallelPorts'][i];
@@ -423,7 +972,7 @@ var vboxVMDetailsSections = {
 				if(!p.enabled) continue;
 				
 				// compose extra info
-				var xtra = trans(vboxSP.getPortName(p.IRQ,p.IOBase));
+				var xtra = trans(vboxParallelPorts.getPortName(p.IRQ,p.IOBase));
 				xtra += ' (' + $('<div />').text(p.path).html() + ')';
 				
 				rows[rows.length] = {
@@ -450,7 +999,7 @@ var vboxVMDetailsSections = {
 	 */
 	usb : {
 		icon: 'usb_16px.png',
-		title: trans('USB', 'UIDetailsPagePrivate'),
+		title: 'USB',
 		settingsLink: 'USB',
 		rows: function(d) {
 			
@@ -487,7 +1036,8 @@ var vboxVMDetailsSections = {
 	 */
 	sharedfolders : {
 		icon: 'shared_folder_16px.png',
-		title: trans('Shared Folders', 'UIDetailsPagePrivate', 0, 'details report (shared folders)'),
+		title: 'Shared Folders',
+		translationComment : 'details report (shared folders)',
 		settingsLink: 'SharedFolders',
 		rows: function(d) {
 
@@ -511,14 +1061,14 @@ var vboxVMDetailsSections = {
 	 */
 	description: {
 		icon: 'description_16px.png',
-		title: trans('Description', 'UIDetailsPagePrivate'),
+		title: 'Description',
 		settingsLink: 'General:2',
 		rows : function(d) {
 			return [{
 				title: '',
 				data: $('<tr />').attr({'class':'vboxDetailRow'}).append(
 						$('<td />').attr({'class':'vboxDetailDescriptionCell','colspan':'2'})
-							.html(data.description.length ? $('<div />').html(data.description).text() : '<span class="vboxDetailsNone">'+trans("None",null,null,'details report (description)')+'</span>')
+							.html(d.description.length ? $('<div />').html(d.description).text() : '<span class="vboxDetailsNone">'+trans("None",null,null,'details report (description)')+'</span>')
 				),
 				rawRow: true
 			}];
@@ -535,18 +1085,18 @@ var vboxVMActions = {
 		
 	/** Invoke the new virtual machine wizard */
 	'new':{
-			'label':'New...',
-			'toolbar_label':'New',
-			'icon':'vm_new',
-			'icon_16':'new',
-			'click': function(){vboxWizardNewVMInit(function(){return;});}
+			label:'New...',
+			toolbar_label:'New',
+			icon:'vm_new',
+			icon_16:'new',
+			click: function(){vboxWizardNewVMInit(function(){return;});}
 	},
 	
 	/** Add a virtual machine via its settings file */
-	'add': {
-		'label':'Add...',
-		'icon':'vm_add',
-		'click':function(){
+	add: {
+		label:'Add...',
+		icon:'vm_add',
+		click:function(){
 			vboxFileBrowser($('#vboxIndex').data('vboxSystemProperties').defaultMachineFolder,function(f){
 				if(!f) return;
 				var l = new vboxLoader();
@@ -564,13 +1114,13 @@ var vboxVMActions = {
 	},
 
 	/** Start VM */
-	'start' : {
-		'name' : 'start',
-		'label' : 'Start',
-		'icon' : 'vm_start',
-		'icon_16' : 'start',
-		'context' : 'VBoxSelectorWnd',
-		'click' : function (btn) {
+	start: {
+		name : 'start',
+		label : 'Start',
+		icon : 'vm_start',
+		icon_16 : 'start',
+		context : 'VBoxSelectorWnd',
+		click : function (btn) {
 		
 			// Disable toolbar button that triggered this action?
 			if(btn && btn.toolbar) btn.toolbar.disableButton(btn);
@@ -624,16 +1174,16 @@ var vboxVMActions = {
 			
 			
 		},
-		'enabled' : function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Paused','Saved','Aborted','Teleported']) > -1));}	
+		enabled : function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Paused','Saved','Aborted','Teleported']) > -1));}	
 	},
 	
 	/** Invoke VM settings dialog */
-	'settings': {
-		'label':'Settings...',
-		'toolbar_label':'Settings',
-		'icon':'vm_settings',
-		'icon_16':'settings',
-		'click':function(){
+	settings: {
+		label:'Settings...',
+		toolbar_label:'Settings',
+		icon:'vm_settings',
+		icon_16:'settings',
+		click:function(){
 			
 			vboxVMsettingsInit($('#vboxIndex').data('selectedVM').id,function(){
 				$('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]);
@@ -643,22 +1193,22 @@ var vboxVMActions = {
 	},
 
 	/** Clone a VM */
-	'clone': {
-		'label':'Clone...',
-		'icon':'vm_clone',
-		'icon_16':'vm_clone',
-		'icon_disabled':'vm_clone_disabled',
-		'click':function(){vboxWizardCloneVMInit(function(){return;},{'vm':$('#vboxIndex').data('selectedVM')});},
-		'enabled' : function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Aborted','Teleported','Saved']) > -1));}
+	clone: {
+		label:'Clone...',
+		icon:'vm_clone',
+		icon_16:'vm_clone',
+		icon_disabled:'vm_clone_disabled',
+		click:function(){vboxWizardCloneVMInit(function(){return;},{vm:$('#vboxIndex').data('selectedVM')});},
+		enabled: function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Aborted','Teleported','Saved']) > -1));}
 	},
 
 	
 	/** Refresh a VM's details */
-	'refresh': {
-		'label':'Refresh',
-		'icon':'refresh',
-		'icon_disabled':'refresh_disabled',
-		'click':function(){
+	refresh: {
+		label:'Refresh',
+		icon:'refresh',
+		icon_disabled:'refresh_disabled',
+		click:function(){
 			var l = new vboxLoader();
 			l.add('machineGetDetails',function(d){
 				// Special case for host refresh
@@ -676,14 +1226,14 @@ var vboxVMActions = {
 			}
 			l.run();
     	},
-		'enabled':function(vm){ return (vm !== undefined); }
+		enabled:function(vm){ return (vm !== undefined); }
     },
     
     /** Delete / Remove a VM */
-    'remove' : {
-		'label':'Remove',
-		'icon':'delete',
-		'click':function(){
+    remove: {
+		label:'Remove',
+		icon:'delete',
+		click:function(){
 
 			var buttons = {};
 			buttons[trans('Delete all files','UIMessageCenter')] = function(){
@@ -719,14 +1269,14 @@ var vboxVMActions = {
 			
     	
     	},
-    	'enabled' : function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Aborted','Teleported','Inaccessible','Saved']) > -1));}
+    	enabled: function (vm) { return (vm && (jQuery.inArray(vm.state,['PoweredOff','Aborted','Teleported','Inaccessible','Saved']) > -1));}
     },
     
     /** Discard VM State */
-    'discard' : {
-		'label':'Discard Saved State',
-		'icon':'discard',
-		'click':function(){
+    discard: {
+		label:'Discard Saved State',
+		icon:'discard',
+		click:function(){
 			
 			var buttons = {};
 			buttons[trans('Discard','UIMessageCenter')] = function(){
@@ -738,66 +1288,66 @@ var vboxVMActions = {
 			};
 			vboxConfirm(trans('<p>Are you sure you want to discard the saved state of the virtual machine <b>%1</b>?</p><p>This operation is equivalent to resetting or powering off the machine without doing a proper shutdown of the guest OS.</p>','UIMessageCenter').replace('%1',$('#vboxIndex').data('selectedVM').name),buttons);
 		},
-		'enabled':function(vm){ return (vm && vm.state == 'Saved'); }
+		enabled:function(vm){ return (vm && vm.state == 'Saved'); }
     },
     
     /** Show VM Logs */
-    'logs' : {
-		'label':'Show Log...',
-		'icon':'show_logs',
-		'icon_disabled':'show_logs_disabled',
-		'click':function(){
+    logs: {
+		label:'Show Log...',
+		icon:'show_logs',
+		icon_disabled:'show_logs_disabled',
+		click:function(){
     		vboxShowLogsDialogInit($('#vboxIndex').data('selectedVM').id);
 		},
-		'enabled':function(vm){ return (vm && vm.id && vm.id != 'host'); }
+		enabled:function(vm){ return (vm && vm.id && vm.id != 'host'); }
     },
 
     /** Save the current VM State */
-	'savestate' : {
-		'label' : 'Save the machine state',
-		'icon' : 'fd',
-		'context' : 'UIVMCloseDialog',
-		'stop_action' : true,
-		'enabled' : function(vm){ return (vm && vm.state == 'Running'); },
-		'click' : function() {vboxVMActions.powerAction('savestate');}
+	savestate: {
+		label: 'Save the machine state',
+		icon: 'fd',
+		context: 'UIVMCloseDialog',
+		stop_action: true,
+		enabled: function(vm){ return (vm && vm.state == 'Running'); },
+		click: function() {vboxVMActions.powerAction('savestate');}
 	},
 
 	/** Send ACPI Power Button to VM */
-	'powerbutton' : {
-		'label' : 'ACPI Shutdown',
-		'icon' : 'acpi',
-		'stop_action' : true,
-		'enabled' : function(vm){ return (vm && vm.state == 'Running'); },
-		'click' : function() {vboxVMActions.powerAction('powerbutton');}
+	powerbutton: {
+		label: 'ACPI Shutdown',
+		icon: 'acpi',
+		stop_action: true,
+		enabled: function(vm){ return (vm && vm.state == 'Running'); },
+		click: function() {vboxVMActions.powerAction('powerbutton');}
 	},
 	
 	/** Pause a running VM */
-	'pause' : {
-		'label' : 'Pause',
-		'icon' : 'pause',
-		'stop_action' : true,
-		'icon_disabled' : 'pause_disabled',
-		'enabled' : function(vm){ return (vm && vm.state == 'Running'); },
-		'click' : function() {vboxVMActions.powerAction('pause'); }
+	pause: {
+		label: 'Pause',
+		icon: 'pause',
+		stop_action: true,
+		icon_disabled: 'pause_disabled',
+		enabled: function(vm){ return (vm && vm.state == 'Running'); },
+		click: function() {vboxVMActions.powerAction('pause'); }
 	},
 	
 	/** Power off  a VM */
-	'powerdown' : {
-		'label' : 'Power off the machine',
-		'icon' : 'poweroff',
-		'stop_action' : true,
-		'context' : 'UIVMCloseDialog',
-		'enabled' : function(vm) { return (vm && jQuery.inArray(vm.state,['Running','Paused','Stuck']) > -1); },
-		'click' : function() {vboxVMActions.powerAction('powerdown'); }
+	powerdown: {
+		label: 'Power off the machine',
+		icon: 'poweroff',
+		stop_action: true,
+		context: 'UIVMCloseDialog',
+		enabled: function(vm) { return (vm && jQuery.inArray(vm.state,['Running','Paused','Stuck']) > -1); },
+		click: function() {vboxVMActions.powerAction('powerdown'); }
 	},
 	
 	/** Reset a VM */
-	'reset' : {
-		'label' : 'Reset',
-		'icon' : 'reset',
-		'stop_action' : true,
-		'enabled' : function(vm){ return (vm && vm.state == 'Running'); },
-		'click' : function() {
+	reset: {
+		label: 'Reset',
+		icon: 'reset',
+		stop_action: true,
+		enabled: function(vm){ return (vm && vm.state == 'Running'); },
+		click: function() {
 			var buttons = {};
 			buttons[trans('Reset','UIMessageCenter')] = function() {
 				$(this).remove();
@@ -808,22 +1358,22 @@ var vboxVMActions = {
 	},
 	
 	/** Stop actions list*/
-	'stop_actions' : ['savestate','powerbutton','pause','powerdown','reset'],
+	stop_actions: ['savestate','powerbutton','pause','powerdown','reset'],
 
 	/** Stop a VM */
-	'stop' : {
-		'name' : 'stop',
-		'label' : 'Stop',
-		'icon' : 'vm_poweroff',
-		'menu' : true,
-		'click' : function () { return true; /* handled by stop context menu */ },
-		'enabled' : function (vm) {
+	stop: {
+		name: 'stop',
+		label: 'Stop',
+		icon: 'vm_poweroff',
+		menu: true,
+		click: function () { return true; /* handled by stop context menu */ },
+		enabled: function (vm) {
 			return (vm && (jQuery.inArray(vm.state,['Running','Paused','Stuck']) > -1));
 		}
 	},
 	
 	/** Power Action Helper function */
-	'powerAction' : function(pa){
+	powerAction: function(pa){
 		icon =null;
 		switch(pa) {
 			case 'powerdown': fn = 'powerDown'; icon='progress_poweroff_90px.png'; break;
@@ -858,7 +1408,6 @@ var vboxMedia = {
 	/**
 	 * Return a printable string for medium m
 	 * @static
-	 * @function
 	 */
 	mediumPrint : function(m,nosize,usehtml) {
 		var name = vboxMedia.getName(m);
@@ -1194,9 +1743,6 @@ function vboxWizard(name, title, bg, icon) {
 		
 		l.onLoad = function(){
 		
-			var bmesg = '<p>'+trans('Use the <b>%1</b> button to go to the next page of the wizard and the <b>%2</b> button to return to the previous page. You can also press <b>%3</b> if you want to cancel the execution of this wizard.</p>','QIWizardPage').replace('%1',self.nextText).replace('%2',self.backText).replace('%3',self.cancelText);
-			$('#'+self.name+'Content').find('.vboxWizButtonsMessage').html(bmesg);
-			
 			// Opera hidden select box bug
 			////////////////////////////////
 			if($.browser.opera) {
@@ -1670,28 +2216,28 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	self.buttons = {
 			
 		HardDisk : {
-			'name' : 'mselecthdbtn',
-			'label' : 'Set up the virtual hard disk',
-			'icon' : 'hd',
-			'click' : function () {
+			name : 'mselecthdbtn',
+			label : 'Set up the virtual hard disk',
+			icon : 'hd',
+			click : function () {
 				return;				
 			}
 		},
 		
 		DVD : {
-			'name' : 'mselectcdbtn',
-			'label' : 'Set up the virtual CD/DVD drive',
-			'icon' : 'cd',
-			'click' : function () {
+			name : 'mselectcdbtn',
+			label : 'Set up the virtual CD/DVD drive',
+			icon : 'cd',
+			click : function () {
 				return;				
 			}
 		},
 	
 		Floppy : {
-			'name' : 'mselectfdbtn',
-			'label' : 'Set up the virtual floppy drive',
-			'icon' : 'fd',
-			'click' : function () {
+			name : 'mselectfdbtn',
+			label : 'Set up the virtual floppy drive',
+			icon : 'fd',
+			click : function () {
 				return;				
 			}
 		}
@@ -2733,14 +3279,14 @@ function vboxLoader() {
  * @constructor
  * @class vboxSerialPorts
  */
-function vboxSerialPorts() {
+var vboxSerialPorts = {
 	
-	this.ports = [
+	ports : [
       { 'name':"COM1", 'irq':4, 'port':'0x3F8' },
       { 'name':"COM2", 'irq':3, 'port':'0x2F8' },
       { 'name':"COM3", 'irq':4, 'port':'0x3E8' },
       { 'name':"COM4", 'irq':3, 'port':'0x2E8' },
-	];
+	],
 	
 	/**
 	 * Return port name based on irq and port
@@ -2748,28 +3294,28 @@ function vboxSerialPorts() {
 	 * @param {String} port - IO port
 	 * @return {String} port name
 	 */
-	this.getPortName = function(irq,port) {
-		for(var i = 0; i < this.ports.length; i++) {
-			if(this.ports[i].irq == irq && this.ports[i].port.toUpperCase() == port.toUpperCase())
-				return this.ports[i].name;
+	getPortName : function(irq,port) {
+		for(var i = 0; i < vboxSerialPorts.ports.length; i++) {
+			if(vboxSerialPorts.ports[i].irq == irq && vboxSerialPorts.ports[i].port.toUpperCase() == port.toUpperCase())
+				return vboxSerialPorts.ports[i].name;
 		}
 		return 'User-defined';
-	};
+	}
 	
-}
+};
 
 /**
  * LPT port object
  * @constructor
  * @class vboxParallelPorts
  */
-function vboxParallelPorts() {
+var vboxParallelPorts = {
 	
-	this.ports = [
+	ports : [
       { 'name':"LPT1", 'irq':7, 'port':'0x3BC' },
       { 'name':"LPT2", 'irq':5, 'port':'0x378' },
       { 'name':"LPT3", 'irq':5, 'port':'0x278' }
-	];
+	],
 
 	/**
 	 * Return port name based on irq and port
@@ -2778,15 +3324,15 @@ function vboxParallelPorts() {
 	 * @param {String} port - IO port
 	 * @return {String} port name
 	 */	
-	this.getPortName = function(irq,port) {
-		for(var i = 0; i < this.ports.length; i++) {
-			if(this.ports[i].irq == irq && this.ports[i].port.toUpperCase() == port.toUpperCase())
-				return this.ports[i].name;
+	getPortName : function(irq,port) {
+		for(var i = 0; i < vboxParallelPorts.ports.length; i++) {
+			if(vboxParallelPorts.ports[i].irq == irq && vboxParallelPorts.ports[i].port.toUpperCase() == port.toUpperCase())
+				return vboxParallelPorts.ports[i].name;
 		}
 		return 'User-defined';
-	};
+	}
 	
-}
+};
 
 
 /**
@@ -2812,11 +3358,11 @@ var vboxStorage = {
 	},
 	
 	IDE : {
-		'maxPortCount' : 2,
-		'maxDevicesPerPortCount' : 2,
-		'types':['PIIX3','PIIX4','ICH6' ],
-		'ignoreFlush' : true,
-		'slotName' : function(p,d) {
+		maxPortCount : 2,
+		maxDevicesPerPortCount : 2,
+		types :['PIIX3','PIIX4','ICH6' ],
+		ignoreFlush : true,
+		slotName : function(p,d) {
 			switch(p+'-'+d) {
 				case '0-0' : return (trans('IDE Primary Master','VBoxGlobal'));
 				case '0-1' : return (trans('IDE Primary Slave','VBoxGlobal'));
@@ -2824,8 +3370,8 @@ var vboxStorage = {
 				case '1-1' : return (trans('IDE Secondary Slave','VBoxGlobal'));
 			}
 		},
-		'driveTypes' : ['dvd','disk'],
-		'slots' : function() { return {
+		driveTypes : ['dvd','disk'],
+		slots : function() { return {
 		          	'0-0' : (trans('Primary','VBoxGlobal') + ' ' + trans('Master','VBoxGlobal')),
 		          	'0-1' : (trans('Primary','VBoxGlobal') + ' ' + trans('Slave','VBoxGlobal')),
 		          	'1-0' : (trans('Secondary','VBoxGlobal') + ' ' + trans('Master','VBoxGlobal')),
@@ -2835,13 +3381,13 @@ var vboxStorage = {
 	},
 		
 	SATA : {
-		'maxPortCount' : 30,
-		'maxDevicesPerPortCount' : 1,
-		'ignoreFlush' : true,
-		'types' : ['IntelAhci'],
-		'driveTypes' : ['dvd','disk'],
-		'slotName' : function(p,d) { return trans('SATA Port %1','VBoxGlobal').replace('%1',p); },
-		'slots' : function() {
+		maxPortCount : 30,
+		maxDevicesPerPortCount : 1,
+		ignoreFlush : true,
+		types : ['IntelAhci'],
+		driveTypes : ['dvd','disk'],
+		slotName : function(p,d) { return trans('SATA Port %1','VBoxGlobal').replace('%1',p); },
+		slots : function() {
 					var s = {};
 					for(var i = 0; i < 30; i++) {
 						s[i+'-0'] = trans('SATA Port %1','VBoxGlobal').replace('%1',i);
@@ -2851,13 +3397,13 @@ var vboxStorage = {
 	},
 		
 	SCSI : {
-		'maxPortCount' : 16,
-		'maxDevicesPerPortCount' : 1,
-		'driveTypes' : ['disk'],
-		'types' : ['LsiLogic','BusLogic'],
-		'ignoreFlush' : true,
-		'slotName' : function(p,d) { return trans('SCSI Port %1','VBoxGlobal').replace('%1',p); },
-		'slots' : function() {
+		maxPortCount : 16,
+		maxDevicesPerPortCount : 1,
+		driveTypes : ['disk'],
+		types : ['LsiLogic','BusLogic'],
+		ignoreFlush : true,
+		slotName : function(p,d) { return trans('SCSI Port %1','VBoxGlobal').replace('%1',p); },
+		slots : function() {
 						var s = {};
 						for(var i = 0; i < 16; i++) {
 							s[i+'-0'] = trans('SCSI Port %1','VBoxGlobal').replace('%1',i);
@@ -2867,29 +3413,29 @@ var vboxStorage = {
 	},
 		
 	Floppy : {
-		'maxPortCount' : 1,
-		'maxDevicesPerPortCount' : 2,
-		'types' : ['I82078'],
-		'driveTypes' : ['floppy'],
-		'slotName' : function(p,d) { return trans('Floppy Device %1','VBoxGlobal').replace('%1',d); },
-		'slots' : function() { return { '0-0':trans('Floppy Device %1','VBoxGlobal').replace('%1','0'), '0-1':trans('Floppy Device %1','VBoxGlobal').replace('%1','1') }; }
+		maxPortCount : 1,
+		maxDevicesPerPortCount : 2,
+		types : ['I82078'],
+		driveTypes : ['floppy'],
+		slotName : function(p,d) { return trans('Floppy Device %1','VBoxGlobal').replace('%1',d); },
+		slots : function() { return { '0-0':trans('Floppy Device %1','VBoxGlobal').replace('%1','0'), '0-1' :trans('Floppy Device %1','VBoxGlobal').replace('%1','1') }; }
 	},
 
 	
 	SAS : {
-		'maxPortCount' : 8,
-		'maxDevicesPerPortCount' : 1,
-		'types' : ['LsiLogicSas'],
-		'driveTypes' : ['disk'],
-		'slotName' : function(p,d) { return trans('SAS Port %1','VBoxGlobal').replace('%1',p); },
-		'slots' : function() {
+		maxPortCount : 8,
+		maxDevicesPerPortCount : 1,
+		types : ['LsiLogicSas'],
+		driveTypes : ['disk'],
+		slotName : function(p,d) { return trans('SAS Port %1','VBoxGlobal').replace('%1',p); },
+		slots : function() {
 						var s = {};
 						for(var i = 0; i < 8; i++) {
 							s[i+'-0'] = trans('SAS Port %1','VBoxGlobal').replace('%1',i);
 						}
 						return s;				
 					},
-		'displayInherit' : 'SATA'
+		displayInherit : 'SATA'
 	}
 
 };

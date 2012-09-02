@@ -489,10 +489,18 @@ table.vboxDetailsTable tr th.vboxDetailNameIndent { text-align: left; white-spac
 table.vboxDetailsTable tr td.vboxDetailsValue { text-align: left; white-space: normal; width: 100%; padding-left: 35px; }
 table.vboxDetailsTableError { background: #eee; margin-top: 8px;; border: 2px solid #aaa; }
 table.vboxDetailsTableError tr { vertical-align: top; }
+
 /* Details table boxes */
-table.vboxDetailsTableBox { background: #fff; margin: 0px; width: 100%; border-collapse: collapse; border-spacing: 0px;
+table.vboxDetailsTableBox {
+	background: #fff;
+	margin: 0px;
+	width: 100%;
+	border: 0px;
+	border-collapse: collapse;
+	border-spacing: 0px;
 	border-radius: 8px;
 	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
 }
 /* Safari / Chrome "fix" */
 table.vboxDetailsTableBox img::selection { color: transparent; }
@@ -517,27 +525,61 @@ table.vboxDetailsTableBox tr.vboxDetailsHead th.vboxDetailsSection div {
 #vboxTabVMDetails div.vboxDetailsBorder {
 	border-radius: 8px;
 	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
 	border: 2px solid #bbb;
 	margin-bottom: 2px;
 }
+#vboxTabVMDetails div.vboxDetailsBorder table, #vboxTabVMDetails div.vboxDetailsBorder tbody, #vboxTabVMDetails div.vboxDetailsBorder tbody::last-child, #vboxTabVMDetails div.vboxDetailsBorder tbody::last-child td {
+	-moz-border-radius-bottomleft: 8px/*{cornerRadius}*/; -webkit-border-bottom-left-radius: 8px/*{cornerRadius}*/; border-bottom-left-radius: 8px/*{cornerRadius}*/; -moz-border-radius-bottomright: 8px/*{cornerRadius}*/; -webkit-border-bottom-right-radius: 8px/*{cornerRadius}*/; border-bottom-right-radius: 8px/*{cornerRadius}*/;	
+		border-radius: 8px;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	border: 0px;
+	border-collapse: collapse;
+	border-spacing: 0px;
+	
+}
+#vboxTabVMDetails div.vboxDetailsSectionCollapsed tbody {
+	display: none;
+}
 
-table.vboxDetailsTableBox tr.vboxDetailsHead th.vboxDetailsSectionCollapsed, table.vboxDetailsTableBox tr.vboxDetailsHead th.vboxDetailsSectionCollapsed div {
+/* Images */
+#vboxTabVMDetails div.vboxDetailsBorder tr.vboxDetailsHead span.vboxDetailsUpDnImgSpan {
+	width: 13px;
+	height: 8px;
+	margin: 4px 6px 4px 0px;
+	background-repeat: no-repeat;
+}
+
+#vboxTabVMDetails div.vboxDetailsSectionCollapsed tr.vboxDetailsHead span.vboxDetailsUpDnImgSpan {
+	background-image: url(../images/arrow_grad_dn.png);
+}
+#vboxTabVMDetails tr.vboxDetailsHead span.vboxDetailsUpDnImgSpan {
+	background-image: url(../images/arrow_grad_up.png);
+}
+
+/* Collapsed */
+div.vboxDetailsSectionCollapsed table.vboxDetailsTableBox,
+div.vboxDetailsSectionCollapsed table.vboxDetailsTableBox thead
+div.vboxDetailsSectionCollapsed table.vboxDetailsTableBox tr.vboxDetailsHead,
+div.vboxDetailsSectionCollapsed table.vboxDetailsTableBox tr.vboxDetailsHead th,
+div.vboxDetailsSectionCollapsed table.vboxDetailsTableBox tr.vboxDetailsHead th.vboxDetailsSection div { 
 	-webkit-border-radius: 8px;
 	border-radius: 8px;
 	-moz-border-radius: 8px;
 }
 
-table.vboxDetailsTableBox tr.vboxDetailsHead a, table.vboxDetailsTableBox tr.vboxDetailsHead th.hover div.vboxNoLinks a {
+table.vboxDetailsTableBox tr.vboxDetailsHead a, #vboxTabVMDetails div.hover table.vboxDetailsTableBox tr.vboxDetailsHead th div.vboxNoLinks a {
 	color: #000;
 	cursor: default;
 }
-table.vboxDetailsTableBox tr.vboxDetailsHead th.hover a {
+#vboxTabVMDetails div.hover table.vboxDetailsTableBox tr.vboxDetailsHead a {
 	color: #0000ff;
 	cursor: pointer;
 }
 
-table.vboxDetailsTableBox tr.vboxDetailsHead th span.vboxDetailsUpDnImgSpan { display: none; }
-table.vboxDetailsTableBox tr.vboxDetailsHead th.hover span.vboxDetailsUpDnImgSpan { display: inline; cursor: pointer; }
+#vboxTabVMDetails table.vboxDetailsTableBox tr.vboxDetailsHead th span.vboxDetailsUpDnImgSpan { display: none; }
+#vboxTabVMDetails div.hover table.vboxDetailsTableBox tr.vboxDetailsHead th span.vboxDetailsUpDnImgSpan { display: inline; cursor: pointer; }
 
 table.vboxDetailsTableBox tr.vboxDetailsHead th { padding: 6px; padding-left: 8px; }
 table.vboxDetailsTableBox tr.vboxDetailsHead img { padding-right: 4px; }
@@ -549,7 +591,8 @@ table.vboxDetailsTable td.vboxDetailDescriptionCell { padding-left: 20px; }
 #vboxDetailsShowMenu li input, #vboxDetailsPreviewMenu li input { display: inline; padding: 0px; margin: 0px; margin-right: 4px; margin-left: 4px;}
 
 /* preview box */
-#vboxTabVMDetails .vboxDetailsTableBoxPreviewSpacer { padding: 1px; }
+#vboxVMDetails table div.vboxVMDetailsBoxpreview { margin-left: 2px; }
+#vboxTabVMDetails table.vboxPreviewTable td { padding: 0px; margin: 0px; border: 0px; }
 #vboxTabVMDetails .vboxDetailsTableBoxPreview { text-align: center; }
 #vboxTabVMDetails .vboxDetailsTableBoxPreview table, #vboxTabVMDetails .vboxDetailsTableBoxPreview td, #vboxTabVMDetails .vboxDetailsTableBoxPreview img { padding: 0px; margin: 0px; border: 0px; }
 div.vboxPreviewSaved {

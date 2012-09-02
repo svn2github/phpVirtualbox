@@ -328,8 +328,34 @@ var vboxSnapshotButtons = [
 				
 	  	  		// Display details
 	  	  		$('#vboxSnapshotDetailsVM').empty();
-	  	  		__vboxDisplayDetailsData(d.machine,$('#vboxSnapshotDetailsVM'),false);
-	  	  			  	  		
+	  	  		
+		  	  	// Enclosing details Table
+		  	  	var vboxDetailsTable = $('<table />').attr({'class':'vboxDetailsTable'});
+		  	  	
+		  	  	// Set to isSnapshot
+		  	  	d.machine.isSnapshot = true;
+		  	  	
+		  	  	for(var i in vboxVMDetailsSections) {
+		
+		  	  		section = vboxVMDetailsSections[i];
+		  	  		
+		  	  		if(section.noSnapshot) continue;
+		  	  		
+			  	  	$('<tr />').attr({'class':'vboxDetailsHead'}).append(
+			  	  		$('<th />').attr({'class':'vboxDetailsSection','colspan':'2'}).disableSelection()
+			  	  			.html("<img style='float:left; margin-right: 3px; ' src='images/vbox/" + section.icon + "' /> ")
+			  	  			.append(
+			  	  				$('<span />').css({'float':'left'}).append(document.createTextNode(section.title +' '))
+			  	  			)
+			  	  	).appendTo(vboxDetailsTable);
+
+		  	  		__vboxDetailAddRows(d.machine, section.rows, vboxDetailsTable);
+		
+		  	  	}
+	  	  	
+		  	  $('#vboxSnapshotDetailsVM').append(vboxDetailsTable);
+
+	  	  		
 			},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id});
 			l.onLoad = function(){
   			

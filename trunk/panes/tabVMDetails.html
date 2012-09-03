@@ -269,7 +269,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 	if(!section)
 		section = vboxVMDetailsSections[sectionName];
 	
-	var ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'>""<a href=\"javascript:vboxDetailSettingsLink('%2')\">%3</a></span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
+	var ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'><a href=\"javascript:vboxDetailSettingsLink('%2')\">%3</a></span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
 
 	var vboxDetailsTable = $('<table />').attr({'class':'vboxDetailsTable vboxDetailsTableBox'})
 		.append($('<thead />')

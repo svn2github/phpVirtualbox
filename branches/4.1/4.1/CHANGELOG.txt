@@ -1,4 +1,10 @@
 -------------------------------------
+	4.1-10	2012-09-04
+-------------------------------------
+Fixed JS error in some browsers causing the New Virtual Machine
+Wizard to fail.
+
+-------------------------------------
 	4.1-9	2012-09-04
 -------------------------------------
 Made Hardware Virtualization options dependencies more apparent.

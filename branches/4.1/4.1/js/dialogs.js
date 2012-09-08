@@ -265,7 +265,7 @@ function vboxWizardNewVMInit(callback) {
 						$('#vboxIndex').trigger('vmlistreload');
 						if(callback) callback();
 					};
-					lm.run();a
+					lm.run();
 				}
 			});			
 

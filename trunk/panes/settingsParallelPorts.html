@@ -39,7 +39,6 @@
  * Setup data for parallel port options
  *
  */
-var vboxSP = new vboxParallelPorts();
 
 var vboxSettingsPPortTemplate = document.getElementById('vboxSettingsTabParallelPort');
 var vboxSettingsPPortContainer = $(vboxSettingsPPortTemplate).parent();
@@ -96,7 +95,7 @@ for(var i = 0; i < parseInt($('#vboxSettingsDialog').data('vboxMachineData').par
 	if(a > $('#vboxIndex').data('vboxSystemProperties').parallelPortCount) continue;
 
 	// Port Number
-	var pNum = vboxSP.getPortName($('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].IRQ,$('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].IOBase);
+	var pNum = vboxParallelPorts.getPortName($('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].IRQ,$('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].IOBase);
 	$(document.forms['frmVboxSettings'].elements['vboxSettingsPPortNumber'+a]).val(pNum);
 	$(document.forms['frmVboxSettings'].elements['vboxSettingsPPortNumber'+a].options[document.forms['frmVboxSettings'].elements['vboxSettingsPPortNumber'+a].selectedIndex]).attr('selected','selected');
 	$(document.forms['frmVboxSettings'].elements['vboxSettingsPPortNumber'+a]).change();	
@@ -126,10 +125,10 @@ function vboxSettingsUpdatePPortOptions(sel) {
 	} else {
 		$(sel).siblings('input').prop('disabled',true);
 		$(sel).siblings('span').addClass('vboxDisabled');
-		for(var i = 0; i < vboxSP.ports.length; i++) {
-			if(vboxSP.ports[i].name == sel.value) {
-				$(sel).siblings('input').first().val(vboxSP.ports[i].irq);
-				$(sel).siblings('input').last().val(vboxSP.ports[i].port);
+		for(var i = 0; i < vboxParallelPorts.ports.length; i++) {
+			if(vboxParallelPorts.ports[i].name == sel.value) {
+				$(sel).siblings('input').first().val(vboxParallelPorts.ports[i].irq);
+				$(sel).siblings('input').last().val(vboxParallelPorts.ports[i].port);
 				return;
 			}
 		}

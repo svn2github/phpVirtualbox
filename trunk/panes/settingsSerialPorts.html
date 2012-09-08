@@ -60,8 +60,6 @@
  *
  */
   
-var vboxSP = new vboxSerialPorts();
-
 var vboxSettingsSPortTemplate = document.getElementById('vboxSettingsTabSerialPort');
 var vboxSettingsSPortContainer = $(vboxSettingsSPortTemplate).parent();
 
@@ -114,7 +112,7 @@ for(var i = 0; i < parseInt($('#vboxSettingsDialog').data('vboxMachineData').ser
 	if(a > $('#vboxIndex').data('vboxSystemProperties').serialPortCount) continue;
 
 	// Port Number
-	var pNum = vboxSP.getPortName($('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].IRQ,$('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].IOBase);
+	var pNum = vboxSerialPorts.getPortName($('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].IRQ,$('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].IOBase);
 	$(document.forms['frmVboxSettings'].elements['vboxSettingsPortNumber'+a]).val(pNum);
 	$(document.forms['frmVboxSettings'].elements['vboxSettingsPortNumber'+a].options[document.forms['frmVboxSettings'].elements['vboxSettingsPortNumber'+a].selectedIndex]).attr('selected','selected');
 	$(document.forms['frmVboxSettings'].elements['vboxSettingsPortNumber'+a]).change();	
@@ -152,10 +150,10 @@ function vboxSettingsUpdateSPortOptions(sel) {
 	} else {
 		$(sel).siblings('input').prop('disabled',true);
 		$(sel).siblings('span').addClass('vboxDisabled');
-		for(var i = 0; i < vboxSP.ports.length; i++) {
-			if(vboxSP.ports[i].name == sel.value) {
-				$(sel).siblings('input').first().val(vboxSP.ports[i].irq);
-				$(sel).siblings('input').last().val(vboxSP.ports[i].port);
+		for(var i = 0; i < vboxSerialPorts.ports.length; i++) {
+			if(vboxSerialPorts.ports[i].name == sel.value) {
+				$(sel).siblings('input').first().val(vboxSerialPorts.ports[i].irq);
+				$(sel).siblings('input').last().val(vboxSerialPorts.ports[i].port);
 				return;
 			}
 		}

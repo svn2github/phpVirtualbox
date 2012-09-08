@@ -163,27 +163,28 @@
 <div id='vboxSettingsTabSystemAcceleration' title='Acceleration'>
 <table>
 	<tr>
-		<th style='text-align:right'><span class='translate'>Hardware Virtualization:</span></th>
-		<td style='width:100%'><label><input type='checkbox' name='settingsSystemVT' /> <span class='translate'>Enable VT-x/AMD-V</span></label></td>
+		<th style='text-align:right' class='vboxEnablerIgnore'><span class='translate'>Hardware Virtualization:</span></th>
+		<td style='width:100%'><label><input type='checkbox' name='settingsSystemVT' class='vboxEnablerCheckbox'/> <span class='translate'>Enable VT-x/AMD-V</span></label></td>
 	</tr>
 	<tr>
 		<th></th>
-		<td><label><input type='checkbox' name='settingsSystemPaging' /> <span class='translate'>Enable Nested Paging</span></label></td>
+		<td><label><input type='checkbox' name='settingsSystemPaging' class='vboxEnablerListen' /> <span class='translate vboxEnablerListen'>Enable Nested Paging</span></label></td>
 	</tr>
 	<tr class='vboxSettingsSystemAdvancedOnly'>
 		<th></th>
-		<td><label><input type='checkbox' name='settingsSystemLargePages' /> <span class='translate'>Enable Large Pages</span></label></td>
+		<td><label><input type='checkbox' name='settingsSystemLargePages' class='vboxEnablerListen'/> <span class='translate vboxEnablerListen'>Enable Large Pages</span></label></td>
 	</tr>
 	<tr class='vboxSettingsSystemAdvancedOnly'>
 		<th></th>
-		<td><label><input type='checkbox' name='settingsSystemExclusive' /> <span class='translate'>Enable exclusive use of the hardware virtualization extensions</span></label></td>
-	</tr>	
+		<td><label><input type='checkbox' name='settingsSystemExclusive' class='vboxEnablerListen'/> <span class='translate vboxEnablerListen'>Enable exclusive use of the hardware virtualization extensions</span></label></td>
+	</tr>   
 	<tr class='vboxSettingsSystemAdvancedOnly'>
 		<th></th>
-		<td><label><input type='checkbox' name='settingsSystemVPID' /> <span class='translate'>Enable VT-x VPID (Intel only)</span></label></td>
-	</tr>			
+		<td><label><input type='checkbox' name='settingsSystemVPID' class='vboxEnablerListen'/> <span class='translate vboxEnablerListen'>Enable VT-x VPID (Intel only)</span></label></td>
+	</tr>                   
 </table>
 </div>
+
 
 <script type='text/javascript'>
 

@@ -7,7 +7,9 @@
 
  -->
 <div id='vboxTabVMDetails' style='height: 100%; width: 100%; display: none;' class='vboxInvisible'>
-	<div id='vboxVMDetails' style='height: 100%; display: none; min-height:100px;' class='vboxInvisible' />
+
+	<!-- VM Details -->
+	<div id='vboxVMDetails' style='height: 100%; width: 100%; display: table; min-height:100px;' class='vboxInvisible' />
 	
 	<!-- Loading... -->
 	<div id='vboxDetailsLoading' class='vboxInvisible' style='#position:absolute;#top:50%;display:none;vertical-align:middle;width:100%;height:100%;padding:0px;margin:0px'>
@@ -15,12 +17,14 @@
 			<span class='ui-corner-all translate' style='padding:8px;background:#fff;border:2px solid #ddd'>Loading ...</span>
 		</div>
 	</div>
+	
 	<!-- Welcome -->
-	<div id='vboxDetailsWelcome' class='vboxBordered' style='#position:absolute;#top:50%;display:none;vertical-align:middle;width:50%;height:50%;text-align:center'>
+	<div id='vboxDetailsWelcome' class='vboxBordered' style='#position:absolute;#top:50%;display:table-cell;vertical-align:middle;width:50%;height:50%;text-align:center'>
 		<div style='#position:relative;#top:-50%;padding:0px;text-align:center;width:100%'>
 			<img src='images/vbox/welcome.png' />
 		</div>
 	</div>
+	
 <script type='text/javascript'>
 
 
@@ -30,63 +34,71 @@ $('#vboxDetailsLoading').find('span.translate').html(trans('Loading ...','UIVMDe
 
 // Listen for events
 /////////////////////////////
-$('#vboxIndex').bind('vmloading',function(){
+$('#vboxIndex').bind('vmSelectionListChanged',function(){
 
-	// Clear timers if  set
-	if($('#vboxVMDetails').data('vboxPreviewTimer')) {
-		window.clearTimeout($('#vboxVMDetails').data('vboxPreviewTimer'));
-		$('#vboxVMDetails').data('vboxPreviewTimer', null);
-	}
 	
-
-	// Hide all tab children first
-	$('#vboxTabVMDetails').children().hide();
-
-	if($('#vboxTabVMDetails').css('display') != 'none')
-		$('#vboxTabVMDetails').css('display','table');
-	
-	$('#vboxDetailsLoading').show().css('display','table-cell');
-
-
-}).bind('vmloaded',function(e,vm){
-
-	// Hide all tab children first
-	$('#vboxTabVMDetails').children().hide();
-	
-	// vboxTabVMDetails
-	if(vm && vm.id) {
+	// No VMs?
+	if(vboxSelectionData.selectedVMs.length == 0) {
 		
-		var targetdiv = $('#vboxVMDetails');
-
-		targetdiv.html('');
-
-		if(vm.id == 'host') {
-
-			// Host data
-			__vboxDisplayHostDetailsData(vm, targetdiv);
-			
-		} else {
-
-			var targ
-			// VM Data
-			__vboxDisplayDetailsData(vm, false, targetdiv);
-			
-		}
-		
-		targetdiv.show();
-	
-	// No VM selected
-	} else {
-
 		// Hide all tab children first
 		$('#vboxTabVMDetails').css({'display':'table','width':'100%'}).children().hide();
 		
 		// Display Welcome div
 		$('#vboxDetailsWelcome').show().css('display','table-cell');
+		
+		$('#vboxTabVMDetails').data('showingWelcome', true);
 
+	// Were we showing the welcome screen before?
+	} else if($('#vboxTabVMDetails').data('showingWelcome')) {
+		
+		$('#vboxTabVMDetails').css({'display':''})
+			.data({'showingWelcome':false}).children().hide();
+		$('#vboxVMDetails').html('').css({'display':''});
+		
+	// We have VMs and were not showing the welcome screen
+	} else if(vboxSelectionData.selectedVMs.length > 1) {
+		$('#vboxVMDetails').children('div').empty().remove();
 	
+	// Redraw full details?
+	} else if(vboxSelectionData.selectedVMs.length == 1) {
+		var oldVM = vboxSelectionData.getSingleSelected();
+		if(oldVM && $('#vboxVMDetails').children('.vboxVMDetailsBox-vm-'+oldVM.id)[0]) {
+			$('#vboxVMDetails').children().empty().remove();
+			__vboxDisplayDetailsData(oldVM, false, $('#vboxVMDetails'));	
+		}
+
 	}
 
+
+// VM data has been loaded
+/////////////////////////////
+}).bind('vmLoaded',function(e, vm) {
+	
+	// Multiple VMs
+	var targetdiv = $('#vboxVMDetails');
+	
+	targetdiv.siblings().hide();
+	targetdiv.show();
+	
+	// Clear target div if we only have one vm
+	if(vboxSelectionData.selectedVMs.length == 1)
+		targetdiv.children().empty().remove();
+	
+	// Host data
+	if(vm.id == 'host') {
+		__vboxDisplayHostDetailsData(vm, targetdiv);
+		return;
+	}
+	
+		
+	__vboxDisplayDetailsData(vm, (vboxSelectionData.selectedVMs.length > 1), targetdiv);
+		
+	
+}).bind('vmDeselected',function(e,vmid){
+	
+	$('#vboxVMDetails').children('.vboxVMDetailsBox-vm-'+vmid).empty().remove();
+	
+	
 });
 
 // Hide context menus when hiding tab
@@ -94,16 +106,6 @@ $('#vboxTabVMDetails').bind('hide',function(){
 	$('ul.contextMenu').hide();
 });
 
-$('#vboxTabVMDetails .vboxDetailsTableBoxPreview').css('min-width',$('#vboxIndex').data('vboxConfig')['previewWidth']+'px');
-
-								
-// Returns link to settings
-function vboxDetailSettingsLink(section) {
-	
-	if(($('#vboxIndex').data('selectedVM').state == 'Running' || $('#vboxIndex').data('selectedVM').sessionState == 'Unlocked') && $('#vboxIndex').data('selectedVM').state != 'Saved') {
-		vboxVMsettingsInit($('#vboxIndex').data('selectedVM').id,function(){$('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]);},section);
-	}
-}
 
 
 //Base function that returns a table row of machine detail data
@@ -127,27 +129,27 @@ function __vboxDetailRow(name,value,cssClass,html) {
 }
 
 //Draw rows to table
-function __vboxDetailAddRows(data, rows, table) {
+function __vboxDetailAddRows(data, rows, table, snapshot) {
 		
 	// Is rows a function?
-	if(typeof(rows) == 'function') rows = rows(data);
+	if(typeof(rows) == 'function') rows = rows(data, snapshot);
 	
 	for(var i = 0; i < rows.length; i++) {
 		
 		// Check if row has condition
-		if(rows[i].condition && !rows[i].condition(data)) continue;
+		if(rows[i].condition && !rows[i].condition(data, snapshot)) continue;
 		
 		// hold row data
 		var rowData = '';
 		
 		// Check for row attribute
 		if(rows[i].attrib) {
-			if(!data[rows[i].attrib]) continue
+			if(!data[rows[i].attrib]) continue;
 			rowData = data[rows[i].attrib];
 		
 		// Check for row callback
 		} else if(rows[i].callback) {
-			rowData = rows[i].callback(data);
+			rowData = rows[i].callback(data, snapshot);
 
 		// Static data
 		} else {
@@ -251,11 +253,12 @@ function __vboxDrawPreview(fromSelf,state) {
 	} else {
 		// Running VMs get random numbers. Saved are based on last state change.
 		// Try to let the browser cache Saved screen shots
+		var randid = '';
 		if(state == 'Running') {
 			var currentTime = new Date();
-			var randid = Math.floor(currentTime.getTime() / 1000);			
+			randid = Math.floor(currentTime.getTime() / 1000);			
 		} else {
-			var randid = $('#vboxIndex').data('selectedVM').lastStateChange;
+			randid = $('#vboxIndex').data('selectedVM').lastStateChange;
 		}
 		__vboxDrawPreviewImg.src = 'screen.php?width='+(w)+'&vm='+$('#vboxIndex').data('selectedVM').id+'&randid='+randid;
 	}
@@ -268,8 +271,13 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 	
 	if(!section)
 		section = vboxVMDetailsSections[sectionName];
+
+	var ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'><a href=\"javascript:vboxVMsettingsInit('"+data.id+"',null,'%2');\">%3</a></span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
 	
-	var ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'><a href=\"javascript:vboxDetailSettingsLink('%2')\">%3</a></span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
+	// No link if VM is not in valid state
+	if(!((data.state == 'Running' || data.sessionState == 'Unlocked') && data.state != 'Saved')) {
+		ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'>%3</span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
+	}
 
 	var vboxDetailsTable = $('<table />').attr({'class':'vboxDetailsTable vboxDetailsTableBox'})
 		.append($('<thead />')
@@ -296,13 +304,15 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 	
 	vboxDetailsTable.append(tbody);
 
-	var vboxDetailsSection = $('<div />').attr({'class':'vboxDetailsBorder vboxVMDetailsBox'+sectionName})
+	var vboxDetailsSection = $('<div />').attr({'class':'vboxDetailsBorder vboxVMDetailsBox'+sectionName+ ' vboxVMDetailsBox-vm-'+data.id})
 		.dblclick(function(e){
 
 			vboxSetCookie('vboxSectionCollapse'+$(this).data('sectionName'),
 					($(this).hasClass('vboxDetailsSectionCollapsed') ? '' : '1')
 			);
-			$(this).toggleClass('vboxDetailsSectionCollapsed', 500);
+			
+			$('#vboxVMDetails').find('div.vboxVMDetailsBox'+$(this).data('sectionName'))
+				.toggleClass('vboxDetailsSectionCollapsed', 500);
 
 			return false;
 		}).hover(function(){$(this).addClass('hover');},
@@ -367,7 +377,7 @@ function __vboxDisplayDetailsData(data, multiSelect, targetdiv) {
 		var reasonDiv = $('<div />').html('<div style="width: 50%">'+trans('The selected virtual machine is <i>inaccessible</i>. Please inspect the error message shown below and press the <b>Refresh</b> button if you want to repeat the accessibility check:','UIDetailsPagePrivate')+'</div>');
 		
 		// Details Table
-		$('<table />').attr({'style':'width: 50%','class':'vboxDetailsTable vboxDetailsTableError'}).append(__vboxDetailRow(trans("VirtualBox - Error",'UIMessageCenter'), data.accessError['text'])).append(__vboxDetailRow(trans('Result Code: ','UIMessageCenter'), data.accessError['resultCode'])).append(__vboxDetailRow(trans("Component: ",'UIMessageCenter'), data.accessError['component'])).appendTo(targetdiv);
+		$('<table />').attr({'style':'width: 50%','class':'vboxDetailsTable vboxDetailsTableError vboxVMDetailsBox-vm-'+data.id}).append(__vboxDetailRow(trans("VirtualBox - Error",'UIMessageCenter'), data.accessError['text'])).append(__vboxDetailRow(trans('Result Code: ','UIMessageCenter'), data.accessError['resultCode'])).append(__vboxDetailRow(trans("Component: ",'UIMessageCenter'), data.accessError['component'])).appendTo(targetdiv);
 		
 		var d = $('<div />').attr({'style':'width: 50%; padding: 4px;'});
 		
@@ -377,7 +387,7 @@ function __vboxDisplayDetailsData(data, multiSelect, targetdiv) {
 		}).click(function(){
 			var l = new vboxLoader();
 			l.add('machineGetDetails',function(rd){
-				$('#vboxIndex').trigger('vmselect',[rd]);
+				$('#vboxIndex').trigger('vmSelectionListChanged');
 			},{'vm':data.id,'force_refresh':1});
 			l.run();
 		}).appendTo(d);
@@ -390,7 +400,7 @@ function __vboxDisplayDetailsData(data, multiSelect, targetdiv) {
 
 	// Multi-select details table sections
 	////////////////////////////////////////
-	$('<table />').attr({'id':'vboxDetailsGeneralTable-'+data.id,'class':'vboxInvisible','style':'width: 100%;'}).append(
+	var tbl = $('<table />').attr({'id':'vboxDetailsGeneralTable-'+data.id,'class':'vboxInvisible vboxVMDetailsBox-vm-'+data.id,'style':'width: 100%;'}).append(
 
 		$('<tr />').attr({'style':'vertical-align: top'}).append(
 
@@ -404,8 +414,15 @@ function __vboxDisplayDetailsData(data, multiSelect, targetdiv) {
 				.append(__vboxCreateDetailsSection(data,'preview'))
 		)
 		
-	).appendTo(targetdiv);
-
+	).data({'vmid':data.id});
+	
+	// If already exists, replace the table, else append to div
+	if(multiSelect && $('#vboxDetailsGeneralTable-'+data.id)[0]) {
+		$('#vboxDetailsGeneralTable-'+data.id).replaceWith(tbl);
+	} else {
+		tbl.appendTo(targetdiv);
+	}
+	
 	for(var s in {'general':1,'system':1,'preview':1}) {
 		if(vboxVMDetailsSections[s].onRender)
 			vboxVMDetailsSections[s].onRender(data);
@@ -523,6 +540,10 @@ $("#vboxVMDetails").mouseup( function(e) {
 
 }).bind('contextmenu', function() { return false; })
 	.bind('click',function(e){return e.button!=2;});
+
+//Display Welcome div
+$('#vboxTabVMDetails').css({'display':'table','width':'100%'}).children().hide();
+$('#vboxDetailsWelcome').show().css('display','table-cell');
 
 </script>
 </div>

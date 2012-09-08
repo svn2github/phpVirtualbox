@@ -463,7 +463,7 @@ function vboxShowLogsDialogInit(vm) {
 			l.run();
 		};
 		buttons[trans('Close','VBoxVMLogViewer')] = function(){$(this).trigger('close').empty().remove();};
-		$('#vboxVMLogsDialog').dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_logs_16px.png" class="vboxDialogTitleIcon" /> '+ trans('%1 - VirtualBox Log Viewer','VBoxVMLogViewer').replace('%1',$('#vboxIndex').data('selectedVM').name)}).bind("dialogbeforeclose",function(){
+		$('#vboxVMLogsDialog').dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_logs_16px.png" class="vboxDialogTitleIcon" /> '+ trans('%1 - VirtualBox Log Viewer','VBoxVMLogViewer').replace('%1',vboxSelectionData.getSingleSelected().name)}).bind("dialogbeforeclose",function(){
 	    	$(this).parent().find('span:contains("'+trans('Close','VBoxVMLogViewer')+'")').trigger('click');
 	    });
 		vboxShowLogsInit(vm);
@@ -833,9 +833,9 @@ function vboxPrefsInit() {
 			l.onLoad = function(){location.reload(true);};
 			
 		// Update host info in case interfaces were added / removed
-		} else if($('#vboxIndex').data('selectedVM') && $('#vboxIndex').data('selectedVM')['id'] == 'host') {
+		} else if(vboxSelectionData.getSingleSelected() && vboxSelectionData.getSingleSelected()['id'] == 'host') {
 			l.onLoad = function() {
-				$('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]);
+				$('#vboxIndex').trigger('selectedVMUpdated',['host']);
 			};
 		}
 		l.add('hostOnlyInterfacesSave',function(){},{'networkInterfaces':$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces});
@@ -885,7 +885,7 @@ function vboxVMsettingsInit(vm,callback,pane) {
 
 	);
 
-	vboxSettingsDialog($('#vboxIndex').data('selectedVM').name + ' - ' + trans('Settings','UISettingsDialog'),panes,data,function(){
+	vboxSettingsDialog(vm.name + ' - ' + trans('Settings','UISettingsDialog'),panes,data,function(){
 		var loader = new vboxLoader();
 		var sdata = $.extend($('#vboxSettingsDialog').data('vboxMachineData'),{'clientConfig':$('#vboxIndex').data('vboxConfig')});
 		loader.add('machineSave',function(){return;},sdata);
@@ -894,6 +894,7 @@ function vboxVMsettingsInit(vm,callback,pane) {
 			var mload = new vboxLoader();
 			mload.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 			mload.onLoad = function() {
+				$('#vboxIndex').trigger('vmChanged',[vm.id]);
 				if(callback){callback();}
 			};
 			mload.run();
@@ -925,7 +926,10 @@ function vboxVMsettingsInitNetwork(vm,callback) {
 	vboxSettingsDialog(trans('Settings','VBoxSettingsDialog'),panes,data,function(){
 		var loader = new vboxLoader();
 		var sdata = $.extend($('#vboxSettingsDialog').data('vboxMachineData'),{'clientConfig':$('#vboxIndex').data('vboxConfig')});
-		loader.add('machineSaveNetwork',function(){if(callback){callback();}},sdata);
+		loader.add('machineSaveNetwork',function(){
+			$('#vboxIndex').trigger('vmChanged',[vm.id]);
+			if(callback){callback();}
+		},sdata);
 		loader.run();
 	},'Network','nw','UISettingsDialogMachine');
 }
@@ -950,7 +954,10 @@ function vboxVMsettingsInitSharedFolders(vm,callback) {
 	vboxSettingsDialog(trans('Settings','VBoxSettingsDialog'),panes,data,function(){
 		var sdata = $.extend($('#vboxSettingsDialog').data('vboxMachineData'),{'clientConfig':$('#vboxIndex').data('vboxConfig')});
 		var loader = new vboxLoader();
-		loader.add('machineSaveSharedFolders',function(){if(callback){callback();}},sdata);
+		loader.add('machineSaveSharedFolders',function(){
+			$('#vboxIndex').trigger('vmChanged',[vm.id]);
+			if(callback){callback();
+		}},sdata);
 		loader.run();
 	},'SharedFolders','shared_folder','UISettingsDialogMachine');
 }

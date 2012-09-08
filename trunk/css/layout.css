@@ -453,17 +453,17 @@ ul.vboxMenuBar li {
 	background-color: #f0f8ff;
 	border: 1px solid #aaaaaa;
 }
+#vboxPaneVMList td.vboxVMListDropTarget { height: 4px; padding: 0px; margin: 0px; }
+#vboxPaneVMList td.vboxVMListDropTargetHover { background: #999; }
 #vboxPaneVMList td.vboxVMTitle { width: 100% }
-#vboxVMList table.vboxVMListVM { margin-bottom: 4px; vertical-align: top; }
-#vboxVMList table.vboxVMListVM td { padding: 0px; white-space: nowrap; }
+#vboxVMList table.vboxVMListVM { margin-bottom: 2px; vertical-align: top; padding: 0px; border-collapse: collapse; }
+#vboxVMList table.vboxVMListVM td,
+#vboxVMList table.vboxVMListVM span { padding: 0px; white-space: nowrap; margin: 0px; border: 0px; }
 #vboxVMList table.vboxVMListVM span.vboxVMName { font-weight: bold; }
 #vboxVMList table.vboxVMListVM span.vboxVMState { font-size: 0.9em; }
 #vboxVMList table.vboxVMListVM td.vboxVMSessionOpen { font-style: italic; }
 #vboxPaneVMList img.vboxHostIcon { border: 1px solid #999; }
-#vboxPaneVMList img.vboxVMIcon { height: 32px; width: 32px; margin: 4px; margin-left: 6px; }
-
-/* Minimal sizes */
-#vboxVMList table.vboxVMListMinimal img { height: 16px; width: 16px; padding: 0px; margin: 2px; margin-left: 2px; }
+#vboxPaneVMList img.vboxVMIcon { height: 32px; width: 32px; margin: 0px 6px 0px 6px; padding: 0px; }
 
 /* Toolbar above vm list */
 #vboxPaneToolbar { float: left; }

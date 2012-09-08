@@ -599,19 +599,13 @@ var vmmButtons = new Array(
 			buttons[trans('Release','UIMessageCenter')] = function(){
 				var b = this;
 				vboxAjaxRequest('mediumRelease',{'medium':m.location,'type':m.deviceType},function(ret){
-					// Check if current VM is in list
-					if($('#vboxIndex').data('selectedVM') && $('#vboxIndex').data('selectedVM').id && ret && ret.released.length) {
-						var vmid = $('#vboxIndex').data('selectedVM').id;
-						for(var i = 0; i < ret.released.length; i++) {
-							if(vmid == ret.released[i]) {
-								$('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]);
-								break;
-							}
-						}
-					}
+					
 					var l = new vboxLoader();
 					l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
-					l.onLoad = function(){vboxVMMFillMedia(m.id);};
+					l.onLoad = function(){
+						vboxVMMFillMedia(m.id);
+						$('#vboxIndex').trigger('vmChanged',ret.released);
+					};
 					$(b).empty().remove();
 					l.run();
 				});

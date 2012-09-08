@@ -612,7 +612,7 @@ function vboxInitDisplay(root,context) {
 			
 			$(roottbl).find('input:not(.vboxEnablerCheckbox,.disabled)').prop('disabled',!this.checked);
 			$(roottbl).find('select:not(.disabled)').prop('disabled',!this.checked);
-			(this.checked ? $(roottbl).find('th').removeClass('vboxDisabled') : $(roottbl).find('th').addClass('vboxDisabled'));
+			(this.checked ? $(roottbl).find('th').removeClass('vboxDisabled') : $(roottbl).find('th:not(.vboxEnablerIgnore)').addClass('vboxDisabled'));
 			(this.checked ? $(roottbl).find('.vboxEnablerListen').removeClass('vboxDisabled') : $(roottbl).find('.vboxEnablerListen').addClass('vboxDisabled'));
 	
 			// Find any enabler / disabler listeners
@@ -691,7 +691,7 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 					vboxInstallGuestAdditions(vmid,true);
 					return;
 				}
-				$('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]);
+				$('#vboxIndex').trigger('vmChanged',[vmid]);
 			},{},'progress_install_guest_additions_90px.png',trans('Install Guest Additions...','UIActionPool').replace(/\./g,''),true);
 			
 		// Media was mounted
@@ -700,7 +700,7 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 			// Media and VM data must be refreshed
 			var ml = new vboxLoader();
 			ml.add('vboxGetMedia',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
-			ml.onLoad = function() { $('#vboxIndex').trigger('vmselect',[$('#vboxIndex').data('selectedVM')]); };
+			ml.onLoad = function() { $('#vboxIndex').trigger('vmChanged',[vmid]); };
 			ml.run();
 			
 			if(d.errored)
@@ -709,7 +709,7 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 		// There's no CDROM drive
 		} else if(d && d.result && d.result == 'nocdrom') {
 			
-			vboxAlert(trans('<p>Could not insert the VirtualBox Guest Additions installer CD image into the virtual machine <b>%1</b>, as the machine has no CD/DVD-ROM drives. Please add a drive using the storage page of the virtual machine settings dialog.</p>','UIMessageCenter').replace('%1',$('#vboxIndex').data('selectedVM').name));
+			vboxAlert(trans('<p>Could not insert the VirtualBox Guest Additions installer CD image into the virtual machine <b>%1</b>, as the machine has no CD/DVD-ROM drives. Please add a drive using the storage page of the virtual machine settings dialog.</p>','UIMessageCenter').replace('%1',vboxSelectionData.getSingleSelected().name));
 			
 		// Can't find guest additions
 		} else if (d && d.result && d.result == 'noadditions') {

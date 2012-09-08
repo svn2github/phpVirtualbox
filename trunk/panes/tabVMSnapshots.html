@@ -95,13 +95,13 @@ var vboxSnapshotButtons = [
   			else if(item && $(item).data('vboxSnapshot')) state = $(item).data('vboxSnapshot').state;
   			else return false;
   			
-  			var vm = $('#vboxIndex').data('selectedVM');
+  			var vm = $('#vboxIndex').data('selectedVMs')[0];
   			return (item && state == 'current' && vm.state != 'RestoringSnapshot' && vm.state != 'LiveSnapshotting' && vm.state != 'DeletingSnapshot');
   		},
   		'click' : function (callback) {
 
   			// Circumvent VirtualBox bug
-  			if($('#vboxIndex').data('selectedVM').state == 'Running') {
+  			if($('#vboxIndex').data('selectedVMs')[0].state == 'Running') {
   				
   				vboxAlert("VirtualBox has a bug that will cause it to crash when taking a snapshot of a running virtual machine. Please pause the VM and try again. See <a href='http://www.virtualbox.org/ticket/9255' target=_blank>http://www.virtualbox.org/ticket/9255</a> for more information.");
 	  			return;
@@ -441,13 +441,13 @@ $('#vboxSnapshotList').bind('select',vboxSnapshotToolbar.update);
 // Called when snapshot operation completes
 $('#vboxTabVMSnapshots').bind('refresh',function(){
 
-	$('#vboxIndex').trigger('vmselect',$('#vboxTabVMSnapshots').data('machine'));
+	$('#vboxIndex').trigger('vmChanaged',[$('#vboxTabVMSnapshots').data('machine').id]);
 	
 });
 
 
 /* Loading VM */
-$('#vboxIndex').bind('vmloading',function(){
+$('#vboxIndex').bind('vmLoading',function(){
 
 	vboxSnapshotToolbar.disable();
 	
@@ -466,21 +466,37 @@ $('#vboxIndex').bind('vmloading',function(){
 	$('#vboxSnapshotList').append($('<li />').attr({'class':'last'}).html("<div><img src='images/spinner.gif'></div>"));
 	
 /* VM Finished loading */
-}).bind('vmloaded',function(e,vm){
+}).bind('vmLoaded',function(e,vm){
 
-	$('#vboxTabVMSnapshots').data('machine',vm);
+	var selvm = vboxSelectionData.getSingleSelected();
 	
-	$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
+	if(selvm && selvm.id == vm.id) {
+
+		$('#vboxTabVMSnapshots').data('machine',vm);
+		
+		$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
+	} else {
+		$('#vboxTabVMSnapshots').data('lastVM', null);
+	}
 	
 	if(vboxSnapshotToolbar._timer)
 		window.clearTimeout(vboxSnapshotToolbar._timer);
 
+}).bind('vmSelectionListChanged',function(){
+	
+	var vm = vboxSelectionData.getSingleSelected();
+	
+	if(vm) {
+		$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
+	}
+
 });
 
-
 // Load snapshots on show
-$('#vboxTabVMSnapshots').bind('show',function(e,vm){
+$('#vboxTabVMSnapshots').bind('show',function(e){
 
+	var vm = vboxSelectionData.getSingleSelected();
+	
 	if(vboxSnapshotToolbar._timer) {
 		window.clearTimeout(vboxSnapshotToolbar._timer);
 		vboxSnapshotToolbar._timer = null;

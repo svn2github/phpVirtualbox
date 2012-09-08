@@ -210,7 +210,14 @@ var menu = {
 vboxTopMenuBar.addMenu(menu);
 
 vboxTopMenuBar.addMenuBar('vboxMenu');
-$('#vboxIndex').bind('vmselect',vboxTopMenuBar.update);
+
+$('#vboxIndex').bind('vmLoaded',function(e,vm){
+	var vm = vboxSelectionData.getSingleSelected();
+	vboxTopMenuBar.update(vm);
+}).bind('vmSelectionListChanged',function(){
+	var vm = vboxSelectionData.getSingleSelected();
+	vboxTopMenuBar.update(vm);
+});
 
 
 </script>

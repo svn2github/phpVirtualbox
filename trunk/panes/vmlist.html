@@ -70,7 +70,7 @@ vboxVMList.parentContextMenuItems = [
 
 
 // Initial action update
-$('#vboxIndex').trigger('vmselect',null);
+$('#vboxIndex').trigger('vmSelectionChanged', [[]]);
 
 // Start vboxVMList
 vboxVMList.run();
@@ -93,6 +93,8 @@ function vboxVMList(anchorid) {
 	this.vms = null;
 	this.anchorid = anchorid;
 	this.sortDefault = function(a,b){return strnatcasecmp(a.name,b.name);};
+	this.selectedList = [];
+	this._vmDetails = {};
 	this._sortOrder = {};
 	this._updateSortOrder = false;
 	this.lastUpdatedDiv = null;
@@ -104,9 +106,24 @@ function vboxVMList(anchorid) {
 	this.parentContextMenuItems = [];
 	this.contextMenuObj = null;
 	this.enforceVMOwnership = $('#vboxIndex').data('vboxConfig').enforceVMOwnership;
-	this.minimal = $('#vboxIndex').data('vboxConfig').vmListMinimal;
 	this.tip = trans('<nobr>%1<br></nobr><nobr>%2 since %3</nobr><br><nobr>Session %4</nobr>','UIVMListView');
 
+	this.sort = function(a,b) {
+		
+		// Check for host
+		if(a.id == 'host') return -1;
+		if(b.id == 'host') return 1;
+		
+		//A is not in sort list
+		if(typeof(self._sortOrder[a.id]) == 'undefined') {
+			if(typeof(self._sortOrder[b.id]) == 'undefined') return self.sortDefault(a,b);
+			return -1; // b is defined, a is not
+		}
+		if(typeof(self._sortOrder[b.id]) == 'undefined') return 1; // a is defined, b is not
+		if(parseInt(self._sortOrder[a.id]) == parseInt(self._sortOrder[b.id])) return 0;
+		return(parseInt(self._sortOrder[a.id]) < parseInt(self._sortOrder[b.id]) ? -1 : 1);
+		
+	};
 	
 	// If there are multiple servers configured, setup menu
 	if($('#vboxIndex').data('vboxConfig').servers.length) {
@@ -134,12 +151,6 @@ function vboxVMList(anchorid) {
 			
 			self.stop();
 			self.anchor.children().remove();
-			return;
-		}
-
-		// Don't refresh list while sorting
-		if(self._sorting) {
-			self._lastList = d;
 			return;
 		}
 
@@ -248,36 +259,34 @@ function vboxVMList(anchorid) {
 	self.updateVM = function(vmUpdate,index) {
 
 		var changed = false;
-		var changedProps = ['currentSnapshot','state','sessionState','OSTypeId','name','customIcon'];
+		var changedProps = ['currentSnapshotName','state','sessionState','OSTypeId','name','customIcon'];
 		
 		for(var i = 0; i < changedProps.length; i++) {
-			if(self.vms[vmUpdate.id][changedProps[i]] != vmUpdate[changedProps[i]]) {
+			if(String(self.vms[vmUpdate.id][changedProps[i]]) != String(vmUpdate[changedProps[i]])) {
 				changed = true;
 				break;
 			}
 		}
 		
-		vmUpdate.selected = self.vms[vmUpdate.id].selected;
 
 		if(changed) {
 
-			$('#vboxVMListItem-'+self.anchorid+'-'+vmUpdate.id).replaceWith(self.vmHTML(vmUpdate));
-			
-			if(self.vms[vmUpdate.id].selected) {
-				
-				// update selected vm
-				self.vms[vmUpdate.id] = vmUpdate;
-				$('#vboxVMListItem-'+self.anchorid+'-'+vmUpdate.id).trigger('click');
-			}
-			
-		}
-		if(!vmUpdate.selected)
+			$('#'+self.anchorid + ' table.vboxVMListItem-'+self.anchorid+'-'+vmUpdate.id).each(function(i,elm){
+				var newHTML = self.vmHTML(vmUpdate);
+				if($(elm).hasClass('vboxListItemSelected')) $(newHTML).addClass('vboxListItemSelected').removeClass('vboxListItem');
+				$(elm).replaceWith(newHTML);
+			});
 			self.vms[vmUpdate.id] = vmUpdate;
+						
+			$('#vboxIndex').trigger('vmChanged', [vmUpdate]);
+		}
+		
 
 		return changed;
 
 	};
 
+	// Add a VM to the list
 	self.machineAdd = function(vm, index) {
 		self.vms[vm.id] = vm;
 		vmn = self.vms[vm.id];
@@ -287,17 +296,133 @@ function vboxVMList(anchorid) {
 
 	self.vmHTML = function (vmn) {
 		
-		var tbl = $('<table />').attr({'id':'vboxVMListItem-'+self.anchorid+'-'+vmn.id,'class':"vboxVMListVM vboxListItem" + (self.vms[vmn.id].selected ? "Selected" : "")}).bind('click',function(e){
-			
-			if(vmn.id == 'host' && $('#vboxIndex').data('selectedVM') && $('#vboxIndex').data('selectedVM')['id'] == vmn.id) return;
-			if(e.pageX !== undefined && $('#vboxIndex').data('selectedVM') && $('#vboxIndex').data('selectedVM')['id'] == vmn.id) return;
-			
-			$('#vboxIndex').data({'selectedVM':vmn}).trigger('vmselect',[vmn]);
-			
-		}).hover(function(){if(self.dragging)return;$(this).addClass('vboxHover');},function(){$(this).removeClass('vboxHover');}).data('vmid',vmn.id);
+		var tbl = $('<table />').attr({'class':'vboxVMListItem-'+self.anchorid+'-'+vmn.id + " vboxVMListVM vboxListItem"}).bind('click',function(e){
 
-		var tr = $('<tr />');
+			// Don't select host more than once
+			if(self.selectedList.length == 1 && self.selectedList[0].id == vmn.id) return;
+
+			var selectedList = self.selectedList;
+			
+			// If it is the host, only it can be selected
+			if(vmn.id == 'host' || !e.ctrlKey) {
+
+
+				$('#'+self.anchorid).find('table.vboxListItemSelected').each(function(){
+					$(this).addClass('vboxListItem').removeClass('vboxListItemSelected');
+				});
+
+				$(this).addClass('vboxListItemSelected').removeClass('vboxListItem');
+				
+				selectedList = [vmn];
+				
+			}
+			
+			// See if CTRL is selected
+			else if(e.ctrlKey) {
+				
+				if($(this).hasClass('vboxListItemSelected')) {
+					
+					selectedList = jQuery.grep(selectedList, function(v){
+						return (v.id != vmn.id && v.id != 'host');
+					});
+					
+					$(this).addClass('vboxListItem').removeClass('vboxListItemSelected');
+					
+										
+				} else {
+					
+
+					$(this).addClass('vboxListItemSelected').removeClass('vboxListItem');
+
+					// Remove host always
+					selectedList = jQuery.grep(selectedList, function(v){
+						return (v.id != 'host');
+					});
+					
+					selectedList[selectedList.length] = vmn;
+
+				}
+
+				// Host is not selected
+				$('#'+self.anchorid+' table.vboxVMListItem-'+self.anchorid+'-host').addClass('vboxListItem').removeClass('vboxListItemSelected');
+
+
+			}
+			
+			self.selectedList = selectedList;
+			$('#vboxIndex').trigger('vmSelectionChanged', [selectedList]);
+			
+		}).hover(function(){$(this).addClass('vboxHover');},function(){$(this).removeClass('vboxHover');}).data('vmid',vmn.id);
 		
+		if(vmn.id != 'host') {
+			$(tbl).draggable({'cursorAt':{left: -10, top: -10},'helper':function(){
+				return $(this).clone().css({'width':'auto','display':'inline'});
+			},'start':function() {
+				self._dragging = vmn.id;
+			},'stop':function() {
+
+				self._dragging = null;
+				
+				// Where was this dropped?
+				var dropTarget = $('#'+self.anchorid).find('td.vboxVMListDropTargetHover');
+				
+				// Dropped above / below a VM
+				if(dropTarget[0]) {
+					
+					// Get VM from target's parent table
+					if(dropTarget.hasClass('vboxDropTargetTop')) {
+						
+						$(this).detach().insertBefore($(dropTarget).closest('table'));
+						
+					} else {
+						$(this).detach().insertAfter($(dropTarget).closest('table'));
+					}
+				
+				// Dropped on a VM?
+				} else {
+					
+					dropTarget = $('#'+self.anchorid).find('table.vboxHover').first();
+					
+					// Nothing to do. Not dropped on valid target
+					if(!dropTarget[0] || dropTarget.attr('id') == $(this).attr('id')) return;
+					
+					// New position is below target
+					$(this).detach().insertAfter(dropTarget);
+					
+				}
+				
+				var sortOrder = {};
+				var sortOrderCounter = 0;
+				$('#'+self.anchorid).children().each(function(){
+					if($(this).data('vmid') != 'host') {
+						sortOrder[$(this).data('vmid')] = sortOrderCounter++;
+					}
+				});
+				self._sortOrder = sortOrder;
+				self._updateSortOrder = false;
+				window.clearTimeout(self._sortOrderTimer);
+				vboxAjaxRequest('vboxMachineSortOrderSave',{'sortOrder':sortOrder},function(){
+					// Resume using sort order returned from server after one refresh interval
+					self._sortOrderTimer = window.setTimeout(function(){self._updateSortOrder = true;},self.interval*1000);
+				});
+			}});
+		}
+
+		var td = $('<td />').attr({'colspan':'2'}).addClass('vboxVMListDropTarget vboxDropTargetTop');
+		if(vmn.id != 'host') {
+			td.hover(function(){
+				if(self._dragging && self._dragging != vmn.id)
+					$(this).addClass('vboxVMListDropTargetHover');
+			},function(){
+				$(this).removeClass('vboxVMListDropTargetHover');
+			}
+			);
+		}
+		$('<tr />').append(td).appendTo(tbl);
+
+		
+		var tr = $('<tr />');
+
 		// VM OS type icon
 		if($('#vboxIndex').data('vboxConfig').enableCustomIcons && vmn.customIcon) {
 			$('<td />').attr({'rowspan':'2'}).html("<img src='" + vmn.customIcon + "' class='vboxVMIcon' />").appendTo(tr);
@@ -331,12 +456,12 @@ function vboxVMList(anchorid) {
 			}
 		} else {
 			
-			$(td).append('<span class="vboxVMName">'+$('<span />').text(vmn.name).html()+'</span>'+ (vmn.currentSnapshot ? ' (' + $('<span />').text(vmn.currentSnapshot).html() + ')' : ''));
+			$(td).append('<span class="vboxVMName">'+$('<span />').text(vmn.name).html()+'</span>'+ (vmn.currentSnapshotName ? ' (' + $('<span />').text(vmn.currentSnapshotName).html() + ')' : ''));
 			
 			var sdate = new Date(vmn.lastStateChange * 1000);
 
 			// Table gets tool tips
-			tip = self.tip.replace('%1',('<b>'+$('<span />').text(vmn.name).html()+'</b>'+(vmn.currentSnapshot ? ' (' + $('<span />').text(vmn.currentSnapshot).html() + ')' : ''))).replace('%2',trans(vboxVMState(vmn.state),'VBoxGlobal')).replace('%3',sdate.toLocaleString()).replace('%4',trans(vmn.sessionState,'VBoxGlobal'));
+			tip = self.tip.replace('%1',('<b>'+$('<span />').text(vmn.name).html()+'</b>'+(vmn.currentSnapshotName ? ' (' + $('<span />').text(vmn.currentSnapshotName).html() + ')' : ''))).replace('%2',trans(vboxVMState(vmn.state),'VBoxGlobal')).replace('%3',sdate.toLocaleString()).replace('%4',trans(vmn.sessionState,'VBoxGlobal'));
 			$(tbl).tipped({'source':tip,'position':'mouse','delay':2000});
 		}
 		
@@ -364,22 +489,19 @@ function vboxVMList(anchorid) {
 		}
 		
 		$(tr).append(td).appendTo(tbl);
-		
-		// Special case for minimal vms in VM list
-		if(self.minimal && vmn.id != 'host') {
-			
-			// This just contains the os img
-			var cld = $(tbl).find('td').first().remove().children().first();
-			
-			// title
-			var ttl = $(tbl).find('td.vboxVMTitle').first().remove().html();
-			
-			// State icon
-			var si = $(tbl).find('img').first();
-			
-			$(tbl).empty().addClass('vboxVMListMinimal').append($('<tr />').append($('<td />').append(cld).append(si).append(ttl)));
-			
+
+		// Droppable targets
+		var td = $('<td />').attr({'colspan':'2'}).addClass('vboxVMListDropTarget vboxDropTargetBottom');
+		if(vmn.id != 'host') {
+			td.hover(function(){
+				if(self._dragging && self._dragging != vmn.id)
+					$(this).addClass('vboxVMListDropTargetHover');
+				},function(){
+					$(this).removeClass('vboxVMListDropTargetHover');
+				}
+			);
 		}
+		$('<tr />').append(td).appendTo(tbl);
 		
 		// Context menu?
 		if(self.contextMenuObj) {
@@ -393,8 +515,8 @@ function vboxVMList(anchorid) {
 		
 		// Open settings on dblclick
 		$(tbl).dblclick(function(){
-			if(self.contextMenuItems[0].enabled($('#vboxIndex').data('selectedVM')))
-				self.contextMenuItems[0].click();
+			if(self.contextMenuItems[0].enabled(vmn))
+				self.contextMenuItems[0].click(vmn);
 		});
 		
 		return tbl;
@@ -402,8 +524,19 @@ function vboxVMList(anchorid) {
 	};
 
 	self.machineRemove = function(id) {
-		if(self.vms[id].selected) { $('#vboxIndex').trigger('vmselect',null); }
-		$('#vboxVMListItem-'+self.anchorid+'-'+id).remove();
+		var changed = false;
+		var selectedList = self.selectedList.filter(function(v){
+			return (v.id != id);
+		});
+		if (self.selectedList.length != selectedList.length)
+			changed = true;
+		
+		self.selectedList = selectedList;
+		
+		if(changed)
+			$('#vboxIndex').trigger('vmSelectionChanged', [selectedList]);
+		
+		$('#'+self.anchorid +' table.vboxVMListItem-'+self.anchorid+'-'+id).remove();
 		delete self.vms[id];
 	};
 
@@ -413,21 +546,16 @@ function vboxVMList(anchorid) {
 		for(var id in self.vms) {
 		    if (typeof self.vms[id] !== 'function') {
 				if(id == uuidsel) {
-					self.vms[id].selected = true;
+					self.vms[id]._selected = true;
 					$('#vboxVMListItem-'+self.anchorid+'-'+id).removeClass('vboxListItem').addClass('vboxListItemSelected');
 				} else {
-					self.vms[id].selected = false;
+					self.vms[id]._selected = false;
 					$('#vboxVMListItem-'+self.anchorid+'-'+id).addClass('vboxListItem').removeClass('vboxListItemSelected');
 				}
 		    }
 		}
-		self.selected = uuidsel;
 	};
 
-	// return currently selected VM
-	self.getSelectedVM = function () {
-		return (self.selected == null ? null : self.vms[self.selected]);
-	};
 
 	/*
 	 *
@@ -440,11 +568,8 @@ function vboxVMList(anchorid) {
 		if(self._running) return;
 
 		// Subscribe to selected VM changes and refreshes
-		$('#vboxIndex').bind('vmselect',self.selectVM).bind('vmlistreload',function() {
+		$('#vboxIndex').bind('vmlistreload',function() {
 
-			// Get selected vm
-			var svm = self.selected;
-			
 			// Stop vmlist from refreshing..
 			self.stop();
 
@@ -459,85 +584,17 @@ function vboxVMList(anchorid) {
 		}).bind('vmlistrefresh',function(){
 			self.refresh();
 		}).bind('hostChange',function(){
-			$('#vboxIndex').data({'selectedVM':null}).trigger('vmselect',null);
+			self.selectedList = [];
+			$('#vboxIndex').trigger('vmSelectionChanged', [[]]);
 			self.stop();
 			
 		}).bind('hostChanged',function(){
 
 			// These may change based on host configuration
 			self.enforceVMOwnership = $('#vboxIndex').data('vboxConfig').enforceVMOwnership;
-			self.minimal = $('#vboxIndex').data('vboxConfig').vmListMinimal;
 
 			self.start();
 		});
-		
-		// Sort functions
-		switch($('#vboxIndex').data('vboxConfig').vmListSort) {
-		
-			// Sort by GUI
-			case 'gui':
-			case 'GUI':
-				
-				self.sort = function(a,b) {
-					
-					// Check for host
-					if(a.id == 'host') return -1;
-					if(b.id == 'host') return 1;
-					
-					//A is not in sort list
-					if(typeof(self._sortOrder[a.id]) == 'undefined') {
-						if(typeof(self._sortOrder[b.id]) == 'undefined') return self.sortDefault(a,b);
-						return -1; // b is defined, a is not
-					}
-					if(typeof(self._sortOrder[b.id]) == 'undefined') return 1; // a is defined, b is not
-					if(parseInt(self._sortOrder[a.id]) == parseInt(self._sortOrder[b.id])) return 0;
-					return(parseInt(self._sortOrder[a.id]) < parseInt(self._sortOrder[b.id]) ? -1 : 1);
-					
-				};
-
-				// Use returned sort order
-				self._updateSortOrder = true;
-				
-				break;
-			
-			// Sort by OS type
-			case 'os':
-			case 'OS':				
-				self.sort = function(a,b) { return strnatcasecmp(a.OSTypeId,b.OSTypeId); };
-				break;
-				
-			// Sort by name - default
-			case 'name':
-				break;
-				
-			// Running vms placed at top of list
-			case 'running':
-				self.sort = function(a,b) {
-					if(a.state == "Running" && b.state != "Running") return -1;
-					if(b.state == "Running" && a.state != "Running") return 1;
-					return self.sortDefault(a,b);
-				};
-				break;
-		
-			// State change
-			case 'statechange':
-			case 'stateChange':
-				self.sort = function(a,b) {
-					if(a.lastStateChange > b.lastStateChange) return -1;
-					if(b.lastStateChange > a.lastStateChange) return 1;
-					return self.sortDefault(a,b);
-				};
-				break;
-				
-			// Custom sort function
-			default:
-				try {
-					eval("self.sort = " + $('#vboxIndex').data('vboxConfig').vmListSort);
-				} catch (err) {
-					vboxAlert('There was an error parsing your custom sort function. It will not be used.<p>'+err+'</p>');
-					self.sort = null;
-				}
-		}
 		
 		/*
 		 *
@@ -552,8 +609,8 @@ function vboxVMList(anchorid) {
 			self.contextMenuObj.addMenu(self.contextMenuItems);
 			
 			// Update context menu when selected VM changes
-			$('#vboxIndex').bind('vmselect',function(e,vm){
-				self.contextMenuObj.update(vm);				
+			$('#vboxIndex').bind('vmSelectionChanged',function(){
+				self.contextMenuObj.update();
 			});
 		}
 		
@@ -576,35 +633,6 @@ function vboxVMList(anchorid) {
 		
 		}
 		
-		
-		/*
-		 *
-		 * VM List sortable?
-		 *
-		 */
-		if($('#vboxIndex').data('vboxConfig').vmListSort == 'gui') {
-			
-			// God, I love jQuery
-			$('#'+self.anchorid).sortable({'axis':'y','start':function(){self._sorting=true;},'stop':function(){
-				self._sorting=false;
-				if(self._lastList) self.updateList(self._lastList);
-			},'update':function(){
-				var sortOrder = {};
-				var sortOrderCounter = 0;
-				$('#'+self.anchorid).children().each(function(){
-					if($(this).data('vmid') != 'host') {
-						sortOrder[$(this).data('vmid')] = sortOrderCounter++;
-					}
-				});
-				self._sortOrder = sortOrder;
-				self._updateSortOrder = false;
-				window.clearTimeout(self._sortOrderTimer);
-				vboxAjaxRequest('vboxMachineSortOrderSave',{'sortOrder':sortOrder},function(){
-					// Resume using sort order returned from server after one refresh interval
-					self._sortOrderTimer = window.setTimeout(function(){self._updateSortOrder = true;},self.interval*1000);
-				});
-			}});
-		}
 		
 		// Disable dragging selection
 		$('#'+self.anchorid).disableSelection();
@@ -647,8 +675,9 @@ function vboxVMList(anchorid) {
 		window.clearInterval(self._running);
 		self._running = null;
 		self.anchor.html("<div id='vboxVMListSpinner' style='text-align: center'><img src='images/spinner.gif' /></div>");
-		self.vms = self.selected = null;
-		$('#vboxIndex').data({'selectedVM':null}).trigger('vmselect',null);
+		self.vms = null;
+		self.selectedList = [];
+		$('#vboxIndex').trigger('vmSelectionChanged',[[]]);
 	};
 	
 	

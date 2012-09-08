@@ -560,6 +560,10 @@ class vboxconnector {
 				return true;
 
 			} catch (Exception $e) {
+				
+				if(!empty($response['data']['progress']))
+					unset($response['data']['progress']);
+
 				// Try to mount medium
 				$response['data']['errored'] = 1;
 			}
@@ -3300,9 +3304,10 @@ class vboxconnector {
 					'OSTypeId' => $machine->getOSTypeId(),
 					'owner' => (@$this->settings->enforceVMOwnership ? $machine->getExtraData("phpvb/sso/owner") : ''),
 					'id' => $machine->id,
+					'groups' => $machine->groups,
 					'lastStateChange' => floor($machine->lastStateChange/1000),
 					'sessionState' => $machine->sessionState->__toString(),
-					'currentSnapshot' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
+					'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
 					'customIcon' => (@$this->settings->enableCustomIcons ? $machine->getExtraData('phpvb/icon') : ''),
 					'startupMode' => (@$args['startStopConfig'] && @$this->settings->startStopConfig ? $machine->getExtraData('pvbx/startupMode') : '')
 				);

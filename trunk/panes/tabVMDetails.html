@@ -69,7 +69,24 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(){
 
 	}
 
+// VM is being loaded ...
+////////////////////////////
+}).bind('vmLoading', function(e) {
+	
+	if(vboxSelectionData.getSingleSelected()) {
+		
+		$('#vboxVMDetails').hide().children().empty().remove();
 
+		if($('#vboxTabVMDetails').css('display') != 'none') {
+			
+			// Hide all tab children first
+			$('#vboxTabVMDetails').css({'display':'table','width':'100%'}).children().hide();
+			
+			// Display loading div
+			$('#vboxDetailsLoading').show().css('display','table-cell');
+		}
+	}
+	
 // VM data has been loaded
 /////////////////////////////
 }).bind('vmLoaded',function(e, vm) {
@@ -129,15 +146,15 @@ function __vboxDetailRow(name,value,cssClass,html) {
 }
 
 //Draw rows to table
-function __vboxDetailAddRows(data, rows, table, snapshot) {
-		
-	// Is rows a function?
-	if(typeof(rows) == 'function') rows = rows(data, snapshot);
+function __vboxDetailAddRows(data, rows, table) {
 	
+	// Is rows a function?
+	if(typeof(rows) == 'function') rows = rows(data);
+
 	for(var i = 0; i < rows.length; i++) {
 		
 		// Check if row has condition
-		if(rows[i].condition && !rows[i].condition(data, snapshot)) continue;
+		if(rows[i].condition && !rows[i].condition(data)) continue;
 		
 		// hold row data
 		var rowData = '';
@@ -149,7 +166,7 @@ function __vboxDetailAddRows(data, rows, table, snapshot) {
 		
 		// Check for row callback
 		} else if(rows[i].callback) {
-			rowData = rows[i].callback(data, snapshot);
+			rowData = rows[i].callback(data);
 
 		// Static data
 		} else {
@@ -166,105 +183,6 @@ function __vboxDetailAddRows(data, rows, table, snapshot) {
 	
 }
 
-function __vboxDrawPreview(fromSelf,state) {
-
-	if(!fromSelf && $('#vboxVMDetails').data('vboxPreviewTimer')) {
-		window.clearTimeout($('#vboxVMDetails').data('vboxPreviewTimer'));
-		$('#vboxVMDetails').data('vboxPreviewTimer', null);
-	}
-			
-	$(__vboxDrawPreviewImg).empty().remove();
-	var w = $('#vboxIndex').data('vboxConfig')['previewWidth'];
-	__vboxDrawPreviewImg = new Image();
-	__vboxDrawPreviewImg.onload = function(){
-
-	var height = 0;
-	var width = 0;
-		
-		// Error or machine not running
-		if(this.height <= 1) {
-
-			$('#vboxDetailsPreviewImg').css({'display':'none'}).attr('src','images/vbox/blank.gif');
-			$('#vboxDetailsPreviewVMName').css('display','');
-			
-			width = $('#vboxIndex').data('vboxConfig')['previewWidth'];
-			height = width / $('#vboxIndex').data('vboxConfig')['previewAspectRatio'];
-			
-			// Clear timer if it is set
-			if($('#vboxVMDetails').data('vboxPreviewTimer')) {
-				window.clearTimeout($('#vboxVMDetails').data('vboxPreviewTimer'));
-				$('#vboxVMDetails').data('vboxPreviewTimer', null);
-			}
-			
-			
-		} else {
-
-			// Calculate height based on width
-			width = $('#vboxIndex').data('vboxConfig')['previewWidth'];
-			factor = width / this.width;
-			if(!factor) factor = 1;
-			height = this.height * factor;
-			
-			$('#vboxDetailsPreviewVMName').css('display','none');
-			$('#vboxDetailsPreviewImg').css({'display':'','height':height+'px','width':width+'px'});
-			
-			// IE uses filter
-			if($.browser.msie) {
-				
-				if($('#vboxIndex').data('selectedVM').state == 'Running') {
-					
-					// Setting background URL keeps image from being requested again, but does not allow us to set
-					// the size of the image. This is fine, since the image is returned in the size requested.
-					$('#vboxDetailsPreviewImg').css({"filter":""}).parent().css({'background':'url('+this.src+')'});
-				
-				} else {
-					
-					// This causes the image to be requested again, but is the only way to size the background image.
-					// Saved preview images are not returned in the size requested and must be resized at runtime by
-					// the browser.
-					$('#vboxDetailsPreviewImg').css({"filter":"progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled='true', src='"+this.src+"', sizingMethod='scale')"}).parent().css({'background':'#000'});
-				}
-				
-			// Webkit based browsers will re-download the image if we just set the image source
-			} else if($.browser.webkit) {
-				
-				$('#vboxDetailsPreviewImg').css({'background-image':'url('+vboxDisplayGetBase64Image(this)+')'});
-			
-			} else {
-				$('#vboxDetailsPreviewImg').css({'background-image':'url('+this.src+')','background-size':(width+1) +'px ' + (height+1)+'px'});
-			}
-			// Keep refreshing preview if VM is running
-			if(state == 'Running') {
-				$('#vboxVMDetails').data('vboxPreviewTimer',window.setTimeout(function(){
-					__vboxDrawPreview(true, state);
-				},$('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] * 1000));
-			}
-			
-		}
-		$('#vboxTabVMDetails .vboxDetailsPreviewWrap').css({'height':height+'px','width':width+'px'});
-		$('#vboxTabVMDetails .vboxDetailsTableBoxPreview').find('img.vboxPreviewMonitor').css('width',width+'px');
-		$('#vboxTabVMDetails .vboxDetailsTableBoxPreview').find('img.vboxPreviewMonitorSide').css('height',height+'px');
-	};
-
-	// Update disabled? State not Running or Saved
-	if($('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] == 0 || (state != 'Running' && state != 'Saved')) {
-		__vboxDrawPreviewImg.height = 0;
-		__vboxDrawPreviewImg.onload();
-	} else {
-		// Running VMs get random numbers. Saved are based on last state change.
-		// Try to let the browser cache Saved screen shots
-		var randid = '';
-		if(state == 'Running') {
-			var currentTime = new Date();
-			randid = Math.floor(currentTime.getTime() / 1000);			
-		} else {
-			randid = $('#vboxIndex').data('selectedVM').lastStateChange;
-		}
-		__vboxDrawPreviewImg.src = 'screen.php?width='+(w)+'&vm='+$('#vboxIndex').data('selectedVM').id+'&randid='+randid;
-	}
-
-}
-
 // Details section
 ////////////////////////////
 function __vboxCreateDetailsSection(data, sectionName, section) {
@@ -272,7 +190,9 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 	if(!section)
 		section = vboxVMDetailsSections[sectionName];
 
-	var ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'><a href=\"javascript:vboxVMsettingsInit('"+data.id+"',null,'%2');\">%3</a></span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
+	var ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'>"+
+	"<a href=\"javascript:vboxVMsettingsInit('"+data.id+"',null,'%2');\">%3</a>"+
+	"</span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
 	
 	// No link if VM is not in valid state
 	if(!((data.state == 'Running' || data.sessionState == 'Unlocked') && data.state != 'Saved')) {
@@ -293,7 +213,9 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 
 	
 	var tbody = $('<tbody />');
+	
 	__vboxDetailAddRows(data, section.rows, tbody);
+	
 	
 	// Class added to last row to aid in rounded corners
 	if(section.noFooter) {

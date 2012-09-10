@@ -228,7 +228,8 @@ function vboxPortForwardConfigInit(rules,callback) {
 			var rulesToPass = new Array();
 			for(var i = 0; i < rules.length; i++) {
 				if($(rules[i]).data('vboxRule')[3] == 0 || $(rules[i]).data('vboxRule')[5] == 0) {
-					vboxAlert(trans('The current port forwarding rules are not valid. None of the host or guest port values may be set to zero.','UIMessageCenter'));
+					vboxAlert(trans("The current port forwarding rules are not valid. " +
+				               "None of the host or guest port values may be set to zero.",'UIMessageCenter'));
 					return;
 				}
 				rulesToPass[i] = $(rules[i]).data('vboxRule');
@@ -626,7 +627,11 @@ function vboxWizardNewHDInit(callback,suggested) {
 			},{'file':loc});
 			l.onLoad = function() { 
 				if(fileExists) {
-					vboxAlert(trans('<p>The hard disk storage unit at location <b>%1</b> already exists. You cannot create a new virtual hard disk that uses this location because it can be already used by another virtual hard disk.</p><p>Please specify a different location.</p>','UIMessageCenter').replace('%1',loc));
+					vboxAlert(trans("<p>The hard disk storage unit at location <b>%1</b> already " +
+					           "exists. You cannot create a new virtual hard disk that uses this " +
+					           "location because it can be already used by another virtual hard " +
+					           "disk.</p>" +
+					           "<p>Please specify a different location.</p>",'UIMessageCenter').replace('%1',loc));
 					return;
 				}
 				var fsplit = (document.forms['frmwizardNewHD'].newHardDiskSplit.checked ? 1 : 0);
@@ -731,7 +736,11 @@ function vboxWizardCopyHDInit(callback,suggested) {
 			},{'file':loc});
 			fe.onLoad = function() { 
 				if(fileExists) {
-					vboxAlert(trans('<p>The hard disk storage unit at loc <b>%1</b> already exists. You cannot create a new virtual hard disk that uses this loc because it can be already used by another virtual hard disk.</p><p>Please specify a different loc.</p>','UIMessageCenter').replace('%1',loc));
+					vboxAlert(trans("<p>The hard disk storage unit at location <b>%1</b> already " +
+					           "exists. You cannot create a new virtual hard disk that uses this " +
+					           "location because it can be already used by another virtual hard " +
+					           "disk.</p>" +
+					           "<p>Please specify a different location.</p>",'UIMessageCenter').replace('%1',loc));
 					return;
 				}
 				$(dialog).trigger('close').empty().remove();
@@ -835,7 +844,7 @@ function vboxPrefsInit() {
 		// Update host info in case interfaces were added / removed
 		} else if(vboxSelectionData.getSingleSelected() && vboxSelectionData.getSingleSelected()['id'] == 'host') {
 			l.onLoad = function() {
-				$('#vboxIndex').trigger('selectedVMUpdated',['host']);
+				$('#vboxIndex').trigger('vmChanged',['host']);
 			};
 		}
 		l.add('hostOnlyInterfacesSave',function(){},{'networkInterfaces':$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces});
@@ -858,6 +867,9 @@ function vboxPrefsInit() {
  */
 function vboxVMsettingsInit(vm,callback,pane) {
 	
+	if(typeof(vm) == 'string')
+		vm = vboxSelectionData.vmData[vm];
+	
 	var panes = new Array(
 	
 		{'name':'General','label':'General','icon':'machine','tabbed':true,'context':'UIMachineSettingsGeneral'},
@@ -877,11 +889,11 @@ function vboxVMsettingsInit(vm,callback,pane) {
 		{'fn':'vboxGetMedia','callback':function(d){$('#vboxIndex').data('vboxMedia',d);}},
 		{'fn':'hostGetNetworking','callback':function(d){$('#vboxSettingsDialog').data('vboxHostNetworking',d);}},
 		{'fn':'hostGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxHostDetails',d);}},
-		{'fn':'machineGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxMachineData',d);},'args':{'vm':vm,'force_refresh':($('#vboxIndex').data('vboxConfig').vmConfigRefresh || $('#vboxIndex').data('vboxConfig').enableHDFlushConfig)}},
+		{'fn':'machineGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxMachineData',d);},'args':{'vm':vm.id,'force_refresh':($('#vboxIndex').data('vboxConfig').vmConfigRefresh || $('#vboxIndex').data('vboxConfig').enableHDFlushConfig)}},
 		{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxNetworkAdapterTypes',d);},'args':{'class':'NetworkAdapterType'}},
 		{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxAudioControllerTypes',d);},'args':{'class':'AudioControllerType'}},
 		{'fn':'vboxRecentMediaGet','callback':function(d){$('#vboxIndex').data('vboxRecentMedia',d);}},
-		{'fn':'consoleGetSharedFolders','callback':function(d){$('#vboxSettingsDialog').data('vboxTransientSharedFolders',d);},'args':{'vm':vm}}
+		{'fn':'consoleGetSharedFolders','callback':function(d){$('#vboxSettingsDialog').data('vboxTransientSharedFolders',d);},'args':{'vm':vm.id}}
 
 	);
 
@@ -910,6 +922,9 @@ function vboxVMsettingsInit(vm,callback,pane) {
  */
 function vboxVMsettingsInitNetwork(vm,callback) {
 	
+	if(typeof(vm) == 'string')
+		vm = vboxSelectionData.vmData[vm];
+
 	var panes = new Array(
 		{'name':'Network','label':'Network','icon':'nw','tabbed':true,'context':'UIMachineSettingsNetwork'}
 	);
@@ -917,7 +932,7 @@ function vboxVMsettingsInitNetwork(vm,callback) {
 	var data = new Array(
 			{'fn':'hostGetNetworking','callback':function(d){$('#vboxSettingsDialog').data('vboxHostNetworking',d);}},
 			{'fn':'hostGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxHostDetails',d);}},
-			{'fn':'machineGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxMachineData',d);},'args':{'vm':vm}},
+			{'fn':'machineGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxMachineData',d);},'args':{'vm':vm.id}},
 			{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxNetworkAdapterTypes',d);},'args':{'class':'NetworkAdapterType'}},
 			{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxAudioControllerTypes',d);},'args':{'class':'AudioControllerType'}}
 
@@ -940,15 +955,18 @@ function vboxVMsettingsInitNetwork(vm,callback) {
  * @param {Function} callback - callback function to perform after settings have been saved
  */
 function vboxVMsettingsInitSharedFolders(vm,callback) {
-	
+
+	if(typeof(vm) == 'string')
+		vm = vboxSelectionData.vmData[vm];
+
 	var panes = new Array(
 		{'name':'SharedFolders','label':'Shared Folders','icon':'shared_folder','tabbed':false,'context':'UIMachineSettingsSF'}
 	);
 	
 	var data = new Array(
 			{'fn':'hostGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxHostDetails',d);}},
-			{'fn':'machineGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxMachineData',d);},'args':{'vm':vm}},
-			{'fn':'consoleGetSharedFolders','callback':function(d){$('#vboxSettingsDialog').data('vboxTransientSharedFolders',d);},'args':{'vm':vm}}
+			{'fn':'machineGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxMachineData',d);},'args':{'vm':vm.id}},
+			{'fn':'consoleGetSharedFolders','callback':function(d){$('#vboxSettingsDialog').data('vboxTransientSharedFolders',d);},'args':{'vm':vm.id}}
 	);
 
 	vboxSettingsDialog(trans('Settings','VBoxSettingsDialog'),panes,data,function(){

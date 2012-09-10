@@ -514,7 +514,10 @@ var vmmButtons = new Array(
 			if(m.deviceType == 'HardDisk' && $('#vboxIndex').data('vboxConfig').deleteOnRemove && m.format != 'iSCSI') {
 
 				
-				q = trans('<p>Do you want to delete the storage unit of the hard disk <nobr><b>%1</b></nobr>?</p><p>If you select <b>Delete</b> then the specified storage unit will be permanently deleted. This operation <b>cannot be undone</b>.</p><p>If you select <b>Keep</b> then the hard disk will be only removed from the list of known hard disks, but the storage unit will be left untouched which makes it possible to add this hard disk to the list later again.</p>','UIMessageCenter').replace('%1',m.location);
+				q = trans('<p>Do you want to delete the storage unit of the hard disk <nobr><b>%1</b></nobr>?</p><p>If you select <b>Delete</b> ' +
+						'then the specified storage unit will be permanently deleted. This operation <b>cannot be undone</b>.</p><p>If you select '+
+						'<b>Keep</b> then the hard disk will be only removed from the list of known hard disks, but the storage unit will be left '+
+						'untouched which makes it possible to add this hard disk to the list later again.</p>','UIMessageCenter').replace('%1',m.location);
 				
 				buttons[trans('Delete','UIMessageCenter')] = function(){
 					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType,'delete':1},function(ret){

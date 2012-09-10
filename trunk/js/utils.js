@@ -709,7 +709,10 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 		// There's no CDROM drive
 		} else if(d && d.result && d.result == 'nocdrom') {
 			
-			vboxAlert(trans('<p>Could not insert the VirtualBox Guest Additions installer CD image into the virtual machine <b>%1</b>, as the machine has no CD/DVD-ROM drives. Please add a drive using the storage page of the virtual machine settings dialog.</p>','UIMessageCenter').replace('%1',vboxSelectionData.getSingleSelected().name));
+			vboxAlert(trans("<p>Could not insert the VirtualBox Guest Additions " +
+	                "installer CD image into the virtual machine <b>%1</b>, as the machine " +
+	                "has no CD/DVD-ROM drives. Please add a drive using the " +
+	                "storage page of the virtual machine settings dialog.</p>",'UIMessageCenter').replace('%1',vboxSelectionData.getSingleSelected().name));
 			
 		// Can't find guest additions
 		} else if (d && d.result && d.result == 'noadditions') {

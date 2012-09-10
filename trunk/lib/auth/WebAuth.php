@@ -11,7 +11,7 @@ class phpvbAuthWebAuth implements phpvbAuth {
 		);
 	
 	var $config = array(
-		'serverUserKey' => 'HTTP_X_WEBAUTH_USER',
+		'serverUserKey' => 'REMOTE_USER',
 		'adminUser' => null
 	);
 	
@@ -31,7 +31,7 @@ class phpvbAuthWebAuth implements phpvbAuth {
 		{
 			$_SESSION['valid'] = true;
 			$_SESSION['user'] = $_SERVER[$this->config['serverUserKey']];
-			$_SESSION['admin'] = ($_SESSION['user'] === $this->config['adminUser']);
+			$_SESSION['admin'] = (!$this->config['adminUser']) || ($_SESSION['user'] == $this->config['adminUser']);
 			$_SESSION['authCheckHeartbeat'] = time();			
 		}
 	}

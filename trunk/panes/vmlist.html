@@ -610,7 +610,8 @@ function vboxVMList(anchorid) {
 			
 			// Update context menu when selected VM changes
 			$('#vboxIndex').bind('vmSelectionChanged',function(){
-				self.contextMenuObj.update();
+				var vm = vboxSelectionData.getSingleSelected();
+				self.contextMenuObj.update(vm);
 			});
 		}
 		

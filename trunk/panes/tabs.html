@@ -179,7 +179,7 @@ function vboxTabs(id) {
 		
 		// Was this tab selected?
 		if(self.tabSelected == '#'+tab.name)
-			self.showTab('#'+self.tabs[0].name, vm);
+			self.showTab('#'+self.tabs[0].name);
 
 		$('#tabsMain-'+tab.name).addClass('vboxDisabled').find('img').attr('src','images/vbox/'+(tab.disabled_icon ? tab.disabled_icon : tab.icon+'_disabled')+'_16px.png');
 	};

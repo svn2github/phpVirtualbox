@@ -3426,6 +3426,7 @@ class vboxconnector {
 		return array(
 			'name' => @$this->settings->enforceVMOwnership ? preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $m->name) : $m->name,
 			'description' => $m->description,
+			'groups' => $m->groups,
 			'id' => $m->id,
 			'settingsFilePath' => $m->settingsFilePath,
 			'OSTypeId' => $m->OSTypeId,

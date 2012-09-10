@@ -110,7 +110,7 @@ vboxSelectionDataObj = function() {
 	self.vmChanged = function(e, data) {
 		
 		// Is it a selected VM?
-		if(self.vmData[data.id]) {
+		if(data && self.vmData[data.id]) {
 			
 			var vmid = data.id;
 			
@@ -433,6 +433,17 @@ var vboxVMDetailsSections = {
 			   title: trans('Guest Additions Version'),
 			   attrib: 'guestAdditionsVersion'
 		   },
+		   {
+			   title: trans('Groups'),
+			   condition: function(){ return false; },
+			   callback: function(d) {
+				   if(d.groups && d.groups.length > 0)
+					   return jQuery.map(d.groups,function(elm) {
+						   if(elm.length > 1) return elm.substring(1);
+						   return elm;
+					   }).join(', ');
+			   }
+		   }
 		   
 		]
 	},
@@ -649,20 +660,44 @@ var vboxVMDetailsSections = {
 		    return canvas.toDataURL("image/png");
 		},
 		
+			
 		onRender : function(d) {
-			
-			var w = $('#vboxIndex').data('vboxConfig')['previewWidth'];
-			
+
 			if(d.state != 'Running' && d.state != 'Saved')
 				return;
+		
+			vboxVMDetailsSections.preview._drawPreview(d);
 			
-			__vboxDrawPreviewImg = new Image();			
+			if(d.state == 'Running') {
+				
+				var timer = $('#vboxIndex').data('vboxPreviewTimer-'+d.id);
+				if(timer) window.clearInterval(timer);
+				
+				$('#vboxIndex').data('vboxPreviewTimer-'+d.id,window.setInterval(function(){
+					
+					// Does the target still exist?
+					if(!$('#vboxDetailsGeneralTable-'+d.id)[0]) {
+						var timer = $('#vboxIndex').data('vboxPreviewTimer-'+d.id);
+						if(timer) window.clearInterval(timer);
+						return;
+					}
+					vboxVMDetailsSections.preview._drawPreview(d);
+					
+				},$('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] * 1000));
+
+			}
+		},
+		
+		_drawPreview: function(d) {
+			
+			
+			var width = $('#vboxIndex').data('vboxConfig')['previewWidth'];
+			
+			var __vboxDrawPreviewImg = new Image();			
 			__vboxDrawPreviewImg.onload = function() {
 
-				var baseStr = 'vboxDetailsGeneralTable-'+d.id;
 				var height = 0;
-				var width = 0;
-					
+				var baseStr = 'vboxDetailsGeneralTable-'+d.id;
 				
 				// Error or machine not running
 				if(this.height <= 1) {
@@ -672,6 +707,11 @@ var vboxVMDetailsSections = {
 					
 					width = $('#vboxIndex').data('vboxConfig')['previewWidth'];
 					height = width / $('#vboxIndex').data('vboxConfig')['previewAspectRatio'];
+					
+					// Clear interval if set
+					var timer = $('#vboxIndex').data('vboxPreviewTimer-'+d.id);
+					if(timer) window.clearInterval(timer);
+
 					
 										
 				} else {
@@ -729,10 +769,12 @@ var vboxVMDetailsSections = {
 				var randid = d.lastStateChange;
 				if(d.state == 'Running') {
 					var currentTime = new Date();
-					randid = Math.floor(currentTime.getTime() / 1000);			
+					randid = Math.floor(currentTime.getTime() / 1000);
 				}
-				__vboxDrawPreviewImg.src = 'screen.php?width='+(w)+'&vm='+d.id+'&randid='+randid;
+				__vboxDrawPreviewImg.src = 'screen.php?width='+(width)+'&vm='+d.id+'&randid='+randid;
+				
 			}
+			
 
 
 		},
@@ -801,32 +843,28 @@ var vboxVMDetailsSections = {
 			   }
 		   },{
 			   title: 'Remote Desktop Server Port',
-			   callback: function(d, snapshot) {
+			   callback: function(d) {
 				   
 				   var chost = vboxGetVRDEAddress(d);
 				
 				   var rowStr = d['VRDEServer']['ports'];
 				
 				   // Display links?
-				   
-				   if(d['state'] == 'Running' || !d['VRDEServer']['ports'].match(/[^\d]/)) {
+				   if(!d._isSnapshot && (d['state'] == 'Running' || !d['VRDEServer']['ports'].match(/[^\d]/))) {
 					   rowStr = " <a href='rdp.php?host=" + chost + '&port=' + d['VRDEServer']['ports'] + "&id=" + d['id'] + "&vm=" + encodeURIComponent(d['name']) + "'>" + d['VRDEServer']['ports'] + "</a>";
 				   }
-				   if(d['state'] == 'Running' && d['consoleInfo'] && parseInt(d['consoleInfo']['consolePort']) > 0) {
+				   if(!d._isSnapshot && d['state'] == 'Running' && d['consoleInfo'] && parseInt(d['consoleInfo']['consolePort']) > 0) {
 					   rowStr += ' <img src="images/vbox/blank.gif" style="vspace:0px;hspace:0px;height2px;width:10px;" /> (' + chost + ':' + d['consoleInfo']['consolePort'] + ')';
-				   }
-				   /*
-				   } else {
+				   } else if(!d._isSnapshot){
 					   rowStr += ' ('+chost+')';
 				   }
-				   */
 				   return rowStr;
 				   
   
 			   },
 			   html: true,
-			   condition: function(d, snapshot) {
-				   return (d['VRDEServer'] && d['VRDEServer']['VRDEExtPack'] && d['VRDEServer']['enabled'] && d['VRDEServer']['ports']);
+			   condition: function(d) {
+				   return (d['VRDEServer'] && (d._isSnapshot || d['VRDEServer']['VRDEExtPack']) && d['VRDEServer']['enabled'] && d['VRDEServer']['ports']);
 			   }
 		   },{
 			   title: "Remote Desktop Server",
@@ -834,7 +872,7 @@ var vboxVMDetailsSections = {
 				   return trans('Disabled','VBoxGlobal',null,'details report (VRDE Server)');
 			   },
 			   condition: function(d) {
-				   return !(d['VRDEServer'] && d['VRDEServer']['VRDEExtPack'] && d['VRDEServer']['enabled'] && d['VRDEServer']['ports']);
+				   return !(d['VRDEServer'] && (d._isSnapshot || d['VRDEServer']['VRDEExtPack']) && d['VRDEServer']['enabled'] && d['VRDEServer']['ports']);
 			   }
 		   }
 		]
@@ -860,7 +898,7 @@ var vboxVMDetailsSections = {
 				// Controller name
 				rows[rows.length] = {
 						title: $('<div />').text(con.name).html() + ((con.bus == 'SATA' && advancedView) ? ' (' + con.portCount + ')' : ''),
-						callback: function() { return ''; }
+						callback: function(){return'';}
 				};
 						
 				// Each attachment.
@@ -874,36 +912,22 @@ var vboxVMDetailsSections = {
 					// Do we need to reload media?
 					if(d['storageControllers'][a]['mediumAttachments'][b].medium && d['storageControllers'][a]['mediumAttachments'][b].medium.id && medium === null) {
 						
-						// Already tried to reload media, don't get caught in a loop
-						if(!$('#vboxTabVMDetails').data('vboxMediaReload')) {
-							
-							$('#vboxTabVMDetails').data('vboxMediaReload', 1);
-							
-							
-							var l = new vboxLoader();
-							l.add('machineGetDetails',function(d){return;},{'vm':d.id,'force_refresh':1});
-							l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);},{'force_refresh':1});
-							l.onLoad = function() {
-								$('#vboxIndex').trigger('vmChanged', d.id);
-							};
-							l.run();
-							return;
+						portDesc = trans('Refresh','VBoxSelectorWnd');
+
+					} else {
+						
+						// Get base medium (snapshot -> virtual disk file)
+						var it = false;
+						if(medium && medium.base && (medium.base != medium.id)) {
+							it = true;
+							medium = vboxMedia.getMediumById(medium.base);
 						}
-					}
-					
-					
-					// Get base medium (snapshot -> virtual disk file)
-					var it = false;
-					if(medium && medium.base && (medium.base != medium.id)) {
-						it = true;
-						medium = vboxMedia.getMediumById(medium.base);
-					}
 
-
-					portDesc = vboxMedia.mediumPrint(medium,false,it);
+						portDesc = vboxMedia.mediumPrint(medium,false,it);
+					}
 
 					rows[rows.length] = {
-						title: portName + (d['storageControllers'][a]['mediumAttachments'][b].type == 'DVD' ? ' ' + trans('(CD/DVD)') : ''),
+						title: portName + (d['storageControllers'][a]['mediumAttachments'][b].type == 'DVD' ? ' ' + trans('[CD/DVD]') : ''),
 						indented: true,
 						data: portDesc,
 						html: true
@@ -1406,7 +1430,7 @@ var vboxVMActions = {
 				l.run();
 				
 			};
-			var q = trans('<p>You are about to remove the virtual machine <b>%1</b> from the machine list.</p><p>Would you like to delete the files containing the virtual machine from your hard disk as well? Doing this will also remove the files containing the machine\'s virtual hard disks if they are not in use by another machine.</p>','UIMessageCenter').replace('%1',vm.name);
+			var q = trans('<p>You are about to remove following virtual machines from the machine list:</p><p>%1</p><p>Would you like to delete the files containing the virtual machine from your hard disk as well? Doing this will also remove the files containing the machine\'s virtual hard disks if they are not in use by another machine.</p>','UIMessageCenter').replace('%1',vm.name);
 				
 			vboxConfirm(q,buttons);
 			
@@ -1417,7 +1441,7 @@ var vboxVMActions = {
     
     /** Discard VM State */
     discard: {
-		label:'Discard Saved State',
+		label:'Discard saved state',
 		icon:'discard',
 		click:function(){
 			
@@ -1431,7 +1455,7 @@ var vboxVMActions = {
 				l.onLoad = function(){$('#vboxIndex').trigger('vmlistrefresh');};
 				l.run();
 			};
-			vboxConfirm(trans('<p>Are you sure you want to discard the saved state of the virtual machine <b>%1</b>?</p><p>This operation is equivalent to resetting or powering off the machine without doing a proper shutdown of the guest OS.</p>','UIMessageCenter').replace('%1',vm.name),buttons);
+			vboxConfirm(trans('<p>Are you sure you want to discard the saved state of the following virtual machines?</p><p><b>%1</b></p><p>This operation is equivalent to resetting or powering off the machine without doing a proper shutdown of the guest OS.</p>','UIMessageCenter').replace('%1',vm.name),buttons);
 		},
 		enabled:function(vm){ return (vm.state == 'Saved'); }
     },
@@ -1463,7 +1487,14 @@ var vboxVMActions = {
 		icon: 'acpi',
 		stop_action: true,
 		enabled: function(vm){ return (vm.state == 'Running'); },
-		click: function() {vboxVMActions.powerAction('powerbutton');}
+		click: function() {
+			var buttons = {};
+			buttons[trans('ACPI Shutdown','UIMessageCenter')] = function() {
+				vboxVMActions.powerAction('powerbutton');				
+			};
+			vboxConfirm(trans("<p>Do you really want to send an ACPI shutdown signal " +
+					"to the following virtual machines?</p><p><b>%1</b></p>",'UIMessageCenter').replace('%1', vboxSelectionData.getSingleSelected().name),buttons);
+		}
 	},
 	
 	/** Pause a running VM */
@@ -1478,12 +1509,20 @@ var vboxVMActions = {
 	
 	/** Power off  a VM */
 	powerdown: {
-		label: 'Power off the machine',
+		label: 'Power Off',
 		icon: 'poweroff',
 		stop_action: true,
-		context: 'UIVMCloseDialog',
+		context: 'UIMessageCenter',
 		enabled: function(vm) { return (jQuery.inArray(vm.state,['Running','Paused','Stuck']) > -1); },
-		click: function() {vboxVMActions.powerAction('powerdown'); }
+		click: function() {
+			var buttons = {};
+			buttons[trans('Power Off','UIMessageCenter')] = function() {
+				vboxVMActions.powerAction('powerdown');				
+			};
+			vboxConfirm(trans("<p>Do you really want to power off the following virtual machines?</p>" +
+	           "<p><b>%1</b></p><p>This will cause any unsaved data in applications " +
+	           "running inside it to be lost.</p>", 'UIMessageCenter').replace('%1', vboxSelectionData.getSingleSelected().name), buttons);
+		}
 	},
 	
 	/** Reset a VM */
@@ -1498,7 +1537,7 @@ var vboxVMActions = {
 				$(this).remove();
 				vboxVMActions.powerAction('reset');
 			};
-			vboxConfirm(trans('<p>Do you really want to reset the virtual machine?</p><p>This will cause any unsaved data in applications running inside it to be lost.</p>','UIMessageCenter'),buttons);
+			vboxConfirm(trans("<p>Do you really want to reset the following virtual machines?</p><p><b>%1</b></p><p>This will cause any unsaved data in applications running inside it to be lost.</p>",'UIMessageCenter').replace('%1',vboxSelectionData.getSingleSelected().name),buttons);
 		}
 	},
 	

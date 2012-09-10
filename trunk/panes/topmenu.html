@@ -211,12 +211,12 @@ vboxTopMenuBar.addMenu(menu);
 
 vboxTopMenuBar.addMenuBar('vboxMenu');
 
-$('#vboxIndex').bind('vmLoaded',function(e,vm){
+$('#vboxIndex').bind('vmLoaded',function(e){
 	var vm = vboxSelectionData.getSingleSelected();
-	vboxTopMenuBar.update(vm);
-}).bind('vmSelectionListChanged',function(){
+	vboxTopMenuBar.update(e,vm);
+}).bind('vmSelectionListChanged',function(e){
 	var vm = vboxSelectionData.getSingleSelected();
-	vboxTopMenuBar.update(vm);
+	vboxTopMenuBar.update(e,vm);
 });
 
 

@@ -95,19 +95,20 @@ var vboxSnapshotButtons = [
   			else if(item && $(item).data('vboxSnapshot')) state = $(item).data('vboxSnapshot').state;
   			else return false;
   			
-  			var vm = $('#vboxIndex').data('selectedVMs')[0];
+  			var vm = vboxSelectionData.getSingleSelected();
   			return (item && state == 'current' && vm.state != 'RestoringSnapshot' && vm.state != 'LiveSnapshotting' && vm.state != 'DeletingSnapshot');
   		},
   		'click' : function (callback) {
 
   			// Circumvent VirtualBox bug
-  			if($('#vboxIndex').data('selectedVMs')[0].state == 'Running') {
+  			var vm = vboxSelectionData.getSingleSelected();
+  			if(vm.state == 'Running') {
   				
   				vboxAlert("VirtualBox has a bug that will cause it to crash when taking a snapshot of a running virtual machine. Please pause the VM and try again. See <a href='http://www.virtualbox.org/ticket/9255' target=_blank>http://www.virtualbox.org/ticket/9255</a> for more information.");
 	  			return;
   			}
   			
-  			$('#vboxSnapshotNewImg').attr('src',"images/vbox/" + vboxGuestOSTypeIcon($('#vboxTabVMSnapshots').data('machine').OSTypeId));
+  			$('#vboxSnapshotNewImg').attr('src',"images/vbox/" + vboxGuestOSTypeIcon(vm.OSTypeId));
 
   			var snRegEx = new RegExp('^' + trans('Snapshot %1','VBoxSnapshotsWgt').replace('%1','([0-9]+)') + '$');
   			
@@ -131,15 +132,25 @@ var vboxSnapshotButtons = [
 						vboxProgress(d.progress,function(){
 							
 							// callback passed to click()? else Refresh vm list
-							if(typeof callback == 'function') callback();
-							else $('#vboxIndex').trigger('vmlistrefresh');
+							if(typeof callback == 'function') { callback(); }
+							else {
+								var l = new vboxLoader();
+								l.add('vboxGetMedia',function(m){
+									$('#vboxIndex').data('vboxMedia',m);
+								},{'force_refresh':1});
+								l.onLoad = function() {
+									$('#vboxIndex').trigger('vmlistrefresh');
+								}
+								l.run();
+
+							}
 
 							
 						},{},'progress_snapshot_create_90px.png',trans('Take Snapshot...','UIActionPool'));
 					} else if(d && d.error) {
 						vboxAlert(d.error);
 					}
-	 	  		},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'name':$('#vboxSnapshotNewName').val(),'description':$('#vboxSnapshotNewDesc').val()});
+	 	  		},{'vm':vm.id,'name':$('#vboxSnapshotNewName').val(),'description':$('#vboxSnapshotNewDesc').val()});
 	 	  		$(this).dialog('close');
 				l.run();
 
@@ -161,10 +172,12 @@ var vboxSnapshotButtons = [
   		'label' : 'Restore Snapshot',
   		'icon' : 'discard_cur_state',
   		'enabled' : function(item) {
-			var vm = $('#vboxTabVMSnapshots').data('machine');
+  			var vm = vboxSelectionData.getSingleSelected();
   			return ( item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && $(item).data('vboxSnapshot').state != 'current' && vm.state != 'Running' && vm.state != 'Paused');
   		},
   		'click' : function () {
+  			
+  			var vm = vboxSelectionData.getSingleSelected();
   			
   	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
   	  		
@@ -172,9 +185,11 @@ var vboxSnapshotButtons = [
 			var q = '';
 			
 			// Check if the current state is modified
-			if($('#vboxTabVMSnapshots').data('machine').currentStateModified) {
+			if(vm.currentStateModified) {
 
-				q = trans('<p>You are about to restore snapshot <b>%1</b>.</p><p>You can create a snapshot of the current state of the virtual machine first by checking the box below; if you do not do this the current state will be permanently lost. Do you wish to proceed?</p>','UIMessageCenter');
+				q = trans("<p>You are about to restore snapshot <nobr><b>%1</b></nobr>.</p>" +
+                        "<p>You can create a snapshot of the current state of the virtual machine first by checking the box below; " +
+                        "if you do not do this the current state will be permanently lost. Do you wish to proceed?</p>",'UIMessageCenter');
 				q += '<p><label><input type="checkbox" id="vboxRestoreSnapshotCreate" checked /> ' + trans('Create a snapshot of the current machine state','UIMessageCenter') + '</label></p>';
 				
 				buttons[trans('Restore','UIMessageCenter')] = function() {
@@ -189,14 +204,14 @@ var vboxSnapshotButtons = [
 									$('#vboxIndex').trigger('vmlistrefresh');
 
 									// When restoring current snapshot, force refresh. It will not happen auto because snapshot name does not change
-									if($('#vboxTabVMSnapshots').data('machine').currentSnapshot && $('#vboxTabVMSnapshots').data('machine').currentSnapshot.id && $('#vboxTabVMSnapshots').data('machine').currentSnapshot.id == snapshot.id)
+									if(vm.currentSnapshot && vm.currentSnapshot.id && vm.currentSnapshot.id == snapshot.id)
 										$('#vboxTabVMSnapshots').trigger('refresh');
 
 								},{},'progress_snapshot_restore_90px.png',trans('Restore Snapshot','VBoxSnapshotsWgt'));
 							} else if(d && d.error) {
 								vboxAlert(d.error);
 							}
-			 	  		},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id});
+			 	  		},{'vm':vm.id,'snapshot':snapshot.id});
 						l.run();										
 
 						// Remove snapshots
@@ -229,14 +244,14 @@ var vboxSnapshotButtons = [
 								$('#vboxIndex').trigger('vmlistrefresh');
 								
 								// When restoring current snapshot, force refresh. It will not happen auto because snapshot name does not change
-								if($('#vboxTabVMSnapshots').data('machine').currentSnapshot && $('#vboxTabVMSnapshots').data('machine').currentSnapshot.id && $('#vboxTabVMSnapshots').data('machine').currentSnapshot.id == snapshot.id)
+								if(vm.currentSnapshot && vm.currentSnapshot.id && vm.currentSnapshot.id == snapshot.id)
 									$('#vboxTabVMSnapshots').trigger('refresh');
 								
 							},{},'progress_snapshot_restore_90px.png',trans('Restore Snapshot','VBoxSnapshotsWgt'));
 						} else if(d && d.error) {
 							vboxAlert(d.error);
 						}
-		 	  		},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id});
+		 	  		},{'vm':vm.id,'snapshot':snapshot.id});
 		  	  		$(this).empty().remove();
 					l.run();				
 
@@ -261,6 +276,7 @@ var vboxSnapshotButtons = [
   			return (item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && $(item).data('vboxSnapshot').state != 'current' && $(item).data('vboxSnapshot').children.length <= 1);
   		},
   		'click' : function () {
+  			var vm = vboxSelectionData.getSingleSelected();
   	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
 			var buttons = {};
 			buttons[trans('Delete','UIMessageCenter')] = function() {
@@ -273,7 +289,7 @@ var vboxSnapshotButtons = [
 					} else if(d && d.error) {
 						vboxAlert(d.error);
 					}
-	 	  		},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id});
+	 	  		},{'vm':vm.id,'snapshot':snapshot.id});
 	  	  		$(this).empty().remove();
 				l.run();				
 			};
@@ -288,13 +304,17 @@ var vboxSnapshotButtons = [
   		'context' : 'VBoxSelectorWnd',
   		'icon_exact' : true,
   		'separator' : true,
-  		'enabled' : function(item) { return (item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name) && $('#vboxTabVMSnapshots').data('machine').state != 'Running';},
+  		'enabled' : function(item) { 
+  			return (item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name);
+  		},
   		'click' : function () {
 
+  			var vm = vboxSelectionData.getSingleSelected();
+  			
   			// Current snapshot
   	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
   			
-  	  		vboxWizardCloneVMInit(function(){},{'vm':$('#vboxTabVMSnapshots').data('machine'),'snapshot':(snapshot.state == 'current' ? undefined : snapshot)});
+  	  		vboxWizardCloneVMInit(function(){},{'vm':vm,'snapshot':(snapshot.state == 'current' ? undefined : snapshot)});
   			
   	  	},
   		'separator' : true
@@ -309,6 +329,8 @@ var vboxSnapshotButtons = [
 
   			// Current snapshot
   	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
+  			
+  	  		var vm = vboxSelectionData.getSingleSelected();
   			  			
 			var l = new vboxLoader();
 			l.add('snapshotGetDetails',function(d){
@@ -321,7 +343,7 @@ var vboxSnapshotButtons = [
 				$('#vboxSnapshotDetailsDesc').val(d.description);
 				
 				if(d.online) {
-					$('#vboxSnapshotSS').html('<a href="screen.php?vm='+$('#vboxTabVMSnapshots').data('machine').id+'&snapshot='+d.id+'&full=1" target="_blank"><img src="screen.php?vm='+$('#vboxTabVMSnapshots').data('machine').id+'&snapshot='+d.id+'" /></a>').show();
+					$('#vboxSnapshotSS').html('<a href="screen.php?vm='+vm.id+'&snapshot='+d.id+'&full=1" target="_blank"><img src="screen.php?vm='+vm.id+'&snapshot='+d.id+'" /></a>').show();
 				} else {
 					$('#vboxSnapshotSS').empty().hide();
 				}
@@ -333,7 +355,7 @@ var vboxSnapshotButtons = [
 		  	  	var vboxDetailsTable = $('<table />').attr({'class':'vboxDetailsTable'});
 		  	  	
 		  	  	// Set to isSnapshot
-		  	  	d.machine.isSnapshot = true;
+		  	  	d.machine._isSnapshot = true;
 		  	  	
 		  	  	for(var i in vboxVMDetailsSections) {
 		
@@ -356,7 +378,7 @@ var vboxSnapshotButtons = [
 		  	  $('#vboxSnapshotDetailsVM').append(vboxDetailsTable);
 
 	  	  		
-			},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id});
+			},{'vm':vm.id,'snapshot':snapshot.id});
 			l.onLoad = function(){
   			
 	  			var buttons = {};
@@ -368,7 +390,7 @@ var vboxSnapshotButtons = [
 		  	  		var l = new vboxLoader();
 		  	  		l.add('snapshotSave',function(d){
 						$('#vboxTabVMSnapshots').trigger('refresh');
-		 	  		},{'vm':$('#vboxTabVMSnapshots').data('machine').id,'snapshot':snapshot.id,'name':$('#vboxSnapshotDetailsName').val(),'description':$('#vboxSnapshotDetailsDesc').val()});
+		 	  		},{'vm':vm.id,'snapshot':snapshot.id,'name':$('#vboxSnapshotDetailsName').val(),'description':$('#vboxSnapshotDetailsDesc').val()});
 		 	  		$(this).dialog('close');
 					l.run();
 					
@@ -376,7 +398,7 @@ var vboxSnapshotButtons = [
 				buttons[trans('Cancel','QIMessageBox')] = function(){
 					$(this).dialog('close');
 				};
-				$('#vboxSnapshotDetails').dialog({'closeOnEscape':false,'width':'600px','height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_snapshot_details_16px.png" class="vboxDialogTitleIcon" /> '+trans('Details of %1 (%2)','VBoxSnapshotDetailsDlg').replace('%1',$('<div />').text(snapshot.name).html()).replace('%2',$('#vboxTabVMSnapshots').data('machine').name)});
+				$('#vboxSnapshotDetails').dialog({'closeOnEscape':false,'width':'600px','height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_snapshot_details_16px.png" class="vboxDialogTitleIcon" /> '+trans('Details of %1 (%2)','VBoxSnapshotDetailsDlg').replace('%1',$('<div />').text(snapshot.name).html()).replace('%2',vm.name)});
 			};
 			l.run();
   	  	},
@@ -441,7 +463,9 @@ $('#vboxSnapshotList').bind('select',vboxSnapshotToolbar.update);
 // Called when snapshot operation completes
 $('#vboxTabVMSnapshots').bind('refresh',function(){
 
-	$('#vboxIndex').trigger('vmChanaged',[$('#vboxTabVMSnapshots').data('machine').id]);
+	var vm = vboxSelectionData.getSingleSelected();
+	
+	$('#vboxIndex').trigger('vmChanaged',[vm.id]);
 	
 });
 
@@ -472,8 +496,6 @@ $('#vboxIndex').bind('vmLoading',function(){
 	
 	if(selvm && selvm.id == vm.id) {
 
-		$('#vboxTabVMSnapshots').data('machine',vm);
-		
 		$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
 	} else {
 		$('#vboxTabVMSnapshots').data('lastVM', null);
@@ -539,7 +561,9 @@ function __vboxTabSnapshotsFill(s) {
 	}
 	
 	if(!s) return;
-
+	
+	var vm = vboxSelectionData.getSingleSelected();
+	
 	// Snapshots exist
 	if(s.name) {
 
@@ -547,19 +571,19 @@ function __vboxTabSnapshotsFill(s) {
 		$(list).append(__vboxTabSnapshot(s));
 	
 		// Append current state to last snapshot
-		if($('#vboxTabVMSnapshots').data('machine').currentSnapshot && $('#vboxTabVMSnapshots').data('machine').currentSnapshot.id) {
+		if(vm.currentSnapshot && vm.currentSnapshot.id) {
 	
 			// Has children
-			if($('#'+$('#vboxTabVMSnapshots').data('machine').currentSnapshot.id).children('ul').first().html()) {
-				$('#'+$('#vboxTabVMSnapshots').data('machine').currentSnapshot.id).children('ul').last().append(__vboxTabSnapshotCurrent());
+			if($('#'+vm.currentSnapshot.id).children('ul').first().html()) {
+				$('#'+vm.currentSnapshot.id).children('ul').last().append(__vboxTabSnapshotCurrent(vm));
 			} else {
-				$('#'+$('#vboxTabVMSnapshots').data('machine').currentSnapshot.id).append($('<ul />').append(__vboxTabSnapshotCurrent()));
+				$('#'+vm.currentSnapshot.id).append($('<ul />').append(__vboxTabSnapshotCurrent(vm)));
 			}
 		}			
 		
 	// No snapshots. Append current state to list
 	} else {
-		$(list).append(__vboxTabSnapshotCurrent());
+		$(list).append(__vboxTabSnapshotCurrent(vm));
 	}
 	
 	// Init vbox tree list
@@ -638,12 +662,12 @@ function __vboxTabSnapshot(s) {
 }
 
 /* Current state list item */
-function __vboxTabSnapshotCurrent() {
+function __vboxTabSnapshotCurrent(vm) {
 
 	// Add 'current state'
 
-	var li = $('<li />').data('vboxSnapshot',{'state':'current','name':trans(($('#vboxTabVMSnapshots').data('machine').currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')}).html(' ').addClass('last').addClass('vboxSnapshotCurrent');
-	$('<div />').attr({'class':'vboxListItem'}).html('<img src="images/vbox/'+vboxMachineStateIcon($('#vboxTabVMSnapshots').data('machine').state)+'" /> ' + $('<div />').text(trans(($('#vboxTabVMSnapshots').data('machine').currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')).html()).contextMenu({
+	var li = $('<li />').data('vboxSnapshot',{'state':'current','name':trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')}).html(' ').addClass('last').addClass('vboxSnapshotCurrent');
+	$('<div />').attr({'class':'vboxListItem'}).html('<img src="images/vbox/'+vboxMachineStateIcon(vm.state)+'" /> ' + $('<div />').text(trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')).html()).contextMenu({
 		menu: vboxSnapshotContextMenuCurrent.menuId(),
 		clickthrough : true
 	},vboxSnapshotContextMenuCurrent.menuClickCallback).appendTo(li);	

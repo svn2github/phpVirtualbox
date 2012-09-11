@@ -908,10 +908,13 @@ function vboxSettingsSelectController(tbl) {
 
     /* Enable / disable buttons */
 	if($(tbl).parent().find('ul').children('li').length < ($(tbl).data('controller').maxPortCount * $(tbl).data('controller').maxDevicesPerPortCount)) {
-		if($('#vboxSettingsDialog').data('vboxMachineData').state != 'Running')
-			$(tbl).find('.vboxToolbarSmall').trigger('enable');
+		
+		if($('#vboxSettingsDialog').data('vboxMachineData').state != 'Running') {
+			$(tbl).find('.vboxToolbarSmall').trigger('enable', [true]);
+		}
+		
 	} else {
-		$(tbl).find('.vboxToolbarSmall').trigger('disable');		
+		$(tbl).find('.vboxToolbarSmall').trigger('disable');
 	}
     
     /* Trigger Event */
@@ -1079,9 +1082,7 @@ function vboxSettingsAddController(con,list) {
 	
 	var li = $('<li />').attr({'id':'vboxSettingsController' + con.bus,'name':con.bus,'class':'vboxSettingsController'});
 
-    var tbl = $('<table />').attr({'class':'vboxListItem vboxSettingsController'}).hover(function(){
-    	$(this).addClass('vboxHover');},function(){$(this).removeClass('vboxHover');
-    }).bind('click',function(){
+    var tbl = $('<table />').attr({'class':'vboxListItem vboxSettingsController'}).bind('click',function(){
     	vboxSettingsSelectController(this);
     });
 
@@ -1153,15 +1154,17 @@ function vboxSettingsAddController(con,list) {
 				};
     	}
     	b.context = 'UIMachineSettingsStorage';
-	    var tb = new vboxToolbarSmall([b]);
+   		b['enabled'] = function() {
+
+   			return ($('#vboxSettingsController' + con.bus).find('li').length < (vboxStorage[con.bus].maxPortCount * vboxStorage[con.bus].maxDevicesPerPortCount));
+   		};
+
+   		var tb = new vboxToolbarSmall([b]);
 	   	tb.buttonStyle = 'margin:0px;padding:0px;border:0px;background-repeat:no-repeat;background-position:0px 0px;';
 	   	tb.noHover = true;
 	   	tb.addButtons('vboxSettingsController' + con.bus + 'BtnDrive');
    		tb.disable();
    		
-   		b['enabled'] = function() {
-   			return ($('#vboxSettingsController' + con.bus).find('li').length < (vboxStorage[con.bus].maxPortCount * vboxStorage[con.bus].maxDevicesPerPortCount));
-   		};
    		
    		mItems[mItems.length] = b;
 	}
@@ -1215,13 +1218,10 @@ function vboxSettingsAddAttachment(d,bus) {
     var li = $('<li />').attr({'class':'last vboxSettingsMediumAttachment'});
         
 
-	var tbl = $('<table />').attr({'class':'vboxListItem vboxSettingsStorageAttachment','id':'vboxSettingsStorageAttachment-' + bus + '-' + d.port + '-' + d.device}).hover(function(e){
-    	$(this).addClass('vboxHover');
-    },function(e){
-    	$(this).removeClass('vboxHover');
-    }).data({'attachment':d}).bind('click',function(){
-    	vboxSettingsSelectAttachment(this);
-    });
+	var tbl = $('<table />').attr({'class':'vboxListItem vboxSettingsStorageAttachment','id':'vboxSettingsStorageAttachment-' + bus + '-' + d.port + '-' + d.device})
+		.data({'attachment':d}).bind('click',function(){
+	    	vboxSettingsSelectAttachment(this);
+	    });
     
 	var m = vboxMedia.getMediumById(((d.medium && d.medium.id) ? d.medium.id : null));
 	

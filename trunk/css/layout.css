@@ -111,14 +111,6 @@ input.vboxImgButton {
 div.vboxDialogContent span.vboxTableLabel, #vboxIndex span.vboxTableLabel {
 	color: #555555; font-size: 87.5%; position: relative; top: 7px; font-weight: bold; background: #fff; left: 8px; padding-left: 2px; padding-right: 2px;
 }
-#vboxIndex span.vboxTableLabel+div.vboxBordered, div.vboxDialogContent span.vboxTableLabel+div.vboxBordered {
-	border: 1px solid #aaaaaa;
- 	border-radius: 4px;
-	-moz-border-radius: 4px;
-	padding-top: 8px;
-	background: #fff;
-}
-
 
 /* Lists and ListItems */
 .vboxList ul, ul.vboxList { list-style: none; margin: 0px; padding: 0px ; background: #fff; }
@@ -130,7 +122,16 @@ ul.vboxList li table tr { vertical-align: middle; }
 ul.vboxList li img { vertical-align: middle; }
 
 .vboxListItem, a.vboxListItem, .vboxListItem a { cursor: pointer; color: #000; background: #fff; }
-.vboxListItemSelected, .vboxListItemSelected a, a.vboxListItemSelected { background-color: #69F !important; cursor: default !important; color: #fff !important; }
+.vboxListItemSelected, .vboxListItemSelected a, a.vboxListItemSelected {
+	border-color: #69F ! important;
+	background-color: #7aF !important;
+	cursor: default !important;
+	color: #fff !important;
+	background: -o-linear-gradient(top,  #8bF, #69f);
+	background: -webkit-gradient(linear, left top, left bottom, from(#8bF), to(#69f)); /* for webkit browsers */
+	background: -moz-linear-gradient(top,  #8bF, #69f); /* for firefox 3.6+ */
+
+}
 .vboxListItemTitle { font-weight: bold; }
 
 ul.vboxHover li {
@@ -141,16 +142,24 @@ ul.vboxHoverBorderless li {
 	border-width: 0px;
 }
 ul.vboxHover li.vboxHover {
-	background-color: #f0f8ff;
-	border-color: #aaaaaa;	
+	color: #000 ! important;
+	background-color: #d0d8ff;
+	border-color: #99CcfF;
+	background: -o-linear-gradient(top,  #eeeeff, #adf);
+	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeff), to(#adf)); /* for webkit browsers */
+	background: -moz-linear-gradient(top,  #eeeeff, #adf); /* for firefox 3.6+ */
 }
 
 ul.vboxHover li table {
 	border: 1px solid transparent;
 }
 ul.vboxHover li table.vboxHover {
-	background-color: #f0f8ff;
-	border-color: #aaaaaa;	
+	color: #000 ! important;
+	background-color: #d0d8ff;
+	border-color: #99CcfF;
+	background: -o-linear-gradient(top,  #eeeeff, #adf);
+	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeff), to(#adf)); /* for webkit browsers */
+	background: -moz-linear-gradient(top,  #eeeeff, #adf); /* for firefox 3.6+ */
 }
 tbody.vboxHover td {
 	border: 1px solid transparent;
@@ -448,10 +457,14 @@ ul.vboxMenuBar li {
 #vboxPaneVMList span.vboxServerLink { text-decoration: underline; cursor: pointer; }
 #vboxVMList { width: 300px; overflow: scroll; } /* Initial Width */
 #vboxVMList table, #vboxVMList div { width: 100%; }
-#vboxVMList table.vboxVMListVM { border: 1px solid transparent; }
+#vboxVMList table.vboxVMListVM { border: 2px solid transparent; }
 #vboxVMList table.vboxHover {
-	background-color: #f0f8ff;
-	border: 1px solid #aaaaaa;
+	color: #000 ! important;
+	background-color: #d0d8ff;
+	border-color: #99CcfF;
+	background: -o-linear-gradient(top,  #eeeeff, #adf);
+	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeff), to(#adf)); /* for webkit browsers */
+	background: -moz-linear-gradient(top,  #eeeeff, #adf); /* for firefox 3.6+ */
 }
 #vboxPaneVMList td.vboxVMListDropTarget { height: 4px; padding: 0px; margin: 0px; }
 #vboxPaneVMList td.vboxVMListDropTargetHover { background: #999; }

@@ -273,7 +273,8 @@ function vboxVMList(anchorid) {
 
 			$('#'+self.anchorid + ' table.vboxVMListItem-'+self.anchorid+'-'+vmUpdate.id).each(function(i,elm){
 				var newHTML = self.vmHTML(vmUpdate);
-				if($(elm).hasClass('vboxListItemSelected')) $(newHTML).addClass('vboxListItemSelected').removeClass('vboxListItem');
+				if($(elm).hasClass('vboxListItemSelected'))
+					$(newHTML).addClass('vboxListItemSelected').removeClass('vboxListItem').removeClass('vboxHover');
 				$(elm).replaceWith(newHTML);
 			});
 			self.vms[vmUpdate.id] = vmUpdate;
@@ -308,10 +309,10 @@ function vboxVMList(anchorid) {
 
 
 				$('#'+self.anchorid).find('table.vboxListItemSelected').each(function(){
-					$(this).addClass('vboxListItem').removeClass('vboxListItemSelected');
+					$(this).addClass('vboxListItem').removeClass('vboxListItemSelected').removeClass('vboxHover');
 				});
 
-				$(this).addClass('vboxListItemSelected').removeClass('vboxListItem');
+				$(this).addClass('vboxListItemSelected').removeClass('vboxListItem').removeClass('vboxHover');
 				
 				selectedList = [vmn];
 				
@@ -326,13 +327,13 @@ function vboxVMList(anchorid) {
 						return (v.id != vmn.id && v.id != 'host');
 					});
 					
-					$(this).addClass('vboxListItem').removeClass('vboxListItemSelected');
+					$(this).addClass('vboxListItem').removeClass('vboxListItemSelected').removeClass('vboxHover');
 					
 										
 				} else {
 					
 
-					$(this).addClass('vboxListItemSelected').removeClass('vboxListItem');
+					$(this).addClass('vboxListItemSelected').removeClass('vboxListItem').removeClass('vboxHover');
 
 					// Remove host always
 					selectedList = jQuery.grep(selectedList, function(v){
@@ -344,7 +345,7 @@ function vboxVMList(anchorid) {
 				}
 
 				// Host is not selected
-				$('#'+self.anchorid+' table.vboxVMListItem-'+self.anchorid+'-host').addClass('vboxListItem').removeClass('vboxListItemSelected');
+				$('#'+self.anchorid+' table.vboxVMListItem-'+self.anchorid+'-host').addClass('vboxListItem').removeClass('vboxListItemSelected').removeClass('vboxHover');
 
 
 			}
@@ -352,7 +353,10 @@ function vboxVMList(anchorid) {
 			self.selectedList = selectedList;
 			$('#vboxIndex').trigger('vmSelectionChanged', [selectedList]);
 			
-		}).hover(function(){$(this).addClass('vboxHover');},function(){$(this).removeClass('vboxHover');}).data('vmid',vmn.id);
+		}).hover(function(){
+			if(!$(this).hasClass('vboxListItemSelected'))
+				$(this).addClass('vboxHover');
+			},function(){$(this).removeClass('vboxHover');}).data('vmid',vmn.id);
 		
 		if(vmn.id != 'host') {
 			$(tbl).draggable({'cursorAt':{left: -10, top: -10},'helper':function(){

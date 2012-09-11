@@ -1940,8 +1940,58 @@ function vboxWizard(name, title, bg, icon) {
 				});
 			}
 
+			
+			// Show / Hide description button
+			/*
+			 * TODO
+			if(!self.stepButtons) self.stepButtons = [];
+			self.stepButtons[self.stepButtons.length] = {
+					name: trans('Hide Description', 'UIWizard'),
+					click: function() {
+				
+					// Hide back button
+					$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.backArrow + ' '+self.backText+'")').parent().hide();
+	
+					// Show /hide buttons
+					$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+trans('Hide Description', 'UIWizard')+'")').parent().hide();
+					$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+trans('Show Description', 'UIWizard')+'")').parent().show();
+					
+					// Go to last step
+					self.displayStep(self.steps);
+					
+					// Add class to show that wizard is in no description mode and trigger mode
+					$('#'+self.name+'Content').addClass('vboxWizardNoDescription').trigger('hideDescription');
+					
+					// Hide title
+					$('#'+self.name+'Title').hide();
+					
+				},
+				steps: [1]
+			};
+			*/
+			
 			// buttons
 			var buttons = { };
+			/*
+			 * TODO
+			buttons[trans('Show Description', 'UIWizard')] = function() {
+
+				// Show / hide buttons
+				$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+trans('Show Description', 'UIWizard')+'")').parent().hide();
+				$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+trans('Hide Description', 'UIWizard')+'")').parent().show();
+				
+				// Show title
+				$('#'+self.name+'Title').show();
+				
+				// Show back button
+				$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.backArrow + ' '+self.backText+'")').parent().show();
+
+				// Remove class and trigger show description
+				$('#'+self.name+'Content').removeClass('vboxWizardNoDescription').trigger('showDescription');
+				
+				self.displayStep(1);
+			};
+			*/
 			if(self.stepButtons) {
 				for(var i = 0; i < self.stepButtons.length; i++) {
 					buttons[self.stepButtons[i].name] = self.stepButtons[i].click;
@@ -1965,6 +2015,7 @@ function vboxWizard(name, title, bg, icon) {
 			
 			$(d).dialog({'closeOnEscape':true,'width':self.width,'height':self.height,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent vboxWizard','title':(icon ? '<img src="images/vbox/'+icon+'_16px.png" class="vboxDialogTitleIcon" /> ' : '') + self.title});
 
+			$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+trans('Show Description', 'UIWizard')+'")').parent().hide();
 			self.displayStep(1);
 		};
 		l.run();
@@ -2091,6 +2142,8 @@ function vboxToolbar(buttons) {
 		// Event target or manually passed item
 		self.lastItem = (item||target);
 		
+		if(!self.enabled) return;
+		
 		for(var i = 0; i < self.buttons.length; i++) {
 			if(self.buttons[i].enabled && (!self.lastItem || !self.buttons[i].enabled(self.lastItem))) {
 				self.disableButton(self.buttons[i]);
@@ -2103,10 +2156,12 @@ function vboxToolbar(buttons) {
 	/**
 	 * Enable entire toolbar. Calls self.update()
 	 * @memberOf vboxToolbar
+	 * @param {Object} e - event
+	 * @param {Object} item - item to pass to update
 	 */ 
-	self.enable = function() {
+	self.enable = function(e, item) {
 		self.enabled = true;
-		self.update(self.lastItem);
+		self.update((item||self.lastItem));
 	};
 
 	/**
@@ -2475,9 +2530,9 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 * @memberOf vboxButtonMediaMenu
 	 * @return null
 	 */
-	self.enable = function() {
+	self.enable = function(e, item) {
 		self.enabled = true;
-		self.update(self.lastItem);
+		self.update((item||self.lastItem));
 		self.getButtonElm().enableContextMenu();
 	};
 

@@ -456,15 +456,14 @@ ul.vboxMenuBar li {
 #vboxPaneVMList { background: #fff;  border: 2px solid #aaa; border-right: 2px solid #bbb; border-bottom: 2px solid #bbb; }
 #vboxPaneVMList span.vboxServerLink { text-decoration: underline; cursor: pointer; }
 #vboxVMList { width: 300px; overflow: scroll; } /* Initial Width */
-#vboxVMList table, #vboxVMList div { width: 100%; }
 #vboxVMList table.vboxVMListVM { border: 2px solid transparent; }
 #vboxVMList table.vboxHover {
 	color: #000 ! important;
 	background-color: #d0d8ff;
 	border-color: #99CcfF;
 	background: -o-linear-gradient(top,  #eeeeff, #adf);
-	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeff), to(#adf)); /* for webkit browsers */
-	background: -moz-linear-gradient(top,  #eeeeff, #adf); /* for firefox 3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeff), to(#adf));
+	background: -moz-linear-gradient(top,  #eeeeff, #adf);
 }
 #vboxPaneVMList td.vboxVMListDropTarget { height: 4px; padding: 0px; margin: 0px; }
 #vboxPaneVMList td.vboxVMListDropTargetHover { background: #999; }
@@ -477,6 +476,43 @@ ul.vboxMenuBar li {
 #vboxVMList table.vboxVMListVM td.vboxVMSessionOpen { font-style: italic; }
 #vboxPaneVMList img.vboxHostIcon { border: 1px solid #999; }
 #vboxPaneVMList img.vboxVMIcon { height: 32px; width: 32px; margin: 0px 6px 0px 6px; padding: 0px; }
+#vboxPaneVMList div.vboxVMListGroup {
+	border-radius: 8px;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	border: 2px solid #bbb;
+	margin: 2px;
+}
+#vboxPaneVMList div.vboxVMlistGroupRoot {
+	border: 0px;
+	margin: 0px;
+}
+
+#vboxPaneVMList div.vboxVMListGroupHeader {
+	-moz-border-radius-topleft: 8px/*{cornerRadius}*/; -webkit-border-top-left-radius: 8px/*{cornerRadius}*/; border-top-left-radius: 8px/*{cornerRadius}*/; -moz-border-radius-topright: 8px/*{cornerRadius}*/; -webkit-border-top-right-radius: 8px/*{cornerRadius}*/; border-top-right-radius: 8px/*{cornerRadius}*/;
+	background-image: url(../images/header_grad.png);
+	background-color: #cccccc;
+	padding: 4px 4px 4px 8px;
+	margin: 0px;
+	height: 16px;
+}
+#vboxPaneVMList div.vboxGroupSelected {
+	border-color: #69F ! important;
+}
+#vboxPaneVMList div.vboxGroupSelected > div.vboxVMListGroupHeader {
+	background-color: #7aF !important;
+	cursor: default !important;
+	color: #fff !important;
+	background: -o-linear-gradient(top,  #8bF, #69f);
+	background: -webkit-gradient(linear, left top, left bottom, from(#8bF), to(#69f)); /* for webkit browsers */
+	background: -moz-linear-gradient(top,  #8bF, #69f); /* for firefox 3.6+ */
+}
+	
+#vboxPaneVMList div.vboxVMListGroupVMs { padding: 2px; }
+#vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupName { font-weight: bold; }
+#vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupInfo { float: right; display: none }
+#vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupInfo img { margin-left: 2px; margin-right: 2px; }
+#vboxPaneVMList div.vboxVMListGroup div.vboxHover span.vboxVMListGroupInfo { display: inline; }
 
 /* Toolbar above vm list */
 #vboxPaneToolbar { float: left; }

@@ -11,31 +11,36 @@
  * associated with which VM(s) are selected
  * @namespace vboxSelectionData
  */
-vboxSelectionDataObj = function() {
-
-	var self = this;
+var vboxSelectionData = {
 	
 	// Holds loaded VM data
-	self.vmData = {};
-	self.selectedVMs = [];
+	vmData : {},
+	selectedVMs : [],
 	
 	// Update self
-	self.update = function(e, vms) {
+	update : function(e, selectionList) {
 
 		// True if list ever changes
 		var changed = false;
 		
-		if(!vms) vms = [];
+		if(!selectionList) selectionList = [];
 		
 		// Hold unique selected VMs
 		var vmListUnique = {};
-		for(var i = 0; i < vms.length; i++) {
-			vmListUnique[vms[i].id] = vms[i];
+		for(var i = 0; i < selectionList.length; i++) {
+			if(selectionList[i].type == 'group') {
+				var vms = vboxVMGroups.getVMsInGroup(selectionList[i].groupPath);
+				for(var a = 0; a < vms.length; a++) {
+					vmListUnique[vms[a]] = vms[a];
+				}
+			} else {				
+				vmListUnique[selectionList[i].id] = selectionList[i].id;
+			}
 		}
 		
 		// Remove any VM data for VMs that are no longer selected
 		var deleteList = [];
-		for(var i in self.vmData) {
+		for(var i in vboxSelectionData.vmData) {
 			if(typeof i != 'string') continue;
 			if(!vmListUnique[i]) {
 				deleteList[deleteList.length] = i;
@@ -43,16 +48,17 @@ vboxSelectionDataObj = function() {
 			}
 		}
 		for(var i = 0; i < deleteList.length; i++) {
-			self.vmData[deleteList[i]]._loaded = false;
-			delete self.vmData[deleteList[i]];
+			vboxSelectionData.vmData[deleteList[i]]._loaded = false;
+			delete vboxSelectionData.vmData[deleteList[i]];
 			$('#vboxIndex').trigger('vmDeselected', [deleteList[i]]);
 		}
 		
 		// Add any VMs that were not selected
-		for(var i = 0; i < vms.length; i++) {
-			if(!self.vmData[vms[i].id]) {
-				self.vmData[vms[i].id] = vms[i];
-				$('#vboxIndex').trigger('vmSelected', [vms[i]]);
+		for(var i in vmListUnique) {
+			if(typeof i != 'string') continue;
+			if(!vboxSelectionData.vmData[i]) {
+				vboxSelectionData.vmData[i] = {id: vmListUnique[i] };
+				$('#vboxIndex').trigger('vmSelected', [vboxSelectionData.vmData[i]]);
 				changed = true;
 			}
 		}
@@ -60,10 +66,11 @@ vboxSelectionDataObj = function() {
 		// Load any VM data that needs to be loaded
 		// and populate selectedVMs
 		var selectedVMs = [];
-		for(var vmid in self.vmData) {
+		for(var vmid in vboxSelectionData.vmData) {
 			selectedVMs[selectedVMs.length] = vmid;
 		}
-		self.selectedVMs = selectedVMs;
+		
+		vboxSelectionData.selectedVMs = selectedVMs;
 		
 		if(changed) {
 			
@@ -71,50 +78,53 @@ vboxSelectionDataObj = function() {
 
 		}
 		
-		for(var i = 0; i < self.selectedVMs.length; i++) {
+		for(var i = 0; i < vboxSelectionData.selectedVMs.length; i++) {
 
-			var vmid = self.selectedVMs[i];
+			var vmid = vboxSelectionData.selectedVMs[i];
+			
+			
 			// Not loaded yet
-			if(!self.vmData[vmid]._loaded) {
+			if(!vboxSelectionData.vmData[vmid]._loaded) {
 				
-				$('#vboxIndex').trigger('vmLoading', [self.vmData[vmid]]);
+				$('#vboxIndex').trigger('vmLoading', [vboxSelectionData.vmData[vmid]]);
 				
 				var localVMid = vmid;
 				
 				// Send ajax off to get data
 				vboxAjaxRequest('machineGetDetails', {'vm':localVMid}, function(data) {
-					
-					$('#vboxIndex').trigger('vmLoaded', [data]);
+					vboxSelectionData.vmLoaded(data);
+					//$('#vboxIndex').trigger('vmLoaded', [data]);
 				});	
-			}
+			};
 			
-		}
+		};
 		
-	};
+	},
 	
 	// Return the selected VM if just one is
 	// selected, else null
-	self.getSingleSelected = function() {
-		if(self.selectedVMs.length == 1) {
-			return self.vmData[self.selectedVMs[0]];
+	getSingleSelected : function() {
+		if(vboxSelectionData.selectedVMs.length == 1) {
+			return vboxSelectionData.vmData[vboxSelectionData.selectedVMs[0]];
 		}
 		return null;
-	};
+	},
 	
-	self.vmLoaded = function(e, data) {
-		var exData = self.vmData[data.id];
+	vmLoaded : function(data) {
+		var exData = vboxSelectionData.vmData[data.id];
 		$.extend(exData,data,{_loaded:true});
-		self.vmData[data.id] = exData;		
-	};
+		vboxSelectionData.vmData[data.id] = exData;
+		$('#vboxIndex').trigger('vmLoaded', [exData]);
+	},
 	
-	self.vmChanged = function(e, data) {
+	vmChanged : function(e, data) {
 		
 		// Is it a selected VM?
-		if(data && self.vmData[data.id]) {
+		if(data && vboxSelectionData.vmData[data.id]) {
 			
 			var vmid = data.id;
 			
-			$('#vboxIndex').trigger('vmLoading', [self.vmData[vmid]]);
+			$('#vboxIndex').trigger('vmLoading', [vboxSelectionData.vmData[vmid]]);
 			
 			// Send ajax off to get data
 			vboxAjaxRequest('machineGetDetails', {'vm':vmid}, function(data) {
@@ -122,17 +132,48 @@ vboxSelectionDataObj = function() {
 			});	
 
 		}
-	};
+	}
 	
 };
 
-vboxSelectionData = new vboxSelectionDataObj();
 
 $(document).ready(function(){
-	$('#vboxIndex').bind('vmSelectionChanged',vboxSelectionData.update)
-		.bind('vmLoaded', vboxSelectionData.vmLoaded)
+	$('#vboxIndex').bind('chooserSelectionChanged',vboxSelectionData.update)
+		//.bind('vmLoaded', vboxSelectionData.vmLoaded)
 		.bind('vmChanged', vboxSelectionData.vmChanged);
 });
+
+
+/**
+ * VM group manipulation
+ * @namespace vboxVMGroups
+ */
+var vboxVMGroups = {
+	
+	// Return group data for group at path
+	getGroupByPath : function(path) {
+		
+		return vboxTraverse([$('#vboxIndex').data('vboxVMGroups')], 'path', path, false, 'subgroups');
+	},
+	
+	// Return all vms in group and subgroup
+	getVMsInGroup : function(gdef) {
+		if(typeof gdef == 'string')
+			gdef = vboxVMGroups.getGroupByPath(gdef);
+		
+		var vms = [];
+		for(var i = 0; i < gdef.subgroups.length; i++) {
+			vms = $.merge(vms,vboxVMGroups.getVMsInGroup(gdef.subgroups[i]));
+		}
+		vms = $.merge(vms, gdef.machines);
+		return vms;
+	},
+	
+	// Add a VM before existing VM in group
+	saveGroups : function(gdef) {
+		$('#vboxIndex').data('vboxVMGroups', gdef);
+	}
+};
 
 /**
  * VM details sections used on details tab and snapshot pages
@@ -1715,7 +1756,7 @@ var vboxMedia = {
 		}
 		
 		// media
-		return media.concat(vboxTraverse($('#vboxIndex').data('vboxMedia'),'deviceType',t,true,children));
+		return media.concat(vboxTraverse($('#vboxIndex').data('vboxMedia'),'deviceType',t,true,(children ? 'children' : '')));
 	},
 
 	/**
@@ -1723,7 +1764,7 @@ var vboxMedia = {
 	 * @static
 	 */
 	getMediumByLocation : function(p) {		
-		return vboxTraverse($('#vboxIndex').data('vboxMedia'),'location',p,false,true);
+		return vboxTraverse($('#vboxIndex').data('vboxMedia'),'location',p,false,'children');
 	},
 
 	/**
@@ -1731,7 +1772,7 @@ var vboxMedia = {
 	 * @static
 	 */
 	getMediumById : function(id) {
-		return vboxTraverse($('#vboxIndex').data('vboxMedia').concat($('#vboxIndex').data('vboxHostDetails').DVDDrives.concat($('#vboxIndex').data('vboxHostDetails').floppyDrives)),'id',id,false,true);
+		return vboxTraverse($('#vboxIndex').data('vboxMedia').concat($('#vboxIndex').data('vboxHostDetails').DVDDrives.concat($('#vboxIndex').data('vboxHostDetails').floppyDrives)),'id',id,false,'children');
 	},
 
 	/**

@@ -31,13 +31,12 @@ $(document).ready(function(){
 });
 
 /**
- * Traverse a tree and return matching nodes. Used to find
- * media in the $('#vboxIndex').data('vboxMedia') object.
+ * Traverse a tree and return matching nodes.
  * @param {Object} tree - tree to traverse
  * @param {String} prop - node property to match
  * @param {Mixed} val - value that node property must match
  * @param {Boolean} all - return all results rather than stopping at first matching node (optional)
- * @param {Boolean} children - search node children (optional)
+ * @param {String} children - search node children in property named by this argument (optional)
  * @return all matched nodes | first matched node | null
  */
 function vboxTraverse(tree,prop,val,all,children) {
@@ -47,8 +46,8 @@ function vboxTraverse(tree,prop,val,all,children) {
 			if(!all) return tree[a];
 			leafs[leafs.length] = tree[a];
 		}
-		if(children && tree[a].children && tree[a].children.length) {
-			var c = vboxTraverse(tree[a].children,prop,val,all,children);
+		if(children && tree[a][children] && tree[a][children].length) {
+			var c = vboxTraverse(tree[a][children],prop,val,all,children);
 			if(!all && c) { return c; }
 			else if(c && c.length) {
 				leafs = leafs.concat(c);

@@ -4867,6 +4867,49 @@ class vboxconnector {
 	}
 
 	/**
+	 * Return group definitions in an easily consumable format
+	 * 
+	 * @param array $args array of arguments. See function body for details
+	 * @param array $response response data passed byref populated by the function
+	 * @return boolean true on success
+	 */
+	public function remote_vboxGroupDefinitionsGet($args, &$response) {
+
+		$this->connect();
+		
+		$response['data'] = $this->_vboxGetMachineGroup('/');
+	}
+	
+	/**
+	 * Return VM group details
+	 * 
+	 * @param string $groupname
+	 */
+	private function _vboxGetMachineGroup($groupname) {
+	
+		$subgroups = array();
+		$machines = array();
+		
+		$groupname = str_replace('//','/', $groupname);
+		
+		foreach(explode(',',$this->vbox->getExtraData('GUI/GroupDefinitions'.$groupname)) as $gdef) {
+			list($k, $v) = explode('=', $gdef);
+			if($k == 'go') {
+				$subgroups[] = $this->_vboxGetMachineGroup("$groupname/$v");
+			} else {
+				$machines[] = $v;
+			}
+		}
+		
+		return array(
+			'name' => substr($groupname,strrpos($groupname,'/')+1),
+			'path' => $groupname,
+			'subgroups' => $subgroups,
+			'machines' => $machines
+		);
+	}
+	
+	/**
 	 * Format a time span in seconds into days / hours / minutes / seconds
 	 * @param integer $t number of seconds
 	 * @return array containing number of days / hours / minutes / seconds

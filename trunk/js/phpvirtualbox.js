@@ -18,7 +18,7 @@ var vboxSelectionData = {
 	selectedVMs : [],
 	
 	// Update self
-	update : function(e, selectionList) {
+	update : function(e, selectionList, chooser) {
 
 		// True if list ever changes
 		var changed = false;
@@ -57,7 +57,7 @@ var vboxSelectionData = {
 		for(var i in vmListUnique) {
 			if(typeof i != 'string') continue;
 			if(!vboxSelectionData.vmData[i]) {
-				vboxSelectionData.vmData[i] = {id: vmListUnique[i] };
+				vboxSelectionData.vmData[i] = chooser.getVMData(vmListUnique[i]);
 				$('#vboxIndex').trigger('vmSelected', [vboxSelectionData.vmData[i]]);
 				changed = true;
 			}
@@ -93,7 +93,6 @@ var vboxSelectionData = {
 				// Send ajax off to get data
 				vboxAjaxRequest('machineGetDetails', {'vm':localVMid}, function(data) {
 					vboxSelectionData.vmLoaded(data);
-					//$('#vboxIndex').trigger('vmLoaded', [data]);
 				});	
 			};
 			
@@ -135,14 +134,14 @@ var vboxSelectionData = {
 	}
 	
 };
-
+/*
 
 $(document).ready(function(){
 	$('#vboxIndex').bind('chooserSelectionChanged',vboxSelectionData.update)
 		//.bind('vmLoaded', vboxSelectionData.vmLoaded)
 		.bind('vmChanged', vboxSelectionData.vmChanged);
 });
-
+*/
 
 /**
  * VM group manipulation
@@ -158,6 +157,7 @@ var vboxVMGroups = {
 	
 	// Return all vms in group and subgroup
 	getVMsInGroup : function(gdef) {
+		
 		if(typeof gdef == 'string')
 			gdef = vboxVMGroups.getGroupByPath(gdef);
 		
@@ -169,7 +169,7 @@ var vboxVMGroups = {
 		return vms;
 	},
 	
-	// Add a VM before existing VM in group
+	// Save group definition
 	saveGroups : function(gdef) {
 		$('#vboxIndex').data('vboxVMGroups', gdef);
 	}
@@ -476,7 +476,9 @@ var vboxVMDetailsSections = {
 		   },
 		   {
 			   title: trans('Groups'),
-			   condition: function(){ return false; },
+			   condition: function(d){
+				   return (d.groups.length > 1 || (d.groups.length == 1 && d.groups[0] != '/')); 
+			   },
 			   callback: function(d) {
 				   if(d.groups && d.groups.length > 0)
 					   return jQuery.map(d.groups,function(elm) {
@@ -1271,6 +1273,95 @@ var vboxVMDetailsSections = {
 };
 
 /**
+ * Common VM Group Actions
+ * @namespace vboxVMGroupActions
+ */
+var vboxVMGroupActions = {
+
+	'newmachine': {
+		label: 'New  Machine...',
+		icon: 'new',
+		click: function(){
+			vboxVMActions['new'].click();
+		}
+	},
+	
+	addmachine: {
+		label: 'Add Machine...',
+		icon: 'vm_add',
+		click: function() {
+			vboxVMActions['add'].click();
+		}
+	},
+	
+	rename: {
+		label: 'Rename Group...',
+		icon: 'name',
+		click: function(el) {
+
+			// Function to rename group
+			var renameGroup = function(textbox) {
+				var newName = $(textbox).val().replace(/[\\\/:*?"<>,]/g,'_');
+				
+				if(!newName) {
+					newName = $(textbox).parent().parent().children('span.vboxVMListGroupName').attr('title');
+				}
+				
+				var oldNameRe = new RegExp($(textbox).parent().parent().children('span.vboxVMListGroupName').attr('title')+'$');
+				
+				var vmGroupPath = $(textbox).parent().parent().data('vmGroupPath').replace(oldNameRe, newName);
+				
+				
+				$(textbox).parent().parent().data({'vmGroupPath':vmGroupPath}).children('span.vboxVMListGroupName')
+					.html(newName).attr({'title':newName});
+				
+				$(textbox).parent().parent().children().show();
+				$(textbox).parent().remove();
+				
+			};
+			
+			$(el).children('div.vboxVMListGroupHeader').children().hide();
+			$(el).children('div.vboxVMListGroupHeader').append(
+				
+				$('<form />').append(
+					$('<input />').attr({'type':'text','value':$(el).children('div.vboxVMListGroupHeader').children('span.vboxVMListGroupName').attr('title')}).css({'width':'90%','padding':'0px','margin':'0px'}).bind('keypress',function(e){
+						if (e.which == 13) { 
+							renameGroup(this);
+						}
+					})
+				)
+
+			);
+			$(el).children('div.vboxVMListGroupHeader').children('form').children('input').focus().blur(function(){
+				renameGroup(this);
+			});
+		}
+	},
+	
+	ungroup: {
+		label: 'Ungroup...',
+		icon: 'delete',
+		click: function(el) {
+			
+		}
+	},
+	
+	'sort': {
+		label: 'Sort',
+		click: function(el) {
+			var vms = $(el).children('div.vboxVMListGroupVMs').children('table.vboxVMListVM').get();
+			vms.sort(function(a,b) {
+				return $(a).find('td.vboxVMTitle').text().localeCompare($(b).find('td.vboxVMTitle').text());
+			});
+			$.each(vms, function(idx,itm) {
+				$(el).children('div.vboxVMListGroupVMs').append(itm);
+			});
+		}
+	}
+	
+};
+
+/**
  * Common VM Actions - These assume that they will be run on the
  * selected VM as stored in vboxSelectionData.getSingleSelected()
  * @namespace vboxVMActions
@@ -1478,6 +1569,16 @@ var vboxVMActions = {
     	
     	},
     	enabled: function (vm) { return (jQuery.inArray(vm.state,['PoweredOff','Aborted','Teleported','Inaccessible','Saved']) > -1);}
+    },
+    
+    /** Create a group from VM **/
+    group: {
+    	label: 'Group',
+    	icon: 'add_shared_folder',
+    	click: function(el) {
+    		
+    	},
+    	enabled: function(vm) { return vm; }
     },
     
     /** Discard VM State */
@@ -3093,10 +3194,11 @@ function vboxMenu(name, id) {
 	 * Menu click callback
 	 * @memberOf vboxMenu
 	 * @param {Integer} i - menu item index number
+	 * @param {Object} item - optional selected item
 	 * @return return value of menu item's click() function
 	 */
-	self.menuClickCallback = function(i) {
-		return self.menuItems[i].click();
+	self.menuClickCallback = function(i, item) {
+		return self.menuItems[i].click(item);
 	};
 	
 	/**

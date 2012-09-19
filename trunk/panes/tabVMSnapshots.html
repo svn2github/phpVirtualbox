@@ -95,13 +95,13 @@ var vboxSnapshotButtons = [
   			else if(item && $(item).data('vboxSnapshot')) state = $(item).data('vboxSnapshot').state;
   			else return false;
   			
-  			var vm = vboxSelectionData.getSingleSelected();
+  			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
   			return (item && state == 'current' && vm.state != 'RestoringSnapshot' && vm.state != 'LiveSnapshotting' && vm.state != 'DeletingSnapshot');
   		},
   		'click' : function (callback) {
 
   			// Circumvent VirtualBox bug
-  			var vm = vboxSelectionData.getSingleSelected();
+  			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
   			if(vm.state == 'Running') {
   				
   				vboxAlert("VirtualBox has a bug that will cause it to crash when taking a snapshot of a running virtual machine. Please pause the VM and try again. See <a href='http://www.virtualbox.org/ticket/9255' target=_blank>http://www.virtualbox.org/ticket/9255</a> for more information.");
@@ -172,12 +172,12 @@ var vboxSnapshotButtons = [
   		'label' : 'Restore Snapshot',
   		'icon' : 'discard_cur_state',
   		'enabled' : function(item) {
-  			var vm = vboxSelectionData.getSingleSelected();
+  			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
   			return ( item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && $(item).data('vboxSnapshot').state != 'current' && vm.state != 'Running' && vm.state != 'Paused');
   		},
   		'click' : function () {
   			
-  			var vm = vboxSelectionData.getSingleSelected();
+  			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
   			
   	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
   	  		
@@ -276,7 +276,7 @@ var vboxSnapshotButtons = [
   			return (item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && $(item).data('vboxSnapshot').state != 'current' && $(item).data('vboxSnapshot').children.length <= 1);
   		},
   		'click' : function () {
-  			var vm = vboxSelectionData.getSingleSelected();
+  			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
   	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
 			var buttons = {};
 			buttons[trans('Delete','UIMessageCenter')] = function() {
@@ -309,7 +309,7 @@ var vboxSnapshotButtons = [
   		},
   		'click' : function () {
 
-  			var vm = vboxSelectionData.getSingleSelected();
+  			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
   			
   			// Current snapshot
   	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
@@ -330,7 +330,7 @@ var vboxSnapshotButtons = [
   			// Current snapshot
   	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
   			
-  	  		var vm = vboxSelectionData.getSingleSelected();
+  	  		var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
   			  			
 			var l = new vboxLoader();
 			l.add('snapshotGetDetails',function(d){
@@ -463,7 +463,7 @@ $('#vboxSnapshotList').bind('select',vboxSnapshotToolbar.update);
 // Called when snapshot operation completes
 $('#vboxTabVMSnapshots').bind('refresh',function(){
 
-	var vm = vboxSelectionData.getSingleSelected();
+	var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 	
 	$('#vboxIndex').trigger('vmChanaged',[vm.id]);
 	
@@ -492,7 +492,7 @@ $('#vboxIndex').bind('vmLoading',function(){
 /* VM Finished loading */
 }).bind('vmLoaded',function(e,vm){
 
-	var selvm = vboxSelectionData.getSingleSelected();
+	var selvm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 	
 	if(selvm && selvm.id == vm.id) {
 
@@ -506,7 +506,7 @@ $('#vboxIndex').bind('vmLoading',function(){
 
 }).bind('vmSelectionListChanged',function(){
 	
-	var vm = vboxSelectionData.getSingleSelected();
+	var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 	
 	if(vm) {
 		$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
@@ -517,7 +517,7 @@ $('#vboxIndex').bind('vmLoading',function(){
 // Load snapshots on show
 $('#vboxTabVMSnapshots').bind('show',function(e){
 
-	var vm = vboxSelectionData.getSingleSelected();
+	var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 	
 	if(vboxSnapshotToolbar._timer) {
 		window.clearTimeout(vboxSnapshotToolbar._timer);
@@ -562,7 +562,7 @@ function __vboxTabSnapshotsFill(s) {
 	
 	if(!s) return;
 	
-	var vm = vboxSelectionData.getSingleSelected();
+	var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 	
 	// Snapshots exist
 	if(s.name) {

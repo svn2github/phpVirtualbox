@@ -34,11 +34,10 @@ $('#vboxDetailsLoading').find('span.translate').html(trans('Loading ...','UIVMDe
 
 // Listen for events
 /////////////////////////////
-$('#vboxIndex').bind('vmSelectionListChanged',function(){
+$('#vboxIndex').bind('vmSelectionListChanged',function(e, chooser){
 
-	
 	// No VMs?
-	if(vboxSelectionData.selectedVMs.length == 0) {
+	if(!chooser || chooser.selectedVMs.length == 0) {
 		
 		// Hide all tab children first
 		$('#vboxTabVMDetails').css({'display':'table','width':'100%'}).children().hide();
@@ -55,25 +54,24 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(){
 			.data({'showingWelcome':false}).children().hide();
 		$('#vboxVMDetails').html('').css({'display':''});
 		
-	// We have VMs and were not showing the welcome screen
-	} else if(vboxSelectionData.selectedVMs.length > 1) {
-		$('#vboxVMDetails').children('div').empty().remove();
+	}
 	
-	// Redraw full details?
-	} else if(vboxSelectionData.selectedVMs.length == 1) {
-		var oldVM = vboxSelectionData.getSingleSelected();
-		if(oldVM && $('#vboxVMDetails').children('.vboxVMDetailsBox-vm-'+oldVM.id)[0]) {
-			$('#vboxVMDetails').children().empty().remove();
-			__vboxDisplayDetailsData(oldVM, false, $('#vboxVMDetails'));	
+	// We have VMs and were not showing the welcome screen
+	if(chooser.selectedVMs.length > 0) {
+		
+		$('#vboxVMDetails').children().empty().remove();
+	
+		for(var i = 0; i < chooser.selectedVMs.length; i++) {
+			__vboxDisplayDetailsData(chooser.getVMData(chooser.selectedVMs[i]), (chooser.selectedVMs.length > 1), $('#vboxVMDetails'));
 		}
 
 	}
 
 // VM is being loaded ...
 ////////////////////////////
-}).bind('vmLoading', function(e) {
+}).bind('vmLoading', function(e, vm, chooser) {
 	
-	if(vboxSelectionData.getSingleSelected()) {
+	if(chooser.selectedVMs.length == 1) {
 		
 		$('#vboxVMDetails').hide().children().empty().remove();
 
@@ -89,7 +87,7 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(){
 	
 // VM data has been loaded
 /////////////////////////////
-}).bind('vmLoaded',function(e, vm) {
+}).bind('vmLoaded',function(e, vm, chooser) {
 	
 	// Multiple VMs
 	var targetdiv = $('#vboxVMDetails');
@@ -98,7 +96,7 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(){
 	targetdiv.show();
 	
 	// Clear target div if we only have one vm
-	if(vboxSelectionData.selectedVMs.length == 1)
+	if(chooser.selectedVMs.length == 1)
 		targetdiv.children().empty().remove();
 	
 	// Host data
@@ -108,13 +106,8 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(){
 	}
 	
 		
-	__vboxDisplayDetailsData(vm, (vboxSelectionData.selectedVMs.length > 1), targetdiv);
+	__vboxDisplayDetailsData(vm, (chooser.selectedVMs.length > 1), targetdiv);
 		
-	
-}).bind('vmDeselected',function(e,vmid){
-	
-	$('#vboxVMDetails').children('.vboxVMDetailsBox-vm-'+vmid).empty().remove();
-	
 	
 });
 
@@ -319,6 +312,12 @@ function __vboxDisplayDetailsData(data, multiSelect, targetdiv) {
 		return;
 	}
 
+	// Draw place holder and wait for data to load
+	if(!data.phpVbxLoaded) {
+		$('<table />').attr({'id':'vboxDetailsGeneralTable-'+data.id,'class':'vboxInvisible vboxVMDetailsBox-vm-'+data.id,'style':'display:none'})
+			.appendTo(targetdiv);
+		return;
+	}
 
 	// Multi-select details table sections
 	////////////////////////////////////////
@@ -339,11 +338,15 @@ function __vboxDisplayDetailsData(data, multiSelect, targetdiv) {
 	).data({'vmid':data.id});
 	
 	// If already exists, replace the table, else append to div
-	if(multiSelect && $('#vboxDetailsGeneralTable-'+data.id)[0]) {
+	if($('#vboxDetailsGeneralTable-'+data.id)[0]) {
 		$('#vboxDetailsGeneralTable-'+data.id).replaceWith(tbl);
 	} else {
 		tbl.appendTo(targetdiv);
 	}
+	
+	// Return and wait for data to load
+	if(!data.phpVbxLoaded)
+		return;
 	
 	for(var s in {'general':1,'system':1,'preview':1}) {
 		if(vboxVMDetailsSections[s].onRender)

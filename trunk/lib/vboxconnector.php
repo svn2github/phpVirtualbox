@@ -4893,7 +4893,7 @@ class vboxconnector {
 		$groupname = str_replace('//','/', $groupname);
 		
 		foreach(explode(',',$this->vbox->getExtraData('GUI/GroupDefinitions'.$groupname)) as $gdef) {
-			list($k, $v) = explode('=', $gdef);
+			list($k, $v) = explode('=', $gdef, 2);
 			if($k == 'go') {
 				$subgroups[] = $this->_vboxGetMachineGroup("$groupname/$v");
 			} else {

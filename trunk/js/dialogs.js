@@ -464,7 +464,7 @@ function vboxShowLogsDialogInit(vm) {
 			l.run();
 		};
 		buttons[trans('Close','VBoxVMLogViewer')] = function(){$(this).trigger('close').empty().remove();};
-		$('#vboxVMLogsDialog').dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_logs_16px.png" class="vboxDialogTitleIcon" /> '+ trans('%1 - VirtualBox Log Viewer','VBoxVMLogViewer').replace('%1',vboxSelectionData.getSingleSelected().name)}).bind("dialogbeforeclose",function(){
+		$('#vboxVMLogsDialog').dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_logs_16px.png" class="vboxDialogTitleIcon" /> '+ trans('%1 - VirtualBox Log Viewer','VBoxVMLogViewer').replace('%1',vm.name)}).bind("dialogbeforeclose",function(){
 	    	$(this).parent().find('span:contains("'+trans('Close','VBoxVMLogViewer')+'")').trigger('click');
 	    });
 		vboxShowLogsInit(vm);
@@ -842,7 +842,7 @@ function vboxPrefsInit() {
 			l.onLoad = function(){location.reload(true);};
 			
 		// Update host info in case interfaces were added / removed
-		} else if(vboxSelectionData.getSingleSelected() && vboxSelectionData.getSingleSelected()['id'] == 'host') {
+		} else {
 			l.onLoad = function() {
 				$('#vboxIndex').trigger('vmChanged',['host']);
 			};
@@ -868,7 +868,7 @@ function vboxPrefsInit() {
 function vboxVMsettingsInit(vm,callback,pane) {
 	
 	if(typeof(vm) == 'string')
-		vm = vboxSelectionData.vmData[vm];
+		vm = $('#vboxIndex').data('vboxChooser').vms[vm];
 	
 	var panes = new Array(
 	
@@ -923,7 +923,7 @@ function vboxVMsettingsInit(vm,callback,pane) {
 function vboxVMsettingsInitNetwork(vm,callback) {
 	
 	if(typeof(vm) == 'string')
-		vm = vboxSelectionData.vmData[vm];
+		vm = $('#vboxIndex').data('vboxChooser').vms[vm];
 
 	var panes = new Array(
 		{'name':'Network','label':'Network','icon':'nw','tabbed':true,'context':'UIMachineSettingsNetwork'}
@@ -957,7 +957,7 @@ function vboxVMsettingsInitNetwork(vm,callback) {
 function vboxVMsettingsInitSharedFolders(vm,callback) {
 
 	if(typeof(vm) == 'string')
-		vm = vboxSelectionData.vmData[vm];
+		vm = $('#vboxIndex').data('vboxChooser').vms[vm];
 
 	var panes = new Array(
 		{'name':'SharedFolders','label':'Shared Folders','icon':'shared_folder','tabbed':false,'context':'UIMachineSettingsSF'}

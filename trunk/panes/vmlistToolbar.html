@@ -18,7 +18,7 @@ var tButtons = [
 	$.extend({},vboxVMActions['settings'],{'name':'settings','enabled':function(vm){
 		return (vboxVMActions['settings'].enabled(vm));
 	},click:function(){
-		var vm = vboxSelectionData.getSingleSelected();
+		var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 		if(!vm || vm.state == 'Running') return;
 		vboxVMActions['settings'].click();
 		
@@ -37,10 +37,10 @@ vboxVMListToolbarTop.addButtons('vboxPaneToolbar');
 $('#vboxIndex').bind('vmLoading',function(){
 	vboxVMListToolbarTop.update();
 }).bind('vmLoaded',function(e,vm){
-	var vm = vboxSelectionData.getSingleSelected();
+	var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 	vboxVMListToolbarTop.update(vm);
 }).bind('vmSelectionListChanged',function(){
-	var vm = vboxSelectionData.getSingleSelected();
+	var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 	vboxVMListToolbarTop.update(vm);
 });
 
@@ -113,7 +113,7 @@ $("#vboxToolbarButton-vboxPaneToolbar-settings").contextMenu({
 	},
 	function(a, el, pos, srcEl) {
 		
-		var vm = vboxSelectionData.getSingleSelected();
+		var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 		
 		if(window['vboxVMsettingsInit' + a]) {
 			window['vboxVMsettingsInit' + a](vm.id,function(){$('#vboxIndex').trigger('vmChanged',[vm.id]);});
@@ -168,7 +168,7 @@ var vboxToolbarMediaLast = null; // Used when context menu item is clicked to de
 								// which medium attachment to act upon.
 function vboxVMListToolbarMediumMount(medium) {
 	
-	var vmid = vboxSelectionData.getSingleSelected().id;
+	var vmid = $('#vboxIndex').data('vboxChooser').getSingleSelected().id;
 	
 	var args = {'vm':vmid,'medium':medium,'port':vboxToolbarMediaLast.port,'device':vboxToolbarMediaLast.device,'bus':vboxToolbarMediaLast.bus,'controller':vboxToolbarMediaLast.controller};
 	
@@ -210,7 +210,7 @@ function vboxVMListToolbarUSBUpdate(menu) {
 	
 	$(menu).append($('<li />').html('<span><img src="images/jqueryFileTree/spinner.gif" /></span>').css({'width':'100px','text-align':'center'}));
 	
-	var vm = vboxSelectionData.getSingleSelected();
+	var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 	
 	var l = new vboxLoader();
 	
@@ -473,14 +473,12 @@ $('#vboxIndex').bind('vmLoading',function(){
 });
 
 // Update menu when vm is loaded
-$('#vboxIndex').bind('vmLoaded',function(){
-	var vm = vboxSelectionData.getSingleSelected();
-	vboxUpdateSettingsMenu(vm);
-	vboxUpdateStopMenu(vm);
-}).bind('vmSelectionListChanged',function(){
-	var vm = vboxSelectionData.getSingleSelected();
-	vboxUpdateSettingsMenu(vm);
-	vboxUpdateStopMenu(vm);
+$('#vboxIndex').bind('vmLoaded',function(e,vm,chooser){
+	vboxUpdateSettingsMenu(chooser);
+	vboxUpdateStopMenu(chooser);
+}).bind('vmSelectionListChanged',function(e,vmlist,chooser){
+	vboxUpdateSettingsMenu(chooser);
+	vboxUpdateStopMenu(chooser);
 });
 
 

@@ -27,6 +27,18 @@ vboxVMList.interval = ($('#vboxIndex').data('vboxConfig').listUpdateInterval ? $
 // Failsafe
 if(isNaN(vboxVMList.interval)) vboxVMList.interval = 5;
 
+// Hold reference in data
+$('#vboxIndex').data('vboxChooser', vboxVMList);
+
+// VM List Group context menu
+vboxVMList.vmGroupContextMenuItems = [
+	$.extend({}, vboxVMGroupActions['newmachine'], {name:'newmachine'}),
+	$.extend({}, vboxVMGroupActions['addmachine'], {name:'addmachine'}),
+	$.extend({}, vboxVMGroupActions['rename'], {name:'rename',separator:true}),
+	$.extend({}, vboxVMGroupActions['ungroup'], {name:'ungroup'}),
+	$.extend({}, vboxVMGroupActions['sort'], {name:'sort',separator:true}),
+];
+
 // VM List Context menu for each VM
 var sChildren = [];
 for(var i = 0; i < vboxVMActions.stop_actions.length; i++) {
@@ -40,6 +52,7 @@ vboxVMList.vmContextMenuItems = [
 	$.extend({},vboxVMActions['settings'],{'name':'settings'}),
 	$.extend({},vboxVMActions['clone'],{'name':'clone'}),
 	$.extend({},vboxVMActions['remove'],{'name':'remove'}),
+	$.extend({},vboxVMActions['group'],{'name':'group'}),
 	$.extend({},vboxVMActions['start'],{'name':'start','separator' : true}),
 	$.extend({},vboxVMActions['stop'],{'name':'stop','icon':'state_powered_off','children':sChildren,'hide_on_disabled':true}),
 	$.extend({},vboxVMActions['discard'],{'name':'discard'}),
@@ -69,9 +82,6 @@ vboxVMList.parentContextMenuItems = [
 ];
 
 
-// Initial action update
-$('#vboxIndex').trigger('chooserSelectionChanged', [[]]);
-
 vboxVMList.run();
 
 
@@ -91,38 +101,34 @@ function vboxVMList(anchorid) {
 	var self = this;
 	this.vms = null;
 	this.anchorid = anchorid;
-	this.sortDefault = function(a,b){return strnatcasecmp(a.name,b.name);};
-	this.selectedList = [];
-	this._sortOrder = {};
-	this._updateSortOrder = false;
-	this.lastUpdatedDiv = null;
 	this.anchor = $('#'+anchorid);
+
+	this.selectedList = [];
+	this.selectedVMs = [];
+	this.uniqeSelectedVMs = {};
+	
+	this.selectionModel = null;
+	// Selection model can be
+	// singleVM
+	// multiVM
+	// singleGroup
+	// multiGroup
+	// null 
+	
+	this.lastUpdatedDiv = null;
 	this.interval = 5;
 	this.changed = false;
 	this.versionChecked = false;
+	
 	this.vmContextMenuItems = [];
+	this.vmGroupContextMenuItems = [];
 	this.parentContextMenuItems = [];
-	this.contextMenuObj = null;
+	this.vmContextMenuObj = null;
+	this.vmGroupContextMenuObj = null;
+
 	this.enforceVMOwnership = $('#vboxIndex').data('vboxConfig').enforceVMOwnership;
 	this.tip = trans('<nobr>%1<br></nobr><nobr>%2 since %3</nobr><br><nobr>Session %4</nobr>','UIVMListView');
 	
-
-	this.sort = function(a,b) {
-		
-		// Check for host
-		if(a.id == 'host') return -1;
-		if(b.id == 'host') return 1;
-		
-		//A is not in sort list
-		if(typeof(self._sortOrder[a.id]) == 'undefined') {
-			if(typeof(self._sortOrder[b.id]) == 'undefined') return self.sortDefault(a,b);
-			return -1; // b is defined, a is not
-		}
-		if(typeof(self._sortOrder[b.id]) == 'undefined') return 1; // a is defined, b is not
-		if(parseInt(self._sortOrder[a.id]) == parseInt(self._sortOrder[b.id])) return 0;
-		return(parseInt(self._sortOrder[a.id]) < parseInt(self._sortOrder[b.id]) ? -1 : 1);
-		
-	};
 	
 	// If there are multiple servers configured, setup menu
 	if($('#vboxIndex').data('vboxConfig').servers.length) {
@@ -136,8 +142,107 @@ function vboxVMList(anchorid) {
 		
 	}
 	
-	// Update list of VMs
-	/////////////////////////
+	/*
+	 * Triggered when selection list has changed
+	 */
+	self.selectionListChanged = function(selectionList) {
+			
+		if(!selectionList) selectionList = [];
+		
+		selectionModel = null;
+		
+		// Hold unique selected VMs
+		var vmListUnique = {};
+		for(var i = 0; i < selectionList.length; i++) {
+			if(selectionList[i].type == 'group') {
+				var vms = vboxVMGroups.getVMsInGroup(selectionList[i].groupPath);
+				for(var a = 0; a < vms.length; a++) {
+					vmListUnique[vms[a]] = vms[a];
+				}
+				switch(selectionModel) {
+					case 'singleGroup':
+						selectionModel = 'multiGroup';
+					case null:
+						selectionModel = 'singleGroup';
+				}
+			} else {				
+				switch(selectionModel) {
+					case null:
+						selectionModel = 'singleVM';
+					default:
+						selectionModel = 'multiVM';
+				}
+
+				vmListUnique[selectionList[i].id] = selectionList[i].id;
+			}
+		}
+		
+		// If there is only one unique vm selected,
+		// selection model becomes single VM if the
+		// current selection model is not singleGroup
+		if(selectionModel != 'singleGroup')	
+			selectionModel = 'singleVM';
+		
+		self.selectionModel = selectionModel;
+		
+		// Change selection list
+		var selectedVMs = [];
+		for(var i in vmListUnique) {
+			selectedVMs[selectedVMs.length] = i;
+		}
+		
+		self.selectedVMs = selectedVMs;
+		
+		$('#vboxIndex').trigger('vmSelectionListChanged', [self]);		
+		
+		// Load any data that needs to be loaded
+		for(var i = 0; i < self.selectedVMs.length; i++) {
+
+			var vmid = self.selectedVMs[i];
+			
+			
+			// Not loaded yet
+			if(!self.vms[vmid].phpVbxLoaded) {
+				
+				$('#vboxIndex').trigger('vmLoading', [self.vms[vmid], self]);
+				
+				var localVMid = vmid;
+				
+				// Send ajax off to get data
+				vboxAjaxRequest('machineGetDetails', {'vm':localVMid}, function(data) {
+					self.vmLoaded(data);
+				});	
+			};
+			
+		};
+		
+
+	};
+	
+	/*
+	 * Return a single vm if it is selected
+	 */
+	self.getSingleSelected = function() {
+		if(self.selectedVMs.length == 1) {
+			return self.vms[self.selectedVMs[0]];
+		}
+		return null;
+	 };
+	
+	/*
+	 * Triggered after a VM is loaded
+	 */
+	self.vmLoaded = function(data) {
+		var exData = self.vms[data.id];
+		$.extend(exData,data,{phpVbxLoaded:true});
+		self.vms[data.id] = exData;
+		$('#vboxIndex').trigger('vmLoaded', [self.vms[data.id], self]);
+	};
+ 
+	/*
+	 * Update list of VMs from data received
+	 * from ajax query
+	 */
 	self.updateList = function(d) {
 
 		// We were stopped before the request returned data
@@ -250,7 +355,11 @@ function vboxVMList(anchorid) {
 	};
 	
 
-	// Update a VM in our list
+	/*
+	 *
+	 * Update VM data
+	 *
+	 */
 	self.updateVM = function(vmUpdate,index) {
 
 		var changed = false;
@@ -267,25 +376,49 @@ function vboxVMList(anchorid) {
 			}
 		}		
 
+		// If a watched attribute has changed,
+		// Re-load data if VM is selected
 		if(changed) {
 
 			$('#'+self.anchorid).find('table.vboxVMListItem-'+self.anchorid+'-'+vmUpdate.id).each(function(i,elm){
 				
 				var newHTML = self.vmHTML(vmUpdate);
-				if($(elm).hasClass('vboxListItemSelected'))
+				if($(elm).hasClass('vboxListItemSelected')) {
 					$(newHTML).addClass('vboxListItemSelected').removeClass('vboxHover');
+				}
 				$(elm).replaceWith(newHTML);
 			});
 			self.vms[vmUpdate.id] = vmUpdate;
-				
-			$('#vboxIndex').trigger('vmChanged', [vmUpdate]);
+
+			$('#vboxIndex').trigger('vmChanged', [vmUpdate.id]);
 		}
 		
 
 		return changed;
-
 	};
+	
+	/*
+	 * VM data changed
+	 */
+	self.vmChanged = function(e, vmid) {
+		
+		// Is it a selected VM?
+		if(data && self.uniqeSelectedVMs[vmid]) {
+			
+			$('#vboxIndex').trigger('vmLoading', [self.vms[vmid], self]);
+			
+			// Send ajax off to get data
+			vboxAjaxRequest('machineGetDetails', {'vm':vmid}, function(data) {
+				$('#vboxIndex').trigger('vmLoaded', [data, self]);
+			});	
 
+		}
+	}
+
+
+	/*
+	 * Generate HTML from VM definition
+	 */
 	self.vmHTML = function (vmn) {
 		
 		var tbl = $('<table />').attr({'class':'vboxVMListItem-'+self.anchorid+'-'+vmn.id + " vboxVMListVM"}).bind('click',self.selectItem).hover(function(){
@@ -293,17 +426,25 @@ function vboxVMList(anchorid) {
 				$(this).addClass('vboxHover');
 			},function(){$(this).removeClass('vboxHover');}).data('vmid',vmn.id);
 		
+		
+		// Drag-and-drop functionality
+		/////////////////////////////////
 		if(vmn.id != 'host') {
+			
 			$(tbl).draggable({'cursorAt':{left: -10, top: -10},'helper':function(){
-				
 				return $(this).clone().css({'width':'auto','display':'inline','background':'#fff','border-color':'#69f'}).removeClass('vboxHover');
+				
+			// drag start
 			},'start':function() {
 				
+				$(self.anchor).disableSelection();
 				self._dragging = vmn.id;
 				$(self.anchor).find('table.vboxHover').removeClass('vboxHover');
 				
+			// drag stop
 			},'stop':function(e) {
 
+				$(self.anchor).enableSelection();
 				self._dragging = null;
 				
 				// Where was this dropped?
@@ -403,6 +544,8 @@ function vboxVMList(anchorid) {
 			}});
 		}
 
+		// Functionality to drop above / below VM
+		/////////////////////////////////////////////
 		var td = $('<td />').attr({'colspan':'2'}).addClass('vboxVMListDropTarget vboxDropTargetTop');
 		if(vmn.id != 'host') {
 			td.hover(function(){
@@ -416,9 +559,9 @@ function vboxVMList(anchorid) {
 		$('<tr />').append(td).appendTo(tbl);
 
 		
-		var tr = $('<tr />');
-
+		
 		// VM OS type icon
+		var tr = $('<tr />');
 		if($('#vboxIndex').data('vboxConfig').enableCustomIcons && vmn.customIcon) {
 			$('<td />').attr({'rowspan':'2'}).html("<img src='" + vmn.customIcon + "' class='vboxVMIcon' />").appendTo(tr);
 		} else {
@@ -429,7 +572,7 @@ function vboxVMList(anchorid) {
 		// VM Name
 		var td = $('<td />').attr({'class':'vboxVMTitle'});
 		
-		// Host can have HTML in name
+		// Host will have HTML in name
 		if(vmn.id == 'host') {
 			
 			// Check for multiple server config
@@ -449,6 +592,8 @@ function vboxVMList(anchorid) {
 			} else {				
 				$(td).html('<span class="vboxVMName">VirtualBox</span> ('+vmn.name+')');
 			}
+			
+		// Not rendering host
 		} else {
 			
 			$(td).append('<span class="vboxVMName">'+$('<span />').text(vmn.name).html()+'</span>'+ (vmn.currentSnapshotName ? ' (' + $('<span />').text(vmn.currentSnapshotName).html() + ')' : ''));
@@ -462,9 +607,8 @@ function vboxVMList(anchorid) {
 		
 		$(tr).append(td).appendTo(tbl);
 		
-		
+		// VM state row
 		var tr = $('<tr />');
-		
 		var td = $('<td />').attr({'class':(vmn.id != 'host' && vmn.sessionState != 'Unlocked' ? 'vboxVMSessionOpen' : '')}).html("<img src='images/vbox/" + vboxMachineStateIcon(vmn.state) +"' /> <span class='vboxVMState'>" + trans(vboxVMState(vmn.state),'VBoxGlobal') + '</span>');
 
 		// Add VirtualBox version if hosting
@@ -498,15 +642,16 @@ function vboxVMList(anchorid) {
 		}
 		$('<tr />').append(td).appendTo(tbl);
 		
-		// Context menu?
-		if(self.contextMenuObj) {
-			$(tbl).contextMenu({
-				menu: self.contextMenuObj.menuId(),
-				menusetup : function(el) {
-					if(!$(el).hasClass('vboxListItemSelected')) $(el).trigger('click');
-				}
-			},self.contextMenuObj.menuClickCallback);
-		}
+		
+		// Context menus?		
+		$(tbl).contextMenu({
+			menu: self.vmContextMenuObj.menuId(),
+			menusetup : function(el) {
+				if(!$(el).hasClass('vboxListItemSelected')) $(el).trigger('click');
+			}
+		},function(act,el,pos,d,e){
+			self.vmContextMenuObj.menuClickCallback(act, el);
+		});
 		
 		// Open settings on dblclick
 		$(tbl).dblclick(function(){
@@ -529,21 +674,23 @@ function vboxVMList(anchorid) {
 		var selectedList = self.selectedList.filter(function(v){
 			return (v.type == 'group' || (v.id != id));
 		});
+		
 		if (self.selectedList.length != selectedList.length)
 			changed = true;
 		
 		self.selectedList = selectedList;
 		
 		if(changed)
-			$('#vboxIndex').trigger('chooserSelectionChanged', [selectedList]);
+			$('#vboxIndex').trigger('chooserSelectionChanged', [selectedList, self]);
 		
 		$('#'+self.anchorid +' table.vboxVMListItem-'+self.anchorid+'-'+id).remove();
 		
-		$('#vboxIndex').trigger('vmRemoved', [id]);
+		$('#vboxIndex').trigger('vmRemoved', [id, self]);
 		
 		delete self.vms[id];
 	};
 
+	
 	/*
 	 * Compose group data from GUI
 	 */
@@ -602,6 +749,9 @@ function vboxVMList(anchorid) {
 		
 		if(self._running) return;
 
+		// Initial action update
+		$('#vboxIndex').trigger('chooserSelectionChanged', [[], self]);
+
 		// Subscribe to selected VM changes and refreshes
 		$('#vboxIndex').bind('vmlistreload',function() {
 
@@ -620,7 +770,7 @@ function vboxVMList(anchorid) {
 			self.refresh();
 		}).bind('hostChange',function(){
 			self.selectedList = [];
-			$('#vboxIndex').trigger('chooserSelectionChanged', [[]]);
+			$('#vboxIndex').trigger('chooserSelectionChanged', [[], self]);
 			self.stop();
 			
 		}).bind('hostChanged',function(){
@@ -633,45 +783,54 @@ function vboxVMList(anchorid) {
 		
 		/*
 		 *
+		 * VM Group context menu items
+		 *
+		 */
+		self.vmGroupContextMenuObj = new vboxMenu(self.anchorid+'vmgroups');
+		self.vmGroupContextMenuObj.context = 'VBoxSelectorWnd';
+		self.vmGroupContextMenuObj.addMenu(self.vmGroupContextMenuItems);
+		
+		console.log(self.vmGroupContextMenuItems);
+		
+		// Update context menu when selected VM changes
+		$('#vboxIndex').bind('vmSelectionListChanged',function(){
+			self.vmGroupContextMenuObj.update();
+		});
+
+		
+		/*
+		 *
 		 * VM List context menu items?
 		 *
 		 */
-		if(self.vmContextMenuItems && self.vmContextMenuItems.length) {
-			
-			// Create context menu object
-			self.contextMenuObj = new vboxMenu(self.anchorid);
-			self.contextMenuObj.context = 'VBoxSelectorWnd';
-			self.contextMenuObj.addMenu(self.vmContextMenuItems);
-			
-			// Update context menu when selected VM changes
-			$('#vboxIndex').bind('chooserSelectionChanged',function(){
-				var vm = vboxSelectionData.getSingleSelected();
-				self.contextMenuObj.update(vm);
-			});
-		}
+		self.vmContextMenuObj = new vboxMenu(self.anchorid+'vms');
+		self.vmContextMenuObj.context = 'VBoxSelectorWnd';
+		self.vmContextMenuObj.addMenu(self.vmContextMenuItems);
+		
+		// Update context menu when selected VM changes
+		$('#vboxIndex').bind('vmSelectionListChanged',function(){
+			var vm = self.getSingleSelected();
+			self.vmContextMenuObj.update(vm);
+		});
 		
 		/*
 		 *
 		 * Parent element context menu
 		 *
 		 */
-		if(self.parentContextMenuItems && self.parentContextMenuItems.length) {
+		var vboxVMListPaneMenu = new vboxMenu(self.anchorid+'Pane');
+		vboxVMListPaneMenu.context = 'VBoxSelectorWnd';
+		vboxVMListPaneMenu.addMenu(self.parentContextMenuItems);
 
-			var vboxVMListPaneMenu = new vboxMenu(self.anchorid+'Pane');
-			vboxVMListPaneMenu.context = 'VBoxSelectorWnd';
-			vboxVMListPaneMenu.addMenu(self.parentContextMenuItems);
-	
-			$('#'+self.anchorid).parent().contextMenu({
-			  		menu: vboxVMListPaneMenu.menuId()
-			  	},
-			  	vboxVMListPaneMenu.menuClickCallback
-			);
-		
-		}
+		$('#'+self.anchorid).parent().contextMenu({
+		  		menu: vboxVMListPaneMenu.menuId()
+		  	},
+		  	vboxVMListPaneMenu.menuClickCallback
+		);
 		
 		
-		// Disable dragging selection, add dragging target class
-		$(self.anchor).disableSelection().hover(function(){
+		// Add dragging target class on hover
+		$(self.anchor).hover(function(){
 			$(this).addClass('vboxVMListDropTargetHover');
 		},function() {
 			$(this).removeClass('vboxVMListDropTargetHover');
@@ -683,7 +842,7 @@ function vboxVMList(anchorid) {
 	};
 		
 	/*
-	 * Select a single item
+	 * Select a single item in our list
 	 */
 	self.selectItem = function(e) {
 		
@@ -731,13 +890,13 @@ function vboxVMList(anchorid) {
 		}
 
 		self.selectedList = selectedList;
-		$('#vboxIndex').trigger('chooserSelectionChanged', [selectedList]);
+		self.selectionListChanged(self.selectedList);
 
 		
 	};
 	
 	/*
-	 * Draw groups and place holders
+	 * Return HTML for group with VM place-holders
 	 */
 	self.groupHTML = function(gdef, first) {
 		
@@ -746,9 +905,9 @@ function vboxVMList(anchorid) {
 				.append(
 						$('<div />').addClass('vboxVMListDropTargetHover').addClass('vboxDropTargetTop').hover(function(){
 							if(self._draggingGroup)
-								$(this).addClass('vboxHover')
+								$(this).addClass('vboxHover');
 						}, function(){
-							$(this).removeClass('vboxHover')
+							$(this).removeClass('vboxHover');
 						})
 				)
 				.data({'vmGroupPath':gdef.path})
@@ -767,7 +926,10 @@ function vboxVMList(anchorid) {
 					return $('<div />').append($(this).clone().removeClass('vboxHover')).addClass('vboxGroupSelected').css({'width':$(this).width()+'px','display':'inline'});
 					},'start':function() {
 						self._draggingGroup = true;
+						$(self.anchor).disableSelection();
 					},'stop':function() {
+						
+						$(self.anchor).enableSelection();
 						
 						self._draggingGroup = false;
 						
@@ -807,6 +969,18 @@ function vboxVMList(anchorid) {
 				);
 			}
 		}
+		
+
+		// Group context menu
+		$(gHTML).contextMenu({
+			menu: self.vmGroupContextMenuObj.menuId(),
+			menusetup: function(el) {
+				console.log($(el).children('div.vboxVMListGroupHeader'));
+				$(el).children('div.vboxVMListGroupHeader').trigger('click');
+			}
+		},function(act,el,pos,d,e){
+			self.vmGroupContextMenuObj.menuClickCallback(act, el);
+		});
 		
 		return gHTML.append(vmlist);
 		
@@ -855,7 +1029,7 @@ function vboxVMList(anchorid) {
 		self.anchor.html("<div id='vboxVMListSpinner' style='text-align: center'><img src='images/spinner.gif' /></div>");
 		self.vms = null;
 		self.selectedList = [];
-		$('#vboxIndex').trigger('chooserSelectionChanged',[[]]);
+		$('#vboxIndex').trigger('chooserSelectionChanged',[[], self]);
 	};
 	
 	

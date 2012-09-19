@@ -19,8 +19,7 @@ var tabs = [
     	name:'vboxTabVMDetails',
     	content:'tabVMDetails',
     	label:'Details',
-    	icon:'settings',
-    	mutliSelect: true
+    	icon:'settings'
     	
     // Snapshots
     },{
@@ -79,9 +78,9 @@ tabLoader.onLoad = function(){
 		
 	}
 	
-	$('#vboxIndex').bind('vmSelectionListChanged',function(e){tabsMain.updateTabs();});
-	$('#vboxIndex').bind('vmLoading',function(e){tabsMain.updateTabs();});
-	$('#vboxIndex').bind('vmLoaded',function(e){tabsMain.updateTabs();});
+	$('#vboxIndex').bind('vmSelectionListChanged',function(e, chooser){tabsMain.updateTabs(chooser);})
+		.bind('vmLoading',function(e, vm, chooser){tabsMain.updateTabs(chooser);})
+		.bind('vmLoaded',function(e, vm, chooser){tabsMain.updateTabs(chooser);});
 
 	// Add "click" functionality to each tab
 	$('#tablistMain').children().click(function(){
@@ -150,9 +149,11 @@ function vboxTabs(id) {
 	};
 
 	// Update (disable/enable) tabs
-	this.updateTabs = function() {
+	this.updateTabs = function(chooser) {
 		
-		var vm = vboxSelectionData.getSingleSelected();
+		var vm = null;
+		
+		if(chooser) vm = chooser.getSingleSelected();
 		
 		for(var i = 0; i < self.tabs.length; i++) {
 			
@@ -161,8 +162,7 @@ function vboxTabs(id) {
 			
 			// Disable non-multiSelect tabs if more than one
 			// item is selected or if it fails the "enabled" test
-			if((vboxSelectionData.selectedVMs.length > 1 && !self.tabs[i].multiSelect) ||
-					vboxSelectionData.selectedVMs.length == 0 ||
+			if(!chooser || chooser.selectedVMs.length != 1 ||
 					!self.tabs[i].enabled(vm)) {
 				
 				self.disableTab(self.tabs[i]);

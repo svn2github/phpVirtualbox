@@ -74,7 +74,7 @@ pfToolbar.context = 'UIMachineSettingsPortForwardingDlg';
 pfToolbar.addButtons('vboxSettingsPortForwardingToolbar');
 
 
-$('#vboxSettingsPortForwardingList').bind('select',pfToolbar.update);
+$('#vboxSettingsPortForwardingList').bind('select',function(e,el){pfToolbar.update(el);});
 $('#vboxSettingsPortForwardingList').trigger('select');
 
 /* Edit rule element */

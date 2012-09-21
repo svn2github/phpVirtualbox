@@ -465,8 +465,11 @@ ul.vboxMenuBar li {
 	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeff), to(#adf));
 	background: -moz-linear-gradient(top,  #eeeeff, #adf);
 }
+#vboxPaneVMList div.vboxVMListDropTarget { height: 4px; padding: 0px; margin: 0px; }
+#vboxPaneVMList div.vboxVMListDropTargetHover { background: #999; }
 #vboxPaneVMList td.vboxVMListDropTarget { height: 4px; padding: 0px; margin: 0px; }
-#vboxPaneVMList td.vboxVMListDropTargetHover { background: #999; }
+#vboxPaneVMList td.vboxVMListDropTargetHover
+	{ background: #999; }
 #vboxPaneVMList td.vboxVMTitle { width: 100% }
 #vboxVMList table.vboxVMListVM { margin-bottom: 2px; vertical-align: top; padding: 0px; border-collapse: collapse; }
 #vboxVMList table.vboxVMListVM td,
@@ -492,15 +495,15 @@ ul.vboxMenuBar li {
 	-moz-border-radius-topleft: 8px/*{cornerRadius}*/; -webkit-border-top-left-radius: 8px/*{cornerRadius}*/; border-top-left-radius: 8px/*{cornerRadius}*/; -moz-border-radius-topright: 8px/*{cornerRadius}*/; -webkit-border-top-right-radius: 8px/*{cornerRadius}*/; border-top-right-radius: 8px/*{cornerRadius}*/;
 	background-image: url(../images/header_grad.png);
 	background-color: #cccccc;
-	padding: 4px 4px 4px 8px;
+	padding: 0px 4px 8px 8px;
 	margin: 0px;
 	height: 16px;
 }
 #vboxPaneVMList div.vboxGroupSelected {
-	border-color: #69F ! important;
+	border-color: #69F;
 }
 #vboxPaneVMList div.vboxGroupSelected > div.vboxVMListGroupHeader {
-	background-color: #7aF !important;
+	background: #7aF !important;
 	cursor: default !important;
 	color: #fff !important;
 	background: -o-linear-gradient(top,  #8bF, #69f);
@@ -508,11 +511,12 @@ ul.vboxMenuBar li {
 	background: -moz-linear-gradient(top,  #8bF, #69f); /* for firefox 3.6+ */
 }
 	
-#vboxPaneVMList div.vboxVMListGroupVMs { padding: 2px; }
+#vboxPaneVMList div.vboxVMListGroupVMs { padding: 2px 2px 0px 2px; }
 #vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupName { font-weight: bold; }
 #vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupInfo { float: right; display: none }
 #vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupInfo img { margin-left: 2px; margin-right: 2px; }
 #vboxPaneVMList div.vboxVMListGroup div.vboxHover span.vboxVMListGroupInfo { display: inline; }
+
 
 /* Toolbar above vm list */
 #vboxPaneToolbar { float: left; }

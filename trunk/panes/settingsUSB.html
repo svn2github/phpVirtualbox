@@ -242,7 +242,7 @@ var usbToolbar = new vboxToolbarSmall(sButtons);
 usbToolbar.context = 'UIMachineSettingsUSB';
 usbToolbar.addButtons('vboxSettingsUSBButtons');
 
-$('#vboxSettingsUSBFilterList').bind('select',usbToolbar.update);
+$('#vboxSettingsUSBFilterList').bind('select',function(e,el){usbToolbar.update(el);});
 
 
 

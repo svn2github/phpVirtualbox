@@ -432,16 +432,13 @@ vboxSnapshotContextMenuCurrent.addMenu([vboxSnapshotButtons[0],vboxSnapshotButto
 
 
 /* Toolbar and menu updates*/
-$('#vboxSnapshotList').bind('select',function(target,item) {
+$('#vboxSnapshotList').bind('select',function(e,item) {
 	
 	// Update toolbar
-	vboxSnapshotToolbar.update(target,item);
+	vboxSnapshotToolbar.update(item);
 	
-	// Update menus
-	var lastItem = (item||target);
-	
-	vboxSnapshotContextMenu.update(lastItem);
-	vboxSnapshotContextMenuCurrent.update(lastItem);
+	vboxSnapshotContextMenu.update(item);
+	vboxSnapshotContextMenuCurrent.update(item);
 	
 });
 
@@ -453,10 +450,6 @@ vboxSnapshotToolbar._timeSpans['hours'] = 3600,
 vboxSnapshotToolbar._timeSpans['minutes'] = 60,
 vboxSnapshotToolbar._timeSpans['seconds'] = 1;
 vboxSnapshotToolbar._timeSpans.sort(function(a,b){return (a > b ? -1 : 1);});
-
-
-
-$('#vboxSnapshotList').bind('select',vboxSnapshotToolbar.update);
 
 
 

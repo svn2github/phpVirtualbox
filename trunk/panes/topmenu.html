@@ -151,23 +151,56 @@ if($('#vboxIndex').data('vboxSession').user) {
 	
 vboxTopMenuBar.addMenu(menu);
 
+//VM List Context menu for each VM
+var sChildren = [];
+for(var i = 0; i < vboxVMActions.stop_actions.length; i++) {
+	sChildren[sChildren.length] = $.extend({},vboxVMActions[vboxVMActions.stop_actions[i]],{'name':vboxVMActions.stop_actions[i],'iconStringDisabled':'_disabled','context':(vboxVMActions[vboxVMActions.stop_actions[i]].context ? vboxVMActions[vboxVMActions.stop_actions[i]].context : 'UIActionPool')});
+}
+
 var menu = {
 	'name':'vboxTopMachine',
 	'label':'Machine',
+	'enabled' : function(chooser) {
+		return (!chooser || (chooser.selectionModel != 'singleGroup'));
+	},
 	'menu':[
 	    $.extend({},vboxVMActions['new'],{'name':'new'}),
 	    $.extend({},vboxVMActions['add'],{'name':'add'}),
 	    $.extend({},vboxVMActions['settings'],{'name':'settings'}),
-	    $.extend({},vboxVMActions['refresh'],{'name':'refresh'}),
 	    $.extend({},vboxVMActions['clone'],{'name':'clone'}),
-	    $.extend({},vboxVMActions['remove'],{'name':'remove','separator':true}),
-	    $.extend({},vboxVMActions['discard'],{'name':'discard'}),
-	    $.extend({},vboxVMActions['logs'],{'name':'logs','separator':true})
+	    $.extend({},vboxVMActions['remove'],{'name':'remove'}),
+	    $.extend({},vboxVMActions['group'],{'name':'group'}),
+	    $.extend({},vboxVMActions['start'],{'name':'start','separator':true}),
+	    $.extend({},vboxVMActions['pause'],{'name':'pause'}),
+	    $.extend({},vboxVMActions['reset'],{'name':'reset'}),
+	    $.extend({},vboxVMActions['stop'],{'name':'stop','children':sChildren}),
+	    $.extend({},vboxVMActions['discard'],{'name':'discard','separator':true}),
+	    $.extend({},vboxVMActions['logs'],{'name':'logs'}),
+	    $.extend({},vboxVMActions['refresh'],{'name':'refresh'})
 	]
 };
 	
 vboxTopMenuBar.addMenu(menu);
 
+
+var menu = {
+		'name':'vboxTopGroup',
+		'label':'Group',
+		'enabled' : function(chooser) {
+			return (chooser && (chooser.selectionModel == 'singleGroup'));
+		},
+		'menu':[
+	    	$.extend({}, vboxVMGroupActions['newmachine'], {name:'newmachine'}),
+	    	$.extend({}, vboxVMGroupActions['addmachine'], {name:'addmachine'}),
+	    	$.extend({}, vboxVMGroupActions['rename'], {name:'rename',separator:true}),
+	    	$.extend({}, vboxVMGroupActions['ungroup'], {name:'ungroup'}),
+	    	$.extend({}, vboxVMGroupActions['sort'], {name:'sort',separator:true})
+		]
+	};
+		
+vboxTopMenuBar.addMenu(menu);
+
+	
 var menu = {
 	'name':'vboxTopHelp',
 	'label':'Help',
@@ -211,10 +244,10 @@ vboxTopMenuBar.addMenu(menu);
 
 vboxTopMenuBar.addMenuBar('vboxMenu');
 
-$('#vboxIndex').bind('vmLoaded',function(e, chooser){
-	vboxTopMenuBar.update(e,chooser);
+$('#vboxIndex').bind('vmLoaded',function(e, vmdata, chooser){
+	vboxTopMenuBar.update(chooser);
 }).bind('vmSelectionListChanged',function(e, chooser){
-	vboxTopMenuBar.update(e,chooser);
+	vboxTopMenuBar.update(chooser);
 });
 
 

@@ -453,7 +453,7 @@ if($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running') {
 } else {
 	// initial toolbar update
 	scToolbar.update();
-	$('#vboxSettingsStorageTree').bind('itemselect',scToolbar.update);
+	$('#vboxSettingsStorageTree').bind('itemselect',function(e,el) {scToolbar.update(el); });
 }
 
 

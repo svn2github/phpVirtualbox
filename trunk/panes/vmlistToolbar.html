@@ -24,7 +24,7 @@ var tButtons = [
 		
 	}}),
 	$.extend({},vboxVMActions['start'],{'name':'start'}),
-	$.extend({},vboxVMActions['stop'],{'name':'stop'})
+	$.extend({},vboxVMActions['discard'],{'name':'discard'},{'label':'Discard'})
 ];
 
 /* Append Top Toolbar */
@@ -33,16 +33,6 @@ vboxVMListToolbarTop.size = 32;
 vboxVMListToolbarTop.context = 'VBoxSelectorWnd';
 vboxVMListToolbarTop.addButtons('vboxPaneToolbar');
 
-
-$('#vboxIndex').bind('vmLoading',function(){
-	vboxVMListToolbarTop.update();
-}).bind('vmLoaded',function(e,vm){
-	var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
-	vboxVMListToolbarTop.update(vm);
-}).bind('vmSelectionListChanged',function(){
-	var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
-	vboxVMListToolbarTop.update(vm);
-});
 
 
 /* 'Settings' menu items / actions */
@@ -105,7 +95,7 @@ $('#vboxIndex').append(ul);
 
 
 
-/* 'Stop' button menu initialization  */
+/* 'Settings' button menu initialization  */
 $("#vboxToolbarButton-vboxPaneToolbar-settings").contextMenu({
 		menu: 'vboxVMSettingsMenu',
 		button: 0,
@@ -115,8 +105,8 @@ $("#vboxToolbarButton-vboxPaneToolbar-settings").contextMenu({
 		
 		var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
 		
-		if(window['vboxVMsettingsInit' + a]) {
-			window['vboxVMsettingsInit' + a](vm.id,function(){$('#vboxIndex').trigger('vmChanged',[vm.id]);});
+		if(a == 'Network' || a == 'SharedFolders') {
+			vboxVMsettingsInit(vm, null, a);
 			return;
 		}
 		
@@ -282,7 +272,7 @@ function vboxVMListToolbarUSBUpdate(menu) {
 
 /*
  *  
- * Update vboxStopMenu items. Called when 
+ * Update vboxSettingsMenu items. Called when 
  * vboxVMList selection changes $('#vboxIndex').onvmSelectionListChanged
  *
  */
@@ -403,83 +393,28 @@ function vboxUpdateSettingsMenu(vm) {
 }
 
 
-
-/* 'Stop' menu */
-var ul = $('<ul />').attr({'class':'contextMenu','style':'display: none','id':'vboxStopMenu'});
-for(var i = 0; i < vboxVMActions.stop_actions.length; i++) {
-	
-	var n = vboxVMActions.stop_actions[i];
-
-	$(ul).append($('<li />').html("<a href='#" + n + "' style='background-image: url(images/vbox/" + vboxVMActions[n].icon +"_16px.png);' >"+trans(vboxVMActions[n].label,(vboxVMActions[n].context ? vboxVMActions[n].context : 'UIActionPool'))+"</a>"));
-		
-}
-
-/* Append 'Stop' button Menu */
-$('#vboxIndex').append(ul);
-
-
-
-/* 'Stop' button menu initialization  */
-$("#vboxToolbarButton-vboxPaneToolbar-stop").contextMenu({
-		menu: 'vboxStopMenu',
-		button: 0,
-		mode: 'menu'
-	},
-	function(a, el, pos) {
-		vboxVMActions[a].click();		
-		if(a != 'reset' && a != 'powerbutton' && a != 'sleep') vboxVMListToolbarTop.disableButton(vboxVMListToolbarTop.getButtonByName('stop'));
-	}
-);
-
-
 /*
- *  
- * Update vboxStopMenu items. Called when 
- * vboxVMList selection changes.
- *
+ Bind events...
  */
-function vboxUpdateStopMenu(vm) {
 
-	var enabledOne = false;
-	
-	
-	for(var i = 0; i < vboxVMActions.stop_actions.length; i++) {
-		
-		var n = vboxVMActions.stop_actions[i];
-		
-		// enable or disable
-		if(vm && vboxVMActions[n].enabled(vm)) {
-			$('#vboxStopMenu').enableContextMenuItems('#'+n);
-			$('#vboxStopMenu').find('a[href=#'+n+']').css('background-image','url(images/vbox/'+vboxVMActions[n].icon+'_16px.png)');
-			enabledOne = true;
-			continue;
-		}
+// Loading
+$('#vboxIndex').bind('vmLoading',function(e, vms, chooser){
 
-		$('#vboxStopMenu').disableContextMenuItems('#'+n);
-		$('#vboxStopMenu').find('a[href=#'+n+']').css('background-image','url(images/vbox/'+vboxVMActions[n].icon+'_disabled_16px.png)');
-	}
-	
-	if(!enabledOne) {
-		$("#vboxToolbarButton-vboxPaneToolbar-stop").disableContextMenu();
-	} else {
-		$("#vboxToolbarButton-vboxPaneToolbar-stop").enableContextMenu();
-	}
-	
-}
-
-// Disable menu items while vm is loading
-$('#vboxIndex').bind('vmLoading',function(){
+	vboxVMListToolbarTop.update(chooser);
 	$('#vboxVMSettingsMenu').disableContextMenu();
+
+// Loaded
+}).bind('vmLoaded',function(e, vm, chooser){
+	vboxVMListToolbarTop.update(chooser);
+	vboxUpdateSettingsMenu(chooser);
+	
+// Selection changed
+}).bind('vmSelectionListChanged',function(e,chooser){
+	vboxVMListToolbarTop.update(chooser);
+	vboxUpdateSettingsMenu(chooser);
 });
 
-// Update menu when vm is loaded
-$('#vboxIndex').bind('vmLoaded',function(e,vm,chooser){
-	vboxUpdateSettingsMenu(chooser);
-	vboxUpdateStopMenu(chooser);
-}).bind('vmSelectionListChanged',function(e,vmlist,chooser){
-	vboxUpdateSettingsMenu(chooser);
-	vboxUpdateStopMenu(chooser);
-});
+$('#vboxVMSettingsMenu').disableContextMenu();
 
 
 </script>

@@ -723,9 +723,9 @@ function vboxVMMMediaInfo(e,m) {
 
 // Update items on mediumselect
 $('#vboxVirtualMediaManager').bind('mediumselect',function(e,m){
-	vmmToolbar.update(e,m);
-	vboxVMMMediaInfo(e,m);
-	vmmMenu.update(e,m);
+	vmmToolbar.update(m);
+	vboxVMMMediaInfo(m);
+	vmmMenu.update(m);
 	vmmCMenu.update(m);
 });
 

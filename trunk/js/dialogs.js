@@ -448,7 +448,7 @@ function vboxShowLogsDialogInit(vm) {
 	var l = new vboxLoader();
 	l.add('machineGetLogFilesInfo',function(r){
 		$('#vboxVMLogsDialog').data({'logs':r.logs,'logpath':r.path});
-	},{'vm':vm});
+	},{'vm':vm.id});
 	l.addFileToDOM('panes/vmlogs.html',$('#vboxVMLogsDialog'));
 	l.onLoad = function(){
 		var buttons = {};
@@ -457,7 +457,7 @@ function vboxShowLogsDialogInit(vm) {
 			l.add('machineGetLogFilesInfo',function(r){
 				$('#vboxVMLogsDialog').data({'logs':r.logs,'logpath':r.path});
 				
-			},{'vm':vm});
+			},{'vm':vm.id});
 			l.onLoad = function(){
 				vboxShowLogsInit(vm);
 			};
@@ -832,7 +832,10 @@ function vboxPrefsInit() {
 		data.pop();
 	}
 	
-	vboxSettingsDialog(trans('Preferences...','VBoxSelectorWnd').replace(/\./g,''),panes,data,function(){
+	vboxSettingsDialog(trans('Preferences...','VBoxSelectorWnd').replace(/\./g,''),panes,data,function(canceled){
+
+		// Do nothing if canceled
+		if(canceled) return;
 		
 		var l = new vboxLoader();
 
@@ -897,7 +900,10 @@ function vboxVMsettingsInit(vm,callback,pane) {
 
 	);
 
-	vboxSettingsDialog(vm.name + ' - ' + trans('Settings','UISettingsDialog'),panes,data,function(){
+	vboxSettingsDialog(vm.name + ' - ' + trans('Settings','UISettingsDialog'),panes,data,function(canceled) {
+		
+		if(canceled) return;
+		
 		var loader = new vboxLoader();
 		var sdata = $.extend($('#vboxSettingsDialog').data('vboxMachineData'),{'clientConfig':$('#vboxIndex').data('vboxConfig')});
 		loader.add('machineSave',function(){return;},sdata);
@@ -913,71 +919,6 @@ function vboxVMsettingsInit(vm,callback,pane) {
 		};
 		loader.run();
 	},pane,'settings','UISettingsDialogMachine');
-}
-
-/**
- * Display Network settings dialog for VM when VM is running
- * @param {String} vm - uuid or name of virtual machine
- * @param {Function} callback - callback function to perform after settings have been saved
- */
-function vboxVMsettingsInitNetwork(vm,callback) {
-	
-	if(typeof(vm) == 'string')
-		vm = $('#vboxIndex').data('vboxChooser').vms[vm];
-
-	var panes = new Array(
-		{'name':'Network','label':'Network','icon':'nw','tabbed':true,'context':'UIMachineSettingsNetwork'}
-	);
-	
-	var data = new Array(
-			{'fn':'hostGetNetworking','callback':function(d){$('#vboxSettingsDialog').data('vboxHostNetworking',d);}},
-			{'fn':'hostGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxHostDetails',d);}},
-			{'fn':'machineGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxMachineData',d);},'args':{'vm':vm.id}},
-			{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxNetworkAdapterTypes',d);},'args':{'class':'NetworkAdapterType'}},
-			{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxAudioControllerTypes',d);},'args':{'class':'AudioControllerType'}}
-
-	);
-
-	vboxSettingsDialog(trans('Settings','VBoxSettingsDialog'),panes,data,function(){
-		var loader = new vboxLoader();
-		var sdata = $.extend($('#vboxSettingsDialog').data('vboxMachineData'),{'clientConfig':$('#vboxIndex').data('vboxConfig')});
-		loader.add('machineSaveNetwork',function(){
-			$('#vboxIndex').trigger('vmChanged',[vm.id]);
-			if(callback){callback();}
-		},sdata);
-		loader.run();
-	},'Network','nw','UISettingsDialogMachine');
-}
-
-/**
- * Display SharedFolders settings dialog for VM when VM is running 
- * @param {String} vm - uuid or name of virtual machine
- * @param {Function} callback - callback function to perform after settings have been saved
- */
-function vboxVMsettingsInitSharedFolders(vm,callback) {
-
-	if(typeof(vm) == 'string')
-		vm = $('#vboxIndex').data('vboxChooser').vms[vm];
-
-	var panes = new Array(
-		{'name':'SharedFolders','label':'Shared Folders','icon':'shared_folder','tabbed':false,'context':'UIMachineSettingsSF'}
-	);
-	
-	var data = new Array(
-			{'fn':'hostGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxHostDetails',d);}},
-			{'fn':'machineGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxMachineData',d);},'args':{'vm':vm.id}},
-			{'fn':'consoleGetSharedFolders','callback':function(d){$('#vboxSettingsDialog').data('vboxTransientSharedFolders',d);},'args':{'vm':vm.id}}
-	);
-
-	vboxSettingsDialog(trans('Settings','VBoxSettingsDialog'),panes,data,function(){
-		var sdata = $.extend($('#vboxSettingsDialog').data('vboxMachineData'),{'clientConfig':$('#vboxIndex').data('vboxConfig')});
-		var loader = new vboxLoader();
-		loader.add('machineSaveSharedFolders',function(){
-			$('#vboxIndex').trigger('vmChanged',[vm.id]);
-			if(callback){callback();
-		}},sdata);
-		loader.run();
-	},'SharedFolders','shared_folder','UISettingsDialogMachine');
 }
 
 
@@ -1098,11 +1039,12 @@ function vboxSettingsDialog(title,panes,data,onsave,pane,icon,langContext) {
 			}
 			
 			$(this).trigger('save');
-			onsave($(this));
+			onsave($(this), false);
 			$(this).trigger('close').empty().remove();
 			$(document).trigger('click');
 		};
 		buttons[trans('Cancel','QIMessageBox')] = function() {
+			onsave($(this), true);
 			$('#vboxSettingsDialog').trigger('close').empty().remove();
 			$(document).trigger('click');
 		};

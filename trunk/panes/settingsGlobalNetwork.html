@@ -190,9 +190,9 @@ var sButtons = new Array(
 var netToolbar = new vboxToolbarSmall(sButtons);
 netToolbar.context = 'UIGlobalSettingsNetwork';
 netToolbar.addButtons('vboxSettingsGlobalNetToolbar');
-$('#vboxSettingsGlobalNetList').bind('select',netToolbar.update);
 
 $('#vboxSettingsGlobalNetList').bind('select',function(e,i){
+	netToolbar.update(i);
 	if(i) {
 		$('#vboxSettingsGlobalNetAdapterLabel').html($(i).data('interface').DHCPEnabled ? trans('Automatically configured','UIGlobalSettingsNetwork') : trans('Manually configured','UIGlobalSettingsNetwork'));
 		$('#vboxSettingsGlobalNetDHCPLabel').html($(i).data('interface').dhcpServer.enabled ? trans('Enabled','UIGlobalSettingsNetwork') : trans('Disabled','UIGlobalSettingsNetwork'));

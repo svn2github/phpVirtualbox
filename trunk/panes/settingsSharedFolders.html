@@ -139,7 +139,7 @@ var sfToolbar = new vboxToolbarSmall(sButtons);
 sfToolbar.context = 'UIMachineSettingsSF';
 sfToolbar.addButtons('vboxSettingsSFButtons');
 
-$('#vboxSettingsSharedFoldersList').bind('select',sfToolbar.update);
+$('#vboxSettingsSharedFoldersList').bind('select',function(e,el){sfToolbar.update(el);});
 
 /* Add Shared Folder to list */
 

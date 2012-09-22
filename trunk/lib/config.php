@@ -14,7 +14,7 @@
 /*
  * This version of phpVirtualBox
  */
-define('PHPVBOX_VER', '4.2-1');
+define('PHPVBOX_VER', '4.2-0');
 
 class phpVBoxConfigClass {
 
@@ -107,8 +107,7 @@ class phpVBoxConfigClass {
 		'_machineGetSerialPorts' => 7200,
 		'_machineGetParallelPorts' => 7200,
 		'_machineGetSharedFolders' => 7200,
-		'_machineGetUSBController' => 7200,
-		'vboxMachineSortOrderGet' => 300 // 5 minutes
+		'_machineGetUSBController' => 7200
 	);
 
 	/**

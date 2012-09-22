@@ -499,16 +499,36 @@ ul.vboxMenuBar li {
 	margin: 0px;
 	height: 16px;
 }
+#vboxPaneVMList div.vboxVMListGroupHeader span {
+	cursor: default;	
+}
 #vboxPaneVMList div.vboxGroupSelected {
 	border-color: #69F;
 }
 #vboxPaneVMList div.vboxGroupSelected > div.vboxVMListGroupHeader {
 	background: #7aF !important;
-	cursor: default !important;
 	color: #fff !important;
 	background: -o-linear-gradient(top,  #8bF, #69f);
 	background: -webkit-gradient(linear, left top, left bottom, from(#8bF), to(#69f)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #8bF, #69f); /* for firefox 3.6+ */
+}
+
+#vboxPaneVMList div.vboxVMListGroupHeader span.vboxVMListGroupNameArrowCollapse {
+	position: relative;
+	display: inline-block;
+	left: -5px;
+	top: 0px;
+	margin: 0px;
+	padding: 0px;
+	cursor: pointer;
+	width: 13px;
+	height: 8px;
+	background-repeat: no-repeat;
+	background-image: url(../images/arrow_grad_up.png);
+}
+
+#vboxPaneVMList div.vboxVMGroupCollapsed span.vboxVMListGroupNameArrowCollapse {
+	background-image: url(../images/arrow_grad_dn.png);
 }
 	
 #vboxPaneVMList div.vboxVMListGroupVMs { padding: 2px 2px 0px 2px; }
@@ -516,6 +536,22 @@ ul.vboxMenuBar li {
 #vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupInfo { float: right; display: none }
 #vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupInfo img { margin-left: 2px; margin-right: 2px; }
 #vboxPaneVMList div.vboxVMListGroup div.vboxHover span.vboxVMListGroupInfo { display: inline; }
+#vboxPaneVMList div.vboxVMListGroupHeader div.vboxVMListDropTargetBottom { display: none; }
+
+
+#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxVMListGroup,
+#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxVMListGroupVMs,
+#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxVMListDropTargetBottom
+{ display: none; }
+#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxVMListGroupHeader div.vboxVMListDropTargetBottom
+{ display: block; }
+
+#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxVMListGroupHeader {
+	display: block;
+	-webkit-border-radius: 8px;
+	border-radius: 8px;
+	-moz-border-radius: 8px;
+}
 
 
 /* Toolbar above vm list */

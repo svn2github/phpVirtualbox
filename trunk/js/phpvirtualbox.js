@@ -15,7 +15,6 @@ var vboxVMGroups = {
 	
 	// Return group data for group at path
 	getGroupByPath : function(path) {
-		
 		return vboxTraverse([$('#vboxIndex').data('vboxVMGroups')], 'path', path, false, 'subgroups');
 	},
 	
@@ -36,6 +35,31 @@ var vboxVMGroups = {
 	// Save group definition
 	saveGroups : function(gdef) {
 		$('#vboxIndex').data('vboxVMGroups', gdef);
+		vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':gdef},function(){
+			
+		});
+	},
+	
+	// Get Groups for VM
+	getGroupsForVM : function(vmid, gdef) {
+		
+		// This is undefined when checking root
+		if(!gdef) gdef = $('#vboxIndex').data('vboxVMGroups');
+		
+		// Hold group list
+		var glist = [];
+		
+		// In current group?
+		if(jQuery.inArray(vmid, gdef.machines) > -1)
+			glist[0] = gdef.path;
+		
+		// Traverse subgroups and check machines
+		for(var i = 0; i < gdef.subgroups.length; i++) {
+			glist = $.merge(glist, vboxVMGroups.getGroupsForVM(vmid, gdef.subgroups[i]));
+		}
+		
+		return glist;
+		
 	}
 };
 
@@ -866,13 +890,13 @@ var vboxVMDetailsSections = {
 		    	callback: function(d) {
 		    		return trans(vboxAudioDriver(d['audioAdapter']['audioDriver']),'VBoxGlobal');
 		    	},
-		    	condition: function(d) { return d['audioAdapter']['enabled']; },
+		    	condition: function(d) { return d['audioAdapter']['enabled']; }
 		    },{
 		    	title: "Controller",
 		    	callback: function (d) {
 		    		return trans(vboxAudioController(d['audioAdapter']['audioController']),'VBoxGlobal');
 		    	},
-		    	condition: function(d) { return d['audioAdapter']['enabled']; },
+		    	condition: function(d) { return d['audioAdapter']['enabled']; }
 		    }
 		]
 	},
@@ -1350,7 +1374,6 @@ var vboxVMActions = {
 			// Host refresh also refreshes system properties, VM sort order
 			if(vm.id == 'host') {
 				l.add('vboxSystemPropertiesGet',function(d){$('#vboxIndex').data('vboxSystemProperties',d);},{'force_refresh':1});
-				l.add('vboxMachineSortOrderGet',function(d){return;},{'force_refresh':1});
 				l.add('hostOnlyInterfacesGet',function(d){return;},{'force_refresh':1});
 			}
 			l.run();
@@ -1416,8 +1439,8 @@ var vboxVMActions = {
     	icon: 'add_shared_folder',
     	icon_disabled: 'add_shared_folder_disabled',
     	selectionModels : ['multiVM','singleVM'],
-    	click: function(el) {
-    		
+    	click: function() {
+    		$('#vboxIndex').data('vboxChooser').groupSelectedItems();
     	},
     	enabled: function(chooser) {
     		return (chooser && !(chooser.selectionModel=='singleVM' && chooser.getSingleSelected().id == 'host'));

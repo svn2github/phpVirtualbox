@@ -408,20 +408,21 @@ class IDHCPServerCollection extends VBox_ManagedObjectCollection {
 */
 class IVirtualBox extends VBox_ManagedObject {
 
-   public function composeMachineFilename($arg_name, $arg_group, $arg_baseFolder) { 
+   public function composeMachineFilename($arg_name, $arg_group, $arg_createFlags, $arg_baseFolder) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
        
        $request->name = $arg_name;
        $request->group = $arg_group;
+       $request->createFlags = $arg_createFlags;
        $request->baseFolder = $arg_baseFolder;
        $response = $this->connection->__soapCall('IVirtualBox_composeMachineFilename', array((array)$request));
        
        return (string)$response->returnval;
   }
 
-   public function createMachine($arg_settingsFile, $arg_name, $arg_groups, $arg_osTypeId, $arg_id, $arg_forceOverwrite) { 
+   public function createMachine($arg_settingsFile, $arg_name, $arg_groups, $arg_osTypeId, $arg_flags) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
@@ -430,8 +431,7 @@ class IVirtualBox extends VBox_ManagedObject {
        $request->name = $arg_name;
        $request->groups = $arg_groups;
        $request->osTypeId = $arg_osTypeId;
-       $request->id = $arg_id;
-       $request->forceOverwrite = $arg_forceOverwrite;
+       $request->flags = $arg_flags;
        $response = $this->connection->__soapCall('IVirtualBox_createMachine', array((array)$request));
        
        return new IMachine ($this->connection, $response->returnval);
@@ -657,6 +657,13 @@ class IVirtualBox extends VBox_ManagedObject {
        $request = new stdClass();
        $request->_this = $this->handle;
        $response = $this->connection->__soapCall('IVirtualBox_getVersion', array((array)$request));
+       return (string)$response->returnval;
+   }
+
+   public function getVersionNormalized() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IVirtualBox_getVersionNormalized', array((array)$request));
        return (string)$response->returnval;
    }
 
@@ -2166,7 +2173,7 @@ class IMachine extends VBox_ManagedObject {
    public function setGroups($value) {
        $request = new stdClass();
        $request->_this = $this->handle;
-       if (is_null($value) || is_scalar($value)) {
+       if (is_null($value) || is_scalar($value) || is_array($value)) {
             $request->groups = $value;
        }
        else
@@ -2434,6 +2441,86 @@ class IMachine extends VBox_ManagedObject {
             $request->monitorCount = $value->handle;
        }
        $this->connection->__soapCall('IMachine_setMonitorCount', array((array)$request));
+   }
+
+   public function getVideoCaptureEnabled() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IMachine_getVideoCaptureEnabled', array((array)$request));
+       return (bool)$response->returnval;
+   }
+
+   public function setVideoCaptureEnabled($value) {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       if (is_null($value) || is_scalar($value)) {
+            $request->VideoCaptureEnabled = $value;
+       }
+       else
+       {
+            $request->VideoCaptureEnabled = $value->handle;
+       }
+       $this->connection->__soapCall('IMachine_setVideoCaptureEnabled', array((array)$request));
+   }
+
+   public function getVideoCaptureFile() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IMachine_getVideoCaptureFile', array((array)$request));
+       return (string)$response->returnval;
+   }
+
+   public function setVideoCaptureFile($value) {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       if (is_null($value) || is_scalar($value)) {
+            $request->VideoCaptureFile = $value;
+       }
+       else
+       {
+            $request->VideoCaptureFile = $value->handle;
+       }
+       $this->connection->__soapCall('IMachine_setVideoCaptureFile', array((array)$request));
+   }
+
+   public function getVideoCaptureWidth() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IMachine_getVideoCaptureWidth', array((array)$request));
+       return (float)$response->returnval;
+   }
+
+   public function setVideoCaptureWidth($value) {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       if (is_null($value) || is_scalar($value)) {
+            $request->VideoCaptureWidth = $value;
+       }
+       else
+       {
+            $request->VideoCaptureWidth = $value->handle;
+       }
+       $this->connection->__soapCall('IMachine_setVideoCaptureWidth', array((array)$request));
+   }
+
+   public function getVideoCaptureHeight() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IMachine_getVideoCaptureHeight', array((array)$request));
+       return (float)$response->returnval;
+   }
+
+   public function setVideoCaptureHeight($value) {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       if (is_null($value) || is_scalar($value)) {
+            $request->VideoCaptureHeight = $value;
+       }
+       else
+       {
+            $request->VideoCaptureHeight = $value->handle;
+       }
+       $this->connection->__soapCall('IMachine_setVideoCaptureHeight', array((array)$request));
    }
 
    public function getBIOSSettings() {
@@ -4423,6 +4510,26 @@ class ISystemProperties extends VBox_ManagedObject {
        }
        $this->connection->__soapCall('ISystemProperties_setAutostartDatabasePath', array((array)$request));
    }
+
+   public function getDefaultAdditionsISO() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('ISystemProperties_getDefaultAdditionsISO', array((array)$request));
+       return (string)$response->returnval;
+   }
+
+   public function setDefaultAdditionsISO($value) {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       if (is_null($value) || is_scalar($value)) {
+            $request->defaultAdditionsISO = $value;
+       }
+       else
+       {
+            $request->defaultAdditionsISO = $value->handle;
+       }
+       $this->connection->__soapCall('ISystemProperties_setDefaultAdditionsISO', array((array)$request));
+   }
 }
   
 /**
@@ -4483,10 +4590,10 @@ class IGuestSession extends VBox_ManagedObject {
        $request->flags = $arg_flags;
        $response = $this->connection->__soapCall('IGuestSession_directoryCreate', array((array)$request));
        
-       return new IGuestDirectory ($this->connection, $response->returnval);
+       return ;
   }
 
-   public function directoryCreateTemp($arg_templateName, $arg_mode, $arg_path) { 
+   public function directoryCreateTemp($arg_templateName, $arg_mode, $arg_path, $arg_secure) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
@@ -4494,9 +4601,10 @@ class IGuestSession extends VBox_ManagedObject {
        $request->templateName = $arg_templateName;
        $request->mode = $arg_mode;
        $request->path = $arg_path;
+       $request->secure = $arg_secure;
        $response = $this->connection->__soapCall('IGuestSession_directoryCreateTemp', array((array)$request));
        
-       return new IGuestDirectory ($this->connection, $response->returnval);
+       return (string)$response->returnval;
   }
 
    public function directoryExists($arg_path) { 
@@ -4626,7 +4734,7 @@ class IGuestSession extends VBox_ManagedObject {
        return ;
   }
 
-   public function fileCreateTemp($arg_templateName, $arg_mode, $arg_path) { 
+   public function fileCreateTemp($arg_templateName, $arg_mode, $arg_path, $arg_secure) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
@@ -4634,6 +4742,7 @@ class IGuestSession extends VBox_ManagedObject {
        $request->templateName = $arg_templateName;
        $request->mode = $arg_mode;
        $request->path = $arg_path;
+       $request->secure = $arg_secure;
        $response = $this->connection->__soapCall('IGuestSession_fileCreateTemp', array((array)$request));
        
        return new IGuestFile ($this->connection, $response->returnval);
@@ -4648,6 +4757,17 @@ class IGuestSession extends VBox_ManagedObject {
        $response = $this->connection->__soapCall('IGuestSession_fileExists', array((array)$request));
        
        return (bool)$response->returnval;
+  }
+
+   public function fileRemove($arg_path) { 
+       $request = new stdClass();
+       
+       $request->_this = $this->handle;
+       
+       $request->path = $arg_path;
+       $response = $this->connection->__soapCall('IGuestSession_fileRemove', array((array)$request));
+       
+       return ;
   }
 
    public function fileOpen($arg_path, $arg_openMode, $arg_disposition, $arg_creationMode, $arg_offset) { 
@@ -4939,13 +5059,13 @@ class IProcess extends VBox_ManagedObject {
        return new ProcessWaitResult ($this->connection, $response->returnval);
   }
 
-   public function read($arg_handle, $arg_size, $arg_timeoutMS) { 
+   public function read($arg_handle, $arg_toRead, $arg_timeoutMS) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
        
        $request->handle = $arg_handle;
-       $request->size = $arg_size;
+       $request->toRead = $arg_toRead;
        $request->timeoutMS = $arg_timeoutMS;
        $response = $this->connection->__soapCall('IProcess_read', array((array)$request));
        
@@ -4966,7 +5086,7 @@ class IProcess extends VBox_ManagedObject {
        return (float)$response->returnval;
   }
 
-   public function WriteArray($arg_handle, $arg_flags, $arg_data, $arg_timeoutMS) { 
+   public function writeArray($arg_handle, $arg_flags, $arg_data, $arg_timeoutMS) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
@@ -4975,7 +5095,7 @@ class IProcess extends VBox_ManagedObject {
        $request->flags = $arg_flags;
        $request->data = $arg_data;
        $request->timeoutMS = $arg_timeoutMS;
-       $response = $this->connection->__soapCall('IProcess_WriteArray', array((array)$request));
+       $response = $this->connection->__soapCall('IProcess_writeArray', array((array)$request));
        
        return (float)$response->returnval;
   }
@@ -5065,6 +5185,16 @@ class IGuestProcessCollection extends VBox_ManagedObjectCollection {
 */
 class IDirectory extends VBox_ManagedObject {
 
+   public function close() { 
+       $request = new stdClass();
+       
+       $request->_this = $this->handle;
+       
+       $response = $this->connection->__soapCall('IDirectory_close', array((array)$request));
+       
+       return ;
+  }
+
    public function read() { 
        $request = new stdClass();
        
@@ -5079,6 +5209,13 @@ class IDirectory extends VBox_ManagedObject {
        $request = new stdClass();
        $request->_this = $this->handle;
        $response = $this->connection->__soapCall('IDirectory_getDirectoryName', array((array)$request));
+       return (string)$response->returnval;
+   }
+
+   public function getFilter() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IDirectory_getFilter', array((array)$request));
        return (string)$response->returnval;
    }
 }
@@ -5128,27 +5265,29 @@ class IFile extends VBox_ManagedObject {
        return new IFsObjInfo ($this->connection, $response->returnval);
   }
 
-   public function read($arg_toRead) { 
+   public function read($arg_toRead, $arg_timeoutMS) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
        
        $request->toRead = $arg_toRead;
+       $request->timeoutMS = $arg_timeoutMS;
        $response = $this->connection->__soapCall('IFile_read', array((array)$request));
        
-       return array((array)$response->returnval, (float)$response->read);
+       return (array)$response->returnval;
   }
 
-   public function readAt($arg_offset, $arg_toRead) { 
+   public function readAt($arg_offset, $arg_toRead, $arg_timeoutMS) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
        
        $request->offset = $arg_offset;
        $request->toRead = $arg_toRead;
+       $request->timeoutMS = $arg_timeoutMS;
        $response = $this->connection->__soapCall('IFile_readAt', array((array)$request));
        
-       return array((array)$response->returnval, (float)$response->read);
+       return (array)$response->returnval;
   }
 
    public function seek($arg_offset, $arg_whence) { 
@@ -5174,28 +5313,44 @@ class IFile extends VBox_ManagedObject {
        return ;
   }
 
-   public function write($arg_data) { 
+   public function write($arg_data, $arg_timeoutMS) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
        
        $request->data = $arg_data;
+       $request->timeoutMS = $arg_timeoutMS;
        $response = $this->connection->__soapCall('IFile_write', array((array)$request));
        
        return (float)$response->returnval;
   }
 
-   public function writeAt($arg_offset, $arg_data) { 
+   public function writeAt($arg_offset, $arg_data, $arg_timeoutMS) { 
        $request = new stdClass();
        
        $request->_this = $this->handle;
        
        $request->offset = $arg_offset;
        $request->data = $arg_data;
+       $request->timeoutMS = $arg_timeoutMS;
        $response = $this->connection->__soapCall('IFile_writeAt', array((array)$request));
        
        return (float)$response->returnval;
   }
+
+   public function getCreationMode() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IFile_getCreationMode', array((array)$request));
+       return (float)$response->returnval;
+   }
+
+   public function getDisposition() {
+       $request = new stdClass();
+       $request->_this = $this->handle;
+       $response = $this->connection->__soapCall('IFile_getDisposition', array((array)$request));
+       return (float)$response->returnval;
+   }
 
    public function getFileName() {
        $request = new stdClass();
@@ -5286,10 +5441,10 @@ class IFsObjInfo extends VBox_ManagedObject {
        return (float)$response->returnval;
    }
 
-   public function getFileAtttributes() {
+   public function getFileAttributes() {
        $request = new stdClass();
        $request->_this = $this->handle;
-       $response = $this->connection->__soapCall('IFsObjInfo_getFileAtttributes', array((array)$request));
+       $response = $this->connection->__soapCall('IFsObjInfo_getFileAttributes', array((array)$request));
        return (string)$response->returnval;
    }
 
@@ -5584,170 +5739,6 @@ class IGuest extends VBox_ManagedObject {
        $response = $this->connection->__soapCall('IGuest_findSession', array((array)$request));
        
        return new IGuestSessionCollection ($this->connection, (array)$response->returnval);
-  }
-
-   public function executeProcess($arg_execName, $arg_flags, $arg_arguments, $arg_environment, $arg_userName, $arg_password, $arg_timeoutMS) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->execName = $arg_execName;
-       $request->flags = $arg_flags;
-       $request->arguments = $arg_arguments;
-       $request->environment = $arg_environment;
-       $request->userName = $arg_userName;
-       $request->password = $arg_password;
-       $request->timeoutMS = $arg_timeoutMS;
-       $response = $this->connection->__soapCall('IGuest_executeProcess', array((array)$request));
-       
-       return array(new IProgress ($this->connection, $response->returnval), (float)$response->pid);
-  }
-
-   public function getProcessOutput($arg_pid, $arg_flags, $arg_timeoutMS, $arg_size) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->pid = $arg_pid;
-       $request->flags = $arg_flags;
-       $request->timeoutMS = $arg_timeoutMS;
-       $request->size = $arg_size;
-       $response = $this->connection->__soapCall('IGuest_getProcessOutput', array((array)$request));
-       
-       return (array)$response->returnval;
-  }
-
-   public function getProcessStatus($arg_pid) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->pid = $arg_pid;
-       $response = $this->connection->__soapCall('IGuest_getProcessStatus', array((array)$request));
-       
-       return array(new ExecuteProcessStatus ($this->connection, $response->returnval), (float)$response->exitcode, (float)$response->flags);
-  }
-
-   public function copyFromGuest($arg_source, $arg_dest, $arg_userName, $arg_password, $arg_flags) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->source = $arg_source;
-       $request->dest = $arg_dest;
-       $request->userName = $arg_userName;
-       $request->password = $arg_password;
-       $request->flags = $arg_flags;
-       $response = $this->connection->__soapCall('IGuest_copyFromGuest', array((array)$request));
-       
-       return new IProgress ($this->connection, $response->returnval);
-  }
-
-   public function copyToGuest($arg_source, $arg_dest, $arg_userName, $arg_password, $arg_flags) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->source = $arg_source;
-       $request->dest = $arg_dest;
-       $request->userName = $arg_userName;
-       $request->password = $arg_password;
-       $request->flags = $arg_flags;
-       $response = $this->connection->__soapCall('IGuest_copyToGuest', array((array)$request));
-       
-       return new IProgress ($this->connection, $response->returnval);
-  }
-
-   public function directoryClose($arg_handle) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->handle = $arg_handle;
-       $response = $this->connection->__soapCall('IGuest_directoryClose', array((array)$request));
-       
-       return ;
-  }
-
-   public function directoryCreate($arg_directory, $arg_userName, $arg_password, $arg_mode, $arg_flags) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->directory = $arg_directory;
-       $request->userName = $arg_userName;
-       $request->password = $arg_password;
-       $request->mode = $arg_mode;
-       $request->flags = $arg_flags;
-       $response = $this->connection->__soapCall('IGuest_directoryCreate', array((array)$request));
-       
-       return ;
-  }
-
-   public function directoryOpen($arg_directory, $arg_filter, $arg_flags, $arg_userName, $arg_password) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->directory = $arg_directory;
-       $request->filter = $arg_filter;
-       $request->flags = $arg_flags;
-       $request->userName = $arg_userName;
-       $request->password = $arg_password;
-       $response = $this->connection->__soapCall('IGuest_directoryOpen', array((array)$request));
-       
-       return (float)$response->returnval;
-  }
-
-   public function directoryRead($arg_handle) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->handle = $arg_handle;
-       $response = $this->connection->__soapCall('IGuest_directoryRead', array((array)$request));
-       
-       return new IGuestDirEntry ($this->connection, $response->returnval);
-  }
-
-   public function fileExists($arg_file, $arg_userName, $arg_password) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->file = $arg_file;
-       $request->userName = $arg_userName;
-       $request->password = $arg_password;
-       $response = $this->connection->__soapCall('IGuest_fileExists', array((array)$request));
-       
-       return (bool)$response->returnval;
-  }
-
-   public function fileQuerySize($arg_file, $arg_userName, $arg_password) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->file = $arg_file;
-       $request->userName = $arg_userName;
-       $request->password = $arg_password;
-       $response = $this->connection->__soapCall('IGuest_fileQuerySize', array((array)$request));
-       
-       return (float)$response->returnval;
-  }
-
-   public function setProcessInput($arg_pid, $arg_flags, $arg_timeoutMS, $arg_data) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->pid = $arg_pid;
-       $request->flags = $arg_flags;
-       $request->timeoutMS = $arg_timeoutMS;
-       $request->data = $arg_data;
-       $response = $this->connection->__soapCall('IGuest_setProcessInput', array((array)$request));
-       
-       return (float)$response->returnval;
   }
 
    public function updateGuestAdditions($arg_source, $arg_flags) { 
@@ -8321,29 +8312,6 @@ class ISessionCollection extends VBox_ManagedObjectCollection {
 * Generated VBoxWebService Interface Wrapper
 */
 class IStorageController extends VBox_ManagedObject {
-
-   public function getIDEEmulationPort($arg_devicePosition) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->devicePosition = $arg_devicePosition;
-       $response = $this->connection->__soapCall('IStorageController_getIDEEmulationPort', array((array)$request));
-       
-       return (int)$response->returnval;
-  }
-
-   public function setIDEEmulationPort($arg_devicePosition, $arg_portNumber) { 
-       $request = new stdClass();
-       
-       $request->_this = $this->handle;
-       
-       $request->devicePosition = $arg_devicePosition;
-       $request->portNumber = $arg_portNumber;
-       $response = $this->connection->__soapCall('IStorageController_setIDEEmulationPort', array((array)$request));
-       
-       return ;
-  }
 
    public function getName() {
        $request = new stdClass();
@@ -10949,48 +10917,6 @@ class IAdditionsFacilityCollection extends VBox_StructCollection {
 /**
 * Generated VBoxWebService Struct
 */
-class IGuestDirEntry extends VBox_Struct {
-    
-       protected $nodeId;
-    
-       protected $name;
-    
-       protected $type;
-    
-    public function __construct($connection, $values) {
-       $this->connection = $connection;
-    
-       $this->nodeId = $values->nodeId;
-       $this->name = $values->name;
-       $this->type = $values->type;
-    }
-
-    
-    public function getNodeId() {
-        return (float)$this->nodeId;
-    }
-    
-    public function getName() {
-        return (string)$this->name;
-    }
-    
-    public function getType() {
-        return new GuestDirEntryType ($this->connection, $this->type);
-    }
-    
-
-}
-
-/**
-* Generated VBoxWebService Struct Collection
-*/
-class IGuestDirEntryCollection extends VBox_StructCollection {
-   protected $_interfaceName = "IGuestDirEntry";
-}
-
-/**
-* Generated VBoxWebService Struct
-*/
 class IMediumAttachment extends VBox_Struct {
     
        protected $medium;
@@ -11692,36 +11618,6 @@ class AdditionsUpdateFlagCollection extends VBox_EnumCollection {
 /**
 * Generated VBoxWebService ENUM
 */
-class ExecuteProcessFlag extends VBox_Enum {
-   public $NameMap = array(0 => 'None', 1 => 'WaitForProcessStartOnly', 2 => 'IgnoreOrphanedProcesses', 4 => 'Hidden', 8 => 'NoProfile', 16 => 'WaitForStdOut', 32 => 'WaitForStdErr');
-   public $ValueMap = array('None' => 0, 'WaitForProcessStartOnly' => 1, 'IgnoreOrphanedProcesses' => 2, 'Hidden' => 4, 'NoProfile' => 8, 'WaitForStdOut' => 16, 'WaitForStdErr' => 32);
-}
-
-/**
-* Generated VBoxWebService Enum Collection
-*/
-class ExecuteProcessFlagCollection extends VBox_EnumCollection {
-   protected $_interfaceName = "ExecuteProcessFlag";
-}
-
-/**
-* Generated VBoxWebService ENUM
-*/
-class ExecuteProcessStatus extends VBox_Enum {
-   public $NameMap = array(0 => 'Undefined', 1 => 'Started', 2 => 'TerminatedNormally', 3 => 'TerminatedSignal', 4 => 'TerminatedAbnormally', 5 => 'TimedOutKilled', 6 => 'TimedOutAbnormally', 7 => 'Down', 8 => 'Error');
-   public $ValueMap = array('Undefined' => 0, 'Started' => 1, 'TerminatedNormally' => 2, 'TerminatedSignal' => 3, 'TerminatedAbnormally' => 4, 'TimedOutKilled' => 5, 'TimedOutAbnormally' => 6, 'Down' => 7, 'Error' => 8);
-}
-
-/**
-* Generated VBoxWebService Enum Collection
-*/
-class ExecuteProcessStatusCollection extends VBox_EnumCollection {
-   protected $_interfaceName = "ExecuteProcessStatus";
-}
-
-/**
-* Generated VBoxWebService ENUM
-*/
 class FileSeekType extends VBox_Enum {
    public $NameMap = array(0 => 'Set', 1 => 'Current');
    public $ValueMap = array('Set' => 0, 'Current' => 1);
@@ -11783,8 +11679,8 @@ class ProcessWaitForFlagCollection extends VBox_EnumCollection {
 * Generated VBoxWebService ENUM
 */
 class ProcessWaitResult extends VBox_Enum {
-   public $NameMap = array(0 => 'None', 1 => 'Start', 2 => 'Terminate', 3 => 'Status', 4 => 'Error', 5 => 'Timeout', 6 => 'StdIn', 7 => 'StdOut', 8 => 'StdErr', 9 => 'Any');
-   public $ValueMap = array('None' => 0, 'Start' => 1, 'Terminate' => 2, 'Status' => 3, 'Error' => 4, 'Timeout' => 5, 'StdIn' => 6, 'StdOut' => 7, 'StdErr' => 8, 'Any' => 9);
+   public $NameMap = array(0 => 'None', 1 => 'Start', 2 => 'Terminate', 3 => 'Status', 4 => 'Error', 5 => 'Timeout', 6 => 'StdIn', 7 => 'StdOut', 8 => 'StdErr', 9 => 'WaitFlagNotSupported');
+   public $ValueMap = array('None' => 0, 'Start' => 1, 'Terminate' => 2, 'Status' => 3, 'Error' => 4, 'Timeout' => 5, 'StdIn' => 6, 'StdOut' => 7, 'StdErr' => 8, 'WaitFlagNotSupported' => 9);
 }
 
 /**
@@ -11858,8 +11754,8 @@ class PathRenameFlagCollection extends VBox_EnumCollection {
 * Generated VBoxWebService ENUM
 */
 class ProcessCreateFlag extends VBox_Enum {
-   public $NameMap = array(0 => 'None', 1 => 'WaitForProcessStartOnly', 2 => 'IgnoreOrphanedProcesses', 4 => 'Hidden', 8 => 'NoProfile', 16 => 'WaitForStdOut', 32 => 'WaitForStdErr');
-   public $ValueMap = array('None' => 0, 'WaitForProcessStartOnly' => 1, 'IgnoreOrphanedProcesses' => 2, 'Hidden' => 4, 'NoProfile' => 8, 'WaitForStdOut' => 16, 'WaitForStdErr' => 32);
+   public $NameMap = array(0 => 'None', 1 => 'WaitForProcessStartOnly', 2 => 'IgnoreOrphanedProcesses', 4 => 'Hidden', 8 => 'NoProfile', 16 => 'WaitForStdOut', 32 => 'WaitForStdErr', 64 => 'ExpandArguments');
+   public $ValueMap = array('None' => 0, 'WaitForProcessStartOnly' => 1, 'IgnoreOrphanedProcesses' => 2, 'Hidden' => 4, 'NoProfile' => 8, 'WaitForStdOut' => 16, 'WaitForStdErr' => 32, 'ExpandArguments' => 64);
 }
 
 /**
@@ -11963,8 +11859,8 @@ class DragAndDropActionCollection extends VBox_EnumCollection {
 * Generated VBoxWebService ENUM
 */
 class DirectoryOpenFlag extends VBox_Enum {
-   public $NameMap = array(0 => 'None');
-   public $ValueMap = array('None' => 0);
+   public $NameMap = array(0 => 'None', 1 => 'NoSymlinks');
+   public $ValueMap = array('None' => 0, 'NoSymlinks' => 1);
 }
 
 /**
@@ -11972,21 +11868,6 @@ class DirectoryOpenFlag extends VBox_Enum {
 */
 class DirectoryOpenFlagCollection extends VBox_EnumCollection {
    protected $_interfaceName = "DirectoryOpenFlag";
-}
-
-/**
-* Generated VBoxWebService ENUM
-*/
-class GuestDirEntryType extends VBox_Enum {
-   public $NameMap = array(0 => 'Unknown', 4 => 'Directory', 10 => 'File', 12 => 'Symlink');
-   public $ValueMap = array('Unknown' => 0, 'Directory' => 4, 'File' => 10, 'Symlink' => 12);
-}
-
-/**
-* Generated VBoxWebService Enum Collection
-*/
-class GuestDirEntryTypeCollection extends VBox_EnumCollection {
-   protected $_interfaceName = "GuestDirEntryType";
 }
 
 /**

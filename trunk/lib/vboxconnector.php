@@ -647,6 +647,52 @@ class vboxconnector {
 		$response['data']['result'] = 1;
 	}
 
+	/**
+	 * Save a vm's groups if they have changed
+	 * 
+	 * @param array $args array of arguments. See function body for details.
+	 * @param array $response response data passed byref populated by the function
+	 */
+	public function remote_machineSaveGroups($args, &$response) {
+		
+		$this->connect();
+		
+		$response['data']['vm'] = $args['vm'];
+		
+		// create session and lock machine
+		/* @var $machine IMachine */
+		$machine = $this->vbox->findMachine($args['vm']);
+		
+		$oldGroups = $machine->groups;
+		$newGroups = $args['groups'];
+		
+		if(!count(array_diff($oldGroups,$newGroups)) && !count(array_diff($newGroups,$oldGroups))) {
+			$machine->releaseRemote();
+			return ($response['data']['result'] = 1);
+		}
+			
+		$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
+		
+		$vmLocked = ($machine->sessionState->__toString() == 'Locked');
+		$machine->lockMachine($this->session->handle, ($vmLocked ? 'Shared' : 'Write'));
+		
+		$this->session->machine->groups = $newGroups;
+		$this->session->machine->saveSettings();
+		
+		$this->session->unlockMachine();
+		$this->session->releaseRemote();
+		
+		unset($this->session);
+		$machine->releaseRemote();
+		
+		$this->cache->expire('_machineGetDetails'.$args['vm']);
+		
+		$response['data']['result'] = 1;
+		$response['data']['saved'] = 1;
+		
+		return true;
+		
+	}
 
 	/**
 	 * Save a vm's network adapter settings
@@ -3237,41 +3283,6 @@ class vboxconnector {
 
 
 	/**
-	 * Set virtual machine sort order
-	 *
-	 * @param array $args array of arguments. See function body for details.
-	 * @param unused $response
-	 */
-	public function remote_vboxMachineSortOrderSave($args,&$response) {
-
-		// Connect to vboxwebsrv
-		$this->connect();
-
-		asort($args['sortOrder']);
-
-		$sortOrder = join(',',array_flip($args['sortOrder']));
-
-		$this->vbox->setExtraData("GUI/SelectorVMPositions", $sortOrder);
-
-		$this->cache->expire('vboxMachineSortOrderGet');
-	}
-
-	/**
-	 * Return virtual machine sort order
-	 *
-	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 */
-	public function remote_vboxMachineSortOrderGet($args,&$response) {
-
-		// Connect to vboxwebsrv
-		$this->connect();
-
-		$response['data']['sortOrder'] = array_flip(array_filter(explode(',',$this->vbox->getExtraData("GUI/SelectorVMPositions"))));
-
-	}
-
-	/**
 	 * Return a list of virtual machines along with their states and other basic info
 	 *
 	 * @param array $args array of arguments. See function body for details.
@@ -3284,11 +3295,6 @@ class vboxconnector {
 		$this->connect();
 
 		$response['data']['vmlist'] = array();
-
-		// get sort order
-		$so = array();
-		$this->vboxMachineSortOrderGet($args,array(&$so));
-		$response['data']['sortOrder'] = $so['data']['sortOrder'];
 
 		//Get a list of registered machines
 		$machines = $this->vbox->machines;
@@ -3304,7 +3310,6 @@ class vboxconnector {
 					'OSTypeId' => $machine->getOSTypeId(),
 					'owner' => (@$this->settings->enforceVMOwnership ? $machine->getExtraData("phpvb/sso/owner") : ''),
 					'id' => $machine->id,
-					'groups' => $machine->groups,
 					'lastStateChange' => floor($machine->lastStateChange/1000),
 					'sessionState' => $machine->sessionState->__toString(),
 					'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
@@ -3423,10 +3428,13 @@ class vboxconnector {
 	 */
 	private function _machineGetDetails(&$m) {
 
+		$groups = $m->groups;
+		usort($groups, 'strnatcasecmp');
+		
 		return array(
 			'name' => @$this->settings->enforceVMOwnership ? preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $m->name) : $m->name,
 			'description' => $m->description,
-			'groups' => $m->groups,
+			'groups' => $groups,
 			'id' => $m->id,
 			'settingsFilePath' => $m->settingsFilePath,
 			'OSTypeId' => $m->OSTypeId,
@@ -4866,6 +4874,61 @@ class vboxconnector {
 
 	}
 
+	/**
+	 * Set group definition
+	 * 
+	 * @param array $args array of arguments. See function body for details
+	 * @param array $response response data passed byref populated by the function
+	 * @return boolean true on success
+	 */
+	public function remote_vboxGroupDefinitionsSet($args, &$response) {
+	
+		$this->connect();
+		
+		$validGroupPaths = $this->_vboxMachineGroupDefinitionSet($args['groupDefinitions']);
+		
+		$keys = $this->vbox->getExtraDataKeys();
+		foreach($keys as $k) {
+			if(strpos($k,'GUI/GroupDefinitions') !== 0) continue;
+			if(array_search(substr($k,20), $validGroupPaths) === false)
+				$this->vbox->setExtraData($k,'');
+		}
+		return ($response['data']['result'] = 1);
+	}
+	
+	/**
+	 * Write a group definition to file
+	 * @param array $groupDef
+	 */
+	private function _vboxMachineGroupDefinitionSet($groupDef) {
+		
+		// Return a list of valid group paths
+		$validGroupPaths = array();
+		
+		$strArr = array();
+		foreach($groupDef['subgroups'] as $g) {
+			if(!count($g['subgroups']) && !count($g['machines']))
+				continue;
+			$validGroupPaths[] = $g['path'];
+			$strArr[] = 'go=' . $g['name'];
+		}
+		foreach($groupDef['machines'] as $m) {
+			$strArr[] = 'm='.$m;
+		}
+		
+		if(count($strArr)) {
+			$this->vbox->setExtraData('GUI/GroupDefinitions'.$groupDef['path'], implode(',', $strArr));
+		}
+		
+		// Write out subgroups
+		foreach($groupDef['subgroups'] as $g) {
+			$validGroupPaths = array_merge($validGroupPaths, $this->_vboxMachineGroupDefinitionSet($g));
+		}
+		
+		if($groupDef['path'] == '/') $validGroupPaths[] = '/';
+		
+		return $validGroupPaths;
+	}
 	/**
 	 * Return group definitions in an easily consumable format
 	 * 

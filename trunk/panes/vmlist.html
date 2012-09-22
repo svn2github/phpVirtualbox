@@ -206,7 +206,6 @@ function vboxVMList(anchorid) {
 
 			var vmid = self.selectedVMs[i];
 			
-			
 			// Not loaded yet
 			if(!self.vms[vmid].phpVbxLoaded) {
 				
@@ -273,6 +272,12 @@ function vboxVMList(anchorid) {
 			host.
 		*/
 		if(d.server_key != $('#vboxIndex').data('vboxConfig').key) return;
+		
+		/*
+		 * Don't update if paused.. 
+		 * happens while dragging and creating group definitions
+		 */
+		if(self.paused) return;
 		
 		currVMList = d.vmlist;
 		
@@ -370,7 +375,7 @@ function vboxVMList(anchorid) {
 
 		var changed = false;
 		var newVM = false;
-		var changedProps = ['currentSnapshotName','state','sessionState','OSTypeId','name','customIcon','groups'];
+		var changedProps = ['currentSnapshotName','state','sessionState','OSTypeId','name','customIcon'];
 		
 		if(!self.vms[vmUpdate.id]) {
 			changed = true;
@@ -404,8 +409,9 @@ function vboxVMList(anchorid) {
 			self.vms[vmUpdate.id] = vmUpdate;
 
 			// Only trigger this if it is not a new VM
-			if(!newVM)
+			if(!newVM) {
 				$('#vboxIndex').trigger('vmChanged', [vmUpdate.id]);
+			}
 		}
 		
 
@@ -451,10 +457,12 @@ function vboxVMList(anchorid) {
 		if(vmn.id != 'host') {
 			
 			$(tbl).draggable({'cursorAt':{left: -10, top: -10},'helper':function(){
-				return $(this).clone().css({'width':'auto','display':'inline','background':'#fff','border-color':'#69f'}).removeClass('vboxHover');
+				return $(this).clone().css({'width':($(this).width()+2)+'px','display':'inline','background':'#fff','border-color':'#69f'}).removeClass('vboxHover');
 				
 			// drag start
-			},'start':function() {
+			},'start':function(e) {
+				
+				self.paused = true;
 				
 				$(self.anchor).disableSelection();
 				self._dragging = vmn.id;
@@ -475,14 +483,18 @@ function vboxVMList(anchorid) {
 					// Dropped from another group into this one,
 					// but this group already has this VM
 					if((dropTarget.closest('table').parent().siblings('div.vboxVMListGroupHeader').data('vmGroupPath') != $(this).parent().siblings('div.vboxVMListGroupHeader').data('vmGroupPath')) 
-							&& dropTarget.closest('table').siblings('table.vboxVMListItem-'+self.anchorid+'-'+$(this).data('vmid'))[0])
+							&& dropTarget.closest('table').siblings('table.vboxVMListItem-'+self.anchorid+'-'+$(this).data('vmid'))[0]) {
+							self.paused = false;
 							return true;
+					}
 										
 					// Get VM from target's parent table
 					if(dropTarget.hasClass('vboxDropTargetTop')) {
-						$(this).detach().insertBefore($(dropTarget).closest('table'));
+						if(!e.ctrlKey && !e.metaKey) $(this).detach().insertBefore($(dropTarget).closest('table'));
+						else self.vmHTML(self.vms[$(this).data('vmid')]).insertBefore($(dropTarget).closest('table'));
 					} else {
-						$(this).detach().insertAfter($(dropTarget).closest('table'));
+						if(!e.ctrlKey && !e.metaKey) $(this).detach().insertAfter($(dropTarget).closest('table'));
+						else self.vmHTML(self.vms[$(this).data('vmid')]).insertAfter($(dropTarget).closest('table'));
 					}
 				
 				// Not dropped above / below vm
@@ -526,7 +538,11 @@ function vboxVMList(anchorid) {
 						// New position is below target
 						var ghtml = self.groupHTML(gdef);
 						
-						ghtml.find('table.vboxVMListItem-'+self.anchorid+'-'+$(this).data('vmid')).replaceWith($(this).detach());
+						if(!e.ctrlKey && !e.metaKey) {
+							ghtml.find('table.vboxVMListItem-'+self.anchorid+'-'+$(this).data('vmid')).replaceWith($(this).detach());
+						} else {
+							ghtml.find('table.vboxVMListItem-'+self.anchorid+'-'+$(this).data('vmid')).replaceWith(self.vmHTML(self.vms[$(this).data('vmid')]));
+						}
 						ghtml.find('table.vboxVMListItem-'+self.anchorid+'-'+dropTarget.data('vmid')).replaceWith(dropTarget.detach());
 						
 						ghtml.insertBefore(p);
@@ -538,20 +554,31 @@ function vboxVMList(anchorid) {
 						if(dropTarget[0] && dropTarget.hasClass('vboxVMListGroupHeader')) {
 							
 							// Group already has this VM?
-							if(dropTarget.siblings('div.vboxVMListGroupVMs').children('table.vboxVMListItem-'+self.anchorid+'-'+$(this).data('vmid'))[0])
+							if(dropTarget.siblings('div.vboxVMListGroupVMs').children('table.vboxVMListItem-'+self.anchorid+'-'+$(this).data('vmid'))[0]) {
+								self.paused = false;
 								return;
+							}
 							
-							$(this).detach().appendTo(dropTarget.siblings('div.vboxVMListGroupVMs').first());
+							if(!e.ctrlKey && !e.metaKey)
+								$(this).detach().appendTo(dropTarget.siblings('div.vboxVMListGroupVMs').first());
+							else
+								self.vmHTML(self.vms[$(this).data('vmid')]).appendTo(dropTarget.siblings('div.vboxVMListGroupVMs').first());
 						
+						// Main VM list
 						} else if($(self.anchor).hasClass('vboxVMListDropTargetHoverRoot')) {
 						
 						
 							// Already in this list?
-							if(self.anchor.children('div.vboxVMListGroup').children('div.vboxVMListGroupVMs').children('table.vboxVMListItem-'+self.anchorid+'-'+$(this).data('vmid'))[0])
+							if(self.anchor.children('div.vboxVMListGroup').children('div.vboxVMListGroupVMs').children('table.vboxVMListItem-'+self.anchorid+'-'+$(this).data('vmid'))[0]) {
+								self.paused = false;
 								return true;
+							}
 							
-							
-							$(this).detach().appendTo(self.anchor.children('div.vboxVMListGroup').children('div.vboxVMListGroupVMs').first());
+							if(!e.ctrlKey && !e.metaKey) {
+								$(this).detach().appendTo(self.anchor.children('div.vboxVMListGroup').children('div.vboxVMListGroupVMs').first());
+							} else {
+								self.vmHTML(self.vms[$(this).data('vmid')]).appendTo(self.anchor.children('div.vboxVMListGroup').children('div.vboxVMListGroupVMs').first());
+							}
 
 						}
 					}
@@ -559,6 +586,8 @@ function vboxVMList(anchorid) {
 				}
 
 				self.composeGroupDef();
+				
+				self.paused = false;
 				
 			}});
 		}
@@ -674,8 +703,8 @@ function vboxVMList(anchorid) {
 		
 		// Open settings on dblclick
 		$(tbl).dblclick(function(){
-			if(self.vmContextMenuItems[0].enabled(self))
-				self.vmContextMenuItems[0].click();
+			if(self.vmContextMenuObj.menuItems['settings'].enabled(self))
+				self.vmContextMenuObj.menuItems['settings'].click();
 		});
 		
 		return tbl;
@@ -709,6 +738,51 @@ function vboxVMList(anchorid) {
 		delete self.vms[id];
 	};
 
+	/*
+	 * groupSelectedItems
+	 */
+	self.groupSelectedItems = function() {
+		
+		var sGroups = self.getSelectedGroupElements();
+		var sVMs = self.getSelectedVMElements();
+		
+		var gdef = {
+			subgroups: [],
+			machines: []
+		};
+		
+		// Add subgroup definitions
+		for(var i = 0; i < sGroups.length; i++) {
+			gdef.subgroups[gdef.subgroups.length] = vboxVMGroups.getGroupByPath($(sGroups[i]).children('div.vboxVMListGroupHeader').data('vmGroupPath'));
+		}
+		
+		// Add machines
+		for(var i = 0; i < sVMs.length; i++) {
+			gdef.machines[gdef.machines.length] = $(sVMs[i]).data('vmid');
+		}
+		
+		// Determine group name
+		var gname = trans('New group','UIGChooserModel');
+		var tgname = gname;
+
+		var i = 2;
+		while(self.groupNameConflicts(self.anchor.children('div.vboxVMListGroup'), tgname)) {
+			tgname = gname + ' ' + (i++);
+		}
+		
+		gdef.name = tgname;
+		gdef.path = '/' + tgname;
+		
+		var gHTML = self.groupHTML(gdef);
+
+		// Append group and vm elements
+		self.anchor.find('div.vboxGroupSelected').detach().insertAfter(gHTML.children('div.vboxVMListGroupHeader'));
+		self.anchor.find('table.vboxListItemSelected').detach().appendTo(gHTML.children('div.vboxVMListGroupVMs'));
+
+		gHTML.insertBefore(self.anchor.children('div.vboxVMListGroup').children('div.vboxVMListGroupVMs'));
+		
+		self.composeGroupDef();
+	};
 	
 	/*
 	 * Compose group data from GUI
@@ -716,7 +790,7 @@ function vboxVMList(anchorid) {
 	self.composeGroupDef = function(elm, parentPath) {
 		
 		if(!elm) {
-			elm = self.anchor;
+			elm = self.anchor.children('div.vboxVMListGroup');
 			parentPath = '';
 		}
 		var groupDef = {
@@ -727,37 +801,64 @@ function vboxVMList(anchorid) {
 		groupDef.path = parentPath+'/'+groupDef.name;
 		groupDef.path = groupDef.path.replace('//','/');
 		
-		// Get a list of subgroups
-		$(elm).children('div.vboxVMListGroup').each(function(index, selm){
-			
-			var gname = $(selm).children('div.vboxVMListGroup').children('span.vboxVMListGroupName').attr('title');
-			$(selm).children('div.vboxVMListGroup').data('vmGroupPath', groupDef.path + '/' + gname);
-			groupDef.subgroups[groupDef.subgroups.length] = self.composeGroupDef(selm, groupDef.path);
-			
-		});
+		$(elm).children('div.vboxVMListGroupHeader').data('vmGroupPath', groupDef.path);
 		
+		// Get a list of subgroups
+		$(elm).children('div.vboxVMListGroup').each(function(index, selm){			
+			groupDef.subgroups[groupDef.subgroups.length] = self.composeGroupDef(selm, groupDef.path);
+		});
+			
+			
 		// Get a list of machines
 		if($(elm).attr('id') == self.anchorid) {
-			$(elm).children('table.vboxVMListVM').each(function(index, selm){
+			$(elm).children(':not(table.ui-draggable-dragging)').each(function(index, selm){
 				if($(selm).data('vmid') != 'host')
 					groupDef.machines[groupDef.machines.length] = $(selm).data('vmid');
 			});			
 		} else {
-			$(elm).children('div.vboxVMListGroupVMs').children('table.vboxVMListVM').each(function(index, selm){
+			$(elm).children('div.vboxVMListGroupVMs').children(':not(table.ui-draggable-dragging)').each(function(index, selm){
 				var vmid = $(selm).data('vmid');
 				if(vmid)
 					groupDef.machines[groupDef.machines.length] = $(selm).data('vmid');
 			});
 		}
 		
-		// Remove any subgroups without machines or subgroups
+		// Update counts and remove empty groups
 		for(var i in groupDef.subgroups) {
-			if(!groupDef.subgroups[i].subgroups.length && !groupDef.subgroups[i].machines.length) {
-				$(elm).children('div.vboxVMListGroup').children('div.vboxVMListGroupHeader').children('span.vboxVMListGroupName:contains("'+groupDef.subgroups[i].name+'")').closest('div.vboxVMListGroup').remove();
-				delete groupDef.subgroups[i];
+			if(groupDef.subgroups[i].subgroups.length + groupDef.subgroups[i].machines.length == 0) {
+				$(elm).children('div.vboxVMListGroup').eq(i).addClass('vboxVMListGroupRemove');
+				groupDef.subgroups.splice(i, 1);
+				continue;
 			}
+			$(elm).children('div.vboxVMListGroup').eq(i).children('div.vboxVMListGroupHeader').children('span.vboxVMListGroupInfo').replaceWith(
+				$('<span />').addClass('vboxVMListGroupInfo').html(
+						(groupDef.subgroups[i].subgroups.length ? ('<img src="images/vbox/nw_16px.png" />'+groupDef.subgroups[i].subgroups.length) : '') +
+						(groupDef.subgroups[i].machines.length ? (' <img src="images/vbox/fullscreen_16px.png" />'+groupDef.subgroups[i].machines.length) : '') +
+						'' //'<img src="images/arrow_grad_up.png" />'
+						)
+			);
 		}
+		$(elm).children('div.vboxVMListGroupRemove').empty().remove();
 		
+		// If at top level group, save new group definitions
+		// and VM groups
+		if(parentPath == '') {
+			
+			// GUI group definition
+			vboxVMGroups.saveGroups(groupDef);
+			
+			// Machine groups and trigger change
+			for(var i in self.vms) {
+				if(typeof i != 'string' || i == 'host') continue;
+				vboxAjaxRequest('machineSaveGroups',{'vm':i,'groups':vboxVMGroups.getGroupsForVM(i)},function(res){
+
+					if(res.saved) {
+						$('#vboxIndex').trigger('vmChanged',[res.vm]);
+					}
+				});
+			}
+			
+		}
 		
 		return groupDef;
 		
@@ -767,9 +868,13 @@ function vboxVMList(anchorid) {
 	 * Determine whether or not a group name conflicts
 	 * with another group in parent
 	 */
-	self.groupNameConflicts = function(parentGroup, name) {
+	self.groupNameConflicts = function(parentGroup, name, ignoreGroupAtPath) {
 		var found = false;
 		parentGroup.children('div.vboxVMListGroup').children('div.vboxVMListGroupHeader').children('span.vboxVMListGroupName').each(function(i,elm){
+			
+			if(ignoreGroupAtPath && ignoreGroupAtPath == $(elm).parent().data('vmGroupPath'))
+				return true;
+			
 			if($(elm).attr('title') == name) {
 				found=true;
 				return false;
@@ -784,8 +889,10 @@ function vboxVMList(anchorid) {
 	self.unGroupSelectedGroup = function() {
 
 		var target = $(self.getSelectedGroupElements()[0]).siblings('div.vboxVMListGroupVMs');
-
+		
 		// Groups
+		// - ignore group at path we are currently ungrouping
+		var ignoreGroup = $(self.getSelectedGroupElements()[0]).children('div.vboxVMListGroupHeader').data('vmGroupPath');
 		$(self.getSelectedGroupElements()[0]).children('div.vboxVMListGroup').each(function(i,elm) {
 			
 			// Make sure there are no conflicts
@@ -794,7 +901,7 @@ function vboxVMList(anchorid) {
 			var newGroupName = groupName;
 
 			var i = 2;
-			while(self.groupNameConflicts($(target).parent(), newGroupName)) {
+			while(self.groupNameConflicts($(target).parent(), newGroupName, ignoreGroup)) {
 				newGroupName = groupName + ' (' + (i++) + ')';				
 			}
 			
@@ -862,7 +969,7 @@ function vboxVMList(anchorid) {
 			
 			var newName = $(textbox).val().replace(/[\\\/:*?"<>,]/g,'_');
 			
-			if(newName) {
+			if(newName && newName != $(textbox).parent().parent().children('span.vboxVMListGroupName').attr('title')) {
 				
 				// Do not rename if it conflicts
 				var noConflict = newName;
@@ -879,6 +986,8 @@ function vboxVMList(anchorid) {
 				
 				$(textbox).parent().parent().data({'vmGroupPath':vmGroupPath}).children('span.vboxVMListGroupName')
 					.html(newName).attr({'title':newName});
+				
+				self.composeGroupDef();
 			}
 			
 			
@@ -892,14 +1001,17 @@ function vboxVMList(anchorid) {
 			
 			$('<form />').append(
 				$('<input />').attr({'type':'text','value':$(el).children('div.vboxVMListGroupHeader').children('span.vboxVMListGroupName').attr('title')}).css({'width':'90%','padding':'0px','margin':'0px'}).bind('keypress',function(e){
-					if (e.which == 13) { 
+					if (e.which == 13) {
 						renameGroup(this);
+						e.stopPropagation();
+						e.preventDefault();
+						return false;
 					}
 				})
 			)
 
 		);
-		$(el).children('div.vboxVMListGroupHeader').children('form').children('input').focus().blur(function(){
+		$(el).children('div.vboxVMListGroupHeader').children('form').children('input').focus().select().blur(function(){
 			renameGroup(this);
 		});
 
@@ -931,9 +1043,10 @@ function vboxVMList(anchorid) {
 			
 		}).bind('vmlistrefresh',function(){
 			self.refresh();
+			
 		}).bind('hostChange',function(){
-			self.selectedList = [];
 			self.stop();
+			$('#vboxIndex').trigger('vmSelectionListChanged', [self]);
 			
 		}).bind('hostChanged',function(){
 
@@ -1028,7 +1141,7 @@ function vboxVMList(anchorid) {
 			
 			
 			// No control key. Exclusive selection
-			if(!e.ctrlKey) {
+			if(!e.ctrlKey && !e.metaKey) {
 				
 				self.anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
 				self.anchor.find('div.vboxGroupSelected').removeClass('vboxGroupSelected');
@@ -1068,7 +1181,7 @@ function vboxVMList(anchorid) {
 		} else {
 			
 			// No ctrl key or selection is host. Exclusive selection
-			if(!e.ctrlKey || $(item).data('vmid') == 'host') {
+			if((!e.ctrlKey && !e.metaKey) || $(item).data('vmid') == 'host') {
 				
 				self.anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
 				self.anchor.find('div.vboxGroupSelected').removeClass('vboxGroupSelected');
@@ -1107,7 +1220,17 @@ function vboxVMList(anchorid) {
 			
 		}
 
-		
+		// Remove host?
+		if(selectedList.length > 1) {
+
+			// Deselect host
+			selectedList = selectedList.filter(function(v){
+				return (v.type == 'group' || (v.id != 'host'));
+			});
+			
+			self.anchor.children('table.vboxVMListItem-'+self.anchorid+'-host').removeClass('vboxListItemSelected');
+			
+		}
 		self.selectedList = selectedList;
 		self.selectionListChanged(self.selectedList);
 
@@ -1121,6 +1244,9 @@ function vboxVMList(anchorid) {
 		
 		var gHTML = $('<div />').append(
 			$('<div />').addClass('vboxVMListGroupHeader').css({'display':(first ? 'none' : '')})
+				.dblclick(function() {
+					$(this).children('span.vboxVMListGroupNameArrowCollapse').click();
+				})
 				.append(
 						$('<div />').addClass('vboxVMListDropTarget')
 							.addClass('vboxDropTargetTop').hover(function(){
@@ -1131,22 +1257,51 @@ function vboxVMList(anchorid) {
 						})
 				)
 				.data({'vmGroupPath':gdef.path})
+				.append(
+						$('<span />').addClass('vboxVMListGroupNameArrowCollapse')
+							.click(function(e) {
+								$(this).closest('div.vboxVMListGroup').toggleClass('vboxVMGroupCollapsed', 300);
+								if(e) {
+									e.stopPropagation();
+									e.preventDefault();
+								}
+
+								return false;
+							})
+				)
 				.append($('<span />').html(gdef.name).addClass('vboxVMListGroupName').attr({'title':gdef.name}))
 				.append($('<span />').addClass('vboxVMListGroupInfo').html(
 						(gdef.subgroups.length ? ('<img src="images/vbox/nw_16px.png" />'+gdef.subgroups.length) : '') +
 						(gdef.machines.length ? (' <img src="images/vbox/fullscreen_16px.png" />'+gdef.machines.length) : '') +
 						'' //'<img src="images/arrow_grad_up.png" />'
 						))
+				.append(
+					$('<div />').addClass('vboxVMListDropTarget').addClass('vboxVMListDropTargetBottom')
+						.hover(function(){
+							if(self._draggingGroup)
+								$(this).addClass('vboxVMListDropTargetHover');
+						}, function(){
+							$(this).removeClass('vboxVMListDropTargetHover');
+					})
+
+				)
 				.hover(function(){
 					$(this).addClass('vboxHover');
 				},function(){
 					$(this).removeClass('vboxHover');
 				}).bind('click',self.selectItem)
 				.draggable({'cursorAt':{left: -10, top: -10},'helper':function(){
-					return $('<div />').append($(this).clone().removeClass('vboxHover')).addClass('vboxGroupSelected').css({'width':$(this).width()+'px','display':'inline'});
+					
+					return $('<div />').addClass('vboxVMGroupCollapsed').append(
+							$(this).clone().removeClass('vboxHover').children('span.vboxVMListGroupNameArrowCollapse').hide().parent()
+						).addClass('vboxGroupSelected').css({'width':$(this).width()+'px','display':'inline'});
+					
 					},'start':function() {
+						
+						self.paused = true;
 						self._draggingGroup = $(this).data('vmGroupPath');
 						$(self.anchor).disableSelection();
+					
 					},'stop':function() {
 						
 						$(self.anchor).enableSelection();
@@ -1160,28 +1315,39 @@ function vboxVMList(anchorid) {
 						// Check for above/below group first
 						var dropTarget = self.anchor.find('div.vboxVMListDropTargetHover').first();
 						if(dropTarget[0]) {
-														
+
 							// Make sure that this wasn't dropped onto a sub-group or itself
 							if(
 									vmGroupPath == dropTarget.closest('div.vboxVMListGroup').children('div.vboxVMListGroupHeader').data('vmGroupPath')
 											||
 									dropTarget.closest('div.vboxVMListGroup').children('div.vboxVMListGroupHeader').data('vmGroupPath').indexOf(vmGroupPath + '/') == 0 
 							) {
+								self.paused = false;
 								return;
 							}
 
-							// Make sure there are no conflicts
+
+							// If we are not still in the same group, check for name conflict							
+							var currParentGroupPath = $(this).closest('div.vboxVMListGroup').parent().closest('div.vboxVMListGroup').children('div.vboxVMListGroupHeader').data('vmGroupPath');
 							var newElm = $(this).parent().detach();
-							var groupName = $(this).children('span.vboxVMListGroupName').attr('title');
-							var newGroupName = groupName;
-	
-							var i = 2;
-							while(self.groupNameConflicts(dropTarget.closest('div.vboxVMListGroup').parent(), newGroupName)) {
-								newGroupName = groupName + ' (' + (i++) + ')';				
+							
+							if(dropTarget.closest('div.vboxVMListGroup').parent().closest('div.vboxVMListGroup').children('div.vboxVMListGroupHeader').data('vmGroupPath') != 
+								currParentGroupPath) {
+
+								// Make sure there are no conflicts
+								var groupName = $(this).children('span.vboxVMListGroupName').attr('title');
+								var newGroupName = groupName;
+								
+		
+								var i = 2;
+								while(self.groupNameConflicts(dropTarget.closest('div.vboxVMListGroup').parent(), newGroupName)) {
+									newGroupName = groupName + ' (' + (i++) + ')';				
+								}
+								
+								$(newElm).children('div.vboxVMListGroupHeader').children('span.vboxVMListGroupName').attr({'title':newGroupName}).text(newGroupName);
+								
 							}
-							
-							$(newElm).children('div.vboxVMListGroupHeader').children('span.vboxVMListGroupName').attr({'title':newGroupName}).text(newGroupName);
-							
+
 							// Insert before or insert after?
 							if(dropTarget.hasClass('vboxDropTargetTop')) {
 								newElm.insertBefore(dropTarget.closest('div.vboxVMListGroup'));
@@ -1201,15 +1367,13 @@ function vboxVMList(anchorid) {
 								
 								dropTarget = dropTarget.parent();
 								
-								console.log(vmGroupPath);
-								console.log(dropTarget.children('div.vboxVMListGroupHeader').data('vmGroupPath'));
-
 								// Make sure that this wasn't dropped onto a sub-group or itself
 								if(
 										vmGroupPath == dropTarget.children('div.vboxVMListGroupHeader').data('vmGroupPath')
 												||
 										dropTarget.closest('div.vboxVMListGroup').children('div.vboxVMListGroupHeader').data('vmGroupPath').indexOf(vmGroupPath + '/') == 0 
 								) {
+									self.paused = false;
 									return;
 								}
 
@@ -1219,6 +1383,7 @@ function vboxVMList(anchorid) {
 								dropTarget = self.anchor.children('div.vboxVMListGroup');
 								
 							} else {
+								self.paused = false;
 								return;
 							}
 							
@@ -1237,6 +1402,8 @@ function vboxVMList(anchorid) {
 						}
 
 						self.composeGroupDef();
+						
+						self.paused = false;
 						
 				}})
 				
@@ -1264,7 +1431,7 @@ function vboxVMList(anchorid) {
 		// Bottom drop target
 		if(!first) {
 			gHTML.append(
-				$('<div />').addClass('vboxVMListDropTarget')
+				$('<div />').addClass('vboxVMListDropTarget').addClass('vboxVMListDropTargetBottom')
 					.hover(function(){
 						if(self._draggingGroup)
 							$(this).addClass('vboxVMListDropTargetHover');
@@ -1333,6 +1500,7 @@ function vboxVMList(anchorid) {
 		// refresh it again
 		if(!noinit) cb();
 		
+		
 		self._running = window.setInterval(cb,self.interval*1000);
 		
 		
@@ -1346,8 +1514,13 @@ function vboxVMList(anchorid) {
 		window.clearInterval(self._running);
 		self._running = null;
 		self.anchor.html("<div id='vboxVMListSpinner' style='text-align: center'><img src='images/spinner.gif' /></div>");
+		
+		// reset vars
 		self.vms = null;
+		self.versionChecked = false;
 		self.selectedList = [];
+		self.selectedVMs = [];
+		self.selectionModel = null;
 	};
 	
 	

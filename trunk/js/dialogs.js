@@ -1039,12 +1039,12 @@ function vboxSettingsDialog(title,panes,data,onsave,pane,icon,langContext) {
 			}
 			
 			$(this).trigger('save');
-			onsave($(this), false);
+			onsave(false);
 			$(this).trigger('close').empty().remove();
 			$(document).trigger('click');
 		};
 		buttons[trans('Cancel','QIMessageBox')] = function() {
-			onsave($(this), true);
+			onsave(true);
 			$('#vboxSettingsDialog').trigger('close').empty().remove();
 			$(document).trigger('click');
 		};

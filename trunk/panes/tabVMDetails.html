@@ -59,10 +59,23 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(e, chooser){
 	// We have VMs and were not showing the welcome screen
 	if(chooser.selectedVMs.length > 0) {
 		
-		$('#vboxVMDetails').children().empty().remove();
-	
+		var targetDiv = $('#vboxVMDetails');
+		
+		targetDiv.children().empty().remove();
+
+		
+		if(chooser.selectedVMs.length == 1 && chooser.selectedVMs[0] == 'host') {
+			
+			// Wait for it to be loaded?
+			var host = chooser.getVMData(chooser.selectedVMs[0]);
+			if(!host.phpVbxLoaded) return;
+			
+			__vboxDisplayHostDetailsData(host, targetDiv);
+			return;
+		}
+		
 		for(var i = 0; i < chooser.selectedVMs.length; i++) {
-			__vboxDisplayDetailsData(chooser.getVMData(chooser.selectedVMs[i]), (chooser.selectedVMs.length > 1), $('#vboxVMDetails'));
+			__vboxDisplayDetailsData(chooser.getVMData(chooser.selectedVMs[i]), (chooser.selectedVMs.length > 1), targetDiv);
 		}
 
 	}

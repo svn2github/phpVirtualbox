@@ -464,7 +464,7 @@ function vboxAlert(e,xtraOpts) {
 	
 	
 	var buttons = { };
-	buttons[trans('OK','QIMessageBox')] = function(f) {vboxNotifyBrowser();$(this).trigger('close').empty().remove();};
+	buttons[trans('OK','QIMessageBox')] = function(f) {$(this).trigger('close').empty().remove();};
 
 	var dialogOpts = {'closeOnEscape':false,'width':600,'height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'};
 
@@ -476,10 +476,7 @@ function vboxAlert(e,xtraOpts) {
 
 	$(div).dialog(dialogOpts);
 	
-    
-    // Notify browser of alert
-    vboxNotifyBrowser(1);
-	
+    	
 
 }
 /**
@@ -987,25 +984,6 @@ function vboxBasename(p) {
 	return p;
 }
 
-/* Update browser title to notify of change */
-__vboxNotifyBrowserChanges = 0;
-__vboxNotifyBrowserTitle = document.title;
-
-/**
- * Update browser title to notify of change (firefox apptab support)
- * @param {Boolean} add - set to true to add a notification, else notification is removed
- */
-function vboxNotifyBrowser(add) {
-
-	var cfg = $('#vboxIndex').data('vboxConfig');
-	if(!cfg || !cfg.enableAppTabSupport) return;
-	
-	if(add) __vboxNotifyBrowserChanges++;
-	else __vboxNotifyBrowserChanges--;
-	
-	document.title = __vboxNotifyBrowserTitle + (__vboxNotifyBrowserChanges ? ' ('+__vboxNotifyBrowserChanges+')' : '');
-
-}
 /**
  * Returns the result of case-insensitive string comparison using 'natural' algorithm comparing str1 to str2
  * @param {String} str1 - 1st string

@@ -8,62 +8,6 @@
 
 
 /**
- * VM group manipulation
- * @namespace vboxVMGroups
- */
-var vboxVMGroups = {
-	
-	// Return group data for group at path
-	getGroupByPath : function(path) {
-		return vboxTraverse([$('#vboxIndex').data('vboxVMGroups')], 'path', path, false, 'subgroups');
-	},
-	
-	// Return all vms in group and subgroup
-	getVMsInGroup : function(gdef) {
-		
-		if(typeof gdef == 'string')
-			gdef = vboxVMGroups.getGroupByPath(gdef);
-		
-		var vms = [];
-		for(var i = 0; i < gdef.subgroups.length; i++) {
-			vms = $.merge(vms,vboxVMGroups.getVMsInGroup(gdef.subgroups[i]));
-		}
-		vms = $.merge(vms, gdef.machines);
-		return vms;
-	},
-	
-	// Save group definition
-	saveGroups : function(gdef) {
-		$('#vboxIndex').data('vboxVMGroups', gdef);
-		vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':gdef},function(){
-			
-		});
-	},
-	
-	// Get Groups for VM
-	getGroupsForVM : function(vmid, gdef) {
-		
-		// This is undefined when checking root
-		if(!gdef) gdef = $('#vboxIndex').data('vboxVMGroups');
-		
-		// Hold group list
-		var glist = [];
-		
-		// In current group?
-		if(jQuery.inArray(vmid, gdef.machines) > -1)
-			glist[0] = gdef.path;
-		
-		// Traverse subgroups and check machines
-		for(var i = 0; i < gdef.subgroups.length; i++) {
-			glist = $.merge(glist, vboxVMGroups.getGroupsForVM(vmid, gdef.subgroups[i]));
-		}
-		
-		return glist;
-		
-	}
-};
-
-/**
  * VM details sections used on details tab and snapshot pages
  * @namespace vboxVMDetailsInfo
  */
@@ -1185,7 +1129,14 @@ var vboxVMGroupActions = {
 	rename: {
 		label: 'Rename Group...',
 		icon: 'name',
-		click: function(el) {
+		enabled: function(chooser) {
+			if(!chooser) return false;
+			var gElm = chooser.getSelectedGroupElements()[0];
+			if(!gElm) return false;
+			if($(gElm).find('td.vboxVMSessionOpen')[0]) return false;
+			return true;
+		},
+		click: function() {
 			$('#vboxIndex').data('vboxChooser').renameSelectedGroup();
 		}
 	},
@@ -1193,7 +1144,14 @@ var vboxVMGroupActions = {
 	ungroup: {
 		label: 'Ungroup...',
 		icon: 'delete',
-		click: function(el) {
+		enabled: function(chooser) {
+			if(!chooser) return false;
+			var gElm = chooser.getSelectedGroupElements()[0];
+			if(!gElm) return false;
+			if($(gElm).find('td.vboxVMSessionOpen')[0]) return false;
+			return true;
+		},
+		click: function() {
 			
 			$('#vboxIndex').data('vboxChooser').unGroupSelectedGroup();
 			
@@ -1443,7 +1401,19 @@ var vboxVMActions = {
     		$('#vboxIndex').data('vboxChooser').groupSelectedItems();
     	},
     	enabled: function(chooser) {
-    		return (chooser && !(chooser.selectionModel=='singleVM' && chooser.getSingleSelected().id == 'host'));
+    		
+    		if(!chooser) return false;
+    		
+    		
+    		if (chooser.selectionModel=='singleVM' && chooser.getSingleSelected().id == 'host')
+    			return false;
+    		
+    		for(var i = 0; i < chooser.selectedVMs.length; i++) {
+    			if(chooser.getVMData(chooser.selectedVMs[i]).sessionState != 'Unlocked')
+    				return false;
+    		}
+    		
+    		return true;
     	}
     },
     

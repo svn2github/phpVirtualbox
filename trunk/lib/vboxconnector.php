@@ -666,7 +666,7 @@ class vboxconnector {
 		$oldGroups = $machine->groups;
 		$newGroups = $args['groups'];
 		
-		if(!count(array_diff($oldGroups,$newGroups)) && !count(array_diff($newGroups,$oldGroups))) {
+		if($machine->sessionState->__toString() != 'Unlocked' || (!count(array_diff($oldGroups,$newGroups)) && !count(array_diff($newGroups,$oldGroups)))) {
 			$machine->releaseRemote();
 			return ($response['data']['result'] = 1);
 		}
@@ -675,6 +675,8 @@ class vboxconnector {
 		
 		$vmLocked = ($machine->sessionState->__toString() == 'Locked');
 		$machine->lockMachine($this->session->handle, ($vmLocked ? 'Shared' : 'Write'));
+		
+		usort($newGroups,'strnatcasecmp');
 		
 		$this->session->machine->groups = $newGroups;
 		$this->session->machine->saveSettings();
@@ -3304,11 +3306,16 @@ class vboxconnector {
 
 
 			try {
+				
+				$groups = $machine->groups;
+				usort($groups, 'strnatcasecmp');
+				
 				$response['data']['vmlist'][] = array(
 					'name' => @$this->settings->enforceVMOwnership ? preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $machine->name) : $machine->name,
 					'state' => $machine->state->__toString(),
 					'OSTypeId' => $machine->getOSTypeId(),
 					'owner' => (@$this->settings->enforceVMOwnership ? $machine->getExtraData("phpvb/sso/owner") : ''),
+					'groups' => $groups,
 					'id' => $machine->id,
 					'lastStateChange' => floor($machine->lastStateChange/1000),
 					'sessionState' => $machine->sessionState->__toString(),
@@ -4885,50 +4892,39 @@ class vboxconnector {
 	
 		$this->connect();
 		
-		$validGroupPaths = $this->_vboxMachineGroupDefinitionSet($args['groupDefinitions']);
+		// Save a list of valid paths
+		$validGroupPaths = array();
 		
+		// Write out each group definition
+		foreach($args['groupDefinitions'] as $groupDef) {
+			
+			$strArr = array();
+			foreach($groupDef['subgroups'] as $g) {
+				$strArr[] = 'go=' . $g;
+			}
+			foreach($groupDef['machines'] as $m) {
+				$strArr[] = 'm='.$m;
+			}
+			
+			if(count($strArr)) {
+				$this->vbox->setExtraData('GUI/GroupDefinitions'.$groupDef['path'], implode(',', $strArr));
+				$validGroupPaths[] = $groupDef['path'];
+			}
+				
+			
+		}
+		
+		// Remove any unused group definitions
 		$keys = $this->vbox->getExtraDataKeys();
 		foreach($keys as $k) {
 			if(strpos($k,'GUI/GroupDefinitions') !== 0) continue;
 			if(array_search(substr($k,20), $validGroupPaths) === false)
 				$this->vbox->setExtraData($k,'');
 		}
+		
 		return ($response['data']['result'] = 1);
 	}
 	
-	/**
-	 * Write a group definition to file
-	 * @param array $groupDef
-	 */
-	private function _vboxMachineGroupDefinitionSet($groupDef) {
-		
-		// Return a list of valid group paths
-		$validGroupPaths = array();
-		
-		$strArr = array();
-		foreach($groupDef['subgroups'] as $g) {
-			if(!count($g['subgroups']) && !count($g['machines']))
-				continue;
-			$validGroupPaths[] = $g['path'];
-			$strArr[] = 'go=' . $g['name'];
-		}
-		foreach($groupDef['machines'] as $m) {
-			$strArr[] = 'm='.$m;
-		}
-		
-		if(count($strArr)) {
-			$this->vbox->setExtraData('GUI/GroupDefinitions'.$groupDef['path'], implode(',', $strArr));
-		}
-		
-		// Write out subgroups
-		foreach($groupDef['subgroups'] as $g) {
-			$validGroupPaths = array_merge($validGroupPaths, $this->_vboxMachineGroupDefinitionSet($g));
-		}
-		
-		if($groupDef['path'] == '/') $validGroupPaths[] = '/';
-		
-		return $validGroupPaths;
-	}
 	/**
 	 * Return group definitions in an easily consumable format
 	 * 
@@ -4940,36 +4936,35 @@ class vboxconnector {
 
 		$this->connect();
 		
-		$response['data'] = $this->_vboxGetMachineGroup('/');
-	}
-	
-	/**
-	 * Return VM group details
-	 * 
-	 * @param string $groupname
-	 */
-	private function _vboxGetMachineGroup($groupname) {
-	
-		$subgroups = array();
-		$machines = array();
+		$response['data'] = array();
 		
-		$groupname = str_replace('//','/', $groupname);
-		
-		foreach(explode(',',$this->vbox->getExtraData('GUI/GroupDefinitions'.$groupname)) as $gdef) {
-			list($k, $v) = explode('=', $gdef, 2);
-			if($k == 'go') {
-				$subgroups[] = $this->_vboxGetMachineGroup("$groupname/$v");
-			} else {
-				$machines[] = $v;
+		$keys = $this->vbox->getExtraDataKeys();
+		foreach($keys as $grouppath) {
+			
+			if(strpos($grouppath,'GUI/GroupDefinitions') !== 0) continue;
+			
+			$subgroups = array();
+			$machines = array();
+			
+			foreach(explode(',',$this->vbox->getExtraData($grouppath)) as $gdef) {
+				list($k, $v) = explode('=', $gdef, 2);
+				if($k == 'm') {
+					$machines[] = $v;
+				} else {
+					$subgroups[] = $v;
+				}
 			}
+			
+			$response['data'][] = array(
+				'name' => substr($grouppath,strrpos($grouppath,'/')+1),
+				'path' => substr($grouppath,20),
+				'subgroups' => $subgroups,
+				'machines' => $machines
+			);
 		}
+
+		return true;
 		
-		return array(
-			'name' => substr($groupname,strrpos($groupname,'/')+1),
-			'path' => $groupname,
-			'subgroups' => $subgroups,
-			'machines' => $machines
-		);
 	}
 	
 	/**

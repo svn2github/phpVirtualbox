@@ -311,7 +311,7 @@ function vboxWizardNewVMInit(callback, vmgroup) {
 					
 					vboxNewVMFinish();
 					
-				},{'name':jQuery.trim(document.forms['frmwizardNewVM'].newVMName.value),'size':size});
+				},{'name':jQuery.trim(document.forms['frmwizardNewVM'].newVMName.value),'size':size,'group':vmgroup});
 
 				return;
 				

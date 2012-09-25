@@ -1114,7 +1114,7 @@ var vboxVMGroupActions = {
 		label: 'New  Machine...',
 		icon: 'new',
 		click: function(){
-			vboxVMActions['new'].click();
+			vboxVMActions['new'].click(true);
 		}
 	},
 	
@@ -1122,7 +1122,7 @@ var vboxVMGroupActions = {
 		label: 'Add Machine...',
 		icon: 'vm_add',
 		click: function() {
-			vboxVMActions['add'].click();
+			vboxVMActions['add'].click(true);
 		}
 	},
 	
@@ -1182,7 +1182,9 @@ var vboxVMActions = {
 			toolbar_label:'New',
 			icon:'vm_new',
 			icon_16:'new',
-			click: function(){vboxWizardNewVMInit(function(){return;});}
+			click: function(fromGroup){
+				vboxWizardNewVMInit(function(){return;},(fromGroup ? $($('#vboxIndex').data('vboxChooser').getSelectedGroupElements()[0]).data('vmGroupPath') : ''));
+			}
 	},
 	
 	/** Add a virtual machine via its settings file */

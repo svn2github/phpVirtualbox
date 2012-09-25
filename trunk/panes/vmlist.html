@@ -281,10 +281,7 @@ function vboxVMList(anchorid) {
 		 * Don't update if paused.. 
 		 * happens while dragging and creating group definitions
 		 */
-		if(self.paused) {
-			console.log('We\'re paused...');
-			return;
-		}
+		if(self.paused) return;
 		
 		currVMList = d.vmlist;
 		
@@ -995,14 +992,15 @@ function vboxVMList(anchorid) {
 					if(selected) {
 						oldPath = $(elm2).data('vmGroupPath');
 					}
+					var newPath = String(myPath + '/' + $(elm2).children('div.vboxVMListGroupHeader').attr('title')).replace('//','/');
 					
 					gList[gList.length] = $(elm2).children('div.vboxVMListGroupHeader').attr('title');
 					
 					// set / correct group path data
-					$(elm2).data('vmGroupPath', String(myPath + '/' + $(elm2).children('div.vboxVMListGroupHeader').attr('title')).replace('//','/'));
+					$(elm2).data('vmGroupPath', newPath);
 					
-					// Change selected group's path
-					if(selected) {
+					// Change selected group's path?
+					if(selected && (oldPath != newPath)) {
 						for(var i = 0; i < self.selectedList.length; i++) {
 							if(self.selectedList[i].type == 'group' && self.selectedList[i].groupPath == oldPath) {
 								self.selectedList[i].groupPath = String(myPath + '/' + $(elm2).children('div.vboxVMListGroupHeader').attr('title')).replace('//','/');

@@ -1,7 +1,16 @@
 -------------------------------------
-	4.2-1	
+	4.2-0	2012-09-25
 -------------------------------------
-Updated jquery to 1.8.0 and jquery-ui to 1.8.23
+VirtualBox 4.2.x compatibility - beta release
+NOT ALL VirtualBox 4.2 FEATURES ARE IMPLEMENTED!!
+http://code.google.com/p/phpvirtualbox/issues/detail?id=585
+
+Updated jquery to 1.8.2 and jquery-ui to 1.8.23
+
+Corrected IE9 support.
+
+Removed Firefox App Tab support.
+
 
 -------------------------------------
 	4.1-8	2012-08-20

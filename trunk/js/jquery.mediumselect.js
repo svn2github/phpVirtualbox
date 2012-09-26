@@ -68,7 +68,7 @@
 				$(d).tipped({'source':'title'});
 			}
 			
-			$(d).addClass('vboxMediumSelectDiv').hover(function(){$(this).addClass('vboxMediumSelectHover')},function(){$(this).removeClass('vboxMediumSelectHover')});			
+			$(d).addClass('vboxMediumSelectDiv').hover(function(){$(this).addClass('vboxMediumSelectHover');},function(){$(this).removeClass('vboxMediumSelectHover');});			
 			$(d).html(m.label);
 			$(d).data('label',m.label);
 			$(d).data('id',m.attachedId);

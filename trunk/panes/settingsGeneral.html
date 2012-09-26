@@ -17,11 +17,11 @@
 <div id='vboxSettingsTabGeneralBasic' title='Basic'>
 <table class='vboxVertical'>
 	<tr>
-		<th><span class='translate'>Name:</span></th>
+		<th><span class='translateos'>Name:</span></th>
 		<td colspan='2'><input type='text' class='vboxText' name='vboxSettingsGeneralName' /></td>
 	</tr>
 	<tr>
-		<th><span class='translateos'>Operating System:</span></th>
+		<th><span class='translateos'>Type:</span></th>
 		<td><select name='vboxSettingsGeneralOSFamily' id='vboxSettingsGeneralOSFamily' >
 			<option value='Linux'>Linux</option>
 		</select></td>
@@ -98,7 +98,7 @@
 <script type='text/javascript'>
 
 /* Translations */
-$('#vboxSettingsTabGeneralBasic').find(".translateos").html(function(i,h){return trans(h,'VBoxOSTypeSelectorWidget');});
+$('#vboxSettingsTabGeneralBasic').find(".translateos").html(function(i,h){return trans(h,'UINameAndSystemEditor');});
 
 /* Browse for snapshot folder */
 function vboxSnapshotBrowseFolder(btn) {

@@ -3087,6 +3087,16 @@ class vboxconnector {
 		if (@$this->settings->enforceVMOwnership )
 			$args['name'] = $_SESSION['user'] . '_' . $args['name'];
 
+		/* Check if file exists */
+		$filename = $this->vbox->composeMachineFilename($args['name'],$args['group'],$this->vbox->systemProperties->defaultMachineFolder);
+		$exists = array();
+		$this->remote_fileExists(array('file'=>$filename), $exists);
+		if($exists['data']['exists']) {
+			$response['data']['result'] = 0;
+			$response['data']['exists'] = $filename;
+			return;
+		}
+		
 		/* @var $m IMachine */
 		$m = $this->vbox->createMachine(null,$args['name'],$args['group'],$args['ostype'],null,null);
 
@@ -4268,7 +4278,6 @@ class vboxconnector {
 
 		/* @var $hd IMedium */
 		$hd = $this->vbox->createHardDisk($format,$args['file']);
-		$hdid = $hd->id;
 
 		/* @var $progress IProgress */
 		$progress = $hd->createBaseStorage(intval($args['size'])*1024*1024,$type);
@@ -4284,7 +4293,7 @@ class vboxconnector {
 
 		$this->_util_progressStore($progress,'vboxGetMedia');
 
-		$response['data'] = array('progress' => $progress->handle,'id' => $hdid);
+		$response['data'] = array('progress' => $progress->handle);
 		$hd->releaseRemote();
 
 		return true;

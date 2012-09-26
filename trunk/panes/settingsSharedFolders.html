@@ -47,7 +47,7 @@ var sButtons = new Array(
 
 	{
 		'name' : 'addshared',
-		'label' : 'Add Shared Folder',
+		'label' : trans('Add Shared Folder','UIMachineSettingsSF'),
 		'icon' : 'add_shared_folder',
 		'enabled' : function (item) { return true; },
 		'click' : function () {
@@ -82,7 +82,7 @@ var sButtons = new Array(
 
 	{
 		'name' : 'editshared',
-		'label' : 'Edit Shared Folder',
+		'label' : trans('Edit Shared Folder','UIMachineSettingsSF'),
 		'icon' : 'edit_shared_folder',
 		'enabled' : function (item) { return $(item).hasClass('vboxListItemSelected');  },
 		'click' : function () {
@@ -118,7 +118,7 @@ var sButtons = new Array(
 	
 	{
 		'name' : 'removeshared',
-		'label' : 'Remove Shared Folder',
+		'label' : trans('Remove Shared Folder','UIMachineSettingsSF'),
 		'icon' : 'remove_shared_folder',
 		'enabled' : function (item) { return $(item).hasClass('vboxListItemSelected'); },
 		'click' : function () {
@@ -136,7 +136,6 @@ var sButtons = new Array(
  );
 
 var sfToolbar = new vboxToolbarSmall(sButtons);
-sfToolbar.context = 'UIMachineSettingsSF';
 sfToolbar.addButtons('vboxSettingsSFButtons');
 
 $('#vboxSettingsSharedFoldersList').bind('select',function(e,el){sfToolbar.update(el);});

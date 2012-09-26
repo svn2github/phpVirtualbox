@@ -40,7 +40,7 @@ $('#vboxSettingsPortForwarding').find('.translate').html(function(i,h){return tr
 var sButtons = new Array(
 	{
 		'name' : 'insportfwd',
-		'label' : 'Insert new rule',
+		'label' : trans('Insert new rule','UIMachineSettingsPortForwardingDlg'),
 		'icon' : 'controller_add',
 		'click' : function () {
 			var rname = null;
@@ -60,7 +60,7 @@ var sButtons = new Array(
 	},
 	{
 		'name' : 'delportfwd',
-		'label' : 'Delete selected rule',
+		'label' : trans('Delete selected rule','UIMachineSettingsPortForwardingDlg'),
 		'icon' : 'controller_remove',
 		'click' : function () {
 			$('#vboxSettingsPortForwardingList').children('tr.vboxListItemSelected').first().remove();
@@ -70,7 +70,6 @@ var sButtons = new Array(
 	}
 );
 var pfToolbar = new vboxToolbarSmall(sButtons);
-pfToolbar.context = 'UIMachineSettingsPortForwardingDlg';
 pfToolbar.addButtons('vboxSettingsPortForwardingToolbar');
 
 

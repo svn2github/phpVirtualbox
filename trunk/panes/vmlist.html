@@ -42,7 +42,7 @@ vboxVMList.vmGroupContextMenuItems = [
 // VM List Context menu for each VM
 var sChildren = [];
 for(var i = 0; i < vboxVMActions.stop_actions.length; i++) {
-	sChildren[sChildren.length] = $.extend({},vboxVMActions[vboxVMActions.stop_actions[i]],{'name':vboxVMActions.stop_actions[i],'iconStringDisabled':'_disabled','context':(vboxVMActions[vboxVMActions.stop_actions[i]].context ? vboxVMActions[vboxVMActions.stop_actions[i]].context : 'UIActionPool')});
+	sChildren[sChildren.length] = $.extend({},vboxVMActions[vboxVMActions.stop_actions[i]],{'name':vboxVMActions.stop_actions[i],'iconStringDisabled':'_disabled'});
 }
 
 /*
@@ -70,14 +70,14 @@ vboxVMList.parentContextMenuItems = [
 	$.extend({},vboxVMActions['add'],{'name':'add'}),
 	{
 		'name':'fileImport',
-		'label':'Import Appliance...',
+		'label':trans('Import Appliance...','UIActionPool'),
 		'icon':'import',
 		'click':function(){vboxWizardImportApplianceInit();},
 		'separator': true
 	},
 	{
 		'name':'fileExport',
-		'label':'Export Appliance...',
+		'label':trans('Export Appliance...','UIActionPool'),
 		'icon':'export',
 		'click':function(){vboxWizardExportApplianceInit();}
 	},
@@ -1290,6 +1290,9 @@ function vboxVMList(anchorid) {
 
 			// Stop vmlist from refreshing..
 			self.stop();
+			
+			// reset selections
+			$('#vboxIndex').trigger('vmSelectionListChanged', [self]);
 
 			// ask for new one
 			vboxAjaxRequest('vboxGetMachines',{},function(d){
@@ -1358,7 +1361,6 @@ function vboxVMList(anchorid) {
 		 *
 		 */
 		var vboxVMListPaneMenu = new vboxMenu(self.anchorid+'Pane');
-		vboxVMListPaneMenu.context = 'VBoxSelectorWnd';
 		vboxVMListPaneMenu.addMenu(self.parentContextMenuItems);
 
 		$('#'+self.anchorid).parent().contextMenu({

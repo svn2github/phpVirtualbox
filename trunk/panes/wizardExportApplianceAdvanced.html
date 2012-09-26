@@ -7,72 +7,74 @@
 
  -->
 <!-- Step 1 -->
-<div id='wizardExportApplianceStep1' title='Virtual machines to export' style='display: none'>
+<div id='wizardExportApplianceStep1' style='display: none;'>
 
-	<span class='translate'>&lt;p&gt;Please select the virtual machines that should be added to the appliance. You can select more than one. Please note that these machines have to be turned off before they can be exported.&lt;/p&gt;</span>
-	
-	<div id='vboxExportAppVMListContainer' style='overflow:auto;padding:0px;margin:0px;' class='vboxBordered'>
-		<ul style='width: 100%;margin:0px;' id='vboxExportAppVMList' class='vboxList'>
-			<li><img src='images/spinner.gif' /></li>
-		</ul>
-	</div>
-</div>
+	<table class='vboxInvisible' style='border: 0px solid transparent; border-spacing: 4px; height: 100%;'>
+		<tr style='vertical-align: top'>
+			<td style='width: 50%'>
+				
+				<span class='translate vboxTableLabel'>Virtual machines to export</span>
+				<hr style='width: 100%; margin: 0px; margin-bottom: 6px; display: block' class='vboxSeperatorLine'/>
+				
+				<div id='vboxExportAppVMListContainer' style='overflow:auto;padding:0px;margin:0px;' class='vboxBordered'>
+					<ul style='width: 100%;margin:0px;' id='vboxExportAppVMList' class='vboxList'>
+						<li><img src='images/spinner.gif' /></li>
+					</ul>
+				</div>
+			</td>
+			<td>
+				<span class='translate vboxTableLabel'>Appliance settings</span>
+				<hr style='width: 100%; margin: 0px; margin-bottom: 6px; display: block' class='vboxSeperatorLine'/>
+				
+				<div class='vboxBordered' id='vboxExportPropsContainer' style='overflow: auto' style='width: 100%'>
+					<table class='vboxHorizontal' style='width: 100%; font-size: 0.9em'>
+						<tbody id='vboxExportProps'>
+						</tbody>
+					</table>
+				</div>
 
-
-<!-- Step 2 -->
-<div id='wizardExportApplianceStep2' title='Appliance Export Settings' style='display: none; width: 100%;'>
-<!--
-	Just here for translation skipping 
- -->
-</div>
-
-<!-- Step 3 -->
-<div id='wizardExportApplianceStep3' title='Appliance settings' style='display: none; width: 100%;'>
-
-	<span class='translatep3'>&lt;p&gt;Please choose a filename to export the OVF/OVA to.&lt;/p&gt;&lt;p&gt;If you use an &lt;i&gt;ova&lt;/i&gt; extension, then all the files will be combined into one Open Virtualization Format Archive.&lt;/p&gt;&lt;p&gt;If you use an &lt;i&gt;ovf&lt;/i&gt; extension, several files will be written separately.&lt;/p&gt;&lt;p&gt;Other extensions are not allowed.&lt;/p&gt;</span>
-	
-	<div class='vboxOptions'>
-		<table style='width: 100%;' class='vboxInvisible'>
-			<tr>
-				<td style='width: 100%; white-space: nowrap' class='vboxFileFolderInput'>
-					<input type='text' class='vboxText' name='wizardExportApplianceLocation' />
-					<input type="button" class="vboxImgButton" style="background-image: url(images/vbox/select_file_16px.png)" onClick="wizardExportApplianceBrowseLocation()" />
-				</td>
-			</tr>
-		</table>
-	
-		<p>
-		<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceLegacy'/>
-			<span class='translate'>Write legacy OVF 0.9</span></label>	
-		</p>
-		<p>
-		<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceManifest'/>
-			<span class='translate'>Write Manifest file</span></label>	
-		</p>
-	</div>	
-</div>
-
-<!-- Step 4 -->
-<div id='wizardExportApplianceStep4' title='Appliance settings' style='display: none; width: 100%;'>
-
-	<div class='translate' style='margin-bottom:8px; width: 100%'>This is the descriptive information which will be added to the virtual appliance.  You can change it by double clicking on individual lines.</div>
-
-	<div class='vboxBordered' id='vboxExportPropsContainer' style='overflow: auto' style='width: 100%'>
-		<table class='vboxHorizontal' style='width: 100%;'>
-			<tbody id='vboxExportProps'>
-			</tbody>
-		</table>
-	</div>
+			</td>
+		</tr>
+		
+		<tr style='vertical-align: top; height: 1%;'>
+			<td colspan='2'>
+			
+				<!-- File name -->
+				<table style='width: 100%;' class='vboxInvisible'>
+					<tr>
+						<td style='white-space: nowrap' class='vboxFileFolderInput'>
+							<span class='translate'>File:</span>
+							<input type='text' class='vboxText'
+								name='wizardExportApplianceLocation' onkeydown="$(this).data('userChanged', true);"/>
+						</td>
+						<td width='1%'>
+							<input type="button" class="vboxImgButton" style="margin-left: 6px; background-image: url(images/vbox/select_file_16px.png)" onClick="wizardExportApplianceBrowseLocation()" />
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr style='vertical-align: top; height: 1%;'>
+			<!-- File options -->
+			<td colspan='2'>
+					<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceLegacy'/>
+						<span class='translate'>Write legacy OVF 0.9</span></label>
+			</td>
+		</tr>
+		<tr style='vertical-align: top; height: 1%;'>
+			<td colspan='2'>	
+					<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceManifest'/>
+						<span class='translate'>Write Manifest file</span></label>	
+			</td>
+		</tr>
+	</table>
 </div>
 
 
 <script type='text/javascript'>
 
-// Translate step 3
-$('#wizardExportApplianceStep3').find('.translatep3').html(function(i,h){
-	return trans($('<span />').html(h).text(),'UIWizardExportAppPageBasic3');
-}).removeClass('translatep3');
 
+// Load list of exportable machines
 var l = new vboxLoader();
 l.add('vboxGetExportableMachines',function(d){$('#wizardExportApplianceStep1').data('vms',d);});
 l.onLoad = function() {
@@ -85,7 +87,17 @@ l.onLoad = function() {
 		if(vms[i].state == 'Running' || vms[i].state == 'Paused') {
 			$(li).addClass('vboxDisabled disabled');
 		} else {
-			$(li).click(function(){$(this).toggleClass('vboxListItemSelected');}).addClass('vboxListItem');
+			
+			/* Exportable appliance clicked */
+			$(li).click(function(){
+				
+				$(this).toggleClass('vboxListItemSelected');
+
+				vboxWizardExportApplianceUpdateList();
+				vboxWizardExportApplianceOVFName();
+				
+				
+			}).addClass('vboxListItem');
 		}
 		$(li).html("<img style='width: 16px; height: 16px;' src='images/vbox/" + vboxGuestOSTypeIcon(vms[i].OSTypeId) + "' /> " + vms[i].name);
 		$(vmlist).append(li);
@@ -94,40 +106,24 @@ l.onLoad = function() {
 };
 l.run();
 
-
+// Resize panes function
 function wizardExportApplianceStepResizeList() {
-	
-	// Resize list
+
+	$('#wizardExportApplianceStep1').hide();
 	$('#vboxExportAppVMListContainer').hide();
-	var h = $('#wizardExportApplianceStep1').parent().innerHeight() - $('#wizardExportApplianceTitle').outerHeight(true);
-
-	$('#vboxExportAppVMListContainer').siblings().each(function(){
-		h -= $(this).outerHeight(true);
-	});
-	h-=20;
-	$('#vboxExportAppVMListContainer').height(h).show();
-	
-	// Resize properties
 	$('#vboxExportPropsContainer').hide();
-	var h = $('#wizardExportApplianceStep3').parent().innerHeight() - $('#wizardExportApplianceTitle').outerHeight(true);
-
-	$('#vboxExportPropsContainer').siblings().each(function(){
-		h -= $(this).outerHeight(true);
-	});
-	$('#vboxExportPropsContainer').width($('#vboxExportPropsContainer').parent().innerWidth()).height(h-4).show();
 	
+	$('#wizardExportApplianceStep1').css({'height':($('#wizardExportApplianceStep1').parent().height()-8)+'px'}).show();
+	$('#vboxExportAppVMListContainer').css({'height':($('#vboxExportAppVMListContainer').parent().height()-16)+'px'}).show();
+	$('#vboxExportPropsContainer').css({'height':$('#vboxExportAppVMListContainer').css('height')}).show();
+
 }
 
-$('#wizardExportApplianceStep1').bind('show',function(e,wiz){
-	
-	wizardExportApplianceStepResizeList();
-
-	// Keep track of where we were
-	$('#wizardExportApplianceStep2').data('fromStep',1);
-
-});
-
+// Resize panes when wizard is resized
 $('#wizardExportApplianceDialog').bind('dialogresizestop',wizardExportApplianceStepResizeList);
+//Resize panes after this div is shown
+$('#wizardExportApplianceStep1').bind('show', wizardExportApplianceStepResizeList);
+
 
 /*
  * 
@@ -170,42 +166,44 @@ function wizardExportApplianceBrowseLocation() {
 
 }
 
-/* Skip step 2 */
-$('#wizardExportApplianceStep2').bind('show',function(e,wiz){
-	if($('#wizardExportApplianceStep2').data('fromStep') == 3)
-		wiz.displayStep(1);
-	else
-		wiz.displayStep(3);
-});
-
-/* When going to step3, determine default OVF name */
-$('#wizardExportApplianceStep3').bind('show',function(e,wiz){
+/* Determine default OVF name */
+function vboxWizardExportApplianceOVFName() {
 
 	// Keep track of where we were
-	$('#wizardExportApplianceStep2').data('fromStep',3);
-	
 	var vmSel = $('#vboxExportAppVMList').children('li.vboxListItemSelected');
 	
 	/* When going to step3, make sure vms are selected */
 	if(!vmSel.length) {
 		$('#vboxExportAppVMListContainer').addClass('vboxRequired');
-		wiz.displayStep(1);
-	} else {
-		$('#vboxExportAppVMListContainer').removeClass('vboxRequired');		
+		return;
 	}
+	$('#vboxExportAppVMListContainer').removeClass('vboxRequired');	
+	
 
+	if(jQuery.trim($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val()) && $(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).data('userChanged'))
+		return;
+	
+	$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).data('userChanged', false);
+	
 	var name = '';
 	if(vmSel.length > 1) {
 		name = 'Appliance';
 	} else {
 		name = jQuery.trim($(vmSel[0]).text());
 	}
-	if($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val()) return;
-	name = $('#vboxIndex').data('vboxConfig').version.settingsFilePath.substring(0,$('#vboxIndex').data('vboxConfig').version.settingsFilePath.length - 27) + $('#vboxIndex').data('vboxConfig').DSEP + name + '.ova';
+	
+	// If there is already a folder chosen, don't change it
+	if(jQuery.trim($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val())) {
+		name = vboxDirname(jQuery.trim($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val())) + $('#vboxIndex').data('vboxConfig').DSEP + name + '.ova';
+	} else {
+		name = $('#vboxIndex').data('vboxConfig').version.settingsFilePath.substring(0,$('#vboxIndex').data('vboxConfig').version.settingsFilePath.length - 27) + $('#vboxIndex').data('vboxConfig').DSEP + name + '.ova';
+	}
+	
 	$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val(name);
-});
+	
+};
 
-$('#wizardExportApplianceStep4').bind('show',function(e,wiz){
+function vboxWizardExportApplianceUpdateList() {
 
 	var vms = $('#vboxExportAppVMList').children('li');
 	
@@ -257,17 +255,15 @@ $('#wizardExportApplianceStep4').bind('show',function(e,wiz){
 	}
 	vboxColorRows(tbl,false,'vboxTableParent');
 	
-	wizardExportApplianceStepResizeList();
 
-});
+};
 
 
 /* Edit property that has a text area */
 function vboxExportAppliancePropEditArea(evt,elm) {
-	
 	vboxExportAppliancePropEditDialog(evt.target, $('<span />').html($(evt.target).html()).text());
-	
 }
+
 /* Edit property dialog */
 function vboxExportAppliancePropEditDialog(elm, defaults) {
 	

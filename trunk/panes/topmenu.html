@@ -17,34 +17,33 @@
 
 // Top menu
 var vboxTopMenuBar = new vboxMenuBar('vboxTop');
-vboxTopMenuBar.context = 'VBoxSelectorWnd';
 
 var menu = {
 	'name':'vboxTopFile',
-	'label':'File',
+	'label':trans('File','UIActionPool'),
 	'menu':[
         {
 			'name':'fileVMM',
-			'label':'Virtual Media Manager...',
+			'label':trans('Virtual Media Manager...','UIActionPool'),
 			'icon':'diskimage',
 			'click':function(){vboxVMMDialogInit();}
         },
         {
 			'name':'fileImport',
-			'label':'Import Appliance...',
+			'label':trans('Import Appliance...','UIActionPool'),
 			'icon':'import',
 			'click':function(){vboxWizardImportApplianceInit();},
 			'separator': true
         },
         {
 			'name':'fileExport',
-			'label':'Export Appliance...',
+			'label':trans('Export Appliance...','UIActionPool'),
 			'icon':'export',
 			'click':function(){vboxWizardExportApplianceInit();}
         },
         {
 			'name':'filePrefs',
-			'label':'Preferences...',
+			'label':trans('Preferences...','UIActionPool'),
 			'icon':'global_settings',
 			'click':function(){vboxPrefsInit();},
 			'separator':true
@@ -56,9 +55,8 @@ if($('#vboxIndex').data('vboxSession').user) {
 	if ( $('#vboxIndex').data('vboxConfig').authCapabilities.canChangePassword )
 		menu['menu'][menu['menu'].length] = {
 			'name' : 'fileChangePW',
-			'label' : 'Change Password',
+			'label' : trans('Change Password','UIUsers'),
 			'icon' : 'register',
-			'context' : 'UIUsers',
 			'click': function() {
 				var l = new vboxLoader();
 				l.addFileToDOM('panes/userEdit.html');
@@ -154,12 +152,12 @@ vboxTopMenuBar.addMenu(menu);
 //VM List Context menu for each VM
 var sChildren = [];
 for(var i = 0; i < vboxVMActions.stop_actions.length; i++) {
-	sChildren[sChildren.length] = $.extend({},vboxVMActions[vboxVMActions.stop_actions[i]],{'name':vboxVMActions.stop_actions[i],'iconStringDisabled':'_disabled','context':(vboxVMActions[vboxVMActions.stop_actions[i]].context ? vboxVMActions[vboxVMActions.stop_actions[i]].context : 'UIActionPool')});
+	sChildren[sChildren.length] = $.extend({},vboxVMActions[vboxVMActions.stop_actions[i]],{'name':vboxVMActions.stop_actions[i],'iconStringDisabled':'_disabled'});
 }
 
 var menu = {
 	'name':'vboxTopMachine',
-	'label':'Machine',
+	'label':trans('Machine','UIActionPool'),
 	'enabled' : function(chooser) {
 		return (!chooser || (chooser.selectionModel != 'singleGroup'));
 	},
@@ -185,7 +183,7 @@ vboxTopMenuBar.addMenu(menu);
 
 var menu = {
 		'name':'vboxTopGroup',
-		'label':'Group',
+		'label':trans('Group','UIActionPool'),
 		'enabled' : function(chooser) {
 			return (chooser && (chooser.selectionModel == 'singleGroup'));
 		},
@@ -203,13 +201,11 @@ vboxTopMenuBar.addMenu(menu);
 	
 var menu = {
 	'name':'vboxTopHelp',
-	'label':'Help',
-	'context':'UIHelpButton',
+	'label':trans('Help','UIHelpButton'),
 	'menu':[
         {
 			'name':'helpvbox',
-			'label':'VirtualBox User Manual',
-			'context':'VBoxSelectorWnd',
+			'label':trans('VirtualBox User Manual','VBoxSelectorWnd'),
 			'icon':'images/vbox/site_16px.png',
 			'icon_absolute':true,
 			'click':function(){
@@ -219,8 +215,7 @@ var menu = {
         
         {
 			'name':'helpAbout',
-			'label':'About',
-			'context':'VBoxSelectorWnd',
+			'label':trans('About','VBoxSelectorWnd'),
 			'icon':'help',
 			'click':function(){
         	

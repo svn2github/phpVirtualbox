@@ -86,8 +86,7 @@ var vboxSnapshotButtons = [
             	
   	{
   		'name' : 'take_snapshot',
-  		'label' : 'Take Snapshot...',
-  		'context' : 'UIActionPool',
+  		'label' : trans('Take Snapshot...','UIActionPool'),
   		'icon' : 'take_snapshot',
   		'enabled' : function(item) {
   			
@@ -169,7 +168,7 @@ var vboxSnapshotButtons = [
   	},
   	{
   		'name' : 'discard_cur_state',
-  		'label' : 'Restore Snapshot',
+  		'label' : trans('Restore Snapshot','VBoxSnapshotsWgt'),
   		'icon' : 'discard_cur_state',
   		'enabled' : function(item) {
   			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
@@ -270,7 +269,7 @@ var vboxSnapshotButtons = [
   	},
   	{
   		'name' : 'delete_snapshot',
-  		'label' : 'Delete Snapshot',
+  		'label' : trans('Delete Snapshot','VBoxSnapshotsWgt'),
   		'icon' : 'delete_snapshot',
   		'enabled' : function(item) {
   			return (item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && $(item).data('vboxSnapshot').state != 'current' && $(item).data('vboxSnapshot').children.length <= 1);
@@ -298,10 +297,9 @@ var vboxSnapshotButtons = [
   	},
   	{
   		'name' : 'clone',
-  		'label' : 'Clone...',
+  		'label' : trans('Clone...','UIActionPool'),
   		'icon' : 'vm_clone_16',
   		'icon_disabled' : 'vm_clone_disabled_16',
-  		'context' : 'VBoxSelectorWnd',
   		'icon_exact' : true,
   		'separator' : true,
   		'enabled' : function(item) { 
@@ -322,7 +320,7 @@ var vboxSnapshotButtons = [
   	
   	{
   		'name' : 'show_snapshot_details',
-  		'label' : 'Show Details',
+  		'label' : trans('Show Details','VBoxSnapshotsWgt'),
   		'icon' : 'show_snapshot_details',
   		'enabled' : function(item) { return (item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && $(item).data('vboxSnapshot').state != 'current'); },
   		'click' : function () {
@@ -412,7 +410,6 @@ var vboxSnapshotButtons = [
 /* Append Top Toolbar */
 var vboxSnapshotToolbar = new vboxToolbarSmall(vboxSnapshotButtons);
 vboxSnapshotToolbar.size = 22;
-vboxSnapshotToolbar.context = 'VBoxSnapshotsWgt';
 vboxSnapshotToolbar.disabledString = 'dis';
 // special case for 'clone' button because it is 16px rather than 22px
 vboxSnapshotToolbar.addButtonCSS('clone', {'background-position':'6px 4px'});
@@ -422,12 +419,10 @@ vboxInitDisplay('vboxSnapshotToolbar','VBoxSnapshotsWgt');
 
 // Context menu for snapshots
 var vboxSnapshotContextMenu = new vboxMenu('vboxSnapshotContextMenu');
-vboxSnapshotContextMenu.context = vboxSnapshotToolbar.context;
 vboxSnapshotContextMenu.addMenu(vboxSnapshotButtons.slice(-(vboxSnapshotButtons.length-1)));
 
 //Context menu for current state
 var vboxSnapshotContextMenuCurrent = new vboxMenu('vboxSnapshotContextMenuCurrent');
-vboxSnapshotContextMenuCurrent.context =  vboxSnapshotToolbar.context;
 vboxSnapshotContextMenuCurrent.addMenu([vboxSnapshotButtons[0],vboxSnapshotButtons[(vboxSnapshotButtons.length-2)]]);
 
 

@@ -7,10 +7,9 @@
 
  -->
 <!-- Step 1 -->
-<div id='wizardCopyHDStep1' title='Hard drive to copy' style='display: none'>
-	
-	<span class='translate'>&lt;p&gt;Please select the virtual hard drive file that you would like to copy if it is not already selected. You can either choose one from the list or use the folder icon beside the list to select one.&lt;/p&gt;</span>
+<div id='wizardCopyHDStep1' style='display: none'>
 
+	<span class='vboxTableLabel translate'>Hard drive to copy</span>	
 	<div class='vboxOptions'>
 		<table class='vboxOptions'>
 			<tr style='vertical-align: top;'>
@@ -19,63 +18,8 @@
 			</tr>
 		</table>
 	</div>
-</div>
 
-
-<!-- Step 2 -->
-<div id='wizardCopyHDStep2' title='Hard drive file type' style='display: none'>
-
-	<p class='translate'>Please choose the type of file that you would like to use for the new virtual hard drive. If you do not need to use it with other virtualization software you can leave this setting unchanged.</p>
-
-	<div class='vboxOptions'>
-		<table class='vboxOptions'>
-			<tr style='vertical-align: top;'>
-				<td><label><input type='radio' class='vboxRadio' checked='checked' name='copyHDFileType' value='vdi' /> <span class='translate'>VDI (VirtualBox Disk Image)</span></label></td>
-			</tr>
-			<tr style='vertical-align: top;'>
-				<td><label><input type='radio' class='vboxRadio' name='copyHDFileType' value='vmdk' /> <span class='translate'>VMDK (Virtual Machine Disk)</span></label></td>
-			</tr>
-			<tr style='vertical-align: top;'>
-				<td><label><input type='radio' class='vboxRadio' name='copyHDFileType' value='vhd' /> <span class='translate'>VHD (Virtual Hard Disk)</span></label></td>
-			</tr>
-			
-		</table>
-	</div>
-	
-</div>
-
-
-<!-- Step 3 -->
-<div id='wizardCopyHDStep3' title='Storage on physical drive' style='display: none'>
-
-	<p class='translate'>Please choose whether the new virtual hard drive file should grow as it is used (dynamically allocated) or if it should be created at its maximum size (fixed size).</p>
-	
-	<span class='translate vboxCreateDynamic'>&lt;p&gt;A &lt;b&gt;dynamically allocated&lt;/b&gt; hard drive file will only use space on your physical hard drive as it fills up (up to a maximum &lt;b&gt;fixed size&lt;/b&gt;), although it will not shrink again automatically when space on it is freed.&lt;/p&gt;</span>
-	
-	<span class='translate vboxCreateFixed'>&lt;p&gt;A &lt;b&gt;fixed size&lt;/b&gt; hard drive file may take longer to create on some systems but is often faster to use.&lt;/p&gt;</span>
-	
-	<span class='translate vboxCreateSplit2G'>&lt;p&gt;You can also choose to &lt;b&gt;split&lt;/b&gt; the hard drive file into several files of up to two gigabytes each. This is mainly useful if you wish to store the virtual machine on removable USB devices or old systems, some of which cannot handle very large files.</span>
-	
-	<div class='vboxOptions'>
-		<table class='vboxOptions'>
-			<tr style='vertical-align: top;' class='vboxCreateDynamic'>
-				<td><label><input type='radio' class='vboxRadio' checked='checked' name='newHardDiskType' value='dynamic' /> <span class='translate'>Dynamically allocated</span></label></td>
-			</tr>
-			<tr style='vertical-align: top;' class='vboxCreateFixed'>
-				<td><label><input type='radio' class='vboxRadio' name='newHardDiskType' value='fixed' /> <span class='translate'>Fixed size</span></label></td>
-			</tr>
-			<tr style='vertical-align: top;' class='vboxCreateSplit2G'>
-				<td><label><input type='checkbox' class='vboxCheckbox' name='newHardDiskSplit' /> <span class='translate'>Split into files of less than 2GB</span></label></td>
-			</tr>								
-		</table>
-	</div>
-</div>
-
-<!-- Step 4 -->
-<div id='wizardCopyHDStep4' title='New hard drive to create' style='display: none'>
-
-	<p class='translate'>Please type the name of the new virtual hard drive file into the box below or click on the folder icon to select a different folder to create the file in.</p>
-	
+	<span class='vboxTableLabel translate'>New hard drive to create</span>
 	<div class='vboxOptions'>
 		<table class='vboxOptions'>
 			<tr>
@@ -87,7 +31,44 @@
 				</td>
 			</tr>
 		</table>
-	</div>	
+	</div>
+	
+	<table class='vboxInvisible' style='border: 0px solid transparent; border-spacing: 4px;'>
+		<tr style='vertical-align: top'>
+			<td>
+				<span class='vboxTableLabel translate'>Hard drive file type</span>
+				<div class='vboxOptions'>
+					<table class='vboxOptions vboxNewHDWizardFileTypes'>
+						<tr style='vertical-align: top;'>
+							<td><label><input type='radio' class='vboxRadio' checked='checked' name='newHardDiskFileType' value='vdi' /> <span class='translate'>VDI (VirtualBox Disk Image)</span></label></td>
+						</tr>
+						<tr style='vertical-align: top;'>
+							<td><label><input type='radio' class='vboxRadio' name='newHardDiskFileType' value='vmdk' /> <span class='translate'>VMDK (Virtual Machine Disk)</span></label></td>
+						</tr>
+						<tr style='vertical-align: top;'>
+							<td><label><input type='radio' class='vboxRadio' name='newHardDiskFileType' value='vhd' /> <span class='translate'>VHD (Virtual Hard Disk)</span></label></td>
+						</tr>
+					</table>
+				</div>
+			</td>
+			<td>
+				<span class='vboxTableLabel translate'>Storage on physical hard drive</span>
+				<div class='vboxOptions'>
+					<table class='vboxOptions vboxCopyHDWizHDOpts'>
+						<tr style='vertical-align: top;' class='vboxCreateDynamic'>
+							<td><label><input type='radio' class='vboxRadio' checked='checked' name='newHardDiskType' value='dynamic' /> <span class='translate'>Dynamically allocated</span></label></td>
+						</tr>
+						<tr style='vertical-align: top;' class='vboxCreateFixed'>
+							<td><label><input type='radio' class='vboxRadio' name='newHardDiskType' value='fixed' /> <span class='translate'>Fixed size</span></label></td>
+						</tr>
+						<tr style='vertical-align: top;' class='vboxCreateSplit2G'>
+							<td><label><input type='checkbox' class='vboxCheckbox' name='newHardDiskSplit' disabled/> <span class='translate'>Split into files of less than 2GB</span></label></td>
+						</tr>					
+					</table>
+				</div>
+			</td>
+		</tr>
+	</table>
 
 </div>
 
@@ -95,13 +76,13 @@
 
 
 // Fill HD type options
-var vboxHDTypesTbl = $('#wizardCopyHDStep2').find('table.vboxOptions').first();
+var vboxHDTypesTbl = $('#wizardCopyHDStep1').find('table.vboxNewHDWizardFileTypes').first();
 vboxHDTypesTbl.children().remove();
 var vboxHDTypes = $('#vboxIndex').data('vboxSystemProperties').mediumFormats;
 for(var i = 0; i < vboxHDTypes.length; i++) {
 	if(jQuery.inArray('CreateFixed',vboxHDTypes[i].capabilities) < 0 && jQuery.inArray('CreateDynamic',vboxHDTypes[i].capabilities) < 0) continue;
 	if(jQuery.inArray('HardDisk',vboxHDTypes[i].deviceTypes) > -1) {
-		vboxHDTypesTbl.append("<tr style='vertical-align: top;'><td><label><input type='radio' class='vboxRadio' name='copyHDFileType' value='"+vboxHDTypes[i].id+"' /> "+vboxMedia.getFormat({'format':vboxHDTypes[i].name})+"</label></td></tr>");
+		vboxHDTypesTbl.append("<tr style='vertical-align: top;'><td><label><input type='radio' onclick='wizardCopyHDUpdateOptions()' class='vboxRadio' name='copyHDFileType' value='"+vboxHDTypes[i].id+"' /> "+vboxMedia.getFormat({'format':vboxHDTypes[i].name})+"</label></td></tr>");
 		vboxHDTypesTbl.find('tr').last().data('vboxFormat', vboxHDTypes[i]);
 	}
 }
@@ -121,7 +102,6 @@ var sButtons = new Array(
 		}
 	}		
 );
-
 var wizardCopyHDToolbar = new vboxToolbarSmall(sButtons);
 wizardCopyHDToolbar.disabledString = 'dis';
 wizardCopyHDToolbar.addButtons('newVMDiskVMM');		
@@ -199,15 +179,8 @@ $('#wizardCopyHDStep1').bind('show',function(e,wiz){
 	
 });
 
-$('#wizardCopyHDStep2').bind('show',function(e,wiz){
-	wiz._lastStep = 2;
-});
-$('#wizardCopyHDStep4').bind('show',function(e,wiz){
-	wiz._lastStep = 4;
-});
-
-/* WHen showing step 3, show / hide split option */
-$('#wizardCopyHDStep3').bind('show',function(e,wiz){
+/* Show / hide split option */
+function wizardCopyHDUpdateOptions() {
 		
 	var caps = new Array();
 	for(var i = 0; i < document.forms['frmwizardCopyHD'].copyHDFileType.length; i++) {
@@ -220,20 +193,19 @@ $('#wizardCopyHDStep3').bind('show',function(e,wiz){
 	var capOpts = ['CreateFixed','CreateDynamic','CreateSplit2G'];
 	for(var i = 0; i < capOpts.length; i++) {
 		if(jQuery.inArray(capOpts[i],caps) < 0) {
-			$('#wizardCopyHDStep3').find('.vbox'+capOpts[i]).hide();
+			$('#wizardCopyHDStep1').find('tr.vbox'+capOpts[i]).addClass('disabled').find('input').prop({'disabled':true,'checked':false});
 		} else {
-			$('#wizardCopyHDStep3').find('.vbox'+capOpts[i]).show();
+			$('#wizardCopyHDStep1').find('tr.vbox'+capOpts[i]).removeClass('disabled').find('input').prop('disabled',false);
 		}
 	}
 	
-	// Select first visible option
-	$('#wizardCopyHDStep3').find('tr:visible').first().find('input').prop('checked',true);
-	
-	if($('#wizardCopyHDStep3').find('tr:visible').length == 1) {
-		if(wiz._lastStep == 2) wiz.displayStep(4);
-		else if(wiz._lastStep == 4) wiz.displayStep(2);
+	// Make sure one is selected
+	if(!$('#wizardCopyHDStep1').find('.vboxCopyHDWizHDOpts').find(':checked')[0]) {
+		$('#wizardCopyHDStep1').find('.vboxCopyHDWizHDOpts').find('input:not(:disabled)').first().prop('checked', true);
 	}
-});
+
+}
+wizardCopyHDUpdateOptions();
 
  
 </script>

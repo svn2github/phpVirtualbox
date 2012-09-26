@@ -110,6 +110,8 @@ input.vboxImgButton {
 /* bordered sections with labels */
 div.vboxDialogContent span.vboxTableLabel, #vboxIndex span.vboxTableLabel {
 	color: #555555; font-size: 87.5%; position: relative; top: 7px; font-weight: bold; background: #fff; left: 8px; padding-left: 2px; padding-right: 2px;
+ 	border-radius: 4px;
+	-moz-border-radius: 4px;	
 }
 
 /* Lists and ListItems */

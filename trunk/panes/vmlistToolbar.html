@@ -24,13 +24,12 @@ var tButtons = [
 		
 	}}),
 	$.extend({},vboxVMActions['start'],{'name':'start'}),
-	$.extend({},vboxVMActions['discard'],{'name':'discard'},{'label':'Discard'})
+	$.extend({},vboxVMActions['discard'],{'name':'discard'},{'label':trans('Discard','UIActionPool')})
 ];
 
 /* Append Top Toolbar */
 var vboxVMListToolbarTop = new vboxToolbar(tButtons);
 vboxVMListToolbarTop.size = 32;
-vboxVMListToolbarTop.context = 'VBoxSelectorWnd';
 vboxVMListToolbarTop.addButtons('vboxPaneToolbar');
 
 
@@ -46,24 +45,24 @@ var vboxVMListSettingsMenu = {
 		'icon' : 'hd'
 	},
 	'USB' : {
-		'label' : 'USB Devices',
+		'label' : trans('USB Devices','UIActionPool'),
 		'icon' : 'usb'
 	},
 	'Network' : {
-		'label' : 'Network Adapters...',
+		'label' : trans('Network Adapters...','UIActionPool'),
 		'icon' : 'nw'
 	},
 	'SharedFolders' : {
-		'label' : 'Shared Folders...',
+		'label' : trans('Shared Folders...','UIActionPool'),
 		'icon' : 'shared_folder'
 	},
 	'RemoteDisplay' : {
-		'label' : 'Enable Remote Display',
+		'label' : trans('Enable Remote Display','UIActionPool'),
 		'icon' : 'vrdp',
 		'separator' : true
 	},	
 	'GuestAdditions' : {
-		'label' : 'Install Guest Additions...',
+		'label' : trans('Install Guest Additions...','UIActionPool'),
 		'icon' : 'guesttools',
 		'separator' : true
 	}
@@ -79,7 +78,7 @@ for(var i in vboxVMListSettingsMenu) {
 	// add name
 	vboxVMListSettingsMenu[i].name = i;
 
-	var li = $('<li />').html("<a href='#" + vboxVMListSettingsMenu[i].name + "' style='background-image: url(images/vbox/" + vboxVMListSettingsMenu[i].icon +"_16px.png);' >"+(vboxVMListSettingsMenu[i].label ? trans(vboxVMListSettingsMenu[i].label,'UIActionPool') : ' ')+"</a>");
+	var li = $('<li />').html("<a href='#" + vboxVMListSettingsMenu[i].name + "' style='background-image: url(images/vbox/" + vboxVMListSettingsMenu[i].icon +"_16px.png);' >"+(vboxVMListSettingsMenu[i].label ? vboxVMListSettingsMenu[i].label : ' ')+"</a>");
 	if(i == 'storage') { $(li).attr({'style':'display:none','id':'vboxVMSettingsToolbarStorageHolder'}); }
 	if(i == 'USB') {
 		/* 'USB' menu */

@@ -106,7 +106,7 @@ var sButtons = new Array(
 
 	{
 		'name' : 'addNet',
-		'label' : 'Add host-only network',
+		'label' : trans('Add host-only network','UIGlobalSettingsNetwork'),
 		'icon' : 'add_host_iface',
 		'enabled' : function () { return true; },
 		'click' : function () {
@@ -136,7 +136,7 @@ var sButtons = new Array(
 
 	{
 		'name' : 'delNet',
-		'label' : 'Remove host-only network',
+		'label' : trans('Remove host-only network','UIGlobalSettingsNetwork'),
 		'icon' : 'remove_host_iface',
 		'enabled' : function (item) { return ($(item).data('interface')); },
 		'click' : function () {
@@ -178,7 +178,7 @@ var sButtons = new Array(
 	},
 	{
 		'name' : 'editNet',
-		'label' : 'Edit host-only network',
+		'label' : trans('Edit host-only network','UIGlobalSettingsNetwork'),
 		'icon' : 'guesttools',
 		'enabled' : function (item) { return ($(item).data('interface')); },
 		'click' : function () {
@@ -188,7 +188,6 @@ var sButtons = new Array(
 );
 
 var netToolbar = new vboxToolbarSmall(sButtons);
-netToolbar.context = 'UIGlobalSettingsNetwork';
 netToolbar.addButtons('vboxSettingsGlobalNetToolbar');
 
 $('#vboxSettingsGlobalNetList').bind('select',function(e,i){

@@ -211,7 +211,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 				.append($('<th />').attr({'class':'vboxDetailsSection','colspan':'2'})
 					.append($('<div />')
 						.addClass(!((data.sessionState == 'Unlocked' || data.state == 'Running') && data.state != 'Saved') ? 'vboxNoLinks' : '')
-						.html(ttemplate.replace('%1',section.icon).replace('%2', section.settingsLink).replace('%3', trans(section.title, (section.translationContext ? section.translationContext : 'UIDetailsPagePrivate'), null, section.translationComment)))
+						.html(ttemplate.replace('%1',section.icon).replace('%2', section.settingsLink).replace('%3', section.title))
 					)
 				).disableSelection()
 			)
@@ -310,7 +310,7 @@ function __vboxDisplayDetailsData(data, multiSelect, targetdiv) {
 		var d = $('<div />').attr({'style':'width: 50%; padding: 4px;'});
 		
 		$('<input />').attr({'type':'button',
-			'value':trans('Refresh','VBoxSelectorWnd'),
+			'value':trans('Refresh','UIVMLogViewer'),
 			'style':'background: url(images/vbox/refresh_16px.png) 2px 2px no-repeat; padding: 2px 2px 2px 18px; border: 1px solid #000; background-color: #eee;'
 		}).click(function(){
 			var l = new vboxLoader();

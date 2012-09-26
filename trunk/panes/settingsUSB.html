@@ -44,7 +44,7 @@
 
 	{
 		'name' : 'usbnew',
-		'label' : 'Add Empty Filter',
+		'label' : trans('Add Empty Filter','UIMachineSettingsUSB'),
 		'icon' : 'usb_new',
 		'click' : function () {
 			var currUsbName = 1;
@@ -63,7 +63,7 @@
 
 	{
 		'name' : 'usbnewdevice',
-		'label' : 'Add Filter From Device',
+		'label' : trans('Add Filter From Device','UIMachineSettingsUSB'),
 		'icon' : 'usb_add',
 		'click' : function (e) {
 
@@ -116,7 +116,7 @@
 	
 	{
 		'name' : 'usbedit',
-		'label' : 'Edit Filter',
+		'label' : trans('Edit Filter','UIMachineSettingsUSB'),
 		'icon' : 'usb_filter_edit',
 		'enabled' : function (item) { return (item && $(item).data('filter') && $(item).data('filter').name); },
 		'click' : function () {
@@ -174,7 +174,7 @@
 
 	{
 		'name' : 'usbremove',
-		'label' : 'Remove Filter',
+		'label' : trans('Remove Filter','UIMachineSettingsUSB'),
 		'icon' : 'usb_remove',
 		'enabled' : function (item) { return (item && $(item).data('filter') && $(item).data('filter').name); },
 		'click' : function () {
@@ -194,7 +194,7 @@
 	
 	{
 		'name' : 'usbup',
-		'label' : 'Move Filter Up',
+		'label' : trans('Move Filter Up','UIMachineSettingsUSB'),
 		'icon' : 'usb_moveup',
 		'enabled' : function (item) {
 			return (item && $(item).data('filter') && $(item).data('filter').name && $(item).attr('id') != $('#vboxSettingsUSBFilterList').children().first().attr('id'));
@@ -216,7 +216,7 @@
 	
 	{
 		'name' : 'usbdown',
-		'label' : 'Move Filter Down',
+		'label' : trans('Move Filter Down','UIMachineSettingsUSB'),
 		'icon' : 'usb_movedown',
 		'enabled' : function (item) {
 			return (item && $(item).data('filter') && $(item).data('filter').name && $(item).attr('id') != $('#vboxSettingsUSBFilterList').children().last().attr('id'));
@@ -239,7 +239,6 @@
  );
 
 var usbToolbar = new vboxToolbarSmall(sButtons);
-usbToolbar.context = 'UIMachineSettingsUSB';
 usbToolbar.addButtons('vboxSettingsUSBButtons');
 
 $('#vboxSettingsUSBFilterList').bind('select',function(e,el){usbToolbar.update(el);});

@@ -38,7 +38,7 @@ var sButtons = new Array(
 
 	{
 		'name' : 'addUser',
-		'label' : 'Add User',
+		'label' : trans('Add User','UIUsers'),
 		'icon' : 'new',
 		'click' : function () {
 	
@@ -92,7 +92,7 @@ var sButtons = new Array(
 
 	{
 		'name' : 'delUser',
-		'label' : 'Remove User',
+		'label' : trans('Remove User','UIUsers'),
 		'icon' : 'delete',
 		'noDisabledIcon' : true,
 		'enabled' : function (item) { return (item && $(item).data('username') && $(item).data('username') != $('#vboxIndex').data('vboxSession').user); },
@@ -116,7 +116,7 @@ var sButtons = new Array(
 	},
 	{
 		'name' : 'chpwUser',
-		'label' : 'Change Password',
+		'label' : trans('Change Password','UIUsers'),
 		'icon' : 'register',
 		'noDisabledIcon' : true,
 		'enabled' : function (item) { return (item && $(item).data('username') && $(item).data('username') == $('#vboxIndex').data('vboxSession').user); },
@@ -169,7 +169,7 @@ var sButtons = new Array(
 	},
 	{
 		'name' : 'editUser',
-		'label' : 'Edit User',
+		'label' : trans('Edit User','UIUsers'),
 		'icon' : 'register',
 		'noDisabledIcon' : true,
 		'enabled' : function (item) { return (item && $(item).data('username') && $(item).data('username') != $('#vboxIndex').data('vboxSession').user); },
@@ -224,7 +224,6 @@ var sButtons = new Array(
 );
 
 var userToolbar = new vboxToolbarSmall(sButtons);
-userToolbar.context = 'UIUsers';
 userToolbar.disabledString = 'dis';
 userToolbar.addButtons('vboxSettingsGlobalUsersToolbar');
 $('#vboxSettingsUserList').bind('select', function(e,el){userToolbar.update(el);});

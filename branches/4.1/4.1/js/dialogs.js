@@ -518,38 +518,89 @@ function vboxWizardNewHDInit(callback,suggested) {
 		
 		vbw.onFinish = function(wiz,dialog) {
 
-			var file = $('#wizardNewHDLocationLabel').text();
-			var size = vboxConvertMbytes(document.forms['frmwizardNewHD'].elements.wizardNewHDSizeValue.value);
-			var type = (document.forms['frmwizardNewHD'].elements.newHardDiskType[1].checked ? 'fixed' : 'dynamic');
+			// Fix size if we need to
+			var mbytes = vboxConvertMbytes(document.forms['frmwizardNewHD'].elements.wizardNewHDSizeValue.value);
+			document.forms['frmwizardNewHD'].elements.wizardNewHDSizeValue.value = vboxMbytesConvert(mbytes);
+			$('#wizardNewHDSizeLabel').html(document.forms['frmwizardNewHD'].elements.wizardNewHDSizeValue.value + ' ('+mbytes+' '+trans('MB','VBoxGlobal')+')');
+
+			// Determine file location
+			var file = document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value;
+			if(file.search(/[\/|\\]/) < 0) {
+				// just a name
+				if(suggested.path) {
+					if($('#vboxIndex').data('vboxConfig').enforceVMOwnership==true){
+						file = suggested.path + $('#vboxIndex').data('vboxSession').user + "_" + file;	
+					}else{ file = suggested.path + file; }
+				} else{
+					if($('#vboxIndex').data('vboxConfig').enforceVMOwnership==true){
+						file = $('#vboxIndex').data('vboxSystemProperties').homeFolder + $('#vboxIndex').data('vboxConfig').DSEP + $('#vboxIndex').data('vboxSession').user + "_" + file;
+					}else{ file = $('#vboxIndex').data('vboxSystemProperties').homeFolder + $('#vboxIndex').data('vboxConfig').DSEP + file; }
+				}
+			}else{
+				// using a certain folder
+					if($('#vboxIndex').data('vboxConfig').enforceVMOwnership==true){
+						// has user ownership so use folderbased 
+						var nameIndex = file.lastIndexOf($('#vboxIndex').data('vboxConfig').DSEP);
+						var path = file.substr(0,nameIndex);
+						var name = file.substr(nameIndex+1,file.length);
+						file = path +$('#vboxIndex').data('vboxConfig').DSEP + $('#vboxIndex').data('vboxSession').user + "_" + name;
+					}
+			}
+
 			var format = document.forms['frmwizardNewHD'].elements['newHardDiskFileType'];
+			var formatOpts = {};
 			for(var i = 0; i < format.length; i++) {
 				if(format[i].checked) {
+					formatOpts = $(format[i]).closest('tr').data('vboxFormat');
 					format=format[i].value;
 					break;
 				}
 			}
-			var fsplit = (document.forms['frmwizardNewHD'].newHardDiskSplit.checked ? 1 : 0);
 
-			$(dialog).trigger('close').empty().remove();
-
+			// append filename ext?
+			if(jQuery.inArray(file.substring(file.lastIndexOf('.')+1).toLowerCase(),formatOpts.extensions) < 0) {
+				file += '.'+formatOpts.extensions[0];
+			}
+			
+			/* Check to see if file exists */
+			var fileExists = false;
 			var l = new vboxLoader();
-			l.add('mediumCreateBaseStorage',function(d,e){
-				if(d && d.progress) {
-					var mid = d.medid;
-					vboxProgress(d.progress,function(ret) {
+			l.add('fileExists',function(d){
+				fileExists = d.exists;
+			},{'file':file});
+			l.onLoad = function() { 
+				if(fileExists) {
+					vboxAlert(trans("<p>The hard disk storage unit at location <b>%1</b> already " +
+					           "exists. You cannot create a new virtual hard disk that uses this " +
+					           "location because it can be already used by another virtual hard " +
+					           "disk.</p>" +
+					           "<p>Please specify a different location.</p>",'UIMessageCenter').replace('%1',file));
+					return;
+				}
+				var fsplit = (document.forms['frmwizardNewHD'].newHardDiskSplit.checked ? 1 : 0);
+				var size = vboxConvertMbytes(document.forms['frmwizardNewHD'].elements.wizardNewHDSizeValue.value);
+				var type = (document.forms['frmwizardNewHD'].elements.newHardDiskType[1].checked ? 'fixed' : 'dynamic');
+				var nl = new vboxLoader();
+				nl.add('mediumCreateBaseStorage',function(d){
+					if(d && d.progress) {
+						vboxProgress(d.progress,function(ret) {
 							var ml = new vboxLoader();
 							ml.add('vboxGetMedia',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
 							ml.onLoad = function() {
-								med = vboxMedia.getMediumById(mid);
+								var med = vboxMedia.getMediumByLocation(file);
 								vboxMedia.updateRecent(med);
-								callback(mid);
+								callback(med.id);
 							};
 							ml.run();
-					},d.medid,'progress_media_create_90px.png',trans('Create New Virtual Disk','UINewHDWizard'));
-				} else {
-					callback({},null);
-				}
-			},{'file':file,'type':type,'size':size,'format':format,'split':fsplit});
+						},d.id,'progress_media_create_90px.png',trans('Create New Virtual Disk','UIWizardNewVD'));
+					} else {
+						callback();
+					}
+				},{'file':file,'type':type,'size':size,'format':format,'split':fsplit});
+				nl.run();
+
+				$(dialog).trigger('close').empty().remove();
+			};
 			l.run();
 			
 		};

@@ -1,4 +1,14 @@
 -------------------------------------
+	4.1-11
+-------------------------------------
+Fixed error causing the new VM wizard not to automatically assign
+a new virtual hard disk.
+http://code.google.com/p/phpvirtualbox/issues/detail?id=582
+
+Changed default setting in WebAuth plugin to look for user in
+REMOTE_USER $_SERVER variable.
+
+-------------------------------------
 	4.1-10	2012-09-08
 -------------------------------------
 Fixed JS error in some browsers causing the New Virtual Machine

@@ -4262,11 +4262,9 @@ class vboxconnector {
 			}
 		} catch (Exception $null) {}
 
-		$hdid = $hd->id;
-		
 		$this->_util_progressStore($progress,'vboxGetMedia');
 
-		$response['data'] = array('progress' => $progress->handle,'medid' => $hdid);
+		$response['data'] = array('progress' => $progress->handle);
 		$hd->releaseRemote();
 
 		return true;

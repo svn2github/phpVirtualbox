@@ -11,7 +11,7 @@ class phpvbAuthWebAuth implements phpvbAuth {
 		);
 	
 	var $config = array(
-		'serverUserKey' => 'HTTP_X_WEBAUTH_USER',
+		'serverUserKey' => 'REMOTE_USER',
 		'adminUser' => null
 	);
 	

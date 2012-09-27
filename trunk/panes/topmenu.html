@@ -110,7 +110,7 @@ if($('#vboxIndex').data('vboxSession').user) {
 		menu['menu'][menu['menu'].length] = {
 				'name' : 'fileLogout',
 				// Pre-translated title to append username
-				'label' : trans('Log out - %1','VBoxSelectorWnd').replace('%1',$('#vboxIndex').data('vboxSession').user),
+				'label' : trans('Log out - %1','UIActionPool').replace('%1',$('#vboxIndex').data('vboxSession').user),
 				'icon' : 'exit',
 				'click': function() {
 					var l = new vboxLoader();
@@ -136,8 +136,7 @@ if($('#vboxIndex').data('vboxSession').user) {
 	{
 		menu['menu'][menu['menu'].length] = {
 			'name' : 'fileLogout',
-			// Pre-translated title to append username
-			'label' : trans('Logged in as %s').replace('%s',$('#vboxIndex').data('vboxSession').user),
+			'label' : trans('Logged in as %1','VBoxSelectorWnd').replace('%1',$('#vboxIndex').data('vboxSession').user),
 			'icon' : 'exit',
 			'click': function() {
 				return false;				
@@ -205,7 +204,7 @@ var menu = {
 	'menu':[
         {
 			'name':'helpvbox',
-			'label':trans('VirtualBox User Manual','VBoxSelectorWnd'),
+			'label':trans('VirtualBox User Manual','UIActionPool'),
 			'icon':'images/vbox/site_16px.png',
 			'icon_absolute':true,
 			'click':function(){
@@ -215,7 +214,7 @@ var menu = {
         
         {
 			'name':'helpAbout',
-			'label':trans('About','VBoxSelectorWnd'),
+			'label':trans('About','UIActionPool'),
 			'icon':'help',
 			'click':function(){
         	

@@ -19,7 +19,7 @@ var vboxHostDetailsSections = {
 	 */
 	hostgeneral: {
 		icon:'machine_16px.png',
-		title:'General',
+		title:trans('General','VBoxGlobal'),
 		settingsLink: 'General',
 		multiSelectDetailsTable: true,
 		rows : [
@@ -29,7 +29,7 @@ var vboxHostDetailsSections = {
 			   condition: function() { return $('#vboxIndex').data('vboxConfig').servers.length; }
 		   },
 		   {
-			   title: trans('OS Type'),
+			   title: trans('OS Type', 'VBoxGlobal'),
 			   callback: function(d) {
 				   return d['operatingSystem'] + ' (' + d['OSVersion'] +')';
 			   }
@@ -811,7 +811,6 @@ var vboxVMDetailsSections = {
 				}
 				
 			}
-			$('#vboxTabVMDetails').data('vboxMediaReload', 0);
 			return rows;
 		}
 	},
@@ -1201,7 +1200,7 @@ var vboxVMActions = {
 				};
 				l.run();
 				
-			},false,trans('Add an existing virtual machine','VBoxSelectorWnd'),'images/vbox/machine_16px.png',true);
+			},false,trans('Add an existing virtual machine','UIActionPool'),'images/vbox/machine_16px.png',true);
 		}
 	},
 
@@ -2829,7 +2828,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 				
 				// Add VMM?
 				if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
-					menus[menus.length] = {'name':'vmm','icon':'diskimage','label':trans('Virtual Media Manager...','VBoxSelectorWnd')};
+					menus[menus.length] = {'name':'vmm','icon':'diskimage','label':trans('Virtual Media Manager...','UIActionPool')};
 				}
 
 				// recent list place holder
@@ -2845,7 +2844,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 
 				// Add VMM?
 				if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
-					menus[menus.length] = {'name':'vmm','icon':'diskimage','label':trans('Virtual Media Manager...','VBoxSelectorWnd')};
+					menus[menus.length] = {'name':'vmm','icon':'diskimage','label':trans('Virtual Media Manager...','UIActionPool')};
 				}
 				
 				// Add host drives
@@ -2866,7 +2865,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 
 				// Add VMM?
 				if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
-					menus[menus.length] = {'name':'vmm','icon':'diskimage','label':trans('Virtual Media Manager...','VBoxSelectorWnd')};
+					menus[menus.length] = {'name':'vmm','icon':'diskimage','label':trans('Virtual Media Manager...','UIActionPool')};
 				}
 				
 				// Add host drives

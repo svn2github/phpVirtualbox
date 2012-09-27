@@ -89,6 +89,7 @@ function hash($type,$str='') {
  * Support for PHP compiled with --disable-json
  */
 if(!function_exists('json_encode')) {
+	
 /**
  * Mimmics PHP's json_encode
  * @link http://au.php.net/manual/en/function.json-encode.php#82904

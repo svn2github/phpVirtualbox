@@ -3,17 +3,14 @@
  * $Id$
  */
 
+
+
 # Turn off PHP errors
 error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_WARNING);
 
 require_once(dirname(dirname(__FILE__)).'/lib/language.php');
 
 if(!is_object($_vbox_language)) $_vbox_language = new __vbox_language();
-
-if($_GET['debug']) {
-	print_r(__vbox_language::$langdata);
-	return;
-}
 
 
 header("Content-type: text/javascript; charset=utf-8", true);
@@ -24,6 +21,10 @@ header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
 header("Pragma: no-cache");
 
+if($_GET['debug']) {
+	print_r(__vbox_language::$langdata);
+	return;
+}
 
 /*
  * Dump in JavaScript

@@ -50,8 +50,8 @@
 			<translation>ログアウト - %1</translation>
 		</message>
 		<message>
-			<source>Stop</source>
-			<translation>停止</translation>
+			<source>Logged in as %1</source>
+			<translation>Logged in as %1</translation>
 		</message>
 		<message>
 			<source>VirtualBox User Manual</source>

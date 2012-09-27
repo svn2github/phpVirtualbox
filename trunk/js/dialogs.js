@@ -53,7 +53,7 @@ function vboxWizardImportApplianceInit() {
 							var ml = new vboxLoader();
 							ml.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 							ml.run();
-						},{},'progress_import_90px.png',trans('Import Appliance','VBoxSelectorWnd').replace(/\./g,''));
+						},{},'progress_import_90px.png',trans('Import Appliance','UIActionPool').replace(/\./g,''));
 					}
 				},{'descriptions':descriptions,'file':file,'reinitNetwork':reinitNetwork});
 				l.run();				
@@ -181,7 +181,7 @@ function vboxWizardExportApplianceInit() {
 			var l = new vboxLoader();
 			l.add('applianceExport',function(d){
 				if(d && d.progress)
-					vboxProgress(d.progress,function(){return;},{},'progress_export_90px.png',trans('Export Appliance...','VBoxSelectorWnd').replace(/\./g,''));
+					vboxProgress(d.progress,function(){return;},{},'progress_export_90px.png',trans('Export Appliance...','UIActionPool').replace(/\./g,''));
 			},{'format':format,'file':file,'vms':vms,'manifest':manifest,'overwrite':overwrite});
 			$(dialog).trigger('close').empty().remove();
 			l.run();
@@ -908,7 +908,7 @@ function vboxPrefsInit() {
 		data.pop();
 	}
 	
-	vboxSettingsDialog(trans('Preferences...','VBoxSelectorWnd').replace(/\./g,''),panes,data,function(canceled){
+	vboxSettingsDialog(trans('Preferences...','UIActionPool').replace(/\./g,''),panes,data,function(canceled){
 
 		// Do nothing if canceled
 		if(canceled) return;

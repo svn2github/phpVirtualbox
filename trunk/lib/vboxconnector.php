@@ -687,7 +687,7 @@ class vboxconnector {
 		unset($this->session);
 		$machine->releaseRemote();
 		
-		$this->cache->expire('_machineGetDetails'.$args['vm']);
+		$this->cache->expire(array('_machineGetDetails'.$args['vm'],'vboxGetMedia'));
 		
 		$response['data']['result'] = 1;
 		$response['data']['saved'] = 1;
@@ -1147,7 +1147,6 @@ class vboxconnector {
 			throw new Exception("Not authorized to modify this VM");
 		}
 
-		$m->name = $args['name'];
 		$m->OSTypeId = $args['OSTypeId'];
 		$m->CPUCount = $args['CPUCount'];
 		$m->memorySize = $args['memorySize'];
@@ -1377,6 +1376,7 @@ class vboxconnector {
 		}
 		// Expire storage
 		$expire[] = '_machineGetStorageControllers'.$args['id'];
+		
 		// Expire media?
 		ksort($attachedEx);
 		ksort($attachedNew);
@@ -1608,8 +1608,17 @@ class vboxconnector {
 		// Expire USB info?
 		if($usbchanged) $expire[] = '_machineGetUSBController'.$args['id'];
 
-
 		$this->session->machine->saveSettings();
+
+		// Rename goes last
+		if($m->name != $args['name']) {
+			$m->name = $args['name'];
+			// expire media if we changed machine name
+			$expire[] = 'vboxGetMedia';
+			$this->session->machine->saveSettings();
+		}
+		
+		
 		$this->session->unlockMachine();
 		$this->session->releaseRemote();
 		unset($this->session);

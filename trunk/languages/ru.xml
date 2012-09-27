@@ -50,8 +50,8 @@
 			<translation>Выйти - %1</translation>
 		</message>
 		<message>
-			<source>Stop</source>
-			<translation>Остановить</translation>
+			<source>Logged in as %1</source>
+			<translation>Logged in as %1</translation>
 		</message>
 		<message>
 			<source>VirtualBox User Manual</source>

@@ -879,7 +879,7 @@ function vboxProgressCreateListElement(pid,icon,title,target,callback) {
 	if($('#vboxIndex').data('vboxConfig').maxProgressList) {
 		var maxList = $('#vboxIndex').data('vboxConfig').maxProgressList; 
         try {
-        	maxList = max(2,parseInt(maxList));
+        	maxList = Math.max(2,parseInt(maxList));
 	    } catch (e) {
 	        maxList = 5;
 	    }

@@ -82,7 +82,7 @@ l.onLoad = function() {
 	vms.sort(function(a,b){return strnatcasecmp(a.name,b.name);});
 	for(var i in vms) {
 		var li = $('<li />').data({'vm':vms[i]});
-		if(vms[i].state == 'Running' || vms[i].state == 'Paused') {
+		if(vboxVMStates.isRunning(vms[i]) || vboxVMStates.isPaused(vms[i])) {
 			$(li).addClass('vboxDisabled disabled');
 		} else {
 			$(li).click(function(){$(this).toggleClass('vboxListItemSelected');}).addClass('vboxListItem');

@@ -24,7 +24,7 @@ var vboxHostDetailsSections = {
 		multiSelectDetailsTable: true,
 		rows : [
 		   {
-			   title: trans('Name', 'UIDetailsPagePrivate'),
+			   title: trans('Name', 'VBoxGlobal'),
 			   callback: function() { return $('#vboxIndex').data('vboxConfig').name; },
 			   condition: function() { return $('#vboxIndex').data('vboxConfig').servers.length; }
 		   },
@@ -48,7 +48,7 @@ var vboxHostDetailsSections = {
 			   title: '',
 			   data: '<span id="vboxHostMemUsed"><div style="background-color:#a33" id="vboxHostMemUsedPct"><div style="background-color:#a93;float:right;" id="vboxHostMemResPct"></div></div><div style="width:100%;position:relative;top:-14px;left:0px;z-index:2;text-align:center;"><span id="vboxHostMemUsedLblPct" style="float:left" /><span id="vboxHostMemFreeLbl" style="float:right" /></div></span>'
 		   },{
-			   title: trans("Processors",'UIDetailsPagePrivate'),
+			   title: trans("Processor(s)",'VBoxGlobal'),
 			   callback: function(d) {
 				   return d['cpus'][0] + ' (' + d['cpus'].length +')';
 			   }
@@ -295,7 +295,7 @@ var vboxVMDetailsSections = {
 		multiSelectDetailsTable: true,
 		rows : [
 		   {
-			   title: trans('Name', 'UIDetailsPagePrivate'),
+			   title: trans('Name', 'VBoxGlobal'),
 			   attrib: 'name'
 		   },
 		   {
@@ -338,7 +338,7 @@ var vboxVMDetailsSections = {
 				   return trans('<nobr>%1 MB</nobr>').replace('%1',d['memorySize']);
 			   }
 		   },{
-			   title: trans("Processors",'UIDetailsPagePrivate'),
+			   title: trans("Processor(s)",'VBoxGlobal'),
 			   attrib: 'CPUCount',
 			   condition: function(d) { return d.CPUCount > 1; }
 		   },{
@@ -428,7 +428,7 @@ var vboxVMDetailsSections = {
 				.bind('beforeshow', function(e, d) {
 					
 					
-					if(d.state == 'Saved' || d.state == 'Running') {
+					if(vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d)) {
 						$('#vboxDetailsViewSavedSS')
 							.css('display','')
 							.data({'vmid':d.id});
@@ -538,12 +538,12 @@ var vboxVMDetailsSections = {
 			
 		onRender : function(d) {
 
-			if(d.state != 'Running' && d.state != 'Saved')
+			if(!vboxVMStates.isRunning(d) && !vboxVMStates.isSaved(d))
 				return;
 		
 			vboxVMDetailsSections.preview._drawPreview(d);
 			
-			if(d.state == 'Running') {
+			if(vboxVMStates.isRunning(d)) {
 				
 				var timer = $('#vboxIndex').data('vboxPreviewTimer-'+d.id);
 				if(timer) window.clearInterval(timer);
@@ -603,7 +603,7 @@ var vboxVMDetailsSections = {
 					// IE uses filter
 					if($.browser.msie) {
 						
-						if(d.state == 'Running') {
+						if(vboxVMStates.isRunning(d)) {
 							
 							// Setting background URL keeps image from being requested again, but does not allow us to set
 							// the size of the image. This is fine, since the image is returned in the size requested.
@@ -635,14 +635,14 @@ var vboxVMDetailsSections = {
 			};
 
 			// Update disabled? State not Running or Saved
-			if($('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] == 0 || (d.state != 'Running' && d.state != 'Saved')) {
+			if($('#vboxIndex').data('vboxCookies')["vboxPreviewUpdate"] == 0 || (!vboxVMStates.isRunning(d) && !vboxVMStates.isSaved(d))) {
 				__vboxDrawPreviewImg.height = 0;
 				__vboxDrawPreviewImg.onload();
 			} else {
 				// Running VMs get random numbers. Saved are based on last state change.
 				// Try to let the browser cache Saved screen shots
 				var randid = d.lastStateChange;
-				if(d.state == 'Running') {
+				if(vboxVMStates.isRunning(d)) {
 					var currentTime = new Date();
 					randid = Math.floor(currentTime.getTime() / 1000);
 				}
@@ -679,7 +679,7 @@ var vboxVMDetailsSections = {
 									"</tr>"+
 									"<tr>"+
 										"<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_left.png' style='width:15px;height:"+height+"px' class='vboxPreviewMonitorSide' /></td>"+
-										"<td class='vboxInvisible'><div class='vboxDetailsPreviewWrap "+ (d.state == 'Saved' ? 'vboxPreviewSaved' : '') +"' style='width: "+width+"px; height:"+height+"px; text-align:center;background-color:#000;border:0px;display:table;#position:relative;background-repeat: no-repeat;padding:0px;margin:0px;'>"+
+										"<td class='vboxInvisible'><div class='vboxDetailsPreviewWrap "+ (vboxVMStates.isSaved(d) ? 'vboxPreviewSaved' : '') +"' style='width: "+width+"px; height:"+height+"px; text-align:center;background-color:#000;border:0px;display:table;#position:relative;background-repeat: no-repeat;padding:0px;margin:0px;'>"+
 											"<img class='vboxDetailsPreviewImg' src='images/monitor_glossy.png' vspace='0px' hspace='0px' "+
 											"style='display:none;top:0px;margin:0px;border:0px;padding;0px;"+
 											"background-position:top left;background-repeat:no-repeat;"+
@@ -725,10 +725,10 @@ var vboxVMDetailsSections = {
 				   var rowStr = d['VRDEServer']['ports'];
 				
 				   // Display links?
-				   if(!d._isSnapshot && (d['state'] == 'Running' || !d['VRDEServer']['ports'].match(/[^\d]/))) {
+				   if(!d._isSnapshot && (d['state'] == 'Running' || d['state'] == 'Paused' || !d['VRDEServer']['ports'].match(/[^\d]/))) {
 					   rowStr = " <a href='rdp.php?host=" + chost + '&port=' + d['VRDEServer']['ports'] + "&id=" + d['id'] + "&vm=" + encodeURIComponent(d['name']) + "'>" + d['VRDEServer']['ports'] + "</a>";
 				   }
-				   if(!d._isSnapshot && d['state'] == 'Running' && d['consoleInfo'] && parseInt(d['consoleInfo']['consolePort']) > 0) {
+				   if(!d._isSnapshot && (d['state'] == 'Running' || d['state'] == 'Paused') && d['consoleInfo'] && parseInt(d['consoleInfo']['consolePort']) > 0) {
 					   rowStr += ' <img src="images/vbox/blank.gif" style="vspace:0px;hspace:0px;height2px;width:10px;" /> (' + chost + ':' + d['consoleInfo']['consolePort'] + ')';
 				   } else if(!d._isSnapshot){
 					   rowStr += ' ('+chost+')';
@@ -739,6 +739,11 @@ var vboxVMDetailsSections = {
 			   },
 			   html: true,
 			   condition: function(d) {
+				   
+				   // Running and paused states have real-time console info
+				   if(!d._isSnapshot && (d['state'] == 'Running' || d['state'] == 'Paused')) {
+					   return d.consoleInfo && d.consoleInfo.enabled;
+				   }
 				   return (d['VRDEServer'] && (d._isSnapshot || d['VRDEServer']['VRDEExtPack']) && d['VRDEServer']['enabled'] && d['VRDEServer']['ports']);
 			   }
 		   },{
@@ -747,7 +752,7 @@ var vboxVMDetailsSections = {
 				   return trans('Disabled','VBoxGlobal',null,'details report (VRDE Server)');
 			   },
 			   condition: function(d) {
-				   return !(d['VRDEServer'] && (d._isSnapshot || d['VRDEServer']['VRDEExtPack']) && d['VRDEServer']['enabled'] && d['VRDEServer']['ports']);
+				   return !(vboxVMDetailsSections.display.rows[1].condition(d));
 			   }
 		   }
 		]
@@ -1126,31 +1131,29 @@ var vboxVMGroupActions = {
 	rename: {
 		label: trans('Rename Group...','UIActionPool'),
 		icon: 'name',
-		enabled: function(chooser) {
-			if(!chooser) return false;
-			var gElm = chooser.getSelectedGroupElements()[0];
+		enabled: function() {
+			var gElm = vboxChooser.getSelectedGroupElements()[0];
 			if(!gElm) return false;
 			if($(gElm).find('td.vboxVMSessionOpen')[0]) return false;
 			return true;
 		},
 		click: function() {
-			$('#vboxIndex').data('vboxChooser').renameSelectedGroup();
+			vboxChooser.renameSelectedGroup();
 		}
 	},
 	
 	ungroup: {
 		label: trans('Ungroup...','UIActionPool'),
 		icon: 'delete',
-		enabled: function(chooser) {
-			if(!chooser) return false;
-			var gElm = chooser.getSelectedGroupElements()[0];
+		enabled: function() {
+			var gElm = vboxChooser.getSelectedGroupElements()[0];
 			if(!gElm) return false;
 			if($(gElm).find('td.vboxVMSessionOpen')[0]) return false;
 			return true;
 		},
 		click: function() {
 			
-			$('#vboxIndex').data('vboxChooser').unGroupSelectedGroup();
+			vboxChooser.unGroupSelectedGroup();
 			
 		}
 	},
@@ -1159,7 +1162,7 @@ var vboxVMGroupActions = {
 		label: trans('Sort','UIActionPool'),
 		click: function() {
 			
-			$('#vboxIndex').data('vboxChooser').sortSelectedGroup();
+			vboxChooser.sortSelectedGroup();
 			
 		}
 	}
@@ -1168,7 +1171,7 @@ var vboxVMGroupActions = {
 
 /**
  * Common VM Actions - These assume that they will be run on the
- * selected VM as stored in $('#vboxIndex').data('vboxChooser').getSingleSelected()
+ * selected VM as stored in vboxChooser.getSingleSelected()
  * @namespace vboxVMActions
  */
 var vboxVMActions = {
@@ -1179,7 +1182,7 @@ var vboxVMActions = {
 			icon:'vm_new',
 			icon_16:'new',
 			click: function(fromGroup){
-				vboxWizardNewVMInit(function(){return;},(fromGroup ? $($('#vboxIndex').data('vboxChooser').getSelectedGroupElements()[0]).data('vmGroupPath') : ''));
+				vboxWizardNewVMInit(function(){return;},(fromGroup ? $(vboxChooser.getSelectedGroupElements()[0]).data('vmGroupPath') : ''));
 			}
 	},
 	
@@ -1216,7 +1219,7 @@ var vboxVMActions = {
 			// Disable toolbar button that triggered this action?
 			if(btn && btn.toolbar) btn.toolbar.disableButton(btn);
 			
-			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
+			var vm = vboxChooser.getSingleSelected();
 			
 			var startVM = function () {
 				
@@ -1225,9 +1228,10 @@ var vboxVMActions = {
 					// check for progress operation
 					if(d && d.progress) {
 						var icon = null;
-						if(vm.state == 'Saved') icon = 'progress_state_restore_90px.png';
+						if(vboxVMStates.isSaved(d)) icon = 'progress_state_restore_90px.png';
 						else icon = 'progress_start_90px.png';
-						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistrefresh');},{},icon);
+						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistrefresh');},icon,trans('Start','UIActionPool'),
+									false, vm.name);
 						return;
 					}
 					$('#vboxIndex').trigger('vmlistrefresh');
@@ -1236,7 +1240,7 @@ var vboxVMActions = {
 			
 			// Check for memory limit
 			// Paused VMs are already using all their memory
-			if($('#vboxIndex').data('vboxConfig').vmMemoryStartLimitWarn && vm.state != 'Paused') {
+			if($('#vboxIndex').data('vboxConfig').vmMemoryStartLimitWarn && !vboxVMStates.isPaused(d)) {
 				
 				var freeMem = 0;
 				var baseMem = 0;
@@ -1268,9 +1272,10 @@ var vboxVMActions = {
 			
 			
 		},
-		enabled : function (chooser) { 
-			if(!chooser || chooser.selectionModel != 'singleVM') return false;
-			return (jQuery.inArray(chooser.getSingleSelected().state,['PoweredOff','Paused','Saved','Aborted','Teleported']) > -1);
+		enabled : function () { 
+			if(!(vboxChooser && vboxChooser.selectionModel == 'singleVM')) return false;
+			var vm = vboxChooser.getSingleSelected();
+			return (vboxVMStates.isPaused(vm) || vboxVMStates.isPoweredOff(vm) || vboxVMStates.isSaved(vm));
 		}	
 	},
 	
@@ -1282,12 +1287,14 @@ var vboxVMActions = {
 		selectionModels : ['singleVM'],
 		click:function(){
 			
-			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
+			var vm = vboxChooser.getSingleSelected();
 						
 			vboxVMsettingsInit(vm.id);
 		},
-		enabled : function (chooser) {
-			return (chooser && chooser.selectionModel == 'singleVM' && jQuery.inArray(chooser.getSingleSelected().state,['PoweredOff','Aborted','Teleported','Running']) > -1);
+		enabled : function () {
+			if(!(vboxChooser && vboxChooser.selectionModel == 'singleVM')) return false;
+			var vm = vboxChooser.getSingleSelected();
+			return (vboxVMStates.isRunning(vm) || vboxVMStates.isEditable(vm));
 		}
 	},
 
@@ -1298,10 +1305,11 @@ var vboxVMActions = {
 		icon_16:'vm_clone',
 		icon_disabled:'vm_clone_disabled',
 		selectionModels : ['singleVM'],
-		click:function(){vboxWizardCloneVMInit(function(){return;},{vm:$('#vboxIndex').data('vboxChooser').getSingleSelected()});},
-		enabled: function (chooser) {
-			if(!chooser || chooser.selectionModel != 'singleVM') return false;
-			return (jQuery.inArray(chooser.getSingleSelected().state,['PoweredOff','Aborted','Teleported','Saved']) > -1);
+		click:function(){vboxWizardCloneVMInit(function(){return;},{vm:vboxChooser.getSingleSelected()});},
+		enabled: function () {
+			if(!(vboxChooser && vboxChooser.selectionModel == 'singleVM')) return false;
+			var vm = vboxChooser.getSingleSelected();			
+			return (vboxVMStates.isPoweredOff(vm));
 		}
 	},
 
@@ -1314,7 +1322,7 @@ var vboxVMActions = {
 		selectionModels : ['singleVM'],
 		click:function(){
 			
-			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
+			var vm = vboxChooser.getSingleSelected();
 			
 			var l = new vboxLoader();
 			l.add('machineGetDetails',function(d){
@@ -1332,8 +1340,8 @@ var vboxVMActions = {
 			}
 			l.run();
     	},
-		enabled: function(chooser){
-			return (chooser && chooser.selectionModel == 'singleVM');
+		enabled: function(){
+			return (vboxChooser && vboxChooser.selectionModel == 'singleVM');
 		}
     },
     
@@ -1344,7 +1352,7 @@ var vboxVMActions = {
 		selectionModels : ['singleVM'],
 		click:function(){
 
-			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
+			var vm = vboxChooser.getSingleSelected();
 			
 			var buttons = {};
 			buttons[trans('Delete all files','UIMessageCenter')] = function(){
@@ -1353,7 +1361,8 @@ var vboxVMActions = {
 				l.add('machineRemove',function(d){
 					// check for progress operation
 					if(d && d.progress) {
-						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistreload');},{},'progress_delete_90px.png');
+						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistreload');},'progress_delete_90px.png',
+								trans('Remove...', 'UIActionPool'), false, vm.name);
 					} else {
 						$('#vboxIndex').trigger('vmlistreload');
 					}					
@@ -1366,7 +1375,8 @@ var vboxVMActions = {
 				l.add('machineRemove',function(d){
 					// check for progress operation
 					if(d && d.progress) {
-						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistreload');},{},'progress_delete_90px.png');
+						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistreload');},'progress_delete_90px.png',
+								trans('Remove...', 'UIActionPool'), false, vm.name);
 					} else {
 						$('#vboxIndex').trigger('vmlistreload');
 					}					
@@ -1380,9 +1390,9 @@ var vboxVMActions = {
 			
     	
     	},
-    	enabled: function (chooser) {
-    		if(!chooser || chooser.selectionModel != 'singleVM') return false;
-    		return (jQuery.inArray(chooser.getSingleSelected().state,['PoweredOff','Aborted','Teleported','Inaccessible','Saved']) > -1);
+    	enabled: function () {
+			if(!(vboxChooser && vboxChooser.selectionModel == 'singleVM')) return false;
+    		return (vboxVMStates.isPoweredOff(vboxChooser.getSingleSelected()));
     	}
     },
     
@@ -1393,18 +1403,15 @@ var vboxVMActions = {
     	icon_disabled: 'add_shared_folder_disabled',
     	selectionModels : ['multiVM','singleVM'],
     	click: function() {
-    		$('#vboxIndex').data('vboxChooser').groupSelectedItems();
+    		vboxChooser.groupSelectedItems();
     	},
-    	enabled: function(chooser) {
+    	enabled: function() {
     		
-    		if(!chooser) return false;
-    		
-    		
-    		if (chooser.selectionModel=='singleVM' && chooser.getSingleSelected().id == 'host')
+    		if (!vboxChooser || (vboxChooser.selectionModel=='singleVM' && vboxChooser.getSingleSelected().id == 'host'))
     			return false;
     		
-    		for(var i = 0; i < chooser.selectedVMs.length; i++) {
-    			if(chooser.getVMData(chooser.selectedVMs[i]).sessionState != 'Unlocked')
+    		for(var i = 0; i < vboxChooser.selectedVMs.length; i++) {
+    			if(!vboxVMStates.isEditable(vboxChooser.getVMData(vboxChooser.selectedVMs[i])))
     				return false;
     		}
     		
@@ -1420,7 +1427,7 @@ var vboxVMActions = {
 		selectionModels : ['singleVM'],
 		click:function(){
 			
-			var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
+			var vm = vboxChooser.getSingleSelected();
 			
 			var buttons = {};
 			buttons[trans('Discard','UIMessageCenter')] = function(){
@@ -1432,8 +1439,8 @@ var vboxVMActions = {
 			};
 			vboxConfirm(trans('<p>Are you sure you want to discard the saved state of the following virtual machines?</p><p><b>%1</b></p><p>This operation is equivalent to resetting or powering off the machine without doing a proper shutdown of the guest OS.</p>','UIMessageCenter').replace('%1',vm.name),buttons);
 		},
-		enabled:function(chooser){
-    		return (chooser && chooser.selectionModel== 'singleVM' && chooser.getSingleSelected().state== 'Saved');
+		enabled:function(){
+    		return (vboxChooser && vboxChooser.selectionModel== 'singleVM' && vboxVMStates.isSaved(vboxChooser.getSingleSelected()));
 		}
     },
     
@@ -1444,10 +1451,10 @@ var vboxVMActions = {
 		icon_disabled:'show_logs_disabled',
 		selectionModels : ['singleVM'],
 		click:function(){
-    		vboxShowLogsDialogInit($('#vboxIndex').data('vboxChooser').getSingleSelected());
+    		vboxShowLogsDialogInit(vboxChooser.getSingleSelected());
 		},
-		enabled:function(chooser){
-			return (chooser && chooser.selectionModel== 'singleVM' && chooser.getSingleSelected().id != 'host');
+		enabled:function(){
+			return (vboxChooser && vboxChooser.selectionModel== 'singleVM' && vboxChooser.getSingleSelected().id != 'host');
 		}
     },
 
@@ -1457,8 +1464,10 @@ var vboxVMActions = {
 		icon: 'fd',
 		selectionModels : ['singleVM'],
 		stop_action: true,
-		enabled: function(chooser){
-			return (chooser && chooser.selectionModel== 'singleVM' && chooser.getSingleSelected().state== 'Running');
+		enabled: function(){
+			if(!(vboxChooser && vboxChooser.selectionModel == 'singleVM')) return false;
+			var vm = vboxChooser.getSingleSelected();
+			return (vboxVMStates.isRunning(vm) || vboxVMStates.isPaused(vm));
 		},
 		click: function() {vboxVMActions.powerAction('savestate');}
 	},
@@ -1469,8 +1478,8 @@ var vboxVMActions = {
 		icon: 'acpi',
 		stop_action: true,
 		selectionModels : ['singleVM'],
-		enabled: function(chooser){
-			return (chooser && chooser.selectionModel== 'singleVM' && chooser.getSingleSelected().state== 'Running');
+		enabled: function(){
+			return (vboxChooser && vboxVMStates.isRunning(vboxChooser.getSingleSelected()));
 		},
 		click: function() {
 			var buttons = {};
@@ -1478,7 +1487,7 @@ var vboxVMActions = {
 				vboxVMActions.powerAction('powerbutton');				
 			};
 			vboxConfirm(trans("<p>Do you really want to send an ACPI shutdown signal " +
-					"to the following virtual machines?</p><p><b>%1</b></p>",'UIMessageCenter').replace('%1', $('#vboxIndex').data('vboxChooser').getSingleSelected().name),buttons);
+					"to the following virtual machines?</p><p><b>%1</b></p>",'UIMessageCenter').replace('%1', vboxChooser.getSingleSelected().name),buttons);
 		}
 	},
 	
@@ -1488,8 +1497,8 @@ var vboxVMActions = {
 		icon: 'pause',
 		icon_disabled: 'pause_disabled',
 		selectionModels : ['singleVM'],
-		enabled: function(chooser){
-			return (chooser && chooser.selectionModel== 'singleVM' && chooser.getSingleSelected().state== 'Running');
+		enabled: function(){
+			return (vboxChooser && vboxVMStates.isRunning(vboxChooser.getSingleSelected()));
 		},
 		click: function() {vboxVMActions.powerAction('pause'); }
 	},
@@ -1500,8 +1509,10 @@ var vboxVMActions = {
 		icon: 'poweroff',
 		stop_action: true,
 		selectionModels : ['singleVM'],
-		enabled: function(chooser) {
-			return (chooser && chooser.selectionModel== 'singleVM' && jQuery.inArray(chooser.getSingleSelected().state,['Running','Paused','Stuck']) > -1);
+		enabled: function() {
+			if(!vboxChooser || vboxChooser.selectionModel != 'singleVM') return false;
+			var vm = vboxChooser.getSingleSelected();
+			return (vboxVMStates.isRunning(vm) || vboxVMStates.isPaused(vm));
 		},
 		click: function() {
 			var buttons = {};
@@ -1511,7 +1522,7 @@ var vboxVMActions = {
 			};
 			vboxConfirm(trans("<p>Do you really want to power off the following virtual machines?</p>" +
 	           "<p><b>%1</b></p><p>This will cause any unsaved data in applications " +
-	           "running inside it to be lost.</p>", 'UIMessageCenter').replace('%1', $('#vboxIndex').data('vboxChooser').getSingleSelected().name), buttons);
+	           "running inside it to be lost.</p>", 'UIMessageCenter').replace('%1', vboxChooser.getSingleSelected().name), buttons);
 		}
 	},
 	
@@ -1521,8 +1532,8 @@ var vboxVMActions = {
 		icon: 'reset',
 		icon_disabled: 'reset_disabled',
 		selectionModels : ['singleVM'],
-		enabled: function(chooser){
-			return (chooser && chooser.selectionModel== 'singleVM' && chooser.getSingleSelected().state== 'Running');
+		enabled: function(){
+			return (vboxChooser && vboxChooser.selectionModel== 'singleVM' && vboxChooser.getSingleSelected().state== 'Running');
 		},
 		click: function() {
 			var buttons = {};
@@ -1530,7 +1541,7 @@ var vboxVMActions = {
 				$(this).remove();
 				vboxVMActions.powerAction('reset');
 			};
-			vboxConfirm(trans("<p>Do you really want to reset the following virtual machines?</p><p><b>%1</b></p><p>This will cause any unsaved data in applications running inside it to be lost.</p>",'UIMessageCenter').replace('%1',$('#vboxIndex').data('vboxChooser').getSingleSelected().name),buttons);
+			vboxConfirm(trans("<p>Do you really want to reset the following virtual machines?</p><p><b>%1</b></p><p>This will cause any unsaved data in applications running inside it to be lost.</p>",'UIMessageCenter').replace('%1',vboxChooser.getSingleSelected().name),buttons);
 		}
 	},
 	
@@ -1545,8 +1556,10 @@ var vboxVMActions = {
 		menu: true,
 		selectionModels : ['singleVM'],
 		click: function () { return true; /* handled by stop context menu */ },
-		enabled: function (chooser) {
-			return (chooser && chooser.selectionModel== 'singleVM' && jQuery.inArray(chooser.getSingleSelected().state,['Running','Paused','Stuck']) > -1);
+		enabled: function () {
+			if(!vboxChooser || vboxChooser.selectionModel != 'singleVM') return false;
+			var vm = vboxChooser.getSingleSelected();
+			return (vboxVMStates.isRunning(vm) || vboxVMStates.isPaused(vm));
 		}
 	},
 	
@@ -1562,13 +1575,13 @@ var vboxVMActions = {
 			case 'reset': fn = 'reset'; break;
 			default: return;
 		}
-		var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
+		var vm = vboxChooser.getSingleSelected();
 		vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':fn},function(d){
 			// check for progress operation
 			if(d && d.progress) {
 				vboxProgress(d.progress,function(){
 					if(pa != 'reset' && pa != 'sleep' && pa != 'powerbutton') $('#vboxIndex').trigger('vmlistrefresh');
-				},{},icon);
+				},icon,vboxVMActions[pa].label, false, vm.name);
 				return;
 			}
 			if(pa != 'reset' && pa != 'sleep' && pa != 'powerbutton') $('#vboxIndex').trigger('vmlistrefresh');
@@ -2299,6 +2312,14 @@ function vboxToolbar(buttons) {
 	};
 	
 	/**
+	 * Return the button element by name 
+	 * @param {String} bname - button name
+	 * @returns {HTMLNode}
+	 */
+	self.getButtonElement = function(bname) {
+		return $('#vboxToolbarButton-'+self.id+'-'+bname);
+	}
+	/**
 	 * Generate HTML element for button
 	 * @memberOf vboxToolbar
 	 * @param {Object} b - button object containing various button parameters
@@ -2995,72 +3016,6 @@ function vboxMediaMenu(type,callback,mediumPath) {
 
 
 
-/**
- * Singleton Data Mediator Object
- * 
- * Queues data requests and responses so that multiple requests for the same data do not generate
- * multiple server requests while an existing request is still in progress.
- * @namespace vboxVMDataMediator
- */
-var vboxVMDataMediator = {
-	
-	_data : {},
-	
-	_inProgress : {},
-	
-	/**
-	 * Get VM data
-	 * @param {String} id - uuid of virtual machine
-	 * @param {Function} callback - callback to run when data is returned
-	 */
-	get : function(id,callback) {
-		
-		// Data exists - should rarely happen - if ever
-		if(vboxVMDataMediator._data[id]) {
-			callback(vboxVMDataMediator._data[id]);
-			return;
-		}
-		
-		// In progress. Add callback to list
-		if(vboxVMDataMediator._inProgress[id]) {
-			
-			vboxVMDataMediator._inProgress[id][vboxVMDataMediator._inProgress[id].length] = callback;
-			vboxVMDataMediator._inProgress[id] = $.unique(vboxVMDataMediator._inProgress[id]);
-			
-		// Not in progress, create list && get data
-		} else {
-			
-			vboxVMDataMediator._inProgress[id] = [callback];
-			vboxAjaxRequest('machineGetDetails', {'vm':id}, vboxVMDataMediator._ajaxhandler,{'id':id});
-			
-		}
-	},
-	
-	/**
-	 * Handle returned ajax data
-	 * @param {Object} data - data returned from AJAX call
-	 * @param {Object} keys - keys.id holds requested VM's uuid
-	 */
-	_ajaxhandler : function(data, keys) {
-		
-		// First set data
-		vboxVMDataMediator._data[keys['id']] = data;
-		
-		// Grab callbacks in temp var and delete callbacks queued in ._inProgress
-		callbacks = vboxVMDataMediator._inProgress[keys['id']];
-		delete vboxVMDataMediator._inProgress[keys['id']];
-		
-		if(callbacks && callbacks.length) {
-			for(var i = 0; i < callbacks.length; i++)
-				callbacks[i](data);
-		}
-		
-		delete vboxVMDataMediator._data[keys['id']];
-		
-	}
-};
-
-
 
 /**
  * Menu class for use with context or button menus
@@ -3206,10 +3161,10 @@ function vboxMenu(name, id) {
 	/**
 	 * Update all menu items
 	 * @memberOf vboxMenu
-	 * @param {Object} chooser - phpVirtualBox chooser object
+	 * @param {Object} testObj - object used to test for enabled()
 	 * @return null
 	 */
-	self.update = function(chooser) {
+	self.update = function(testObj) {
 		
 		for(var i in self.menuItems) {
 			
@@ -3219,11 +3174,11 @@ function vboxMenu(name, id) {
 			
 			// If enabled function doesn't exist, there's nothing to do
 			if(!self.menuItems[i].enabled) continue;
-						
+			
 			var mi = $('#'+self.name+i);
 			
 			// Disabled
-			if((chooser && self.menuItems[i].selectionModels && jQuery.inArray(chooser.selectionModel,self.menuItems[i].selectionModels) == -1) || !self.menuItems[i].enabled(chooser)) {
+			if((testObj && self.menuItems[i].selectionModels && jQuery.inArray(testObj.selectionModel,self.menuItems[i].selectionModels) == -1) || !self.menuItems[i].enabled(testObj)) {
 				
 				if(self.menuItems[i].hide_on_disabled) {
 					mi.parent().hide();
@@ -3363,6 +3318,7 @@ function vboxMenuBar(name) {
 	 * @return void
 	 */
 	self.update = function(item) {
+		
 		
 		for(var i = 0; i < self.menus.length; i++) {
 			
@@ -3871,20 +3827,57 @@ function vboxDevice(d) {
 }
 
 /**
- * VM State conversions
- * @param {String} state - virtual machine state
- * @return {String} string used for translation
+ * VM State functions namespace
  */
-function vboxVMState(state) {
-	switch(state) {
-		case 'PoweredOff': return 'Powered Off';
-		case 'LiveSnapshotting': return 'Live Snapshotting';
-		case 'TeleportingPausedVM': return 'Teleporting Paused VM';
-		case 'TeleportingIn': return 'Teleporting In';
-		case 'TakingLiveSnapshot': return 'Taking Live Snapshot';
-		case 'RestoringSnapshot': return 'Restoring Snapshot';
-		case 'DeletingSnapshot': return 'Deleting Snapshot';
-		case 'SettingUp': return 'Setting Up';
-		default: return state;
+var vboxVMStates = {
+	
+	/* Return whether or not vm is running */
+	isRunning: function(vm) {
+		return (vm && jQuery.inArray(vm.state, ['Running','LiveSnapshotting','Teleporting']) > -1);
+	},
+	
+	/* Whether or not a vm is paused */
+	isPaused: function(vm) {
+		return (vm && jQuery.inArray(vm.state, ['Paused','TeleportingPausedVM']) > -1);
+	},
+	
+	/* True if vm is powered off */
+	isPoweredOff: function(vm) {
+		return (vm && jQuery.inArray(vm.state, ['PoweredOff','Saved','Teleported', 'Aborted']) > -1);
+	},
+	
+	/* True if vm is saved */
+	isSaved: function(vm) {
+		return (vm && vm.state == 'Saved');
+	},
+	
+	/* True if vm is editable */
+	isEditable: function(vm) {
+		return (vm && vm.sessionState == 'Unlocked');
+	},
+	
+	/* True if one VM in list matches item */
+	isOne: function(test, vmlist) {
+	
+		for(var i = 0; i < vmlist.length; i++) {
+			if(vboxVMStates['is'+test](vmlist[i]))
+				return true;
+		}
+		return false;
+	},
+	
+	/* Convert Machine state to translatable state */
+	convert: function(state) {
+		switch(state) {
+			case 'PoweredOff': return 'Powered Off';
+			case 'LiveSnapshotting': return 'Live Snapshotting';
+			case 'TeleportingPausedVM': return 'Teleporting Paused VM';
+			case 'TeleportingIn': return 'Teleporting In';
+			case 'TakingLiveSnapshot': return 'Taking Live Snapshot';
+			case 'RestoringSnapshot': return 'Restoring Snapshot';
+			case 'DeletingSnapshot': return 'Deleting Snapshot';
+			case 'SettingUp': return 'Setting Up';
+			default: return state;
+		}
 	}
-}
+};

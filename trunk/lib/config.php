@@ -76,10 +76,10 @@ class phpVBoxConfigClass {
 	var $vmConfigRefresh = true;
 
 	/**
-	 * VM list sort order
-	 * @var string
+	 * Max number of operations to keep in progress list
+	 * @var integer
 	 */
-	var $vmListSort = 'name';
+	var $maxProgressList = 5;
 	
 	/**
 	 * Enable custom icon per VM

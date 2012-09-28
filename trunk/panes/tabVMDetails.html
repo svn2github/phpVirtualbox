@@ -34,10 +34,10 @@ $('#vboxDetailsLoading').find('span.translate').html(trans('Loading ...','UIVMDe
 
 // Listen for events
 /////////////////////////////
-$('#vboxIndex').bind('vmSelectionListChanged',function(e, chooser){
+$('#vboxIndex').bind('vmSelectionListChanged',function(){
 
 	// No VMs?
-	if(!chooser || chooser.selectedVMs.length == 0) {
+	if(!vboxChooser || vboxChooser.selectedVMs.length == 0) {
 		
 		// Hide all tab children first
 		$('#vboxTabVMDetails').css({'display':'table','width':'100%'}).children().hide();
@@ -46,6 +46,8 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(e, chooser){
 		$('#vboxDetailsWelcome').show().css('display','table-cell');
 		
 		$('#vboxTabVMDetails').data('showingWelcome', true);
+		
+		return;
 
 	// Were we showing the welcome screen before?
 	} else if($('#vboxTabVMDetails').data('showingWelcome')) {
@@ -57,34 +59,34 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(e, chooser){
 	}
 	
 	// We have VMs and were not showing the welcome screen
-	if(chooser.selectedVMs.length > 0) {
+	if(vboxChooser.selectedVMs.length > 0) {
 		
 		var targetDiv = $('#vboxVMDetails');
 		
 		targetDiv.children().empty().remove();
 
 		
-		if(chooser.selectedVMs.length == 1 && chooser.selectedVMs[0] == 'host') {
+		if(vboxChooser.selectedVMs.length == 1 && vboxChooser.selectedVMs[0] == 'host') {
 			
 			// Wait for it to be loaded?
-			var host = chooser.getVMData(chooser.selectedVMs[0]);
+			var host = vboxChooser.getVMData(vboxChooser.selectedVMs[0]);
 			if(!host.phpVbxLoaded) return;
 			
 			__vboxDisplayHostDetailsData(host, targetDiv);
 			return;
 		}
 		
-		for(var i = 0; i < chooser.selectedVMs.length; i++) {
-			__vboxDisplayDetailsData(chooser.getVMData(chooser.selectedVMs[i]), (chooser.selectedVMs.length > 1), targetDiv);
+		for(var i = 0; i < vboxChooser.selectedVMs.length; i++) {
+			__vboxDisplayDetailsData(vboxChooser.getVMData(vboxChooser.selectedVMs[i]), (vboxChooser.selectedVMs.length > 1), targetDiv);
 		}
 
 	}
 
 // VM is being loaded ...
 ////////////////////////////
-}).bind('vmLoading', function(e, vm, chooser) {
+}).bind('vmLoading', function() {
 	
-	if(chooser.selectedVMs.length == 1) {
+	if(vboxChooser.selectedVMs.length == 1) {
 		
 		$('#vboxVMDetails').hide().children().empty().remove();
 
@@ -100,7 +102,7 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(e, chooser){
 	
 // VM data has been loaded
 /////////////////////////////
-}).bind('vmLoaded',function(e, vm, chooser) {
+}).bind('vmLoaded',function(e, vm) {
 	
 	// Multiple VMs
 	var targetdiv = $('#vboxVMDetails');
@@ -109,7 +111,7 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(e, chooser){
 	targetdiv.show();
 	
 	// Clear target div if we only have one vm
-	if(chooser.selectedVMs.length == 1)
+	if(vboxChooser.selectedVMs.length == 1)
 		targetdiv.children().empty().remove();
 	
 	// Host data
@@ -119,7 +121,7 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(e, chooser){
 	}
 	
 		
-	__vboxDisplayDetailsData(vm, (chooser.selectedVMs.length > 1), targetdiv);
+	__vboxDisplayDetailsData(vm, (vboxChooser.selectedVMs.length > 1), targetdiv);
 		
 	
 });
@@ -201,7 +203,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 	"</span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
 	
 	// No link if VM is not in valid state
-	if(!((data.state == 'Running' || data.sessionState == 'Unlocked') && data.state != 'Saved')) {
+	if(!((vboxVMStates.isRunning(data) || vboxVMStates.isEditable(data)) && !vboxVMStates.isSaved(data))) {
 		ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'>%3</span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
 	}
 
@@ -210,7 +212,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 			.append($('<tr />').attr({'class':'vboxDetailsHead'})
 				.append($('<th />').attr({'class':'vboxDetailsSection','colspan':'2'})
 					.append($('<div />')
-						.addClass(!((data.sessionState == 'Unlocked' || data.state == 'Running') && data.state != 'Saved') ? 'vboxNoLinks' : '')
+						.addClass(!((vboxVMStates.isEditable(data) || vboxVMStates.isRunning(data)) && !vboxVMStates.isSaved(data)) ? 'vboxNoLinks' : '')
 						.html(ttemplate.replace('%1',section.icon).replace('%2', section.settingsLink).replace('%3', section.title))
 					)
 				).disableSelection()

@@ -2904,7 +2904,7 @@ class vboxconnector {
 			$mdlm = floor($machine->lastStateChange/1000);
 
 			// Get current console port
-			if($data['state'] == 'Running') {
+			if($data['state'] == 'Running' || $data['state'] == 'Paused') {
 
 				$console = $this->cache->get('__consoleInfo'.$args['vm'],120000);
 

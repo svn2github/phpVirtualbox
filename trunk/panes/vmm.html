@@ -527,7 +527,8 @@ var vmmButtons = new Array(
 								l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 								l.onLoad = vboxVMMFillMedia;
 								l.run();
-							},{},'progress_media_delete_90px.png');
+							},'progress_media_delete_90px.png',trans('Delete','UIMessageCenter'),
+								false, vboxBasename(m.location));
 						}
 					});
 					$(this).empty().remove();
@@ -733,7 +734,13 @@ function vboxVMMAddMedium(d,depth,hideDiff,topLevelParent) {
 	
 	var tr = $('<tr />').data({'medium':d.id,'mediumname':d.name,'mediumsize':d.size,'mediumlogicalSize':d.logicalSize})
 		.attr({'id':'vboxVMMMedium'+(d.id),'class':'vboxListItem collapsed','title':d.id})
-		.hover(function(){$(this).addClass('vboxHover');},function(){$(this).removeClass('vboxHover');})
+		.hover(function(){
+				if(!$(this).hasClass('vboxListItemSelected'))
+					$(this).addClass('vboxHover');
+			},function(){
+				$(this).removeClass('vboxHover');
+			}
+		)
 		.addClass('vboxVMMTopLevel'+(topLevelParent ? topLevelParent : '0')+' vboxVMMChildOf'+(d.parent ? d.parent : '0') +' vboxVMMChildDepth'+depth)
 		.contextMenu({
 				menu: vmmCMenu.menuId(),
@@ -828,7 +835,7 @@ function vboxVMMAddMedium(d,depth,hideDiff,topLevelParent) {
 		
 	}).children().click(function(){
 		$(this).parent().siblings().removeClass('vboxListItemSelected').addClass('vboxListItem');
-		$(this).parent().removeClass('vboxListItem').addClass('vboxListItemSelected');
+		$(this).parent().removeClass('vboxListItem').removeClass('vboxHover').addClass('vboxListItemSelected');
 		$('#vboxVirtualMediaManager').trigger('mediumselect',[$(this).parent()]);
 	});
 

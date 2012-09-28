@@ -90,7 +90,7 @@ if(($('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.enabled)) {
 /* Disable non-editable items when VM is running */
 $('#vboxSettingsDialog').one('show',function(){
 	
-	if($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running') {
+	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 		
 		var p = $(document.forms['frmVboxSettings'].vboxSettingsAudioController).closest('table'); 
 		$(p).find('span').addClass('disabled');

@@ -250,7 +250,7 @@ function vboxSettingsAddUSBFilter(f,noColor) {
 	
 	var li = $('<li />').data({'filter':f}).attr({'id':'vboxSettingsUSBFilterNumber' + (Math.floor(Math.random()*1000)),'class':'vboxListItem'});
 	
-	if(!($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running' && !document.forms['frmVboxSettings'].vboxSettingsUSBEnabled.checked)) {
+	if(document.forms['frmVboxSettings'].vboxSettingsUSBEnabled.checked) {
 		
 		li.click(function(){
 			$(this).parent().children().removeClass('vboxListItemSelected');
@@ -329,7 +329,7 @@ $("#vboxSettingsUSBAddDeviceClick").contextMenu({
 /* Disable non-editable items when VM is running */
 $('#vboxSettingsDialog').one('show',function(){
 	
-	if($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running') {
+	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 		
 		var p = $('#vboxSettingsUSBTable');
 		$(p).find('tr:not(.vboxRunningEnabled)').find('span').addClass('disabled');

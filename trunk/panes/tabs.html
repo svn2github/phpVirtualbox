@@ -39,7 +39,7 @@ var tabs = [
     	label:'Console',
     	icon:'vrdp',
     	enabled:function(vm){
-    		return (vm && vm.id != 'host' && vm.state == 'Running' && vm.consoleInfo && vm.consoleInfo.consolePort > 0);
+    		return (vm && vm.id != 'host' && vboxVMStates.isRunning(vm) && vm.consoleInfo && vm.consoleInfo.consolePort > 0);
     	}
    	}
 ];
@@ -78,9 +78,9 @@ tabLoader.onLoad = function(){
 		
 	}
 	
-	$('#vboxIndex').bind('vmSelectionListChanged',function(e, chooser){tabsMain.updateTabs(chooser);})
-		.bind('vmLoading',function(e, vm, chooser){tabsMain.updateTabs(chooser);})
-		.bind('vmLoaded',function(e, vm, chooser){tabsMain.updateTabs(chooser);});
+	$('#vboxIndex').bind('vmSelectionListChanged',tabsMain.updateTabs)
+		.bind('vmLoading',tabsMain.updateTabs)
+		.bind('vmLoaded',tabsMain.updateTabs);
 
 	// Add "click" functionality to each tab
 	$('#tablistMain').children().click(function(){
@@ -149,11 +149,11 @@ function vboxTabs(id) {
 	};
 
 	// Update (disable/enable) tabs
-	this.updateTabs = function(chooser) {
+	this.updateTabs = function() {
 		
 		var vm = null;
 		
-		if(chooser) vm = chooser.getSingleSelected();
+		if(vboxChooser) vm = vboxChooser.getSingleSelected();
 		
 		for(var i = 0; i < self.tabs.length; i++) {
 			
@@ -162,7 +162,7 @@ function vboxTabs(id) {
 			
 			// Disable non-multiSelect tabs if more than one
 			// item is selected or if it fails the "enabled" test
-			if(!chooser || chooser.selectedVMs.length != 1 ||
+			if(!vboxChooser || vboxChooser.selectedVMs.length != 1 ||
 					!self.tabs[i].enabled(vm)) {
 				
 				self.disableTab(self.tabs[i]);

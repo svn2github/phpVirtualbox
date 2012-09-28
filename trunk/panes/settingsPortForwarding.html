@@ -4,11 +4,11 @@
 	
 	$Id$ 
  -->
-<div id='vboxSettingsPortForwarding'>
+<div id='vboxSettingsPortForwarding' style='height: 100%'>
 <table class='vboxInvisible'>
 <tr style='vertical-align: top'>
-<td style='width: 100%'>
-	<div class='vboxBordered'>
+<td style='width: 100%; height: 100%'>
+	<div id='vboxSettingsPortForwardingListDiv' class='vboxBordered' style='overflow: auto;'>
 		<table class='vboxHorizontal'>
 			<thead>
 				<tr>
@@ -20,7 +20,7 @@
 				<th class='translate'>Guest Port</th>
 				</tr>
 			</thead>
-			<tbody id='vboxSettingsPortForwardingList'></tbody>
+			<tbody id='vboxSettingsPortForwardingList' class='vboxHover'></tbody>
 		</table>
 	</div>
 </td><td id='vboxSettingsPortForwardingToolbar'></td>
@@ -152,18 +152,18 @@ function vboxSettingsPortForwardingAdd(r) {
 			vboxSettingsPortForwardingEdit(this,'name');
 			return;
 		}
-		$(this).parent().addClass('vboxListItemSelected').siblings().removeClass('vboxListItemSelected');
+		$(this).parent().addClass('vboxListItemSelected').removeClass('vboxHover').siblings().removeClass('vboxListItemSelected');
 		$('#vboxSettingsPortForwardingList').trigger('select',$(this).parent());
-	}).appendTo(tr);
+	}).addClass('vboxHoverFirst').appendTo(tr);
 	
 	$('<td />').click(function(){
 		if($(this).parent().hasClass('vboxListItemSelected')) {
 			vboxSettingsPortForwardingEditProto(this);
 			return;
 		}
-		$(this).parent().addClass('vboxListItemSelected').siblings().removeClass('vboxListItemSelected');
+		$(this).parent().addClass('vboxListItemSelected').removeClass('vboxHover').siblings().removeClass('vboxListItemSelected');
 		$('#vboxSettingsPortForwardingList').trigger('select',$(this).parent());
-	}).addClass('vboxProto').html(trans(rule[1] == 1 ? 'TCP' : 'UDP','VBoxGlobal')).appendTo(tr);
+	}).addClass('vboxProto').addClass('vboxHoverMid').html(trans(rule[1] == 1 ? 'TCP' : 'UDP','VBoxGlobal')).appendTo(tr);
 	
 	for(var i = 2; i < rule.length; i++) {
 		$('<td />').data('vboxIndex',i).click(function(){
@@ -171,11 +171,17 @@ function vboxSettingsPortForwardingAdd(r) {
 				vboxSettingsPortForwardingEdit(this,'port');
 				return;
 			}
-			$(this).parent().addClass('vboxListItemSelected').siblings().removeClass('vboxListItemSelected');
+			$(this).parent().addClass('vboxListItemSelected').removeClass('vboxHover').siblings().removeClass('vboxListItemSelected');
 			$('#vboxSettingsPortForwardingList').trigger('select',$(this).parent());
-		}).html($('<div />').html(rule[i]).text()).addClass((i%2 ? 'vboxPort' : 'vboxIP')).appendTo(tr);
+		}).addClass('vboxHover' + (i == (rule.length-1) ? 'Last' : 'Mid'))
+			.html($('<div />').html(rule[i]).text()).addClass((i%2 ? 'vboxPort' : 'vboxIP')).appendTo(tr);
 	}
-	$(tr).data({'vboxRule':rule}).appendTo($('#vboxSettingsPortForwardingList'));
+	$(tr).data({'vboxRule':rule}).hover(function(){
+		if(!$(this).hasClass('vboxListItemSelected'))
+			$(this).addClass('vboxHover');
+	},function(){
+		$(this).removeClass('vboxHover');
+	}).appendTo($('#vboxSettingsPortForwardingList'));
 	
 }
 function vboxSettingsPortForwardingInit(rules) {

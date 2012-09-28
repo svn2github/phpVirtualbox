@@ -69,6 +69,9 @@ var $servers = array(
 // Preview box pixel width
 #var $previewWidth = 180;
 
+// Max number of progress operations to keep in list
+var $maxProgressList = 5;
+
 // Change default preview aspect ratio to 1. 
 // http://www.wikipedia.org/wiki/Aspect_ratio_%28image%29#Previous_and_presently_used_aspect_ratios
 #var $previewAspectRatio = 1.6;

@@ -307,7 +307,7 @@ for(var i=0;i<imgsToLoad.length;i++){
  vboxSettingsCMenu.addMenu(vboxSettingsCMenuItems);
  
 /* Only if machine is not running */
- if($('#vboxSettingsDialog').data('vboxMachineData').state != 'Running') {
+ if($('#vboxSettingsDialog').data('vboxFullEdit')) {
 	 $('#vboxSettingsStorageTree').contextMenu({
 	  		menu: vboxSettingsCMenu.menuId()
 	  	},
@@ -446,7 +446,7 @@ var scToolbar = new vboxToolbarSmall(vboxSettingsStorageButtons);
 scToolbar.addButtons('vboxSettingsControllersButtons');
 
 // disable toolbar if VM is running
-if($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running') {
+if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 	scToolbar.disable();
 } else {
 	// initial toolbar update
@@ -742,7 +742,7 @@ $('#vboxSettingsDialog').one('show',function(){
 	$('#vboxSettingsStorageTree').find('table.vboxListItem').first().trigger('click').html();
 
 	
-	if($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running') {
+	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 		
 		var p = $('#vboxSettingsStorageTableWrapper'); 
 		p.find('span:not(.vboxRunningEnabled)').addClass('disabled');
@@ -907,7 +907,7 @@ function vboxSettingsSelectController(tbl) {
     /* Enable / disable buttons */
 	if($(tbl).parent().find('ul').children('li').length < ($(tbl).data('controller').maxPortCount * $(tbl).data('controller').maxDevicesPerPortCount)) {
 		
-		if($('#vboxSettingsDialog').data('vboxMachineData').state != 'Running') {
+		if($('#vboxSettingsDialog').data('vboxFullEdit')) {
 			$(tbl).find('.vboxToolbarSmall').trigger('enable', [true]);
 		}
 		
@@ -1176,7 +1176,7 @@ function vboxSettingsAddController(con,list) {
     vbm.addMenu(mItems);
     
     // Only if machine is not running
-    if($('#vboxSettingsDialog').data('vboxMachineData').state != 'Running') {
+    if($('#vboxSettingsDialog').data('vboxFullEdit')) {
     	
 	    $('#vboxSettingsController' + con.bus).contextMenu({
 	 		menu: vbm.menuId(),
@@ -1233,7 +1233,7 @@ function vboxSettingsAddAttachment(d,bus) {
     $(tbl).append(tr).appendTo(li);
     
     // Only if not running
-    if($('#vboxSettingsDialog').data('vboxMachineData').state != 'Running') {
+    if($('#vboxSettingsDialog').data('vboxFullEdit')) {
 
     	$(li).contextMenu({
 		 		menu: vboxSettingsMAMenu.menuId(),
@@ -1289,7 +1289,7 @@ function vboxSettingsSelectAttachment(tbl) {
     /* change labels */
     var label = null;
     
-    if($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running') {
+    if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
     	$('#vboxSettingsControllerDeviceOptionLabel').addClass('disabled');
     	$(document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption).prop('disabled',true);
     }

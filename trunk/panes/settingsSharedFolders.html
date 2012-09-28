@@ -229,7 +229,7 @@ $(tb).append($(tr).append($('<td />').attr({'class':'vboxSettingsSFPathCell'})).
  * Add 'Transient Folders' if machine is running
  *
  */
- if($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running') {
+ if(vboxVMStates.isRunning($('#vboxSettingsDialog').data('vboxMachineData')) || vboxVMStates.isSaved($('#vboxSettingsDialog').data('vboxMachineData')) || vboxVMStates.isPaused($('#vboxSettingsDialog').data('vboxMachineData'))) {
 
 	 var tb = $('<tbody />').attr({'id':'vboxSFTransientBody'}).addClass('vboxHover');
 	 var tr = $('<tr />').attr({'class':'vboxListItemDisabled'}).disableSelection();
@@ -303,7 +303,7 @@ function vboxSettingsSFEditDialog() {
 	$('<tr />').append($('<th />')).append($('<td />').html('<label><input type="checkbox" class="vboxCheckbox" id="vboxSettingsSFAM" /> ' + trans('Auto-mount','UIMachineSettingsSFDetails')+'</label>')).appendTo(tbl);
 	
 	// Add "Make Permanent"?
-	if($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running') {
+	if(vboxVMStates.isRunning($('#vboxSettingsDialog').data('vboxMachineData')) || vboxVMStates.isSaved($('#vboxSettingsDialog').data('vboxMachineData')) || vboxVMStates.isPaused($('#vboxSettingsDialog').data('vboxMachineData'))) {
 		
 		$('<tr />').append($('<th />')).append($('<td />').html('<label><input type="checkbox" class="vboxCheckbox" id="vboxSettingsSFPerm" /> ' + trans('Make Permanent','UIMachineSettingsSFDetails')+'</label>')).appendTo(tbl);
 	}

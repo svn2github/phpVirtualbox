@@ -7,6 +7,7 @@
 
 -->
 <script type='text/javascript'>
+
 /*
  * JS objects for actions that can be performed on a VM
  * from this toolbar
@@ -18,8 +19,8 @@ var tButtons = [
 	$.extend({},vboxVMActions['settings'],{'name':'settings','enabled':function(vm){
 		return (vboxVMActions['settings'].enabled(vm));
 	},click:function(){
-		var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
-		if(!vm || vm.state == 'Running') return;
+		var vm = vboxChooser.getSingleSelected();
+		if(!vm || vboxVMStates.isRunning(vm)) return;
 		vboxVMActions['settings'].click();
 		
 	}}),
@@ -28,14 +29,14 @@ var tButtons = [
 ];
 
 /* Append Top Toolbar */
-var vboxVMListToolbarTop = new vboxToolbar(tButtons);
-vboxVMListToolbarTop.size = 32;
-vboxVMListToolbarTop.addButtons('vboxPaneToolbar');
+var vboxChooserToolbarTop = new vboxToolbar(tButtons);
+vboxChooserToolbarTop.size = 32;
+vboxChooserToolbarTop.addButtons('vboxPaneToolbar');
 
 
 
 /* 'Settings' menu items / actions */
-var vboxVMListSettingsMenu = {
+var vboxChooserSettingsMenu = {
 		
 	'settings' : {
 		'label' : vboxVMActions['settings'].label,
@@ -73,18 +74,18 @@ var vboxVMListSettingsMenu = {
 /* 'Settings' menu */
 var ul = $('<ul />').attr({'class':'contextMenu','style':'display: none','id':'vboxVMSettingsMenu'});
 
-for(var i in vboxVMListSettingsMenu) {
+for(var i in vboxChooserSettingsMenu) {
 	
 	// add name
-	vboxVMListSettingsMenu[i].name = i;
+	vboxChooserSettingsMenu[i].name = i;
 
-	var li = $('<li />').html("<a href='#" + vboxVMListSettingsMenu[i].name + "' style='background-image: url(images/vbox/" + vboxVMListSettingsMenu[i].icon +"_16px.png);' >"+(vboxVMListSettingsMenu[i].label ? vboxVMListSettingsMenu[i].label : ' ')+"</a>");
+	var li = $('<li />').html("<a href='#" + vboxChooserSettingsMenu[i].name + "' style='background-image: url(images/vbox/" + vboxChooserSettingsMenu[i].icon +"_16px.png);' >"+(vboxChooserSettingsMenu[i].label ? vboxChooserSettingsMenu[i].label : ' ')+"</a>");
 	if(i == 'storage') { $(li).attr({'style':'display:none','id':'vboxVMSettingsToolbarStorageHolder'}); }
 	if(i == 'USB') {
 		/* 'USB' menu */
-		$('<ul />').attr({'class':'vboxSettingsUSBAttachmentsMenu contextMenuNoBG','style':'display: none','id':'vboxVMSettingsUSBMenu'}).data({'callback':'vboxVMListToolbarUSBUpdate'}).appendTo(li);		
+		$('<ul />').attr({'class':'vboxSettingsUSBAttachmentsMenu contextMenuNoBG','style':'display: none','id':'vboxVMSettingsUSBMenu'}).data({'callback':'vboxChooserToolbarUSBUpdate'}).appendTo(li);		
 	}
-	if(vboxVMListSettingsMenu[i].separator) $(li).addClass('separator');
+	if(vboxChooserSettingsMenu[i].separator) $(li).addClass('separator');
 	$(ul).append(li);
 	
 }
@@ -95,14 +96,16 @@ $('#vboxIndex').append(ul);
 
 
 /* 'Settings' button menu initialization  */
-$("#vboxToolbarButton-vboxPaneToolbar-settings").contextMenu({
+vboxChooserToolbarTop.getButtonElement('settings').contextMenu({
 		menu: 'vboxVMSettingsMenu',
 		button: 0,
 		mode: 'menu'
 	},
 	function(a, el, pos, srcEl) {
 		
-		var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
+		var vm = vboxChooser.getSingleSelected();
+		
+		if(!vm) return;
 		
 		if(a == 'Network' || a == 'SharedFolders') {
 			vboxVMsettingsInit(vm, null, a);
@@ -122,11 +125,10 @@ $("#vboxToolbarButton-vboxPaneToolbar-settings").contextMenu({
 				break;
 				
 			case 'RemoteDisplay':
-				var vm = $('#tabMainContent').data('machine');
 				var l = new vboxLoader();
 				l.add('consoleVRDEServerSave',function(){
 					$('#vboxIndex').trigger('vmChanged',[vm.id]);
-				},{'vm':vm.id,'enabled':(vm.consoleInfo.enabled ? 0 : 1)});
+				},{'vm':vm.id,'enabled':((vm.consoleInfo && vm.consoleInfo.enabled) ? 0 : 1)});
 				l.run();
 				break;
 
@@ -155,9 +157,9 @@ $("#vboxToolbarButton-vboxPaneToolbar-settings").contextMenu({
  */
 var vboxToolbarMediaLast = null; // Used when context menu item is clicked to determine
 								// which medium attachment to act upon.
-function vboxVMListToolbarMediumMount(medium) {
+function vboxChooserToolbarMediumMount(medium) {
 	
-	var vmid = $('#vboxIndex').data('vboxChooser').getSingleSelected().id;
+	var vmid = vboxChooser.getSingleSelected().id;
 	
 	var args = {'vm':vmid,'medium':medium,'port':vboxToolbarMediaLast.port,'device':vboxToolbarMediaLast.device,'bus':vboxToolbarMediaLast.bus,'controller':vboxToolbarMediaLast.controller};
 	
@@ -173,10 +175,10 @@ function vboxVMListToolbarMediumMount(medium) {
 	},args);
 	mount.run();	
 }
-var vboxToolbarMediaMenuDVD = new vboxMediaMenu('DVD',vboxVMListToolbarMediumMount,''); 
-var vboxToolbarMediaMenuFD = new vboxMediaMenu('Floppy',vboxVMListToolbarMediumMount,'');
+var vboxToolbarMediaMenuDVD = new vboxMediaMenu('DVD',vboxChooserToolbarMediumMount,''); 
+var vboxToolbarMediaMenuFD = new vboxMediaMenu('Floppy',vboxChooserToolbarMediumMount,'');
 
-function vboxVMListToolbarStorageUpdate(menu) {
+function vboxChooserToolbarStorageUpdate(menu) {
 	vboxToolbarMediaLast = $(menu).data('storage');
 	if(vboxToolbarMediaLast.type == 'DVD') {
 		vboxToolbarMediaMenuDVD.menuUpdateRemoveMedia((vboxToolbarMediaLast.medium && vboxToolbarMediaLast.medium.id));
@@ -189,17 +191,17 @@ function vboxVMListToolbarStorageUpdate(menu) {
 // Update host drives and recent media on host change.
 // Just recreate the menus
 $('#vboxIndex').bind('hostChanged',function(){
-	vboxToolbarMediaMenuDVD = new vboxMediaMenu('DVD',vboxVMListToolbarMediumMount,''); 
-	vboxToolbarMediaMenuFD = new vboxMediaMenu('Floppy',vboxVMListToolbarMediumMount,'');	
+	vboxToolbarMediaMenuDVD = new vboxMediaMenu('DVD',vboxChooserToolbarMediumMount,''); 
+	vboxToolbarMediaMenuFD = new vboxMediaMenu('Floppy',vboxChooserToolbarMediumMount,'');	
 });
 /*
  * Update USB device list
  */
-function vboxVMListToolbarUSBUpdate(menu) {
+function vboxChooserToolbarUSBUpdate(menu) {
 	
 	$(menu).append($('<li />').html('<span><img src="images/jqueryFileTree/spinner.gif" /></span>').css({'width':'100px','text-align':'center'}));
 	
-	var vm = $('#vboxIndex').data('vboxChooser').getSingleSelected();
+	var vm = vboxChooser.getSingleSelected();
 	
 	var l = new vboxLoader();
 	
@@ -272,12 +274,13 @@ function vboxVMListToolbarUSBUpdate(menu) {
 /*
  *  
  * Update vboxSettingsMenu items. Called when 
- * vboxVMList selection changes $('#vboxIndex').onvmSelectionListChanged
+ * vboxChooser selection changes $('#vboxIndex').onvmSelectionListChanged
  *
  */
-function vboxUpdateSettingsMenu(vm) {
+function vboxUpdateSettingsMenu() {
 
-	if(vm && vm.state == 'Running') {
+	var vm = vboxChooser.getSingleSelected();
+	if(vboxVMStates.isRunning(vm)) {
 		$("#vboxToolbarButton-vboxPaneToolbar-settings").enableContextMenu();
 	} else {
 		$("#vboxToolbarButton-vboxPaneToolbar-settings").disableContextMenu();
@@ -337,7 +340,7 @@ function vboxUpdateSettingsMenu(vm) {
 				$('#'+vm.id+'-vboxVMSettingsStorage-'+a+'-'+b).remove();
 
 				var li = $('<li />').attr({'title':mName}).html("<a title='"+mName+"' href='#mount-"+vm['storageControllers'][a].bus+"-"+vm['storageControllers'][a]['mediumAttachments'][b].port+"-"+vm['storageControllers'][a]['mediumAttachments'][b].device+"' style='background-image:url(images/vbox/"+icon+"_16px.png);'>"+vm['storageControllers'][a]['name'] + ' ('+portName + ")</a>").addClass('vboxVMSettingsStorage');
-				$(li).append($('<ul />').attr({'id':smid}).data({'callback':'vboxVMListToolbarStorageUpdate','storage':vm['storageControllers'][a]['mediumAttachments'][b]}));
+				$(li).append($('<ul />').attr({'id':smid}).data({'callback':'vboxChooserToolbarStorageUpdate','storage':vm['storageControllers'][a]['mediumAttachments'][b]}));
 				if(vm['storageControllers'][a]['mediumAttachments'][b].type == 'DVD') {
 					dvdDevices[dvdDevices.length] = li;
 				} else {
@@ -397,20 +400,20 @@ function vboxUpdateSettingsMenu(vm) {
  */
 
 // Loading
-$('#vboxIndex').bind('vmLoading',function(e, vms, chooser){
+$('#vboxIndex').bind('vmLoading',function(){
 
-	vboxVMListToolbarTop.update(chooser);
+	vboxChooserToolbarTop.update(vboxChooser);
 	$('#vboxVMSettingsMenu').disableContextMenu();
 
 // Loaded
-}).bind('vmLoaded',function(e, vm, chooser){
-	vboxVMListToolbarTop.update(chooser);
-	vboxUpdateSettingsMenu(chooser);
+}).bind('vmLoaded',function(){
+	vboxChooserToolbarTop.update(vboxChooser);
+	vboxUpdateSettingsMenu(vboxChooser);
 	
 // Selection changed
 }).bind('vmSelectionListChanged',function(e,chooser){
-	vboxVMListToolbarTop.update(chooser);
-	vboxUpdateSettingsMenu(chooser);
+	vboxChooserToolbarTop.update(chooser);
+	vboxUpdateSettingsMenu();
 });
 
 $('#vboxVMSettingsMenu').disableContextMenu();

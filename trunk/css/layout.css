@@ -186,7 +186,7 @@ tbody.vboxHover td.vboxHoverMid {
 }
 tbody.vboxHover tr.vboxHover td {
 	border-color: #aaaaaa;
-	background: #f0f8ff;
+	background: #e0e8ff;
 	color: #000;
 }
 /* Tables */
@@ -452,14 +452,18 @@ ul.vboxMenuBar li {
 .vboxTreeView div.collapsable-hitarea { background-position: -62px -25px }
 .vboxTreeView div.expandable-hitarea { background-position: -78px -3px }
 
-
-
+/* Progress operation list */
+#vboxProgressOps { background: #fff;  border: 2px solid #aaa; border-right: 2px solid #bbb; border-bottom: 2px solid #bbb; }
+#vboxProgressOps div.ui-progressbar { height: 16px; width: 200px; }
+#vboxProgressOps table {
+	border-bottom: 1px solid #000;
+}
 /* Virtual Machine List and Top Toolbar*/
 #vboxPaneVMList { background: #fff;  border: 2px solid #aaa; border-right: 2px solid #bbb; border-bottom: 2px solid #bbb; }
 #vboxPaneVMList span.vboxServerLink { text-decoration: underline; cursor: pointer; }
-#vboxVMList { width: 300px; overflow: scroll; } /* Initial Width */
-#vboxVMList table.vboxVMListVM { border: 2px solid transparent; }
-#vboxVMList table.vboxHover {
+#vboxChooserDiv { width: 300px; overflow: scroll; } /* Initial Width */
+#vboxChooserDiv table.vboxChooserVM { border: 2px solid transparent; }
+#vboxChooserDiv table.vboxHover {
 	color: #000 ! important;
 	background-color: #d0d8ff;
 	border-color: #99CcfF;
@@ -467,21 +471,21 @@ ul.vboxMenuBar li {
 	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeff), to(#adf));
 	background: -moz-linear-gradient(top,  #eeeeff, #adf);
 }
-#vboxPaneVMList div.vboxVMListDropTarget { height: 4px; padding: 0px; margin: 0px; }
-#vboxPaneVMList div.vboxVMListDropTargetHover { background: #999; }
-#vboxPaneVMList td.vboxVMListDropTarget { height: 4px; padding: 0px; margin: 0px; }
-#vboxPaneVMList td.vboxVMListDropTargetHover
+#vboxPaneVMList div.vboxChooserDropTarget { height: 4px; padding: 0px; margin: 0px; }
+#vboxPaneVMList div.vboxChooserDropTargetHover { background: #999; }
+#vboxPaneVMList td.vboxChooserDropTarget { height: 4px; padding: 0px; margin: 0px; }
+#vboxPaneVMList td.vboxChooserDropTargetHover
 	{ background: #999; }
 #vboxPaneVMList td.vboxVMTitle { width: 100% }
-#vboxVMList table.vboxVMListVM { margin-bottom: 2px; vertical-align: top; padding: 0px; border-collapse: collapse; }
-#vboxVMList table.vboxVMListVM td,
-#vboxVMList table.vboxVMListVM span { padding: 0px; white-space: nowrap; margin: 0px; border: 0px; }
-#vboxVMList table.vboxVMListVM span.vboxVMName { font-weight: bold; }
-#vboxVMList table.vboxVMListVM span.vboxVMState { font-size: 0.9em; }
-#vboxVMList table.vboxVMListVM td.vboxVMSessionOpen { font-style: italic; }
+#vboxChooserDiv table.vboxChooserVM { margin-bottom: 2px; vertical-align: top; padding: 0px; border-collapse: collapse; }
+#vboxChooserDiv table.vboxChooserVM td,
+#vboxChooserDiv table.vboxChooserVM span { padding: 0px; white-space: nowrap; margin: 0px; border: 0px; }
+#vboxChooserDiv table.vboxChooserVM span.vboxVMName { font-weight: bold; }
+#vboxChooserDiv table.vboxChooserVM span.vboxVMState { font-size: 0.9em; }
+#vboxChooserDiv table.vboxChooserVM td.vboxVMSessionOpen { font-style: italic; }
 #vboxPaneVMList img.vboxHostIcon { border: 1px solid #999; }
 #vboxPaneVMList img.vboxVMIcon { height: 32px; width: 32px; margin: 0px 6px 0px 6px; padding: 0px; }
-#vboxPaneVMList div.vboxVMListGroup {
+#vboxPaneVMList div.vboxChooserGroup {
 	border-radius: 8px;
 	-moz-border-radius: 8px;
 	-webkit-border-radius: 8px;
@@ -493,7 +497,7 @@ ul.vboxMenuBar li {
 	margin: 0px;
 }
 
-#vboxPaneVMList div.vboxVMListGroupHeader {
+#vboxPaneVMList div.vboxChooserGroupHeader {
 	-moz-border-radius-topleft: 8px/*{cornerRadius}*/; -webkit-border-top-left-radius: 8px/*{cornerRadius}*/; border-top-left-radius: 8px/*{cornerRadius}*/; -moz-border-radius-topright: 8px/*{cornerRadius}*/; -webkit-border-top-right-radius: 8px/*{cornerRadius}*/; border-top-right-radius: 8px/*{cornerRadius}*/;
 	background-image: url(../images/header_grad.png);
 	background-color: #cccccc;
@@ -501,13 +505,13 @@ ul.vboxMenuBar li {
 	margin: 0px;
 	height: 16px;
 }
-#vboxPaneVMList div.vboxVMListGroupHeader span {
+#vboxPaneVMList div.vboxChooserGroupHeader span {
 	cursor: default;	
 }
 #vboxPaneVMList div.vboxGroupSelected {
 	border-color: #69F;
 }
-#vboxPaneVMList div.vboxGroupSelected > div.vboxVMListGroupHeader {
+#vboxPaneVMList div.vboxGroupSelected > div.vboxChooserGroupHeader {
 	background: #7aF !important;
 	color: #fff !important;
 	background: -o-linear-gradient(top,  #8bF, #69f);
@@ -515,7 +519,7 @@ ul.vboxMenuBar li {
 	background: -moz-linear-gradient(top,  #8bF, #69f); /* for firefox 3.6+ */
 }
 
-#vboxPaneVMList div.vboxVMListGroupHeader span.vboxVMListGroupNameArrowCollapse {
+#vboxPaneVMList div.vboxChooserGroupHeader span.vboxChooserGroupNameArrowCollapse {
 	position: relative;
 	display: inline-block;
 	left: -5px;
@@ -529,26 +533,26 @@ ul.vboxMenuBar li {
 	background-image: url(../images/arrow_grad_up.png);
 }
 
-#vboxPaneVMList div.vboxVMGroupCollapsed span.vboxVMListGroupNameArrowCollapse {
+#vboxPaneVMList div.vboxVMGroupCollapsed span.vboxChooserGroupNameArrowCollapse {
 	background-image: url(../images/arrow_grad_dn.png);
 }
 	
-#vboxPaneVMList div.vboxVMListGroupVMs { padding: 2px 2px 0px 2px; }
-#vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupName { font-weight: bold; }
-#vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupInfo { float: right; display: none }
-#vboxPaneVMList div.vboxVMListGroup span.vboxVMListGroupInfo img { margin-left: 2px; margin-right: 2px; }
-#vboxPaneVMList div.vboxVMListGroup div.vboxHover span.vboxVMListGroupInfo { display: inline; }
-#vboxPaneVMList div.vboxVMListGroupHeader div.vboxVMListDropTargetBottom { display: none; }
+#vboxPaneVMList div.vboxChooserGroupVMs { padding: 2px 2px 0px 2px; }
+#vboxPaneVMList div.vboxChooserGroup span.vboxChooserGroupName { font-weight: bold; }
+#vboxPaneVMList div.vboxChooserGroup span.vboxChooserGroupInfo { float: right; display: none }
+#vboxPaneVMList div.vboxChooserGroup span.vboxChooserGroupInfo img { margin-left: 2px; margin-right: 2px; }
+#vboxPaneVMList div.vboxChooserGroup div.vboxHover span.vboxChooserGroupInfo { display: inline; }
+#vboxPaneVMList div.vboxChooserGroupHeader div.vboxChooserDropTargetBottom { display: none; }
 
 
-#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxVMListGroup,
-#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxVMListGroupVMs,
-#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxVMListDropTargetBottom
+#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxChooserGroup,
+#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxChooserGroupVMs,
+#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxChooserDropTargetBottom
 { display: none; }
-#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxVMListGroupHeader div.vboxVMListDropTargetBottom
+#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxChooserGroupHeader div.vboxChooserDropTargetBottom
 { display: block; }
 
-#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxVMListGroupHeader {
+#vboxPaneVMList div.vboxVMGroupCollapsed div.vboxChooserGroupHeader {
 	display: block;
 	-webkit-border-radius: 8px;
 	border-radius: 8px;

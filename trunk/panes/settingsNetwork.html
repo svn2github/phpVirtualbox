@@ -397,7 +397,7 @@ function vboxSettingsUpdateNetworkOptions(sel) {
 /* Change settings onShow() when VM is running */
 $('#vboxSettingsDialog').one('show',function(){
 	
-	if($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running') {
+	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 		
 		for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
 			

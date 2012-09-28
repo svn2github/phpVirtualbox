@@ -229,7 +229,7 @@ document.forms['frmVboxSettings'].vboxSettingsGeneralDescription.innerHTML = $('
 /* Disable non-editable items when VM is running */
 $('#vboxSettingsDialog').one('show',function(){
 	
-	if($('#vboxSettingsDialog').data('vboxMachineData').state == 'Running') {
+	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 		var p = $('#vboxSettingsTabGeneralBasic').parent().children('div'); 
 		$(p).find('tr:not(.vboxRunningEnabled)').find('span').addClass('disabled');
 		$(p).find('tr:not(.vboxRunningEnabled)').find('input,select,textarea').prop('disabled',true);

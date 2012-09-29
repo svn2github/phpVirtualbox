@@ -458,6 +458,10 @@ ul.vboxMenuBar li {
 #vboxProgressOps table {
 	border-bottom: 1px solid #000;
 }
+#vboxProgressOps div.vboxProgressComplete {
+	background: #f9f9f9;	
+}
+
 /* Virtual Machine List and Top Toolbar*/
 #vboxPaneVMList { background: #fff;  border: 2px solid #aaa; border-right: 2px solid #bbb; border-bottom: 2px solid #bbb; }
 #vboxPaneVMList span.vboxServerLink { text-decoration: underline; cursor: pointer; }

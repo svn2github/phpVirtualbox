@@ -53,7 +53,7 @@ function vboxWizardImportApplianceInit() {
 							var ml = new vboxLoader();
 							ml.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 							ml.run();
-						},'progress_import_90px.png',trans('Import Appliance...','UIActionPool').replace(/\.+$/g,''),false,vboxBasename(file));
+						},'progress_import_90px.png',trans('Import an appliance into VirtualBox','UIActionPool').replace(/\.+$/g,''),false,vboxBasename(file));
 					}
 				},{'descriptions':descriptions,'file':file,'reinitNetwork':reinitNetwork});
 				l.run();				
@@ -182,7 +182,8 @@ function vboxWizardExportApplianceInit() {
 			l.add('applianceExport',function(d){
 				if(d && d.progress)
 					vboxProgress(d.progress,function(){return;},'progress_export_90px.png',
-							trans('Export Appliance...','UIActionPool').replace(/\.+$/g,''),false,vboxBasename(file));
+							trans('Export one or more VirtualBox virtual machines as an appliance','UIActionPool').replace(/\.+$/g,''),
+							false,vboxBasename(file));
 			},{'format':format,'file':file,'vms':vms,'manifest':manifest,'overwrite':overwrite});
 			$(dialog).trigger('close').empty().remove();
 			l.run();
@@ -482,7 +483,7 @@ function vboxWizardCloneVMInit(callback,args) {
 								};
 								ml.run();
 							});
-						},'progress_clone_90px.png',trans('Clone Virtual Machine','UIWizardCloneVM'),false,
+						},'progress_clone_90px.png',trans('Clone the selected virtual machine','UIActionPool'),false,
 							vboxChooser.getVMData(vbw.args.vm.id).name + ' > ' + name);
 					} else {
 						$('#vboxIndex').trigger('vmlistreload');
@@ -503,7 +504,7 @@ function vboxWizardCloneVMInit(callback,args) {
 								vbClone(md.currentSnapshot);
 							},{'vm':src});
 							ml.run();
-						},'progress_snapshot_create_90px.png',trans('Take Snapshot','UIActionPool'),false,vboxChooser.getVMData(vbw.args.vm.id).name);
+						},'progress_snapshot_create_90px.png',trans('Take a snapshot of the current virtual machine state','UIActionPool'),false,vboxChooser.getVMData(vbw.args.vm.id).name);
 					} else if(d && d.error) {
 						vboxAlert(d.error);
 					}
@@ -731,11 +732,15 @@ function vboxWizardNewHDInit(callback,suggested) {
 							ml.add('vboxGetMedia',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
 							ml.onLoad = function() {
 								var med = vboxMedia.getMediumByLocation(file);
-								vboxMedia.updateRecent(med);
-								callback(med.id);
+								if(med) {
+									vboxMedia.updateRecent(med);
+									callback(med.id);									
+								} else {
+									callback(null);
+								}
 							};
 							ml.run();
-						},'progress_media_create_90px.png',trans('Create Virtual Hard Drive','UIWizardNewVD'),
+						},'progress_media_create_90px.png',trans('Create a new virtual hard drive','VBoxMediaManagerDlg'),
 							false,vboxBasename(file),true);
 					} else {
 						callback();

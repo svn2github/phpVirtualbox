@@ -661,7 +661,11 @@ class vboxconnector {
 		
 		// create session and lock machine
 		/* @var $machine IMachine */
-		$machine = $this->vbox->findMachine($args['vm']);
+		try  {
+			$machine = $this->vbox->findMachine($args['vm']);
+		} catch (Exception $null) {
+			return ($response['data']['result'] = 1);
+		}
 		
 		$oldGroups = $machine->groups;
 		$newGroups = $args['groups'];
@@ -1717,9 +1721,9 @@ class vboxconnector {
 	 */
 	public function remote_progressGet($args,&$response) {
 
-		$pop = $this->cache->get('ProgressOperations',false);
-
-		if(!($pop = @$pop[$args['progress']])) {
+		global $_SESSION;
+		
+		if(!($pop = $_SESSION['ProgressOperations'][$args['progress']])) {
 			throw new Exception('Could not find progress operation: '.$args['progress']);
 		}
 
@@ -1825,9 +1829,7 @@ class vboxconnector {
 	 */
 	public function remote_progressCancel($args,&$response) {
 
-		$pop = $this->cache->get('ProgressOperations',false);
-
-		if(!($pop = @$pop[$args['progress']])) {
+		if(!($pop = $_SESSION['ProgressOperations'][$args['progress']])) {
 			throw new Exception('Could not obtain progress operation: '.$args['progress']);
 		}
 
@@ -1885,11 +1887,14 @@ class vboxconnector {
 		}
 
 		// Remove progress reference from cache
+		/*
 		$this->cache->lock('ProgressOperations');
 		$inprogress = $this->cache->get('ProgressOperations');
 		if(!is_array($inprogress)) $inprogress = array();
 		unset($inprogress[$pop['progress']]);
 		$this->cache->store('ProgressOperations',$inprogress);
+		*/
+		unset($_SESSION['ProgressOperations'][$pop['progress']]);
 
 		// Expire cache item(s)
 		$this->cache->expire($pop['expire']);
@@ -4689,10 +4694,14 @@ class vboxconnector {
 	 */
 	private function _util_progressStore(&$progress,$expire=null) {
 
+		global $_SESSION;
+		
 		/* Store progress operation */
+		/*
 		$this->cache->lock('ProgressOperations');
 		$inprogress = $this->cache->get('ProgressOperations');
 		if(!is_array($inprogress)) $inprogress = array();
+		*/
 		if($expire && !is_array($expire)) $expire = array($expire);
 
 		// If progress is unaccessible, let progressGet()
@@ -4700,14 +4709,21 @@ class vboxconnector {
 		try { $cancelable = $progress->cancelable; }
 		catch (Exception $null) {}
 
-		$inprogress[$progress->handle] = array(
+		if(!$_SESSION['ProgressOperations']) {
+			$_SESSION['ProgressOperations'] = array();
+		}
+
+		$_SESSION['ProgressOperations'][$progress->handle] = array(
 			'session'=>$this->vbox->handle,
 			'progress'=>$progress->handle,
 			'cancelable'=>$cancelable,
 			'expire'=> $expire,
 			'started'=>time());
 
+		/*		
+		ProgressOperations
 		$this->cache->store('ProgressOperations',$inprogress);
+		*/
 
 		/* Do not destroy login session / reference to progress operation */
 		$this->progressCreated = true;

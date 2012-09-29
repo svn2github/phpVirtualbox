@@ -254,10 +254,11 @@ try {
 				$vbox->settings->auth->heartbeat($vbox);
 			}
 			
+			$vbox->$vboxRequest['fn']($vboxRequest,array(&$response));
+
 			// We're done writing to session
 			if(function_exists('session_write_close')) @session_write_close();
 			
-			$vbox->$vboxRequest['fn']($vboxRequest,array(&$response));
 			
 	} // </switch()>
 

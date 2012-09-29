@@ -1213,69 +1213,40 @@ var vboxVMActions = {
 		label : trans('Start','UIActionPool'),
 		icon : 'vm_start',
 		icon_16 : 'start',
-		selectionModels : ['singleVM'],
 		click : function (btn) {
 		
 			// Disable toolbar button that triggered this action?
 			if(btn && btn.toolbar) btn.toolbar.disableButton(btn);
 			
-			var vm = vboxChooser.getSingleSelected();
-			
-			var startVM = function () {
+			var startVM = function (vm) {
 				
-				
-				vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'},function(d){
+				vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'},function(d,vmname){
 					// check for progress operation
 					if(d && d.progress) {
 						var icon = null;
 						if(vboxVMStates.isSaved(d)) icon = 'progress_state_restore_90px.png';
 						else icon = 'progress_start_90px.png';
-						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistrefresh');},icon,trans('Start','UIActionPool'),
-									false, vm.name);
+						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistrefresh');},icon,
+								trans('Start the selected virtual machines','UIActionPool'),false, vmname);
 						return;
 					}
 					$('#vboxIndex').trigger('vmlistrefresh');
-				});
+				},vm.name);
 			};
 			
-			// Check for memory limit
-			// Paused VMs are already using all their memory
-			if($('#vboxIndex').data('vboxConfig').vmMemoryStartLimitWarn && !vboxVMStates.isPaused(d)) {
+			
+			var vms = vboxChooser.getSelectedVMsData();
+			for(var i = 0; i < vms.length; i++) {
 				
-				var freeMem = 0;
-				var baseMem = 0;
-				
-				var l = new vboxLoader();
-				l.add('hostGetMeminfo',function(d){freeMem = d.memoryAvailable;});
-				l.add('machineGetDetails',function(d){baseMem = d.memorySize + d.VRAMSize;},{'vm':vm.id});
-				l.onLoad = function() {
-					if($('#vboxIndex').data('vboxConfig').vmMemoryOffset) freeMem -= $('#vboxIndex').data('vboxConfig').vmMemoryOffset;
-					// A little bit of overhead
-					baseMem += 50;
-					if(baseMem >= freeMem) {
-						var buttons = {};
-						buttons[trans('Yes','QIMessageBox')] = function(){
-							$(this).remove();
-							startVM();
-						};
-						freeMem = Math.max(0,freeMem);
-						vboxConfirm('<p>The selected virtual machine (<b>'+vm.name+'</b>) requires <b><i>approximately</b></i> ' + baseMem +'MB of memory, but your VirtualBox host only has ' + freeMem + 'MB '+($('#vboxIndex').data('vboxConfig').vmMemoryOffset ? ' (-'+$('#vboxIndex').data('vboxConfig').vmMemoryOffset+'MB)': '') + ' free.</p><p>Are you sure you want to start the virtual machine?</p>',buttons,trans('No','QIMessageBox'));
-					} else {
-						startVM();
-					}
-				};
-				l.run();
-				
-			} else {
-				startVM();
+				if(vboxVMStates.isPaused(vms[i]) || vboxVMStates.isPoweredOff(vms[i]) || vboxVMStates.isSaved(vms[i])) {
+					startVM(vms[i]);
+				}
+
 			}
-			
-			
+						
 		},
-		enabled : function () { 
-			if(!(vboxChooser && vboxChooser.selectionModel == 'singleVM')) return false;
-			var vm = vboxChooser.getSingleSelected();
-			return (vboxVMStates.isPaused(vm) || vboxVMStates.isPoweredOff(vm) || vboxVMStates.isSaved(vm));
+		enabled : function () {
+			return (vboxChooser.isSelectedInState('Paused') || vboxChooser.isSelectedInState('PoweredOff') || vboxChooser.isSelectedInState('Saved'));			
 		}	
 	},
 	
@@ -1284,7 +1255,6 @@ var vboxVMActions = {
 		label:trans('Settings...','UIActionPool'),
 		icon:'vm_settings',
 		icon_16:'settings',
-		selectionModels : ['singleVM'],
 		click:function(){
 			
 			var vm = vboxChooser.getSingleSelected();
@@ -1292,9 +1262,8 @@ var vboxVMActions = {
 			vboxVMsettingsInit(vm.id);
 		},
 		enabled : function () {
-			if(!(vboxChooser && vboxChooser.selectionModel == 'singleVM')) return false;
-			var vm = vboxChooser.getSingleSelected();
-			return (vboxVMStates.isRunning(vm) || vboxVMStates.isEditable(vm));
+			return vboxChooser && vboxChooser.selectionModel == 'singleVM' && 
+				(vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Editable'));
 		}
 	},
 
@@ -1304,12 +1273,9 @@ var vboxVMActions = {
 		icon:'vm_clone',
 		icon_16:'vm_clone',
 		icon_disabled:'vm_clone_disabled',
-		selectionModels : ['singleVM'],
 		click:function(){vboxWizardCloneVMInit(function(){return;},{vm:vboxChooser.getSingleSelected()});},
 		enabled: function () {
-			if(!(vboxChooser && vboxChooser.selectionModel == 'singleVM')) return false;
-			var vm = vboxChooser.getSingleSelected();			
-			return (vboxVMStates.isPoweredOff(vm));
+			return (vboxChooser.selectionModel == 'singleVM' && vboxChooser.isSelectedInState('PoweredOff'));
 		}
 	},
 
@@ -1319,7 +1285,6 @@ var vboxVMActions = {
 		label:trans('Refresh','UIVMLogViewer'),
 		icon:'refresh',
 		icon_disabled:'refresh_disabled',
-		selectionModels : ['singleVM'],
 		click:function(){
 			
 			var vm = vboxChooser.getSingleSelected();
@@ -1341,7 +1306,7 @@ var vboxVMActions = {
 			l.run();
     	},
 		enabled: function(){
-			return (vboxChooser && vboxChooser.selectionModel == 'singleVM');
+			return (vboxChooser && vboxChooser.selectedVMs.length > 0);
 		}
     },
     
@@ -1349,50 +1314,66 @@ var vboxVMActions = {
     remove: {
 		label:trans('Remove...', 'UIActionPool'),
 		icon:'delete',
-		selectionModels : ['singleVM'],
 		click:function(){
 
-			var vm = vboxChooser.getSingleSelected();
+			
+			var removeVMs = function(keepFiles) {
+
+				var vms = vboxChooser.getSelectedVMsData();
+				
+				for(var i = 0; i < vms.length; i++) {
+					
+					if(vboxVMStates.isPoweredOff(vms[i])) {
+
+						// Remove each selected vm
+						vboxAjaxRequest('machineRemove',{'vm':vms[i].id,'delete':(keepFiles ? '0' : '1'),'keep':(keepFiles ? '1' : '0')},
+							function(d,vmname){
+								// check for progress operation
+								if(d && d.progress) {
+									vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistreload');},'progress_delete_90px.png',
+											trans('Remove the selected virtual machines', 'UIActionPool'), false, vmname);
+								} else {
+									$('#vboxIndex').trigger('vmlistreload');
+								}
+						}, vms[i].name);
+						
+						
+					}
+				}				
+			};
 			
 			var buttons = {};
 			buttons[trans('Delete all files','UIMessageCenter')] = function(){
 				$(this).empty().remove();
-				var l = new vboxLoader();
-				l.add('machineRemove',function(d){
-					// check for progress operation
-					if(d && d.progress) {
-						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistreload');},'progress_delete_90px.png',
-								trans('Remove...', 'UIActionPool'), false, vm.name);
-					} else {
-						$('#vboxIndex').trigger('vmlistreload');
-					}					
-				},{'vm':vm.id,'delete':1});
-				l.run();
+				removeVMs(false);
 			};
 			buttons[trans('Remove only','UIMessageCenter')] = function(){
 				$(this).empty().remove();
-				var l = new vboxLoader();
-				l.add('machineRemove',function(d){
-					// check for progress operation
-					if(d && d.progress) {
-						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistreload');},'progress_delete_90px.png',
-								trans('Remove...', 'UIActionPool'), false, vm.name);
-					} else {
-						$('#vboxIndex').trigger('vmlistreload');
-					}					
-				},{'vm':vm.id,'keep':1});
-				l.run();
-				
+				removeVMs(true);
 			};
-			var q = trans('<p>You are about to remove following virtual machines from the machine list:</p><p>%1</p><p>Would you like to delete the files containing the virtual machine from your hard disk as well? Doing this will also remove the files containing the machine\'s virtual hard disks if they are not in use by another machine.</p>','UIMessageCenter').replace('%1',vm.name);
+			
+			
+			var vmNames = [];
+			var vms = vboxChooser.getSelectedVMsData();
+			for(var i = 0; i < vms.length; i++) {
+				if(vboxVMStates.isPoweredOff(vms[i])) {
+					vmNames[vmNames.length] = vms[i].name;
+				}
+			}
+			
+			if(vmNames.length) {
+
+				vmNames = '<b>'+vmNames.join('</b>, <b>')+'</b>';
+				var q = trans('<p>You are about to remove following virtual machines from the machine list:</p><p>%1</p><p>Would you like to delete the files containing the virtual machine from your hard disk as well? Doing this will also remove the files containing the machine\'s virtual hard disks if they are not in use by another machine.</p>','UIMessageCenter').replace('%1',vmNames);
 				
-			vboxConfirm(q,buttons);
+				vboxConfirm(q,buttons);
+				
+			}
 			
     	
     	},
     	enabled: function () {
-			if(!(vboxChooser && vboxChooser.selectionModel == 'singleVM')) return false;
-    		return (vboxVMStates.isPoweredOff(vboxChooser.getSingleSelected()));
+    		return (vboxChooser.isSelectedInState('PoweredOff'));
     	}
     },
     
@@ -1401,7 +1382,6 @@ var vboxVMActions = {
     	label: trans('Group','UIActionPool'),
     	icon: 'add_shared_folder',
     	icon_disabled: 'add_shared_folder_disabled',
-    	selectionModels : ['multiVM','singleVM'],
     	click: function() {
     		vboxChooser.groupSelectedItems();
     	},
@@ -1410,12 +1390,8 @@ var vboxVMActions = {
     		if (!vboxChooser || (vboxChooser.selectionModel=='singleVM' && vboxChooser.getSingleSelected().id == 'host'))
     			return false;
     		
-    		for(var i = 0; i < vboxChooser.selectedVMs.length; i++) {
-    			if(!vboxVMStates.isEditable(vboxChooser.getVMData(vboxChooser.selectedVMs[i])))
-    				return false;
-    		}
+    		return vboxChooser.isSelectedInState('Editable');
     		
-    		return true;
     	}
     },
     
@@ -1424,7 +1400,6 @@ var vboxVMActions = {
 		label:trans('Discard saved state...','UIActionPool'),
 		icon:'vm_discard',
 		icon_16:'discard',
-		selectionModels : ['singleVM'],
 		click:function(){
 			
 			var vm = vboxChooser.getSingleSelected();
@@ -1437,10 +1412,23 @@ var vboxVMActions = {
 				l.onLoad = function(){$('#vboxIndex').trigger('vmlistrefresh');};
 				l.run();
 			};
-			vboxConfirm(trans('<p>Are you sure you want to discard the saved state of the following virtual machines?</p><p><b>%1</b></p><p>This operation is equivalent to resetting or powering off the machine without doing a proper shutdown of the guest OS.</p>','UIMessageCenter').replace('%1',vm.name),buttons);
+			var vmNames = [];
+			var vms = vboxChooser.getSelectedVMsData();
+			for(var i = 0; i < vms.length; i++) {
+				if(vboxVMStates.isSaved(vms[i])) {
+					vmNames[vmNames.length] = vms[i].name;
+				}
+			}
+			
+			if(vmNames.length) {
+
+				vmNames = '<b>'+vmNames.join('</b>, <b>')+'</b>';
+				
+				vboxConfirm(trans('<p>Are you sure you want to discard the saved state of the following virtual machines?</p><p><b>%1</b></p><p>This operation is equivalent to resetting or powering off the machine without doing a proper shutdown of the guest OS.</p>','UIMessageCenter').replace('%1',vmNames),buttons);
+			}
 		},
 		enabled:function(){
-    		return (vboxChooser && vboxChooser.selectionModel== 'singleVM' && vboxVMStates.isSaved(vboxChooser.getSingleSelected()));
+			return vboxChooser.isSelectedInState('Saved');
 		}
     },
     
@@ -1449,7 +1437,6 @@ var vboxVMActions = {
 		label:trans('Show Log...','UIActionPool'),
 		icon:'show_logs',
 		icon_disabled:'show_logs_disabled',
-		selectionModels : ['singleVM'],
 		click:function(){
     		vboxShowLogsDialogInit(vboxChooser.getSingleSelected());
 		},
@@ -1462,14 +1449,11 @@ var vboxVMActions = {
 	savestate: {
 		label: trans('Save the machine state', 'UIVMCloseDialog'),
 		icon: 'fd',
-		selectionModels : ['singleVM'],
 		stop_action: true,
 		enabled: function(){
-			if(!(vboxChooser && vboxChooser.selectionModel == 'singleVM')) return false;
-			var vm = vboxChooser.getSingleSelected();
-			return (vboxVMStates.isRunning(vm) || vboxVMStates.isPaused(vm));
+			return (vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Paused'));
 		},
-		click: function() {vboxVMActions.powerAction('savestate');}
+		click: function() {vboxVMActions.powerAction('savestate','Save the machine state of the selected virtual machines');}
 	},
 
 	/** Send ACPI Power Button to VM */
@@ -1477,17 +1461,29 @@ var vboxVMActions = {
 		label: trans('ACPI Shutdown','UIActionPool'),
 		icon: 'acpi',
 		stop_action: true,
-		selectionModels : ['singleVM'],
 		enabled: function(){
-			return (vboxChooser && vboxVMStates.isRunning(vboxChooser.getSingleSelected()));
+			return vboxChooser.isSelectedInState('Running');
 		},
 		click: function() {
 			var buttons = {};
 			buttons[trans('ACPI Shutdown','UIMessageCenter')] = function() {
-				vboxVMActions.powerAction('powerbutton');				
+				vboxVMActions.powerAction('powerbutton','Send the ACPI Power Button press event to the virtual machine');				
 			};
-			vboxConfirm(trans("<p>Do you really want to send an ACPI shutdown signal " +
-					"to the following virtual machines?</p><p><b>%1</b></p>",'UIMessageCenter').replace('%1', vboxChooser.getSingleSelected().name),buttons);
+			var vmNames = [];
+			var vms = vboxChooser.getSelectedVMsData();
+			for(var i = 0; i < vms.length; i++) {
+				if(vboxVMStates.isRunning(vms[i])) {
+					vmNames[vmNames.length] = vms[i].name;
+				}
+			}
+			
+			if(vmNames.length) {
+
+				vmNames = '<b>'+vmNames.join('</b>, <b>')+'</b>';
+
+				vboxConfirm(trans("<p>Do you really want to send an ACPI shutdown signal " +
+					"to the following virtual machines?</p><p><b>%1</b></p>",'UIMessageCenter').replace('%1', vmNames),buttons);
+			}
 		}
 	},
 	
@@ -1496,11 +1492,10 @@ var vboxVMActions = {
 		label: trans('Pause','UIActionPool'),
 		icon: 'pause',
 		icon_disabled: 'pause_disabled',
-		selectionModels : ['singleVM'],
 		enabled: function(){
-			return (vboxChooser && vboxVMStates.isRunning(vboxChooser.getSingleSelected()));
+			return vboxChooser.isSelectedInState('Running')
 		},
-		click: function() {vboxVMActions.powerAction('pause'); }
+		click: function() {vboxVMActions.powerAction('pause','Suspend the execution of the selected virtual machines'); }
 	},
 	
 	/** Power off  a VM */
@@ -1508,21 +1503,34 @@ var vboxVMActions = {
 		label: trans('Power Off','UIActionPool'),
 		icon: 'poweroff',
 		stop_action: true,
-		selectionModels : ['singleVM'],
 		enabled: function() {
-			if(!vboxChooser || vboxChooser.selectionModel != 'singleVM') return false;
-			var vm = vboxChooser.getSingleSelected();
-			return (vboxVMStates.isRunning(vm) || vboxVMStates.isPaused(vm));
+			return (vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Paused'));
 		},
 		click: function() {
+			
 			var buttons = {};
 			buttons[trans('Power Off','UIActionPool')] = function() {
 				$(this).empty().remove();
-				vboxVMActions.powerAction('powerdown');
+				vboxVMActions.powerAction('powerdown','Power off the selected virtual machines');
 			};
-			vboxConfirm(trans("<p>Do you really want to power off the following virtual machines?</p>" +
-	           "<p><b>%1</b></p><p>This will cause any unsaved data in applications " +
-	           "running inside it to be lost.</p>", 'UIMessageCenter').replace('%1', vboxChooser.getSingleSelected().name), buttons);
+			
+			var vmNames = [];
+			var vms = vboxChooser.getSelectedVMsData();
+			for(var i = 0; i < vms.length; i++) {
+				if(vboxVMStates.isRunning(vms[i]) || vboxVMStates.isPaused(vms[i])) {
+					vmNames[vmNames.length] = vms[i].name;
+				}
+			}
+			
+			if(vmNames.length) {
+
+				vmNames = '<b>'+vmNames.join('</b>, <b>')+'</b>';
+				
+				vboxConfirm(trans("<p>Do you really want to power off the following virtual machines?</p>" +
+						"<p><b>%1</b></p><p>This will cause any unsaved data in applications " +
+						"running inside it to be lost.</p>", 'UIMessageCenter').replace('%1', vmNames), buttons);
+			}
+
 		}
 	},
 	
@@ -1531,17 +1539,31 @@ var vboxVMActions = {
 		label: trans('Reset','UIActionPool'),
 		icon: 'reset',
 		icon_disabled: 'reset_disabled',
-		selectionModels : ['singleVM'],
 		enabled: function(){
-			return (vboxChooser && vboxChooser.selectionModel== 'singleVM' && vboxChooser.getSingleSelected().state== 'Running');
+			return vboxChooser.isSelectedInState('Running');
 		},
 		click: function() {
 			var buttons = {};
 			buttons[trans('Reset','UIActionPool')] = function() {
 				$(this).remove();
-				vboxVMActions.powerAction('reset');
+				vboxVMActions.powerAction('reset','Reset the selected virtual machines');
 			};
-			vboxConfirm(trans("<p>Do you really want to reset the following virtual machines?</p><p><b>%1</b></p><p>This will cause any unsaved data in applications running inside it to be lost.</p>",'UIMessageCenter').replace('%1',vboxChooser.getSingleSelected().name),buttons);
+			
+			var vmNames = [];
+			var vms = vboxChooser.getSelectedVMsData();
+			for(var i = 0; i < vms.length; i++) {
+				if(vboxVMStates.isRunning(vms[i])) {
+					vmNames[vmNames.length] = vms[i].name;
+				}
+			}
+			
+			if(vmNames.length) {
+
+				vmNames = '<b>'+vmNames.join('</b>, <b>')+'</b>';
+
+				vboxConfirm(trans("<p>Do you really want to reset the following virtual machines?</p><p><b>%1</b></p><p>This will cause any unsaved data in applications "+
+						"running inside it to be lost.</p>",'UIMessageCenter').replace('%1',vmNames),buttons);
+			}
 		}
 	},
 	
@@ -1554,22 +1576,18 @@ var vboxVMActions = {
 		label: trans('Close','UIActionPool'),
 		icon: 'exit',
 		menu: true,
-		selectionModels : ['singleVM'],
 		click: function () { return true; /* handled by stop context menu */ },
 		enabled: function () {
-			if(!vboxChooser || vboxChooser.selectionModel != 'singleVM') return false;
-			var vm = vboxChooser.getSingleSelected();
-			return (vboxVMStates.isRunning(vm) || vboxVMStates.isPaused(vm));
+			return (vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Paused'));
 		}
 	},
 	
 	/** Power Action Helper function */
-	powerAction: function(pa){
+	powerAction: function(pa,pt){
 		icon =null;
 		switch(pa) {
 			case 'powerdown': fn = 'powerDown'; icon='progress_poweroff_90px.png'; break;
 			case 'powerbutton': fn = 'powerButton'; break;
-			case 'sleep': fn = 'sleepButton'; break;
 			case 'savestate': fn = 'saveState'; icon='progress_state_save_90px.png'; break;
 			case 'pause': fn = 'pause'; break;
 			case 'reset': fn = 'reset'; break;
@@ -1581,7 +1599,7 @@ var vboxVMActions = {
 			if(d && d.progress) {
 				vboxProgress(d.progress,function(){
 					if(pa != 'reset' && pa != 'sleep' && pa != 'powerbutton') $('#vboxIndex').trigger('vmlistrefresh');
-				},icon,vboxVMActions[pa].label, false, vm.name);
+				},icon,trans(pt,'UIActionPool'), false, vm.name);
 				return;
 			}
 			if(pa != 'reset' && pa != 'sleep' && pa != 'powerbutton') $('#vboxIndex').trigger('vmlistrefresh');
@@ -3178,7 +3196,7 @@ function vboxMenu(name, id) {
 			var mi = $('#'+self.name+i);
 			
 			// Disabled
-			if((testObj && self.menuItems[i].selectionModels && jQuery.inArray(testObj.selectionModel,self.menuItems[i].selectionModels) == -1) || !self.menuItems[i].enabled(testObj)) {
+			if(!self.menuItems[i].enabled(testObj)) {
 				
 				if(self.menuItems[i].hide_on_disabled) {
 					mi.parent().hide();
@@ -3306,8 +3324,6 @@ function vboxMenuBar(name) {
 					).disableSelection()
 				);
 		}
-		self.update();
-		
 	};
 	
 	

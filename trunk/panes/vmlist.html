@@ -147,6 +147,30 @@ function vboxPhpVboxChooser(anchorid) {
 	}
 	
 	/*
+	 * Return true if a selected VM is in the given state
+	 */
+	self.isSelectedInState = function(state) {
+	
+		 for(var i = 0; i < self.selectedVMs.length; i++) {
+			 if(vboxVMStates['is'+state](self.vms[self.selectedVMs[i]]))
+				 return true;
+		 }
+		 return false;
+ 	},
+	 
+ 	/*
+ 	 * Return selected VM data in array
+ 	 */
+ 	self.getSelectedVMsData = function() {
+
+ 		var vms = [];
+		for(var i = 0; i < self.selectedVMs.length; i++) {
+			vms[vms.length] = self.vms[self.selectedVMs[i]];
+		}
+		return vms;
+ 	},
+ 	
+	/*
 	 * Triggered when selection list has changed
 	 */
 	self.selectionListChanged = function(selectionList) {
@@ -641,12 +665,12 @@ function vboxPhpVboxChooser(anchorid) {
 				if(!$(el).hasClass('vboxListItemSelected')) $(el).trigger('click');
 			}
 		},function(act,el,pos,d,e){
-			self.vmContextMenuObj.menuClickCallback(act, el);
+			self.vmContextMenuObj.menuClickCallback(act);
 		});
 		
 		// Open settings on dblclick
 		$(tbl).dblclick(function(){
-			if(self.vmContextMenuObj.menuItems['settings'].enabled(self))
+			if(self.vmContextMenuObj.menuItems['settings'].enabled())
 				self.vmContextMenuObj.menuItems['settings'].click();
 		});
 		

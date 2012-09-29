@@ -209,7 +209,7 @@ $('#wizardNewHDStep3').bind('show',function(e,wiz){
 function vboxWizardNewHDElectName() {
 	
 	/* Go through list of media and pick new hd name */
-	var HDname = 'NewHardDisk99';
+	var HDname = 'NewVirtualDisk99';
 	for(var a = 1; a < 99; a++) {
 		var found = 0;
 		for(var i = 0; i < $('#vboxIndex').data('vboxMedia').length; i++) {
@@ -219,7 +219,7 @@ function vboxWizardNewHDElectName() {
 			}
 		}
 		if(!found) {
-			HDname = 'NewHardDisk'+a;
+			HDname = 'NewVirtualDisk'+a;
 			a = 100;
 		}
 	}

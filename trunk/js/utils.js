@@ -851,7 +851,7 @@ function vboxProgressCreateListElement(pid,icon,title,target,callback) {
 	
 	// Title
 	if(!title) title = '';
-	$('<td />').css({'padding':'0px','text-align':'left','width':'420px'}).html(title + (target ? ' (' + target + ')' : '')).appendTo(tr);
+	$('<td />').css({'padding':'0px','text-align':'left','width':'620px'}).html(title + (target ? ' (' + target + ')' : '')).appendTo(tr);
 	
 	// Progress bar
 	$('<td />').css({'text-align':'center','padding':'2px','width':'220px'}).append(
@@ -875,17 +875,6 @@ function vboxProgressCreateListElement(pid,icon,title,target,callback) {
 	
 	$(div).data({'vboxCallback':callback}).prependTo($('#vboxProgressOps'));
 	
-	// Check for max elements
-	if($('#vboxIndex').data('vboxConfig').maxProgressList) {
-		var maxList = $('#vboxIndex').data('vboxConfig').maxProgressList; 
-        try {
-        	maxList = Math.max(2,parseInt(maxList));
-	    } catch (e) {
-	        maxList = 5;
-	    }
-	    if(maxList > 0) $('#vboxProgressOps').children().slice(maxList).remove();
-
-	}
 	
 }
 
@@ -938,14 +927,28 @@ function vboxProgressUpdate(d,e,modal) {
 			vboxProgressCreateListElement(e.pid,icon,title,target);
 			vboxProgressUpdate(null,{'pid':e.pid});
 			
-			return;
+		} else {
+			
+			var sdate = new Date();
+			$("#vboxProgressText"+e.pid).html(sdate.toLocaleString());
+			$('#vboxProgressCancel'+e.pid).remove();
+			
+			if(callback) callback(d);
 		}
 		
-		var sdate = new Date();
-		$("#vboxProgressText"+e.pid).html(sdate.toLocaleString());
-		$('#vboxProgressCancel'+e.pid).remove();
+		$("#vboxProgress"+e.pid).addClass('vboxProgressComplete');
 		
-		if(callback) callback(d);
+		// Check for max elements
+		if($('#vboxIndex').data('vboxConfig').maxProgressList) {
+			var maxList = $('#vboxIndex').data('vboxConfig').maxProgressList; 
+	        try {
+	        	maxList = Math.max(2,parseInt(maxList));
+		    } catch (e) {
+		        maxList = 5;
+		    }
+		    if(maxList > 0) $('#vboxProgressOps').children('div.vboxProgressComplete').slice(maxList).remove();
+
+		}
 		
 		return;
 	}

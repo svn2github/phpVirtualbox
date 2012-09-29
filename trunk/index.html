@@ -262,10 +262,10 @@
 				l.add('vboxGetEnumerationMap',function(d){$('#vboxIndex').data('vboxMediumVariants',d);},{'class':'MediumVariant','ValueMap':1});
 	
 				// Load HTML panes and append them to their respective locations
+				l.addFileToDOM('panes/vmlist.html',$('#vboxPaneVMList'));
 				l.addFileToDOM('panes/topmenu.html');
 				l.addFileToDOM('panes/vmlistToolbar.html');
 				l.addFileToDOM('panes/tabs.html',$('#vboxPaneTabContent'));
-				l.addFileToDOM('panes/vmlist.html',$('#vboxPaneVMList'));
 	
 				l.onLoad = function() {
 	
@@ -278,6 +278,9 @@
 						var nx = $('#vboxIndex').data('vboxCookies')['vboxPaneY'];
 						$('#vboxProgressOps').css({'height':(nx)+'px'}).parent().css({'height':(nx)+'px'});
 					}
+					
+					// Let everyone know that no vms are selected
+					$('#vboxIndex').trigger('vmSelectionListChanged',[vboxChooser]);
 					
 				};
 				

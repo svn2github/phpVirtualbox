@@ -17,7 +17,7 @@ var tButtons = [
 	/* All toolbar items need a 'name' property */
 	$.extend({},vboxVMActions['new'],{'name':'new'}),
 	$.extend({},vboxVMActions['settings'],{'name':'settings','enabled':function(vm){
-		return (vboxVMActions['settings'].enabled(vm));
+		return (vboxVMActions['settings'].enabled());
 	},click:function(){
 		var vm = vboxChooser.getSingleSelected();
 		if(!vm || vboxVMStates.isRunning(vm)) return;

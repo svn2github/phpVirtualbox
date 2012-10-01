@@ -128,13 +128,20 @@ try {
 		 */
 		case 'getSession':
 			
-			// Session
-			session_init();
 			
 			$settings = new phpVBoxConfigClass();
 			if(method_exists($settings->auth,'autoLoginHook'))
 			{
+				// Session
+				session_init(true);
 				$settings->auth->autoLoginHook();
+				session_write_close();
+				
+			} else {
+				
+				// Session
+				session_init();				
+				
 			}
 			
 			$response['data'] = $_SESSION;

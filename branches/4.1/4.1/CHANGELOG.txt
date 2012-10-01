@@ -8,6 +8,9 @@ http://code.google.com/p/phpvirtualbox/issues/detail?id=582
 Changed default setting in WebAuth plugin to look for user in
 REMOTE_USER $_SERVER variable.
 
+Fixed bug in WebAuth plugin that would not allow login after
+session timeout.
+
 -------------------------------------
 	4.1-10	2012-09-08
 -------------------------------------

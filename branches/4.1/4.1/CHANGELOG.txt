@@ -1,5 +1,5 @@
 -------------------------------------
-	4.1-11
+	4.1-11	2012-10-03
 -------------------------------------
 Fixed error causing the new VM wizard not to automatically assign
 a new virtual hard disk.

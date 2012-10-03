@@ -87,7 +87,6 @@ vboxChooser.parentContextMenuItems = [
 
 vboxChooser.run();
 
-
 /*
  * Virtual Machine list object.
  * 
@@ -102,7 +101,7 @@ vboxChooser.run();
 function vboxPhpVboxChooser(anchorid) {
 
 	var self = this;
-	this.vms = null;
+	this.vms = {};
 	this.anchorid = anchorid;
 	this.anchor = $('#'+anchorid);
 
@@ -116,7 +115,6 @@ function vboxPhpVboxChooser(anchorid) {
 	// singleGroup
 	// null 
 	
-	this.lastUpdatedDiv = null;
 	this.interval = 5;
 	this.changed = false;
 	this.versionChecked = false;
@@ -132,8 +130,7 @@ function vboxPhpVboxChooser(anchorid) {
 
 	this.enforceVMOwnership = $('#vboxIndex').data('vboxConfig').enforceVMOwnership;
 	this.tip = trans('<nobr>%1<br></nobr><nobr>%2 since %3</nobr><br><nobr>Session %4</nobr>','UIVMListView');
-	
-	
+
 	// If there are multiple servers configured, setup menu
 	if($('#vboxIndex').data('vboxConfig').servers.length) {
 
@@ -143,8 +140,8 @@ function vboxPhpVboxChooser(anchorid) {
 			$('<li />').html("<a href='#" + $('<div />').html(servers[i].name).text() + "' style='background-image: url(images/vbox/OSE/VirtualBox_16px.png);'>"+$('<div />').html(servers[i].name).text()+"</a>").appendTo(ul);
 		}
 		$('#vboxIndex').append(ul);
-		
-	}
+
+	};
 	
 	/*
 	 * Return true if a selected VM is in the given state
@@ -156,7 +153,8 @@ function vboxPhpVboxChooser(anchorid) {
 				 return true;
 		 }
 		 return false;
- 	},
+		 
+ 	};
 	 
  	/*
  	 * Return selected VM data in array
@@ -168,7 +166,7 @@ function vboxPhpVboxChooser(anchorid) {
 			vms[vms.length] = self.vms[self.selectedVMs[i]];
 		}
 		return vms;
- 	},
+ 	};
  	
 	/*
 	 * Triggered when selection list has changed
@@ -239,10 +237,8 @@ function vboxPhpVboxChooser(anchorid) {
 				
 				$('#vboxIndex').trigger('vmLoading', [self.vms[vmid]]);
 				
-				var localVMid = vmid;
-				
 				// Send ajax off to get data
-				vboxAjaxRequest('machineGetDetails', {'vm':localVMid,'force_refresh':1}, function(data) {
+				vboxAjaxRequest('machineGetDetails', {'vm':vmid}, function(data) {
 					self.vmLoaded(data);
 				});	
 			};
@@ -266,10 +262,14 @@ function vboxPhpVboxChooser(anchorid) {
 	 * Triggered after a VM is loaded
 	 */
 	self.vmLoaded = function(data) {
+		
+		// Merge data
 		var exData = self.vms[data.id];
 		$.extend(exData,data,{phpVbxLoaded:true});
 		self.vms[data.id] = exData;
-		self.updateVM(self.vms[data.id], true);
+		
+		// Update element and trigger vmLoaded
+		self.updateVMElement(self.vms[data.id]);
 		$('#vboxIndex').trigger('vmLoaded', [self.vms[data.id]]);
 	};
  
@@ -282,7 +282,8 @@ function vboxPhpVboxChooser(anchorid) {
 		// We were stopped before the request returned data
 		if(!self._running) return;
 		
-		
+
+		// No list? Something is wrong
 		if(!d || !d.vmlist) {
 			
 			vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox'));
@@ -292,57 +293,29 @@ function vboxPhpVboxChooser(anchorid) {
 			return;
 		}
 
-		var currTime = new Date();
-		self.time = currTime.getTime();
-
-		/* Check Key
-			If we've changed hosts before the last ajax call to get a list of VMs
-			returns, we'd have a list of VMs from the previously selected VirtualBox
-			host.
-		*/
-		if(d.server_key != $('#vboxIndex').data('vboxConfig').key) return;
+		// Remove spinner
+		self.anchor.children().remove();
 		
-		/*
-		 * Don't update if paused.. 
-		 * happens while dragging and creating group definitions
-		 */
-		if(self.paused) return;
+		// reset selfvms and add host
+		self.vms = {
+			host : {
+				'id':'host',
+				'state':'Hosting',
+				'owner':'',
+				'name':$('#vboxIndex').data('vboxConfig').name,
+				'OSTypeId':'VirtualBox_Host',
+				lastUpdated:self.time
+			}
+		};
 		
-		currVMList = d.vmlist;
+		// Render host
+		self.anchor.append(self.vmHTML(self.vms['host']));
 		
-
-		var firstRun = false;
-		
-		// First time run?
-		if(self.vms === null) {
+		// Render root group
+		self.anchor.append(self.groupHTML("/"));
 			
-			// Remove spinner
-			self.anchor.children().remove();
-			
-			// reset selfvms and add host
-			self.vms = {
-				host : {
-					'id':'host',
-					'state':'Hosting',
-					'owner':'',
-					'name':$('#vboxIndex').data('vboxConfig').name,
-					'OSTypeId':'VirtualBox_Host',
-					lastUpdated:self.time
-				}
-			};
-			
-			// Render host
-			self.anchor.append(self.vmHTML(self.vms['host']));
-			
-			// Render root group
-			self.anchor.append(self.groupHTML("/"));
-			
-			firstRun = true;
-			
-		}
-
 		// Add host
-		currVMList[currVMList.length] = {
+		d.vmlist[d.vmlist.length] = {
 			'id':'host',
 			'state':'Hosting',
 			'owner':'',
@@ -354,42 +327,19 @@ function vboxPhpVboxChooser(anchorid) {
 		
 		// Enforce VM ownership
         if(self.enforceVMOwnership && !$('#vboxIndex').data('vboxSession').admin) {
-        	currVMList = jQuery.grep(currVMList,function(vm,i){
+        	d.vmlist = jQuery.grep(d.vmlist,function(vm,i){
         		return (vm.owner == $('#vboxIndex').data('vboxSession').user);
         	});
 		}
 	
 		// Each item in list
-		for(var i = 0; i < currVMList.length; i++) {	
-			
+		for(var i = 0; i < d.vmlist.length; i++) {	
 			// Update
-			self.updateVM(currVMList[i]);
-
-			self.vms[currVMList[i].id].lastUpdated = self.time;
-			
+			self.updateVMElement(d.vmlist[i]);
 		}
 
-		// Check for any vms that should be removed
-		for(var id in self.vms) {
-			if(self.vms[id].lastUpdated < self.time) {
-				self.machineRemove(id);
-			}
-		}
-		
-		// Update "Last Updated" ?
-		if(self.lastUpdatedDiv) {
-			var hours = currTime.getHours();
-			var minutes = currTime.getMinutes();
-			var secs = currTime.getSeconds();
-			if (minutes < 10) minutes = "0" + minutes;
-			if (secs < 10) secs = "0" + secs;
-			
-			$(self.lastUpdatedDiv).html(hours+':'+minutes+':'+secs);
-		}
-		
-		// compose / save group definitions if this
-		// is the first run
-		if(firstRun) self.composeGroupDef();
+		// compose / save group definitions
+		self.composeGroupDef(true);
 		
 	};
 	
@@ -433,96 +383,48 @@ function vboxPhpVboxChooser(anchorid) {
 
 	/*
 	 *
-	 * Update VM data
+	 * Update VM elements
 	 *
 	 */
-	self.updateVM = function(vmUpdate, forceUpdate) {
+	self.updateVMElement = function(vmUpdate) {
 
-		var changed = false;
-		var newVM = false;
-		var forceUpdate = false;
-		var changedProps = ['currentSnapshotName','state','sessionState','OSTypeId','name','customIcon'];
-		
-		
-		if(!self.vms[vmUpdate.id]) {
-			changed = true;
-			newVM = true;
-		} else if(self.vms[vmUpdate.id]['forceElementUpdate']){
-			forceUpdate = true;
-		} else {
-			for(var i = 0; i < changedProps.length; i++) {
-				if(String(self.vms[vmUpdate.id][changedProps[i]]) != String(vmUpdate[changedProps[i]])) {
-					changed = true;
-					break;
-				}
-			}
-		}
-
-		// If a watched attribute has changed,
-		// Re-load data if VM is selected
-		if(changed || forceUpdate) {
+		// New VM
+		if(!self.vms[vmUpdate.id] && vmUpdate.id != 'host') {
 
 			// New VM.. add it to groups..
-			if(newVM && vmUpdate.id != 'host') {
+			if(!vmUpdate.groups || vmUpdate.groups.length == 0)
+				vmUpdate.groups = ['/'];
+			
+			for(var i = 0; i < vmUpdate.groups.length; i++) {
+				var gElm = $(self.getGroupElement(vmUpdate.groups[i]));
+				self.vmHTML(vmUpdate).appendTo(
+					gElm.children('div.vboxChooserGroupVMs')
+				);
+				self.sortGroup(gElm);
+			}
+			
+			self.vms[vmUpdate.id] = vmUpdate;
 				
-				if(!vmUpdate.groups || vmUpdate.groups.length == 0)
-					vmUpdate.groups = ['/'];
+		// Existing VM. Replace existing elements
+		} else {
 				
-				for(var i = 0; i < vmUpdate.groups.length; i++) {
-					var gElm = $(self.getGroupElement(vmUpdate.groups[i]));
-					self.vmHTML(vmUpdate).appendTo(
-						gElm.children('div.vboxChooserGroupVMs')
-					);
-					self.sortGroup(gElm);
+			$('#'+self.anchorid).find('table.vboxChooserItem-'+self.anchorid+'-'+vmUpdate.id).each(function(i,elm){
+				
+				var newHTML = self.vmHTML(vmUpdate);
+				if($(elm).hasClass('vboxListItemSelected')) {
+					$(newHTML).addClass('vboxListItemSelected').removeClass('vboxHover');
 				}
+				$(elm).children().replaceWith(newHTML.children());
+			});
 				
-			// Existing VM. Replace existing elements
-			} else {
-				
-				$('#'+self.anchorid).find('table.vboxChooserItem-'+self.anchorid+'-'+vmUpdate.id).each(function(i,elm){
-					
-					var newHTML = self.vmHTML(vmUpdate);
-					if($(elm).hasClass('vboxListItemSelected')) {
-						$(newHTML).addClass('vboxListItemSelected').removeClass('vboxHover');
-					}
-					$(elm).replaceWith(newHTML);
-				});
-				
-			}
-
-			if(newVM) {
-				self.vms[vmUpdate.id] = vmUpdate;
-			} else if(!forceUpdate){
-				var exData = self.vms[vmUpdate.id];
-				$.extend(exData,vmUpdate);
-				self.vms[vmUpdate.id] = exData;
-			}
-
-
-			// Only trigger this if it is not a new VM
-			// and the change was not triggered from here
-			if(!newVM && !forceUpdate) {
-				$('#vboxIndex').trigger('vmChanged', [vmUpdate.id, true]);
-			}
+			var exData = self.vms[vmUpdate.id];
+			if(!exData) exData = vmUpdate;
+			$.extend(exData,vmUpdate);
+			self.vms[vmUpdate.id] = exData;
 		}
-		
 
-		return newVM;
 	};
 	
-	/*
-	 * VM data changed
-	 */
-	self.vmChanged = function(e, vmid, detectedChange) {
-		
-		self.vms[vmid].phpVbxLoaded = false;
-		self.vms[vmid].forceElementUpdate = !(detectedChange);
-		
-		// Is it a selected VM?
-		if(vmid && jQuery.inArray(vmid, self.selectedVMs) > -1) {
-			self.selectionListChanged(self.selectedList);
-		}
-	};
 
 
 	/*
@@ -530,10 +432,13 @@ function vboxPhpVboxChooser(anchorid) {
 	 */
 	self.vmHTML = function (vmn) {
 		
-		var tbl = $('<table />').attr({'class':'vboxChooserItem-'+self.anchorid+'-'+vmn.id + " vboxChooserVM"}).bind('click',self.selectItem).hover(function(){
-			if(!$(this).hasClass('vboxListItemSelected'))
-				$(this).addClass('vboxHover');
-			},function(){$(this).removeClass('vboxHover');}).data('vmid',vmn.id);
+		var tbl = $('<table />').attr({'class':'vboxChooserItem-'+self.anchorid+'-'+vmn.id + " vboxChooserVM"})
+			.bind('mousedown',self.selectItem)
+			.hover(function(){
+				if(!$(this).hasClass('vboxListItemSelected'))
+					$(this).addClass('vboxHover');
+				},function(){$(this).removeClass('vboxHover');
+			}).data('vmid',vmn.id);
 		
 		
 		// Drag-and-drop functionality
@@ -545,7 +450,7 @@ function vboxPhpVboxChooser(anchorid) {
 				
 			// drag start
 			},'start':function(e) {
-								
+							
 				self.paused = true;
 				
 				$(self.anchor).disableSelection();
@@ -850,7 +755,7 @@ function vboxPhpVboxChooser(anchorid) {
 			if(thisSessionLocked) return;
 			
 			// Dropped ON a vm?
-			dropTarget = $('#'+self.anchorid).find('table.vboxHover').first();
+			dropTarget = $('#'+self.anchorid).find('table.vboxHover:not(.ui-draggable-dragging)').first();
 			if($(dropTarget).data('vmid')) {
 			
 				// Create a group?
@@ -896,8 +801,8 @@ function vboxPhpVboxChooser(anchorid) {
 				dropTarget = $(self.anchor).find('div.vboxHover').first();
 				if(dropTarget[0] && dropTarget.hasClass('vboxChooserGroupHeader')) {
 					
-					// Group already has this VM?
-					if(dropTarget.siblings('div.vboxChooserGroupVMs').children('table.vboxChooserItem-'+self.anchorid+'-'+$(droppedVM).data('vmid'))[0]) {
+					// Group already has this dragging VM?
+					if(dropTarget.siblings('div.vboxChooserGroupVMs').children('table.ui-draggable-dragging')[0]) {
 						return;
 					}
 					
@@ -933,33 +838,7 @@ function vboxPhpVboxChooser(anchorid) {
 	};
 	
 	/*
-	 * Machine removed from list
-	 */
-	self.machineRemove = function(id) {
-		
-		var changed = false;
-		
-		var selectedList = self.selectedList.filter(function(v){
-			return (v.type == 'group' || (v.id != id));
-		});
-		
-		if (self.selectedList.length != selectedList.length)
-			changed = true;
-		
-		self.selectedList = selectedList;
-		
-		if(changed)
-			$('#vboxIndex').trigger('vmSelectionListChanged',[self]);
-		
-		$('#'+self.anchorid +' table.vboxChooserItem-'+self.anchorid+'-'+id).remove();
-		
-		$('#vboxIndex').trigger('vmRemoved', [id]);
-		
-		delete self.vms[id];
-	};
-
-	/*
-	 * groupSelectedItems
+	 * Group selected items into a new group
 	 */
 	self.groupSelectedItems = function() {
 		
@@ -990,7 +869,7 @@ function vboxPhpVboxChooser(anchorid) {
 	/*
 	 * Compose group data from GUI
 	 */
-	self.composeGroupDef = function() {
+	self.composeGroupDef = function(skipSave) {
 		
 		var allGroups = [];
 		var groupsResolved = false;
@@ -1053,7 +932,8 @@ function vboxPhpVboxChooser(anchorid) {
 				});
 				
 				// Skip and remove if there are no VMs or subgroups
-				if(gList.length + vmList.length == 0) {
+				// And it is not the parent group
+				if(gList.length + vmList.length == 0 && !$(elm).hasClass('vboxVMlistGroupRoot')) {
 					
 					// remove from selected list?
 					if(elm && $(elm).hasClass('vboxGroupSelected')) {
@@ -1070,10 +950,12 @@ function vboxPhpVboxChooser(anchorid) {
 				}
 				
 				// append to all groups list
+				gorder = [];
+				if(gList.length) gorder[0] = 'go='+gList.join(',');
+				if(vmList.length) gorder[gorder.length] = 'm='+vmList.join(',');
 				allGroups[allGroups.length] = {
 					path: $(elm).data('vmGroupPath'),
-					subgroups: gList,
-					machines: vmList
+					order: gorder.join(',')
 				};
 				
 				// Update counts span
@@ -1086,48 +968,50 @@ function vboxPhpVboxChooser(anchorid) {
 			
 		}
 		
-		// Save GUI group definition
+		// Save GUI group definition?
+		if(skipSave) return;
+		
 		$('#vboxIndex').data('vboxVMGroups', allGroups);
 		vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups},function(){});		
 
-		// Machine groups and trigger change
-		var updateVMCount = 0;
+		// Save machine groups and trigger change
+		var vms = [];
 		for(var i in self.vms) {
 			if(typeof i != 'string' || i == 'host') continue;
-			updateVMCount++;
+			vms[vms.length] = {
+				'id' : i,
+				'groups' : self.getGroupsForVM(i)
+			};
 		}
 		
-		var changedList = {};
-		var changed = false;
-		for(var i in self.vms) {
-			
-			if(typeof i != 'string' || i == 'host') continue;
-			
-			// Save each machine
-			vboxAjaxRequest('machineSaveGroups',{'vm':i,'groups':self.getGroupsForVM(i)},function(res){
-					if(res.saved) {
-						changedList[res.vm] = res.vm;
-						changed = true;
-					}
-					// End of list and something was changed
-					if(--updateVMCount==0 && changed) {
-						
-						// Reload media then trigger changed events on vms
-						var ml = new vboxLoader();
-						ml.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
-						ml.onLoad = function() {
-							for(var i in changedList) {
-								if(typeof i != 'string') continue;
-								$('#vboxIndex').trigger('vmChanged',[i]);
-							}
-						};
-						ml.run();
-							
+		// Save machines groups
+		vboxAjaxRequest('machinesSaveGroups',{'vms':vms},function(res){
 
-					}
+			if(!res || res.errored) {
+
+				var ml = new vboxLoader();
+				ml.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
+				ml.add('vboxGroupDefinitionsGet',function(d){$('#vboxIndex').data('vboxVMGroups',d);});
+				
+				// Reload VM list and group definitions, something went wrong
+				ml.onLoad = function() {
+
+					// Stop vmlist from refreshing..
+					self.stop();
 					
-			});
-		}
+					// reset selections
+					$('#vboxIndex').trigger('vmSelectionListChanged',[self]);
+
+					// ask for new one
+					self.start();
+				};
+				ml.run();
+				return;
+
+			}
+						
+		});
+		
 			
 		
 		return allGroups;
@@ -1209,7 +1093,8 @@ function vboxPhpVboxChooser(anchorid) {
 	};
 	
 	/*
-	 *
+	 * Sort group sub-elements based on VirtualBox
+	 * group definitions
 	 */
 	self.sortGroup = function(gElm) {
 		
@@ -1217,17 +1102,24 @@ function vboxPhpVboxChooser(anchorid) {
 		var gPath = $(gElm).data('vmGroupPath');
 		var groupList = $('#vboxIndex').data('vboxVMGroups');
 		
-		var groupOrder = [];
-		var vmOrder = [];
+		if(!gPath) return;
 		
+		var machineOrder = [];
+		var groupOrder = [];
+		
+		// Get correct order
 		for(var i = 0; i < groupList.length; i++) {
 			if(groupList[i].path == gPath) {
-				groupOrder = groupList[i].subgroups;
-				vmOrder = groupList[i].machines;
-				break;
+				order = groupList[i].order.split(',');
+				for(var a = 0; a < order.length; a++) {
+					kv = order[a].split('=',2);
+					if(kv[0] == 'm') machineOrder[machineOrder.length] = kv[1];
+					else groupOrder[groupOrder.length] = kv[1];
+				}
 			}
 		}
 		
+				
 		// sort groups
 		var groups = $(gElm).children('div.vboxChooserGroup').get();
 		groups.sort(function(a,b){
@@ -1235,7 +1127,7 @@ function vboxPhpVboxChooser(anchorid) {
 			var Pos1 = jQuery.inArray($(a).children('div.vboxChooserGroupHeader').attr('title'), groupOrder);
 			var Pos2 = jQuery.inArray($(b).children('div.vboxChooserGroupHeader').attr('title'), groupOrder);
 			
-			return (Pos1 > Pos2 ? 1 : (Pos2 > Pos1 ? -1 : 0));
+			return (Pos1 > Pos2 ? -1 : (Pos2 > Pos1 ? 1 : 0));
 			
 		});
 		$.each(groups, function(idx,itm) {
@@ -1245,8 +1137,8 @@ function vboxPhpVboxChooser(anchorid) {
 		// sort VMs
 		var vms = $(gElm).children('div.vboxChooserGroupVMs').children('table.vboxChooserVM').get();
 		vms.sort(function(a,b) {
-			var Pos1 = jQuery.inArray($(a).data('vmid'), vmOrder);
-			var Pos2 = jQuery.inArray($(b).data('vmid'), vmOrder);
+			var Pos1 = jQuery.inArray($(a).data('vmid'), machineOrder);
+			var Pos2 = jQuery.inArray($(b).data('vmid'), machineOrder);
 			
 			return (Pos1 > Pos2 ? 1 : (Pos2 > Pos1 ? -1 : 0));
 		});
@@ -1358,26 +1250,10 @@ function vboxPhpVboxChooser(anchorid) {
 		if(self._running) return;
 
 		// Subscribe to selected VM changes and refreshes
-		$('#vboxIndex').bind('vmlistreload',function() {
-
-			// Stop vmlist from refreshing..
+		$('#vboxIndex').bind('hostChange',function(){
+		
 			self.stop();
 			
-			// reset selections
-			$('#vboxIndex').trigger('vmSelectionListChanged',[self]);
-
-			// ask for new one
-			vboxAjaxRequest('vboxGetMachines',{},function(d){
-				self.start();
-				self.updateList(d);
-			});
-			
-			
-		}).bind('vmlistrefresh',function(){
-			self.refresh();
-			
-		}).bind('hostChange',function(){
-			self.stop();
 			$('#vboxIndex').trigger('vmSelectionListChanged',[self]);
 			
 		}).bind('hostChanged',function(){
@@ -1387,7 +1263,102 @@ function vboxPhpVboxChooser(anchorid) {
 
 			self.start();
 			
-		}).bind('vmChanged',self.vmChanged);
+		// VM data changed
+		}).bind('OnMachineDataChanged',function(e, vmid, data) {
+
+			// Data changed for machine that no longer exists
+			if(!self.vms[vmid]) return;
+			
+			self.vms[vmid].phpVbxLoaded = false;
+			
+			// Update VM in list
+			if(data) {
+							
+				// Remove from groups if they have changed
+				var groupDiff = $(self.vms[data.id].groups).not(data.groups);
+				var groupsChanged = groupDiff.length;
+				for(var i = 0; i < groupDiff.length; i++) {
+					
+					$(self.getGroupElement(groupDiff[i], false)).children('div.vboxChooserGroupVMs')
+						.children('table.vboxChooserItem-'+self.anchorid+'-'+data.id).empty().remove();
+				}
+				
+				// Add placeholder to other groups
+				var groupDiff = $(data.groups).not(self.vms[data.id].groups);
+				groupsChanged = (groupsChanged || groupDiff.length);
+				for(var i = 0; i < groupDiff.length; i++) {
+					
+					// Skip it if it is already there
+					if($(self.getGroupElement(groupDiff[i])).children('div.vboxChooserGroupVMs').children('table.vboxChooserItem-'+self.anchorid+'-'+data.id)[0])
+						continue;
+					
+					$(self.getGroupElement(groupDiff[i])).children('div.vboxChooserGroupVMs')
+						.append(								
+							self.vmHTML(data)
+						);
+				}
+
+				self.updateVMElement(data);
+
+				if(groupsChanged) self.composeGroupDef(true);
+			}
+			
+			// Is this VM selected
+			if(jQuery.inArray(data.id, self.selectedVMs) == -1)
+				return;
+			
+			$('#vboxIndex').trigger('vmLoading', [self.vms[vmid]]);
+			
+			// Send ajax off to get data
+			vboxAjaxRequest('machineGetDetails', {'vm':vmid}, function(data) {
+				self.vmLoaded(data);	
+			});	
+
+		// Snapshot taken
+		}).bind('OnSnapshotTaken',function(e,vmid,snapshotid,data) {
+			
+			if(data && self.vms && self.vms[vmid]) {
+				self.vms[vmid]['currentSnapshotName'] = data.currentSnapshotName;
+				self.vms[vmid]['snapshotCount'] = data.snapshotCount;
+				self.updateVMElement(self.vms[vmid]);
+			}
+
+
+		// Machine removed or registered
+		}).bind('OnMachineRegistered', function(e, vmid, registered, data) {
+			
+			// removed
+			if(!registered) {
+
+				// See if VM is selected
+				if(jQuery.inArray(vmid, self.selectedVMs) > -1) {
+					
+					var selectedList = self.selectedList.filter(function(v){
+						return (v.type == 'group' || (v.id != vmid));
+					});
+					
+					self.selectionListChanged(selectedList);
+					
+					
+				}
+				
+				delete self.vms[vmid];
+				$('#'+self.anchorid +' table.vboxChooserItem-'+self.anchorid+'-'+vmid).remove();
+				
+				self.composeGroupDef(true);
+				
+				return;
+			}
+			
+			// Enforce VM ownership
+	        if(self.enforceVMOwnership && !$('#vboxIndex').data('vboxSession').admin && data.owner != $('#vboxIndex').data('vboxSession').user) {
+	        	return;
+	        }
+
+			// Add to list			
+			self.updateVMElement(data);
+
+		});
 		
 		/*
 		 *
@@ -1460,6 +1431,21 @@ function vboxPhpVboxChooser(anchorid) {
 	 * Select a single item in our list
 	 */
 	self.selectItem = function(e) {
+		
+		// Right click selects item if it is not selected
+		if(e.which != 1) {
+	
+			// Right click on group header and group is selected
+			// just return and show context menu
+			if($(this).hasClass('vboxChooserGroupHeader') && $(this).parent().hasClass('vboxGroupSelected')) {
+				return;
+			
+			// Right click on VM and VM is already selected
+			// just return and show context menu
+			} else if($(this).hasClass('vboxListItemSelected')) {
+				return;
+			}
+		}
 		
 		var selectedList = [];
 		var item = $(this);
@@ -1602,10 +1588,7 @@ function vboxPhpVboxChooser(anchorid) {
 				)
 				.append($('<span />').html(gname).addClass('vboxChooserGroupName'))
 				.append($('<span />').addClass('vboxChooserGroupInfo').html(
-						"<span class='vboxChooserGroupCounts' />" +
-						//(gdef.subgroups.length ? ('<img src="images/vbox/nw_16px.png" />'+gdef.subgroups.length) : '') +
-						//(gdef.machines.length ? (' <img src="images/vbox/fullscreen_16px.png" />'+gdef.machines.length) : '') +
-						'' //'<img src="images/arrow_grad_up.png" />'
+						"<span class='vboxChooserGroupCounts' />"
 						))
 				.append(
 					$('<div />').addClass('vboxChooserDropTarget').addClass('vboxChooserDropTargetBottom')
@@ -1621,7 +1604,7 @@ function vboxPhpVboxChooser(anchorid) {
 					$(this).addClass('vboxHover');
 				},function(){
 					$(this).removeClass('vboxHover');
-				}).bind('click',self.selectItem)				
+				}).bind('mousedown',self.selectItem)				
 
 			).addClass((first ? 'vboxVMlistGroupRoot' : '')).addClass('vboxChooserGroup')
 			.data({'vmGroupPath':gpath})
@@ -1645,25 +1628,6 @@ function vboxPhpVboxChooser(anchorid) {
 			}}).append($('<div />').addClass('vboxChooserGroupVMs'));
 
 
-		/*		
-		// Append sub-groups
-		for(var i = 0; i < gdef.subgroups.length; i++) {
-			gHTML.append(self.groupHTML(gdef.subgroups[i]));
-		}
-		
-		// Append VM placeholders
-		var vmlist = $('<div />').addClass('vboxChooserGroupVMs');
-		if(gdef.machines.length) {
-			for(var i = 0; i < gdef.machines.length; i++) {
-				vmlist.append(
-					$('<table />').addClass('vboxChooserItem-'+self.anchorid+'-'+gdef.machines[i])
-				);
-			}
-		}
-		
-		gHTML.append(vmlist);
-		*/
-		
 		// Bottom drop target
 		if(!first) {
 			gHTML.append(
@@ -1724,35 +1688,249 @@ function vboxPhpVboxChooser(anchorid) {
 		
 		// already started
 		if(self._running) return;
+		self._running = true;
+
+		vboxAjaxRequest('vboxGetMachines',{},function(d) {
+			self.updateList(d);
+		});
 		
-		var cb = function() {
-			vboxAjaxRequest('vboxGetMachines',{},function(d) {
-				self.updateList(d);
-			});			
-		};
+		self.getEvents();
+				
+	};
+	
+	/* Get pending events */
+	self.getEvents = function(){
+
+		// Don't do anything if we aren't running anymore
+		if(!self._running) return;
 		
-		// noinit is passed by refresh() since it just
-		// updated the list we don't need to immediately
-		// refresh it again
-		if(!noinit) cb();
-		
-		
-		self._running = window.setInterval(cb,self.interval*1000);
-		
-		
+		vboxAjaxRequest('getEvents',{'vm':(self.selectionModel == 'singleVM' && self.getVMData(self.selectedVMs[0]).state == 'Running' ? self.selectedVMs[0] : null)}, function(d) {
+			
+			// Don't do anything if this is not running
+			if(!self._running) return;
+			
+			// Check key to make sure this isn't a stale
+			// response from a previously selected server
+			if(!d.key || (d.key != $('#vboxIndex').data('vboxConfig').key)) return;
+			
+			// Loop through each event recording or
+			// triggering changes
+			if(d && d.events) {
+				
+				var vmChanges = {};
+				
+				for(var i = 0; i < d.events.length; i++) {
+
+					/*
+					if(d.events[i].eventType != 'OnExtraDataChanged' && d.events[i].eventType != 'OnExtraDataCanChange')
+						console.log(d.events[i]);
+					*/
+					
+					switch(d.events[i].eventType) {
+					
+						// machine state change
+						case 'OnMachineStateChanged':
+
+							if(!vmChanges[d.events[i].machineId])
+								vmChanges[d.events[i].machineId] = {};
+
+							vmChanges[d.events[i].machineId]['state'] = d.events[i].state;
+							break;
+						
+						// machine session state change
+						case 'OnSessionStateChanged':
+							if(!vmChanges[d.events[i].machineId])
+								vmChanges[d.events[i].machineId] = {};
+							vmChanges[d.events[i].machineId]['sessionState'] = d.events[i].state;
+							break;
+							
+						// machine data changed
+						case 'OnMachineDataChanged':
+							if(!vmChanges[d.events[i].machineId])
+								vmChanges[d.events[i].machineId] = {};
+							vmChanges[d.events[i].machineId]['data'] = d.events[i].enrichmentData;
+							break;							
+						
+						
+						// Medium attachment changed
+						case 'OnMediumChanged':
+							if(!vmChanges[d.events[i].machineId])
+								vmChanges[d.events[i].machineId] = {};
+								
+							vmChanges[d.events[i].machineId]['mediumAttachment'] = d.events[i];
+							break;
+							
+						// Snapshot was taken
+						case 'OnSnapshotTaken':
+							$('#vboxIndex').trigger('OnSnapshotTaken',[d.events[i].machineId,
+							                                           d.events[i].snapshotId,
+							                                           d.events[i].enrichmentData]);
+							break;
+						
+							
+						// Machine was added / removed
+						case 'OnMachineRegistered':
+
+							if(!vmChanges[d.events[i].machineId])
+								vmChanges[d.events[i].machineId] = {};
+
+							vmChanges[d.events[i].machineId]['registered'] = true;
+							$('#vboxIndex').trigger('OnMachineRegistered',[d.events[i].machineId,
+							                                               d.events[i].registered,
+							                                               d.events[i].enrichmentData]);
+							break;
+							
+						
+						// VRDE server changed
+						case 'OnVRDEServerInfoChanged':
+
+							var vmData = self.getVMData(d.events[i].machineId);
+							if(!vmData) continue;
+							
+							if(!vmData.runTimeChanges)
+								vmData.runTimeChanges = {};
+							
+							vmData.runTimeChanges['consoleInfo'] = d.events[i].enrichmentData;
+
+							self.vms[vmData.id] = vmData;
+							
+							$('#vboxIndex').trigger('OnVRDEServerInfoChanged',[d.events[i].machineId, d.events[i].enrichmentData]);
+							
+							break;
+							
+							
+						// Group definitions updated
+						case 'OnExtraDataChanged':
+							
+							if(!d.events[i].machineId && d.events[i].key.indexOf('GUI/GroupDefinitions') === 0) {
+								
+								var path = d.events[i].key.substring(20);
+								if(!path) path = "/";
+								var name = path.substring(path.lastIndexOf('/')+1);
+								var vboxVMGroups = $('#vboxIndex').data('vboxVMGroups');
+								var found = false;
+								
+								for(var a = 0; a < vboxVMGroups.length; a++) {
+									if(vboxVMGroups[a].path == path) {
+										found = true;
+										vboxVMGroups[a] = {'path':path,'name':name,'order':d.events[i].value};
+										break;
+									}
+								}
+								
+								if(!found)
+									vboxVMGroups[vboxVMGroups.length] = {'path':path,'name':name,'order':d.events[i].value};
+								
+								$('#vboxIndex').data('vboxVMGroups', vboxVMGroups);
+								
+								// Sort element
+								if(d.events[i].value) {
+									self.sortGroup($(self.getGroupElement(path),false));
+								}
+							}
+
+					}
+					
+				}
+				// Trigger a change if data does not match
+				var redrawTriggers = {};
+				var reloadTriggers = {};
+				var sessionOrStateTriggers = {};
+				for(var i in vmChanges) {
+					
+					// i should hold VM id
+					if(typeof(i) != 'string') continue;
+					
+					// Skip if data changed or VM was just added because we will redraw anyway
+					if(vmChanges[i]['data'] || vmChanges[i]['registered']) {
+						reloadTriggers[i] = (vmChanges[i]['data'] || vmChanges[i]['registered']);
+						continue;						
+					}
+					
+					// Special case for medium attachment
+					if(vmChanges[i]['mediumAttachment']) {
+						
+						var changeData = vmChanges[i]['mediumAttachment'];
+						delete vmChanges[i]['mediumAttachment'];
+						
+						var vmData = self.getVMData(i);
+						if(!vmData) continue;
+						
+						if(!vmData.runTimeChanges)
+							vmData.runTimeChanges = {};
+						
+						vmData.runTimeChanges['storageControllers-'+changeData.controller+'-'+changeData.port+'-'+changeData.device] = 
+							(changeData.medium ? {id:changeData.medium} : null);
+						
+						self.vms[i] = vmData;
+						
+						$('#vboxIndex').trigger('OnMediumChanged', [i, changeData]);
+						
+						
+					}
+					
+					// Consolidate each state or machine state change
+					for(var a in vmChanges[i]) {
+						
+						if(typeof(a) != 'string') continue;
+						
+						// Does not match existing, trigger event
+						if(self.vms[i] && self.vms[i][a] != vmChanges[i][a]) {
+							
+							self.vms[i][a] = vmChanges[i][a];
+							redrawTriggers[i] = i;
+
+							switch(a) {
+								case 'state':
+									$('#vboxIndex').trigger('OnMachineStateChanged',[i, vmChanges[i][a]]);
+									sessionOrStateTriggers[i] = i;
+									break;
+								case 'sessionState':
+									$('#vboxIndex').trigger('OnSessionStateChanged',[i, vmChanges[i][a]]);
+									sessionOrStateTriggers[i] = i;
+									break;
+							}
+						}
+						
+					}
+				}
+				
+				// Session or state changed. Synthetic event
+				for(var i in sessionOrStateTriggers) {
+					if(typeof(i) != 'string') continue;
+					$('#vboxIndex').trigger('OnMachineOrSessionStateChanged',[i]);
+				}
+				
+				// Redraw these vms
+				for(var i in redrawTriggers) {
+					if(typeof(i) != 'string') continue;			
+					self.updateVMElement(self.vms[i]);
+				}
+				
+				// Reload these vms
+				for(var i in reloadTriggers) {
+					if(!vmChanges[i]['registered'])
+						$('#vboxIndex').trigger('OnMachineDataChanged', [i, vmChanges[i]['data']]);
+				}
+				
+			}
+			window.setTimeout(self.getEvents, 2000);
+		});
+
 	};
 	
 	/*
 	 * Stop VM list updates and clear list
 	 */
 	self.stop = function() {
+		
 		if(!self._running) return;
-		window.clearInterval(self._running);
-		self._running = null;
+		self._running = false;
+		
 		self.anchor.html("<div id='vboxChooserSpinner' style='text-align: center'><img src='images/spinner.gif' /></div>");
 		
 		// reset vars
-		self.vms = null;
+		self.vms = {};
 		self.versionChecked = false;
 		self.selectedList = [];
 		self.selectedVMs = [];
@@ -1760,27 +1938,6 @@ function vboxPhpVboxChooser(anchorid) {
 	};
 	
 	
-	/* Force an imediate background refresh. Called when a VM
-	 * attribute change is expected and we want it to show up
-	 * asap.
-	 */
-	self.refresh = function() {
-		
-		// Stop refresh interval
-		if(self._running)
-			window.clearInterval(self._running);
-		
-		// If we happen to get data in the background,
-		// ignore it because the update we're about to
-		// perform will be more authoritative. See updateList()
-		self._running = null;
-		
-		vboxAjaxRequest('vboxGetMachines',{},function(d) {
-			self.start(true);
-			self.updateList(d);
-		});			
-		
-	};
 
 }
 

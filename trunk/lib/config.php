@@ -70,12 +70,6 @@ class phpVBoxConfigClass {
 	var $nicMax = 4;
 
 	/**
-	 * Refresh VM cache when opening a VM settings dialog
-	 * @var boolean
-	 */
-	var $vmConfigRefresh = true;
-
-	/**
 	 * Max number of operations to keep in progress list
 	 * @var integer
 	 */
@@ -86,29 +80,6 @@ class phpVBoxConfigClass {
 	 * @var boolean
 	 */
 	var $enableCustomIcons = false;
-
-	/**
-	 * Cache settings that dictate the length of time an item can be cached before it is considered stale.
-	 * 
-	 * @var array
-	 * @see vboxconnector
-	 * @see cache
-	 */
-	var $cacheSettings = array(
-		'hostGetDetails' => 86400, // "never" changes. 1 day
-		'vboxGetGuestOSTypes' => 86400,
-		'vboxSystemPropertiesGet' => 86400,
-		'hostGetNetworking' => 86400,
-		'vboxGetMedia' => 600, // 10 minutes
-		'vboxGetMachines' => 2,
-		'_machineGetDetails' => 7200, // 2 hours
-		'_machineGetNetworkAdapters' => 7200,
-		'_machineGetStorageControllers' => 7200,
-		'_machineGetSerialPorts' => 7200,
-		'_machineGetParallelPorts' => 7200,
-		'_machineGetSharedFolders' => 7200,
-		'_machineGetUSBController' => 7200
-	);
 
 	/**
 	 * true if there is no user supplied config.php found.
@@ -170,10 +141,6 @@ class phpVBoxConfigClass {
 				if($k == 'browserRestrictFiles' && !is_array($v)) continue;
 				if($k == 'consoleResolutions' && !is_array($v)) continue;
 				if($k == 'browserRestrictFolders' && !is_array($v)) continue;
-				if($k == 'cacheSettings' && is_array($v)) {
-					$this->cacheSettings = array_merge($this->cacheSettings,$v);
-					continue;
-				}
 				$this->$k = $v;
 			}
 				

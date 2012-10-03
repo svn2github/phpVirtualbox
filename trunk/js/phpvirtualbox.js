@@ -395,6 +395,7 @@ var vboxVMDetailsSections = {
 		icon:'fullscreen_16px.png',
 		title:trans('Preview'),
 		settingsLink: 'Display',
+		redrawMachineEvents: ['OnMachineStateChanged'],
 		condition: function() {
 			return !($('#vboxIndex').data('vboxConfig').noPreview);
 		},
@@ -710,6 +711,7 @@ var vboxVMDetailsSections = {
 		icon: 'vrdp_16px.png',
 		title:trans('Display'),
 		settingsLink: 'Display',
+		redrawMachineEvents: ['OnVRDEServerInfoChanged'],
 		rows: [
 		   {
 			   title: trans("Video Memory"),
@@ -723,14 +725,17 @@ var vboxVMDetailsSections = {
 				   var chost = vboxGetVRDEAddress(d);
 				
 				   var rowStr = d['VRDEServer']['ports'];
+				   
+				   // Just this for snapshots
+				   if(d._isSnapshot) return rowStr;
 				
 				   // Display links?
-				   if(!d._isSnapshot && (d['state'] == 'Running' || d['state'] == 'Paused' || !d['VRDEServer']['ports'].match(/[^\d]/))) {
-					   rowStr = " <a href='rdp.php?host=" + chost + '&port=' + d['VRDEServer']['ports'] + "&id=" + d['id'] + "&vm=" + encodeURIComponent(d['name']) + "'>" + d['VRDEServer']['ports'] + "</a>";
+				   if(d['state'] == 'Running' || d['state'] == 'Paused' || !d['VRDEServer']['ports'].match(/[^\d]/)) {
+					   rowStr = " <a href='rdp.php?host=" + chost + '&port=' + d['VRDEServer']['ports'] + "&id=" + d['id'] + "&vm=" + encodeURIComponent(d['name']) + "'>" + d['VRDEServer']['ports'] + "</a>";						   
 				   }
-				   if(!d._isSnapshot && (d['state'] == 'Running' || d['state'] == 'Paused') && d['consoleInfo'] && parseInt(d['consoleInfo']['consolePort']) > 0) {
+				   if((d['state'] == 'Running' || d['state'] == 'Paused') && d['consoleInfo'] && parseInt(d['consoleInfo']['consolePort']) > 0) {
 					   rowStr += ' <img src="images/vbox/blank.gif" style="vspace:0px;hspace:0px;height2px;width:10px;" /> (' + chost + ':' + d['consoleInfo']['consolePort'] + ')';
-				   } else if(!d._isSnapshot){
+				   } else {
 					   rowStr += ' ('+chost+')';
 				   }
 				   return rowStr;
@@ -765,6 +770,7 @@ var vboxVMDetailsSections = {
 		icon:'hd_16px.png',
 		title: trans('Storage'),
 		settingsLink: 'Storage',
+		redrawMachineEvents: ['OnMediumChanged'],
 		rows: function(d) {
 			
 			var advancedView = $('#vboxIndex').data('vboxConfig').enableAdvancedConfig;
@@ -1198,7 +1204,6 @@ var vboxVMActions = {
 				l.onLoad = function(){
 					var lm = new vboxLoader();
 					lm.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
-					lm.onLoad = function() {$('#vboxIndex').trigger('vmlistreload');};
 					lm.run();
 				};
 				l.run();
@@ -1215,9 +1220,8 @@ var vboxVMActions = {
 		icon_16 : 'start',
 		click : function (btn) {
 		
-			// Disable toolbar button that triggered this action?
-			if(btn && btn.toolbar) btn.toolbar.disableButton(btn);
 			
+			// Start a single vm
 			var startVM = function (vm) {
 				
 				vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'},function(d,vmname){
@@ -1226,23 +1230,72 @@ var vboxVMActions = {
 						var icon = null;
 						if(vboxVMStates.isSaved(d)) icon = 'progress_state_restore_90px.png';
 						else icon = 'progress_start_90px.png';
-						vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistrefresh');},icon,
+						vboxProgress(d.progress,function(){return;},icon,
 								trans('Start the selected virtual machines','UIActionPool'),false, vmname);
 						return;
 					}
-					$('#vboxIndex').trigger('vmlistrefresh');
 				},vm.name);
 			};
 			
-			
-			var vms = vboxChooser.getSelectedVMsData();
-			for(var i = 0; i < vms.length; i++) {
-				
-				if(vboxVMStates.isPaused(vms[i]) || vboxVMStates.isPoweredOff(vms[i]) || vboxVMStates.isSaved(vms[i])) {
-					startVM(vms[i]);
+			// Start each eligable selected vm
+			var startVMs = function() {				
+				var vms = vboxChooser.getSelectedVMsData();
+				for(var i = 0; i < vms.length; i++) {
+					if(vboxVMStates.isPaused(vms[i]) || vboxVMStates.isPoweredOff(vms[i]) || vboxVMStates.isSaved(vms[i])) {
+						startVM(vms[i]);
+					}
+					
 				}
+			};
+			
+			// Check for memory limit
+			// Paused VMs are already using all their memory
+			if($('#vboxIndex').data('vboxConfig').vmMemoryStartLimitWarn) {
+				
+				var freeMem = 0;
+				var baseMem = 0;
+				
+				var l = new vboxLoader();
+				l.add('hostGetMeminfo',function(d){freeMem = d.memoryAvailable;});
+				l.onLoad = function() {
+					
+					// Subtract memory for each VM selected
+					var vms = vboxChooser.getSelectedVMsData();
+					for(var i = 0; i < vms.length; i++) {
+						if(vboxVMStates.isPoweredOff(vms[i]) || vboxVMStates.isSaved(vms[i])) {
+							// VM memory + a little bit of overhead
+							baseMem += (vms[i].memorySize + 50);
+						}
+					}
 
+					if($('#vboxIndex').data('vboxConfig').vmMemoryOffset)
+						freeMem -= $('#vboxIndex').data('vboxConfig').vmMemoryOffset;
+
+					// Memory breaches warning threshold
+					if(baseMem >= freeMem) {
+						var buttons = {};
+						buttons[trans('Yes','QIMessageBox')] = function(){
+							$(this).remove();
+							startVMs();
+						};
+						freeMem = Math.max(0,freeMem);
+						vboxConfirm('<p>The selected virtual machine(s) require(s) <b><i>approximately</b></i> ' + baseMem +
+								'MB of memory, but your VirtualBox host only has ' + freeMem + 'MB '+
+								($('#vboxIndex').data('vboxConfig').vmMemoryOffset ? ' (-'+$('#vboxIndex').data('vboxConfig').vmMemoryOffset+'MB)': '') +
+								' free.</p><p>Are you sure you want to start the virtual machine(s)?</p>',buttons,trans('No','QIMessageBox'));
+					
+					// Memory is fine. Start vms.
+					} else {
+						startVMs();
+					}
+				};
+				l.run();
+				
+			// No memory limit warning configured
+			} else {
+				startVMs();
 			}
+
 						
 		},
 		enabled : function () {
@@ -1262,7 +1315,7 @@ var vboxVMActions = {
 			vboxVMsettingsInit(vm.id);
 		},
 		enabled : function () {
-			return vboxChooser && vboxChooser.selectionModel == 'singleVM' && 
+			return vboxChooser && vboxChooser.selectedVMs.length == 1 && 
 				(vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Editable'));
 		}
 	},
@@ -1289,24 +1342,17 @@ var vboxVMActions = {
 			
 			var vm = vboxChooser.getSingleSelected();
 			
-			var l = new vboxLoader();
-			l.add('machineGetDetails',function(d){
-				// Special case for host refresh
-				if(d.id == 'host') {
-					$('#vboxIndex').data('vboxHostDetails',d);
-				}
-				$('#vboxIndex').trigger('vmChanged',[vm.id]);
-			},{'vm':vm.id,'force_refresh':1});
+			$('#vboxIndex').trigger('OnMachineDataChanged',[vm.id]);
 			
 			// Host refresh also refreshes system properties, VM sort order
 			if(vm.id == 'host') {
-				l.add('vboxSystemPropertiesGet',function(d){$('#vboxIndex').data('vboxSystemProperties',d);},{'force_refresh':1});
-				l.add('hostOnlyInterfacesGet',function(d){return;},{'force_refresh':1});
+				var l = new vboxLoader();
+				l.add('vboxSystemPropertiesGet',function(d){$('#vboxIndex').data('vboxSystemProperties',d);});
+				l.run();
 			}
-			l.run();
     	},
 		enabled: function(){
-			return (vboxChooser && vboxChooser.selectedVMs.length > 0);
+			return (vboxChooser && vboxChooser.selectedVMs.length == 1);
 		}
     },
     
@@ -1330,10 +1376,8 @@ var vboxVMActions = {
 							function(d,vmname){
 								// check for progress operation
 								if(d && d.progress) {
-									vboxProgress(d.progress,function(){$('#vboxIndex').trigger('vmlistreload');},'progress_delete_90px.png',
+									vboxProgress(d.progress,function(){return;},'progress_delete_90px.png',
 											trans('Remove the selected virtual machines', 'UIActionPool'), false, vmname);
-								} else {
-									$('#vboxIndex').trigger('vmlistreload');
 								}
 						}, vms[i].name);
 						
@@ -1402,15 +1446,16 @@ var vboxVMActions = {
 		icon_16:'discard',
 		click:function(){
 			
-			var vm = vboxChooser.getSingleSelected();
-			
 			var buttons = {};
 			buttons[trans('Discard','UIMessageCenter')] = function(){
 				$(this).empty().remove();
-				var l = new vboxLoader();
-				l.add('machineSetState',function(){},{'vm':vm.id,'state':'discardSavedState'});
-				l.onLoad = function(){$('#vboxIndex').trigger('vmlistrefresh');};
-				l.run();
+
+				var vms = vboxChooser.getSelectedVMsData();
+				for(var i = 0; i < vms.length; i++) {
+					if(vboxVMStates.isSaved(vms[i])) {
+						vboxAjaxRequest('machineSetState',{'vm':vms[i].id,'state':'discardSavedState'});
+					}
+				}
 			};
 			var vmNames = [];
 			var vms = vboxChooser.getSelectedVMsData();
@@ -1453,7 +1498,14 @@ var vboxVMActions = {
 		enabled: function(){
 			return (vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Paused'));
 		},
-		click: function() {vboxVMActions.powerAction('savestate','Save the machine state of the selected virtual machines');}
+		click: function() {
+
+			var vms = vboxChooser.getSelectedVMsData();
+			for(var i = 0; i < vms.length; i++) {
+				if(vboxVMStates.isRunning(vms[i]) || vboxVMStates.isPaused(vms[i]))
+					vboxVMActions.powerAction('savestate','Save the machine state of the selected virtual machines', vms[i]);
+			}
+		}
 	},
 
 	/** Send ACPI Power Button to VM */
@@ -1467,7 +1519,12 @@ var vboxVMActions = {
 		click: function() {
 			var buttons = {};
 			buttons[trans('ACPI Shutdown','UIMessageCenter')] = function() {
-				vboxVMActions.powerAction('powerbutton','Send the ACPI Power Button press event to the virtual machine');				
+				$(this).empty().remove();
+				var vms = vboxChooser.getSelectedVMsData();
+				for(var i = 0; i < vms.length; i++) {
+					if(vboxVMStates.isRunning(vms[i]))
+						vboxVMActions.powerAction('powerbutton','Send the ACPI Power Button press event to the virtual machine', vms[i]);		
+				}
 			};
 			var vmNames = [];
 			var vms = vboxChooser.getSelectedVMsData();
@@ -1495,7 +1552,13 @@ var vboxVMActions = {
 		enabled: function(){
 			return vboxChooser.isSelectedInState('Running')
 		},
-		click: function() {vboxVMActions.powerAction('pause','Suspend the execution of the selected virtual machines'); }
+		click: function() {
+			var vms = vboxChooser.getSelectedVMsData();
+			for(var i = 0; i < vms.length; i++) {
+				if(vboxVMStates.isRunning(vms[i]))
+					vboxVMActions.powerAction('pause','Suspend the execution of the selected virtual machines', vms[i]);
+			}
+		}
 	},
 	
 	/** Power off  a VM */
@@ -1511,7 +1574,12 @@ var vboxVMActions = {
 			var buttons = {};
 			buttons[trans('Power Off','UIActionPool')] = function() {
 				$(this).empty().remove();
-				vboxVMActions.powerAction('powerdown','Power off the selected virtual machines');
+				
+				var vms = vboxChooser.getSelectedVMsData();
+				for(var i = 0; i < vms.length; i++) {
+					if(vboxVMStates.isRunning(vms[i]) || vboxVMStates.isPaused(vms[i]))
+						vboxVMActions.powerAction('powerdown','Power off the selected virtual machines', vms[i]);
+				}
 			};
 			
 			var vmNames = [];
@@ -1546,7 +1614,12 @@ var vboxVMActions = {
 			var buttons = {};
 			buttons[trans('Reset','UIActionPool')] = function() {
 				$(this).remove();
-				vboxVMActions.powerAction('reset','Reset the selected virtual machines');
+
+				var vms = vboxChooser.getSelectedVMsData();
+				for(var i = 0; i < vms.length; i++) {
+					if(vboxVMStates.isRunning(vms[i]))
+						vboxVMActions.powerAction('reset','Reset the selected virtual machines', vms[i]);
+				}
 			};
 			
 			var vmNames = [];
@@ -1583,7 +1656,7 @@ var vboxVMActions = {
 	},
 	
 	/** Power Action Helper function */
-	powerAction: function(pa,pt){
+	powerAction: function(pa,pt,vm){
 		icon =null;
 		switch(pa) {
 			case 'powerdown': fn = 'powerDown'; icon='progress_poweroff_90px.png'; break;
@@ -1593,16 +1666,14 @@ var vboxVMActions = {
 			case 'reset': fn = 'reset'; break;
 			default: return;
 		}
-		var vm = vboxChooser.getSingleSelected();
 		vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':fn},function(d){
 			// check for progress operation
 			if(d && d.progress) {
 				vboxProgress(d.progress,function(){
-					if(pa != 'reset' && pa != 'sleep' && pa != 'powerbutton') $('#vboxIndex').trigger('vmlistrefresh');
+					return;
 				},icon,trans(pt,'UIActionPool'), false, vm.name);
 				return;
 			}
-			if(pa != 'reset' && pa != 'sleep' && pa != 'powerbutton') $('#vboxIndex').trigger('vmlistrefresh');
 		});		
 		
 	}

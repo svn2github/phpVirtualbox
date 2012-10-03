@@ -608,7 +608,6 @@ var vmmButtons = new Array(
 					l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 					l.onLoad = function(){
 						vboxVMMFillMedia(m.id);
-						$('#vboxIndex').trigger('vmChanged',[ret.released]);
 					};
 					$(b).empty().remove();
 					l.run();
@@ -636,7 +635,7 @@ var vmmButtons = new Array(
 
 			// Force a refresh of media
 			var l = new vboxLoader();
-			l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);},{'force_refresh':1});
+			l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 			l.onLoad = vboxVMMFillMedia;
 			l.run();
 			

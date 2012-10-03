@@ -126,6 +126,37 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(){
 	
 });
 
+/*
+ * Redraw events specified in details sections
+ */
+for(var i in vboxVMDetailsSections) {
+	
+	if(typeof(i) != 'string') continue;
+	
+	if(vboxVMDetailsSections[i].redrawMachineEvents) {
+		
+		for(var a = 0; a < vboxVMDetailsSections[i].redrawMachineEvents.length; a++) {
+			
+			// Assume that the first argument for machine related events is the VM id
+			$('#vboxIndex').on(vboxVMDetailsSections[i].redrawMachineEvents[a], {'sectionName':i}, function(e, vmid) {
+	
+				var vmSel = vboxChooser.getVMData(vmid);
+				if(!vmSel || vmSel.id != vmid) return;
+				
+				var sectionName = e.data.sectionName;
+				
+				$('#vboxDetailsSectionId-'+sectionName+'-'+vmSel.id).replaceWith(
+					__vboxCreateDetailsSection(vmSel, sectionName)
+				);
+				
+				if(vboxVMDetailsSections[sectionName].onRender)
+					vboxVMDetailsSections[sectionName].onRender(vmSel);
+				
+			});
+		}
+	}
+}
+
 // Hide context menus when hiding tab
 $('#vboxTabVMDetails').bind('hide',function(){
 	$('ul.contextMenu').hide();
@@ -207,7 +238,8 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 		ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'>%3</span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
 	}
 
-	var vboxDetailsTable = $('<table />').attr({'class':'vboxDetailsTable vboxDetailsTableBox'})
+	var vboxDetailsTable = $('<table />')
+		.attr({'class':'vboxDetailsTable vboxDetailsTableBox'})
 		.append($('<thead />')
 			.append($('<tr />').attr({'class':'vboxDetailsHead'})
 				.append($('<th />').attr({'class':'vboxDetailsSection','colspan':'2'})
@@ -234,7 +266,8 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 	
 	vboxDetailsTable.append(tbody);
 
-	var vboxDetailsSection = $('<div />').attr({'class':'vboxDetailsBorder vboxVMDetailsBox'+sectionName+ ' vboxVMDetailsBox-vm-'+data.id})
+	var vboxDetailsSection = $('<div />')
+		.attr({'class':'vboxDetailsBorder vboxVMDetailsBox'+sectionName+ ' vboxVMDetailsBox-vm-'+data.id,'id':'vboxDetailsSectionId-'+sectionName+'-'+data.id})
 		.dblclick(function(e){
 
 			vboxSetCookie('vboxSectionCollapse'+$(this).data('sectionName'),
@@ -318,7 +351,7 @@ function __vboxDisplayDetailsData(data, multiSelect, targetdiv) {
 			var l = new vboxLoader();
 			l.add('machineGetDetails',function(rd){
 				$('#vboxIndex').trigger('vmSelectionListChanged');
-			},{'vm':data.id,'force_refresh':1});
+			},{'vm':data.id});
 			l.run();
 		}).appendTo(d);
 
@@ -434,16 +467,18 @@ for(var i in vboxVMDetailsSections) {
 			$('<input />')
 				.attr({'type':'checkbox','class':'vboxCheckbox','name':i})
 				.prop('checked',$('#vboxIndex').data('vboxCookies')["vboxSectionShow"+i] != 0)
-				.click(function(){
+				.on('click',{'sectionName':i},function(e){
 
 					vboxSetCookie("vboxSectionShow"+$(this).attr('name'),(this.checked ? 1 : 0));
 					$('#vboxTabVMDetails .vboxVMDetailsBox'+$(this).attr('name')).css('display',(this.checked ? '' : 'none'));
 
+					var sectionName = e.data.sectionName;
+					
 					// Run section's onShow function
-					if(this.checked && vboxVMDetailsSections[i].onShow) {
-						vboxVMDetailsSections[i].onShow();
-					} else if(!this.checked && vboxVMDetailsSections[i].onHide) {
-						vboxVMDetailsSections[i].onHide();
+					if(this.checked && vboxVMDetailsSections[sectionName].onShow) {
+						vboxVMDetailsSections[sectionName].onShow();
+					} else if(!this.checked && vboxVMDetailsSections[sectionName].onHide) {
+						vboxVMDetailsSections[sectionName].onHide();
 					}
 		
 				})

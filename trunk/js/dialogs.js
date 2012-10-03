@@ -48,7 +48,6 @@ function vboxWizardImportApplianceInit() {
 				l.add('applianceImport',function(d){
 					if(d && d.progress) {
 						vboxProgress(d.progress,function(){
-							$('#vboxIndex').trigger('vmlistreload');
 							// Imported media must be refreshed
 							var ml = new vboxLoader();
 							ml.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
@@ -320,7 +319,6 @@ function vboxWizardNewVMInit(callback, vmgroup) {
 						var lm = new vboxLoader();
 						lm.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 						lm.onLoad = function(){
-							$('#vboxIndex').trigger('vmlistreload');
 							if(callback) callback();
 						};
 						lm.run();
@@ -478,7 +476,6 @@ function vboxWizardCloneVMInit(callback,args) {
 								var ml = new vboxLoader();
 								ml.add('vboxGetMedia',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
 								ml.onLoad = function() {
-									$('#vboxIndex').trigger('vmlistreload');
 									callback();
 								};
 								ml.run();
@@ -486,7 +483,6 @@ function vboxWizardCloneVMInit(callback,args) {
 						},'progress_clone_90px.png',trans('Clone the selected virtual machine','UIActionPool'),false,
 							vboxChooser.getVMData(vbw.args.vm.id).name + ' > ' + name);
 					} else {
-						$('#vboxIndex').trigger('vmlistreload');
 						callback();
 					}
 				},{'name':name,'vmState':vmState,'src':src,'snapshot':sn,'reinitNetwork':allNetcards,'link':cLink});
@@ -993,7 +989,7 @@ function vboxVMsettingsInit(vm,callback,pane) {
 		{'fn':'machineGetDetails','callback':function(d){
 			$('#vboxSettingsDialog').data('vboxMachineData',d);
 			$('#vboxSettingsDialog').data('vboxFullEdit', (vboxVMStates.isPoweredOff(d) && !vboxVMStates.isSaved(d)));
-			},'args':{'vm':vm.id,'force_refresh':($('#vboxIndex').data('vboxConfig').vmConfigRefresh || $('#vboxIndex').data('vboxConfig').enableHDFlushConfig)}},
+			},'args':{'vm':vm.id}},
 		{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxNetworkAdapterTypes',d);},'args':{'class':'NetworkAdapterType'}},
 		{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxAudioControllerTypes',d);},'args':{'class':'AudioControllerType'}},
 		{'fn':'vboxRecentMediaGet','callback':function(d){$('#vboxIndex').data('vboxRecentMedia',d);}},
@@ -1013,7 +1009,6 @@ function vboxVMsettingsInit(vm,callback,pane) {
 			var mload = new vboxLoader();
 			mload.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
 			mload.onLoad = function() {
-				$('#vboxIndex').trigger('vmChanged',[vm.id]);
 				if(callback){callback();}
 			};
 			mload.run();

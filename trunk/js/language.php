@@ -52,12 +52,17 @@ function trans(s,c,n,h) {
 function transreal(w,context,number,comment) {
 	
 	try {
+	
 		if(__vboxLangData['contexts'][context]['messages'][w]['translation']) {
 		
-			if(number !== undefined && __vboxLangData['contexts'][context]['messages'][w]['translation']['numerusform']) {
+			if(__vboxLangData['contexts'][context]['messages'][w]['translation']['numerusform']) {
+			
 				var t = __vboxLangData['contexts'][context]['messages'][w]['translation']['numerusform'];
-				if(number == 0 && t[0]) return t[0];
-				if(number > 0 && t[1]) return t[1];
+				
+				if(!number) number = 1;
+				
+				if(number <= 1 && t[0]) return t[0];
+				if(number > 1 && t[1]) return t[1];
 				if(t[0]) return t[0];
 				return t[1];
 			}

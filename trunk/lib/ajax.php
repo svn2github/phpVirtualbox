@@ -37,7 +37,7 @@ global $_SESSION;
 $vboxRequest = clean_request();
 
 global $response;
-$response = array('data'=>array(),'errors'=>array(),'persist'=>array());
+$response = array('data'=>array(),'errors'=>array(),'persist'=>array(),'messages'=>array());
 
 
 /*
@@ -120,7 +120,8 @@ try {
 			$settings->auth->login($vboxRequest['u'], $vboxRequest['p']);
 			
 			// We're done writing to session
-			if(function_exists('session_write_close')) @session_write_close();
+			if(function_exists('session_write_close'))
+				@session_write_close();
 			
 			
 		
@@ -129,31 +130,29 @@ try {
 		 */
 		case 'getSession':
 			
-			// Session
-			session_init();
 			
 			$settings = new phpVBoxConfigClass();
 			if(method_exists($settings->auth,'autoLoginHook'))
 			{
+				// Session
+				session_init(true);
+				
 				$settings->auth->autoLoginHook();
-			}
+				
+				// We're done writing to session
+				if(function_exists('session_write_close'))
+					@session_write_close();
 			
+			} else {
+				
+				// Session
+				session_init(true);
+				
+			}
+
+				
 			$response['data'] = $_SESSION;
 			$response['data']['result'] = 1;
-			break;
-			
-		/*
-		 * Log out of phpVirtualBox. Passed to auth module's
-		 * logout method.
-		 */
-		case 'logout':
-
-			// Session
-			session_init(true);
-			
-			$settings = new phpVBoxConfigClass();
-			$settings->auth->logout($response);
-			
 			break;
 			
 		/*
@@ -234,7 +233,30 @@ try {
 						
 			$response['data']['result'] = 1;
 			break;
-						
+
+		/*
+		 * Log out of phpVirtualBox. Passed to auth module's
+		 * logout method.
+		 */
+		case 'logout':
+		
+			// Session
+			session_init(true);
+				
+			$vbox = new vboxconnector();
+			$vbox->skipSessionCheck = true;
+			
+			$settings = new phpVBoxConfigClass();
+			$settings->auth->logout($response);
+				
+			$vbox->logoff();
+				
+			if(function_exists('session_destroy'))
+				session_destroy();
+		
+			break;
+					
+					
 		/*
 		 * If the above cases did not match, assume it is a request
 		 * that should be passed to vboxconnector.
@@ -242,8 +264,8 @@ try {
 		default:
 	
 			$vbox = new vboxconnector();
-			
-			// Session
+
+			// init session and keep it open
 			session_init(true);
 			
 			/*
@@ -251,14 +273,55 @@ try {
 			 * been deleted since login, and update admin credentials.
 			 */
 			if($_SESSION['user'] && ((intval($_SESSION['authCheckHeartbeat'])+60) < time())) {
+				
 				$vbox->settings->auth->heartbeat($vbox);
 			}
 			
-			$vbox->$vboxRequest['fn']($vboxRequest,array(&$response));
+			session_write_close();
+				
+			/*
+			 *  Persistent request config
+			 */
+			if(@$vbox->persistentRequestConfig[$vboxRequest['fn']]) {
 
-			// We're done writing to session
-			if(function_exists('session_write_close')) @session_write_close();
+				// Get handler held in session for each config item
+				$hc = $vbox->persistentRequestConfig[$vboxRequest['fn']];
+					
+				// Array key in cookie that we are looking for
+				$cookieKeyPrefix = $vbox->settings->key.'vboxPersistentHandle'.$hc['keyName'].
+					(($hc['keyValue'] && $vboxRequest[$hc['keyValue']]) ? $vboxRequest[$hc['keyValue']] : '');
+				
+				// Each handle
+				foreach($hc['items'] as $h) {
+					$vbox->persistentRequest[$h] = @unserialize($_COOKIE[$cookieKeyPrefix.'-'.$h]);
+				}
+					
+			}
 			
+			/*
+			 * Call to vboxconnector
+			 */
+			$vbox->$vboxRequest['fn']($vboxRequest,array(&$response));
+			
+			/*
+			 * Save persistent items in cookies
+			 */
+			if(@$vbox->persistentRequestConfig[$vboxRequest['fn']]) {
+			
+				// Get handler held in session for each config item
+				$hc = $vbox->persistentRequestConfig[$vboxRequest['fn']];
+					
+				// Array key in cookie that we are looking for
+				$cookieKeyPrefix = $vbox->settings->key.'vboxPersistentHandle'.$hc['keyName'].
+					(($hc['keyValue'] && $vboxRequest[$hc['keyValue']]) ? $vboxRequest[$hc['keyValue']] : '');
+				
+				// Each handle
+				foreach($hc['items'] as $h) {
+					setcookie($cookieKeyPrefix.'-'.$h,serialize($vbox->persistentRequest[$h]));	
+				}
+				
+			}
+						
 			
 	} // </switch()>
 
@@ -276,6 +339,11 @@ try {
 	$vbox->errors[] = $e;
 }
 
+// Add any messages
+if($vbox && count($vbox->messages)) {
+	foreach($vbox->messages as $m)
+		$response['messages'][] = 'vboxconnector('.$vboxRequest['fn'] .'): ' . $m;
+}
 // Add other error info
 if($vbox && $vbox->errors) {
 	
@@ -289,6 +357,8 @@ if($vbox && $vbox->errors) {
 		# Add connection details to connection errors
 		if($e->getCode() == vboxconnector::PHPVB_ERRNO_CONNECT && isset($vbox->settings))
 			$d .= "\n\nLocation:" . $vbox->settings->location;
+		
+		$response['messages'][] = $e->getMessage().' ' . $details;
 		
 		$response['errors'][] = array(
 			'error'=>$e->getMessage(),

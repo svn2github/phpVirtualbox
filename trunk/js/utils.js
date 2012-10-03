@@ -71,6 +71,9 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 
 	// Fatal error previously occurred
 	if($('#vboxIndex').data('vboxFatalError')) return;
+	
+	// Fix for null callback
+	if(typeof callback != 'function') callback = function() { return; };
 
 	// Keep run count for retries
 	if(!run)
@@ -86,6 +89,13 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 			if($('#vboxIndex').data('vboxFatalError')) return;
 
 			if(d) {
+				
+				// Append debug output to console
+				if(d.messages) {
+					for(var i = 0; i < d.messages.length; i++) {
+						//console.log(d.messages[i]);
+					}
+				}
 				
 				callback((d.data ? d.data : d),xtra);
 
@@ -162,6 +172,9 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 					if(etext.search(/parse/i) > -1) {
 						$('#vboxIndex').data('vboxFatalError',1);
 					}
+					
+					if(console && console.log)
+						console.log(etext + ': '+ d.responseText);
 					
 					vboxAlert({'error':'Ajax error: ' + etext,'details':d.responseText},{'width':'400px'});
 					//alert('ajax error: ' + + " " + d.responseText);
@@ -687,16 +700,14 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 					vboxInstallGuestAdditions(vmid,true);
 					return;
 				}
-				$('#vboxIndex').trigger('vmChanged',[vmid]);
 			},'progress_install_guest_additions_90px.png',trans('Install Guest Additions...','UIActionPool').replace(/\./g,''),true);
 			
 		// Media was mounted
 		} else if(d && d.result && d.result == 'mounted') {
 
-			// Media and VM data must be refreshed
+			// Media must be refreshed
 			var ml = new vboxLoader();
 			ml.add('vboxGetMedia',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
-			ml.onLoad = function() { $('#vboxIndex').trigger('vmChanged',[vmid]); };
 			ml.run();
 			
 			if(d.errored)
@@ -904,15 +915,20 @@ function vboxProgressUpdateModal(d,e) {
  */
 function vboxProgressUpdate(d,e,modal) {
 	
+	//console.log(modal);
+	//console.log(d);
 	// check for completed progress
 	if(!d || !d['progress'] || d['info']['completed'] || d['info']['canceled']) {
-		if(d && d['info'] && d['info']['canceled']) vboxAlert(trans('Operation Canceled','phpVirtualBox'),{'width':'100px','height':'auto'});
+		
+		if(d && d['info'] && d['info']['canceled'])
+			vboxAlert(trans('Operation Canceled','phpVirtualBox'),{'width':'100px','height':'auto'});
 		
 		var callback = $("#vboxProgress"+e.pid).data('vboxCallback');
 		
 		$("#vboxProgressBar"+e.pid).progressbar({ value: 100 });
 		
 		if(modal) {
+			
 			var icon = $("#vboxProgress"+e.pid).data('vboxIcon');
 			var title = $("#vboxProgress"+e.pid).data('vboxTitle');
 			var target = $("#vboxProgress"+e.pid).data('vboxTarget');
@@ -963,9 +979,9 @@ function vboxProgressUpdate(d,e,modal) {
 	}
 	
 	if(modal)
-		window.setTimeout("vboxAjaxRequest('progressGet',{'progress':'"+e.pid+"'},vboxProgressUpdateModal,{'pid':'"+e.pid+"','catcherrs':'"+e.catcherrs+"'})", 3000);
+		window.setTimeout("vboxAjaxRequest('progressGet',{'progress':'"+e.pid+"',pct:'"+d.info.percent+"'},vboxProgressUpdateModal,{'pid':'"+e.pid+"','catcherrs':'"+e.catcherrs+"'})", 3000);
 	else
-		window.setTimeout("vboxAjaxRequest('progressGet',{'progress':'"+e.pid+"'},vboxProgressUpdate,{'pid':'"+e.pid+"','catcherrs':'"+e.catcherrs+"'})", 3000);
+		window.setTimeout("vboxAjaxRequest('progressGet',{'progress':'"+e.pid+"',pct:'"+d.info.percent+"'},vboxProgressUpdate,{'pid':'"+e.pid+"','catcherrs':'"+e.catcherrs+"'})", 3000);
 	
 }
 

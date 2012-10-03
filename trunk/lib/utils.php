@@ -20,16 +20,11 @@ require_once(dirname(__FILE__).'/config.php');
  */
 function session_init($keepopen = false) {
 	
+	// Check for session support
+	if(!function_exists('session_start'))
+		throw new Exception('PHP session support is not available. This is required for phpVirtualBox to function properly.');
+	
 	$settings = new phpVBoxConfigClass();
-
-	// No session support? No login...
-	if(@$settings->noAuth) {
-		global $_SESSION;
-		$_SESSION['valid'] = true;
-		$_SESSION['authCheckHeartbeat'] = time();
-		$_SESSION['admin'] = true;
-		return;
-	}
 	
 	// Sessions provided by auth module?
 	if(@$settings->auth->capabilities['sessionStart']) {
@@ -50,10 +45,20 @@ function session_init($keepopen = false) {
 	
 		session_name((isset($settings->session_name) ? $settings->session_name : md5('phpvbx'.$_SERVER['DOCUMENT_ROOT'].$_SERVER['HTTP_USER_AGENT'])));
 		session_start();
-	
 	}
 	
-	if(!$keepopen) session_write_close();
+	// No session support? No login...
+	if(@$settings->noAuth) {
+		global $_SESSION;
+		$_SESSION['valid'] = true;
+		$_SESSION['authCheckHeartbeat'] = time();
+		$_SESSION['admin'] = true;
+		return;
+	}
+	
+	if(!$keepopen)
+		session_write_close();
+	
 	
 }
 

@@ -37,6 +37,17 @@ var tabs = [
     	name:'vboxTabVMConsole',
     	content:'tabVMConsole',
     	label:'Console',
+    	bindEvents: {
+    		'OnVRDEServerInfoChanged' : function(e,vmid,consoleInfo) {
+    			
+	    		var selVM = vboxChooser.getSingleSelected();	    		
+	    		var enabled = (selVM && selVM.id == vmid && vboxVMStates.isRunning(selVM) && consoleInfo && consoleInfo.enabled && consoleInfo.consolePort > 0);
+	    		
+	    		if(enabled) tabsMain.enableTab(tabsMain.getTabByName('vboxTabVMConsole'));
+	    		else tabsMain.disableTab(tabsMain.getTabByName('vboxTabVMConsole'));
+
+    		}
+    	},
     	icon:'vrdp',
     	enabled:function(vm){
     		return (vm && vm.id != 'host' && vboxVMStates.isRunning(vm) && vm.consoleInfo && vm.consoleInfo.consolePort > 0);
@@ -75,6 +86,17 @@ tabLoader.onLoad = function(){
 			continue;
 
 		tabsMain.addTab(tabs[i]);
+		
+		// Bind events
+		if(tabs[i].bindEvents) {
+			
+			for(var a in tabs[i].bindEvents) {
+				
+				if(typeof(a) != 'string') continue;
+				
+				$('#vboxIndex').bind(a,tabs[i].bindEvents[a]);
+			}
+		}
 		
 	}
 	
@@ -126,6 +148,13 @@ function vboxTabs(id) {
 			$('#tablistMain').find('a[href=#'+tab.name+']').parent().addClass('selected');
 		}
 		this.tabs[this.tabs.length] = tab;
+	};
+	
+	// Get a tab by name
+	this.getTabByName = function(name) {
+		for(var i = 0; i < self.tabs.length; i++) {
+			if(self.tabs[i].name == name) return self.tabs[i];
+		}
 	};
 	
 	// Show a tab

@@ -191,7 +191,7 @@ function vboxTabs(id) {
 			
 			// Disable non-multiSelect tabs if more than one
 			// item is selected or if it fails the "enabled" test
-			if(!vboxChooser || vboxChooser.selectedVMs.length != 1 ||
+			if(!vboxChooser || vboxChooser.selectionMode != vboxSelectionModeSingleVM ||
 					!self.tabs[i].enabled(vm)) {
 				
 				self.disableTab(self.tabs[i]);

@@ -493,9 +493,9 @@ $('#vboxIndex').bind('vmLoading',function(){
 	}
 
 /* Snapshot taken event */
-}).bind('OnSnapshotTaken',function(e,vmid,snapshotid,data) {
+}).bind('vboxSnapshotTaken',function(e,vmid,snapshotid,data) {
 
-	if(vboxChooser.selectionModel == 'singleVM' && vboxChooser.selectedVMs[0] == vmid) {
+	if(vboxChooser.getSingleSelectedId() == vmid) {
 		
 		$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (data && data.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',data.snapshotCount):''));		
 	
@@ -513,9 +513,9 @@ $('#vboxIndex').bind('vmLoading',function(){
 	}
 
 /* Machine state has changed. Update "current snapshot" item */
-}).bind('OnMachineOrSessionStateChanged', function(e,vmid,state) {
+}).bind('vboxMachineOrSessionStateChanged', function(e,vmid) {
 
-	if($('#vboxTabVMSnapshots').data('lastVM') == vmid && vboxChooser.selectionModel == 'singleVM' && vboxChooser.selectedVMs[0] == vmid) {
+	if($('#vboxTabVMSnapshots').data('lastVM') == vmid && vboxChooser.getSingleSelectedId() == vmid) {
 		var vm = vboxChooser.getSingleSelected();
 		$('#vboxTabVMSnapshots').find('li.vboxSnapshotCurrent').children('div.vboxListItem')
 			.html('<img src="images/vbox/'+vboxMachineStateIcon(vm.state)+'" /> ' + $('<div />').text(trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')).html());

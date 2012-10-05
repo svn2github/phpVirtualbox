@@ -159,7 +159,7 @@ var vboxToolbarMediaLast = null; // Used when context menu item is clicked to de
 								// which medium attachment to act upon.
 function vboxChooserToolbarMediumMount(medium) {
 	
-	var vmid = vboxChooser.getSingleSelected().id;
+	var vmid = vboxChooser.getSingleSelectedId();
 	
 	var args = {'vm':vmid,'medium':medium,'port':vboxToolbarMediaLast.port,'device':vboxToolbarMediaLast.device,'bus':vboxToolbarMediaLast.bus,'controller':vboxToolbarMediaLast.controller};
 	
@@ -417,19 +417,19 @@ $('#vboxIndex').bind('vmLoading',function(){
 	vboxUpdateSettingsMenu();
 
 // Update menu on state changes
-}).bind('OnMachineOrSessionStateChanged',function(){
+}).bind('vboxMachineOrSessionStateChanged',function(e, vmid){
 
-	vboxChooserToolbarTop.update(vboxChooser);
-	vboxUpdateSettingsMenu(vboxChooser);
+	// Update menus if the VM is selected
+	if(vboxChooser.isVMSelected(vmid)) {
+		vboxChooserToolbarTop.update(vboxChooser);
+		vboxUpdateSettingsMenu(vboxChooser);
+	}
 
-	
 // Update menu on session state change
 // Update VRDE icon
-}).bind('OnVRDEServerInfoChanged',function(e, vm, consoleInfo) {
+}).bind('vboxVRDEServerInfoChanged',function(e, vm, consoleInfo) {
 	
-	var selVM = vboxChooser.getSingleSelected();
-	
-	if(selVM && selVM.id == vm) {
+	if(vboxChooser.getSingleSelectedId() == vm) {
 		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp' + (consoleInfo && consoleInfo.enabled ? '_on' : '') + '_16px.png)'}).parent().removeClass('disabled');
 	}
 	

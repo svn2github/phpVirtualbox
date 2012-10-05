@@ -37,7 +37,7 @@ $('#vboxDetailsLoading').find('span.translate').html(trans('Loading ...','UIVMDe
 $('#vboxIndex').bind('vmSelectionListChanged',function(){
 
 	// No VMs?
-	if(!vboxChooser || vboxChooser.selectedVMs.length == 0) {
+	if(!vboxChooser || vboxChooser.selectionMode == vboxSelectionModeNone) {
 		
 		// Hide all tab children first
 		$('#vboxTabVMDetails').css({'display':'table','width':'100%'}).children().hide();
@@ -59,25 +59,27 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(){
 	}
 	
 	// We have VMs and were not showing the welcome screen
-	if(vboxChooser.selectedVMs.length > 0) {
+	if(vboxChooser.selectionMode != vboxSelectionModeNone) {
 		
 		var targetDiv = $('#vboxVMDetails');
 		
 		targetDiv.children().empty().remove();
 
 		
-		if(vboxChooser.selectedVMs.length == 1 && vboxChooser.selectedVMs[0] == 'host') {
+		if(vboxChooser.getSingleSelectedId() == 'host') {
 			
 			// Wait for it to be loaded?
-			var host = vboxChooser.getVMData(vboxChooser.selectedVMs[0]);
+			var host = vboxChooser.getVMData('host');
 			if(!host.phpVbxLoaded) return;
 			
 			__vboxDisplayHostDetailsData(host, targetDiv);
 			return;
 		}
 		
-		for(var i = 0; i < vboxChooser.selectedVMs.length; i++) {
-			__vboxDisplayDetailsData(vboxChooser.getVMData(vboxChooser.selectedVMs[i]), (vboxChooser.selectedVMs.length > 1), targetDiv);
+		var vmData = vboxChooser.getSelectedVMsData();
+		
+		for(var i = 0; i < vmData.length; i++) {
+			__vboxDisplayDetailsData(vmData[i], (vboxChooser.selectionMode != vboxSelectionModeSingleVM), targetDiv);
 		}
 
 	}
@@ -86,7 +88,7 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(){
 ////////////////////////////
 }).bind('vmLoading', function() {
 	
-	if(vboxChooser.selectedVMs.length == 1) {
+	if(vboxChooser.selectionMode == vboxSelectionModeSingleVM) {
 		
 		$('#vboxVMDetails').hide().children().empty().remove();
 
@@ -111,7 +113,7 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(){
 	targetdiv.show();
 	
 	// Clear target div if we only have one vm
-	if(vboxChooser.selectedVMs.length == 1)
+	if(vboxChooser.selectionMode == vboxSelectionModeSingleVM)
 		targetdiv.children().empty().remove();
 	
 	// Host data
@@ -121,7 +123,7 @@ $('#vboxIndex').bind('vmSelectionListChanged',function(){
 	}
 	
 		
-	__vboxDisplayDetailsData(vm, (vboxChooser.selectedVMs.length > 1), targetdiv);
+	__vboxDisplayDetailsData(vm, !(vboxChooser.getSingleSelectedId()), targetdiv);
 		
 	
 });
@@ -140,8 +142,10 @@ for(var i in vboxVMDetailsSections) {
 			// Assume that the first argument for machine related events is the VM id
 			$('#vboxIndex').on(vboxVMDetailsSections[i].redrawMachineEvents[a], {'sectionName':i}, function(e, vmid) {
 	
+				// VM is not selected. Ignore.
+				if(!vboxChooser.isVMSelected(vmid)) return;
+				
 				var vmSel = vboxChooser.getVMData(vmid);
-				if(!vmSel || vmSel.id != vmid) return;
 				
 				var sectionName = e.data.sectionName;
 				

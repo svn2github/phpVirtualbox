@@ -158,7 +158,7 @@ var menu = {
 	'name':'vboxTopMachine',
 	'label':trans('Machine','UIActionPool'),
 	'enabled' : function(chooser) {
-		return (!chooser || (chooser.selectionModel != 'singleGroup'));
+		return (!chooser || (chooser.selectionMode != vboxSelectionModeSingleGroup));
 	},
 	'menu':[
 	    $.extend({},vboxVMActions['new'],{'name':'new'}),
@@ -184,13 +184,19 @@ var menu = {
 		'name':'vboxTopGroup',
 		'label':trans('Group','UIActionPool'),
 		'enabled' : function(chooser) {
-			return (chooser && (chooser.selectionModel == 'singleGroup'));
+			return (chooser && (chooser.selectionMode == vboxSelectionModeSingleGroup));
 		},
 		'menu':[
 	    	$.extend({}, vboxVMGroupActions['newmachine'], {name:'newmachine'}),
 	    	$.extend({}, vboxVMGroupActions['addmachine'], {name:'addmachine'}),
 	    	$.extend({}, vboxVMGroupActions['rename'], {name:'rename',separator:true}),
 	    	$.extend({}, vboxVMGroupActions['ungroup'], {name:'ungroup'}),
+	    	$.extend({},vboxVMActions['start'],{'name':'start','separator' : true}),
+	        $.extend({},vboxVMActions['pause'],{'name':'pause'}),
+	        $.extend({},vboxVMActions['reset'],{'name':'reset'}),
+	    	$.extend({},vboxVMActions['stop'],{'name':'stop','icon':'exit','children':sChildren}),
+	    	$.extend({},vboxVMActions['discard'],{'name':'discard','separator' : true}),
+	    	$.extend({},vboxVMActions['refresh'],{'name':'refresh'}),
 	    	$.extend({}, vboxVMGroupActions['sort'], {name:'sort',separator:true})
 		]
 	};
@@ -241,6 +247,10 @@ vboxTopMenuBar.addMenuBar('vboxMenu');
 $('#vboxIndex').bind('vmLoaded',vboxTopMenuBar.update)
 	.bind('vmSelectionListChanged',function(e, chooser){
 		vboxTopMenuBar.update(chooser);
+	}).bind('vboxMachineOrSessionStateChanged',function(e, vmid){
+		// Update menus if the VM is selected
+		if(vboxChooser.isVMSelected(vmid))
+			vboxTopMenuBar.update(self);
 	});
 
 

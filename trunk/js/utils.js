@@ -66,6 +66,7 @@ function vboxTraverse(tree,prop,val,all,children) {
  * @param {Function} callback - function to perform when AJAX data is returned
  * @param {Object} xtra - extra data to be passed to callback function (optional)
  * @param {Integer} run - number of requests previously attempted for this function. Do not pass this value!! Only used internally
+ * @return {Object} deferred
  */
 function vboxAjaxRequest(fn,params,callback,xtra,run) {
 
@@ -81,7 +82,7 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 	
 	params['fn'] = fn;
 		
-	jQuery.post('lib/ajax.php', params,
+	return jQuery.post('lib/ajax.php', params,
 			
 		function(d) {
 

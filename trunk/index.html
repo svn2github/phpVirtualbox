@@ -56,6 +56,7 @@
 	
 		// Global vboxChooser object
 		var vboxChooser = null;
+		var vboxEventSubscription = null;
 		
 		$(document).ready(function(){
 
@@ -225,8 +226,12 @@
 			 */
 			$('#vboxIndex').bind('hostChange',function(){
 				
-				var l = new vboxLoader();
+				// Stop event listener
+				if(vboxEventSubscription) {
+					vboxEventSubscription.stop();
+				}
 				
+				var l = new vboxLoader();
 				l.add('getConfig',function(d){$('#vboxIndex').data('vboxConfig',d);});
 				l.add('vboxGetGuestOSTypes',function(d){$('#vboxIndex').data('vboxOSTypes',d);});
 				l.add('vboxSystemPropertiesGet',function(d){$('#vboxIndex').data('vboxSystemProperties',d);});
@@ -269,6 +274,10 @@
 	
 				l.onLoad = function() {
 	
+					// Subscribe to events
+					vboxEventSubscription = new vboxEventListener();
+					vboxEventSubscription.start();
+					
 					// Resize to last setting
 					vboxParseCookies();
 					if($('#vboxIndex').data('vboxCookies')['vboxPaneX']) {

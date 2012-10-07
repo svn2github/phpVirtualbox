@@ -78,10 +78,10 @@ $('#vboxSettingsPortForwardingList').trigger('select');
 
 /* Edit rule element */
 function vboxSettingsPortForwardingEdit(td,type) {
-	var ex = $(td).parent().data('vboxRule')[$(td).data('vboxIndex')];
+	var ex = $(td).parent().data('vboxRule')[$(td).data('vboxPane')];
 	$(td).html('');
-	$('<input />').data('vboxIndex',$(td).data('vboxIndex')).attr({'class':'vboxText'}).val(ex).blur(function(){
-		switch($(this).data('vboxIndex')) {
+	$('<input />').data('vboxPane',$(td).data('vboxPane')).attr({'class':'vboxText'}).val(ex).blur(function(){
+		switch($(this).data('vboxPane')) {
 			/* name */
 			case 0:
 				$(this).val(jQuery.trim($(this).val().replace(',','')));
@@ -101,7 +101,7 @@ function vboxSettingsPortForwardingEdit(td,type) {
 				else if($(this).val() > 65535) $(this).val('65535');
 				break;
 		}
-		$(this).parent().parent().data('vboxRule')[$(this).data('vboxIndex')] = $(this).val();
+		$(this).parent().parent().data('vboxRule')[$(this).data('vboxPane')] = $(this).val();
 		var ex = $(this).val();
 		$(this).replaceWith($('<div />').html(ex).text());
 	}).css({'width':($(td).innerWidth()-12)+'px','padding':'0px','margin':'0px'}).keydown(function(event){
@@ -109,7 +109,7 @@ function vboxSettingsPortForwardingEdit(td,type) {
 			$(this).trigger('blur');
 			return;
 		}
-		switch($(this).data('vboxIndex')) {
+		switch($(this).data('vboxPane')) {
 			/* name */
 			case 0:
 				if(event.keyCode == 188) return false; // no commas
@@ -147,7 +147,7 @@ function vboxSettingsPortForwardingAdd(r) {
 	var rule = r.split(',');
 	var tr = $('<tr />').attr({'class':'vboxListItem'});
 	
-	$('<td />').data('vboxIndex',0).html($('<div />').html(rule[0]).text()).click(function(){
+	$('<td />').data('vboxPane',0).html($('<div />').html(rule[0]).text()).click(function(){
 		if($(this).parent().hasClass('vboxListItemSelected')) {
 			vboxSettingsPortForwardingEdit(this,'name');
 			return;
@@ -166,7 +166,7 @@ function vboxSettingsPortForwardingAdd(r) {
 	}).addClass('vboxProto').addClass('vboxHoverMid').html(trans(rule[1] == 1 ? 'TCP' : 'UDP','VBoxGlobal')).appendTo(tr);
 	
 	for(var i = 2; i < rule.length; i++) {
-		$('<td />').data('vboxIndex',i).click(function(){
+		$('<td />').data('vboxPane',i).click(function(){
 			if($(this).parent().hasClass('vboxListItemSelected')) {
 				vboxSettingsPortForwardingEdit(this,'port');
 				return;

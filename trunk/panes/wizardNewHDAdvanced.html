@@ -90,7 +90,7 @@
 //Fill HD type options
 var vboxHDTypesTbl = $('#wizardNewHDStep1').find('table.vboxNewHDWizardFileTypes').first();
 vboxHDTypesTbl.children().remove();
-var vboxHDTypes = $('#vboxIndex').data('vboxSystemProperties').mediumFormats;
+var vboxHDTypes = $('#vboxPane').data('vboxSystemProperties').mediumFormats;
 for(var i = 0; i < vboxHDTypes.length; i++) {
 	if(jQuery.inArray('CreateFixed',vboxHDTypes[i].capabilities) < 0 && jQuery.inArray('CreateDynamic',vboxHDTypes[i].capabilities) < 0) continue;
 	if(jQuery.inArray('HardDisk',vboxHDTypes[i].deviceTypes) > -1) {
@@ -99,7 +99,7 @@ for(var i = 0; i < vboxHDTypes.length; i++) {
 	}
 }
 // Select default HD format and place it at the top
-vboxHDTypesTbl.find('input[value='+$('#vboxIndex').data('vboxSystemProperties').defaultHardDiskFormat+']').prop('checked',true).closest('tr').detach().prependTo(vboxHDTypesTbl);
+vboxHDTypesTbl.find('input[value='+$('#vboxPane').data('vboxSystemProperties').defaultHardDiskFormat+']').prop('checked',true).closest('tr').detach().prependTo(vboxHDTypesTbl);
 
 wizardHDUpdateOptions();
 
@@ -116,7 +116,7 @@ function wizardHDBrowseLocation() {
 	var loc = $('<div />').html(document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value).text();
 	if(!loc) {
 		// no path set
-		loc = $('#vboxIndex').data('vboxSystemProperties').homeFolder;
+		loc = $('#vboxPane').data('vboxSystemProperties').homeFolder;
 	} else {
 		loc = vboxDirname(loc);
 	}
@@ -134,7 +134,7 @@ function wizardHDBrowseLocation() {
 		// has slash at end so get rid off it...
 		f=f.substring(0,f.length-1);
 		}
-		var path = f+$('#vboxIndex').data('vboxConfig').DSEP+filename;
+		var path = f+$('#vboxPane').data('vboxConfig').DSEP+filename;
 		document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value = path;
 	},true,trans('Location','UIWizardNewVD'));
 
@@ -173,9 +173,9 @@ function vboxWizardNewHDElectName() {
 	var HDname = 'NewVirtualDisk99';
 	for(var a = 1; a < 99; a++) {
 		var found = 0;
-		for(var i = 0; i < $('#vboxIndex').data('vboxMedia').length; i++) {
-			if($('#vboxIndex').data('vboxMedia')[i].name.toLowerCase().substring(0,$('#vboxIndex').data('vboxMedia')[i].name.lastIndexOf('.')) == 'newharddisk'+a) {
-				i = $('#vboxIndex').data('vboxMedia').length;
+		for(var i = 0; i < $('#vboxPane').data('vboxMedia').length; i++) {
+			if($('#vboxPane').data('vboxMedia')[i].name.toLowerCase().substring(0,$('#vboxPane').data('vboxMedia')[i].name.lastIndexOf('.')) == 'newharddisk'+a) {
+				i = $('#vboxPane').data('vboxMedia').length;
 				found = 1;
 			}
 		}
@@ -191,7 +191,7 @@ function vboxWizardNewHDElectName() {
 
 /* Size slider */
 var min = 1024;
-var max = Math.max(parseInt($('#vboxIndex').data('vboxSystemProperties').infoVDSize),2199022206980) / 1048576;
+var max = Math.max(parseInt($('#vboxPane').data('vboxSystemProperties').infoVDSize),2199022206980) / 1048576;
 // Over 512GB and the slider becomes useless
 max = Math.min(max,512*1024);
 
@@ -218,10 +218,10 @@ $('#wizardNewHDStep1').bind('show',function(e,wiz){
 	}
 	
 	if(wiz.suggested.path){
-		if($('#vboxIndex').data('vboxConfig').enforceVMOwnership==true){
-			var nameIndex = wiz.suggested.path.lastIndexOf(wiz.suggested.name+$('#vboxIndex').data('vboxConfig').DSEP);
+		if($('#vboxPane').data('vboxConfig').enforceVMOwnership==true){
+			var nameIndex = wiz.suggested.path.lastIndexOf(wiz.suggested.name+$('#vboxPane').data('vboxConfig').DSEP);
 			var path = wiz.suggested.path.substr(0,nameIndex);
-			wiz.suggested.path = path + $('#vboxIndex').data('vboxSession').user + "_" + wiz.suggested.name+$('#vboxIndex').data('vboxConfig').DSEP;
+			wiz.suggested.path = path + $('#vboxPane').data('vboxSession').user + "_" + wiz.suggested.name+$('#vboxPane').data('vboxConfig').DSEP;
 		}	
 	}
 

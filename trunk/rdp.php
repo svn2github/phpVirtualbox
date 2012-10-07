@@ -20,28 +20,6 @@ foreach(array('port','host','vm') as $g) {
 }
 
 
-/*
- * Check for port range or list of ports
- */
-if(preg_match('/[^\d]/',@$_GET['port'])) {
-
-
-	require_once(dirname(__FILE__).'/lib/config.php');
-	require_once(dirname(__FILE__).'/lib/vboxconnector.php');
-
-	global $_SESSION;
-	session_init();
-
-	$vbox = new vboxconnector();
-	$vbox->connect();
-
-	$args = array('vm'=>@$_GET['id']);
-	$response = array();
-	$vbox->machineGetDetails($args,array(&$response));
-	$_GET['port'] = @$response['data']['consoleInfo']['consolePort'];
-
-}
-
 header("Content-type: application/x-rdp",true);
 header("Content-disposition: attachment; filename=\"". str_replace(array('"','.'),'_',$_GET['vm']) .".rdp\"",true);
 

@@ -205,7 +205,7 @@
   */
  var vboxSettingsStorageObj = function() {
 
- 	this.hostInfo = $('#vboxIndex').data('vboxHostDetails');
+ 	this.hostInfo = $('#vboxPane').data('vboxHostDetails');
  	this.attachedDirectMedia = {};
  	this.attachedIndirectMedia = {};
 
@@ -670,7 +670,7 @@ if(!$('#vboxSettingsAddAttachmentsMenu').attr('id')) {
 
 	$(ul).append($('<li />').html("<a href='#addHD' style='background-image: url(images/vbox/hd_add_16px.png);' >"+trans('Add Hard Disk','UIMachineSettingsStorage')+"</a>"));
 	
-	$('#vboxIndex').append(ul);
+	$('#vboxPane').append(ul);
 
 }
 
@@ -988,7 +988,7 @@ function vboxSettingsStorageAddMedium(bus, type) {
 				mAttachToolbarHD.mediaMenu.menuUpdateRecent();
 				vboxSettingsAddAttachment({'controller':controller,'port':port,'device':device,'type':type,'medium':vboxMedia.getMediumById(id),'ignoreFlush':1},bus);
 				$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().click();
-			},{'path':vboxDirname($('#vboxSettingsDialog').data('vboxMachineData').settingsFilePath)+$('#vboxIndex').data('vboxConfig').DSEP}); 
+			},{'path':vboxDirname($('#vboxSettingsDialog').data('vboxMachineData').settingsFilePath)+$('#vboxPane').data('vboxConfig').DSEP}); 
 			$(this).remove();
 			
 		};
@@ -1295,7 +1295,7 @@ function vboxSettingsSelectAttachment(tbl) {
     		$('#vboxSettingsControllerDeviceOptionRow').css('display','');
     		$('#vboxSettingsControllerDeviceOptionLabel').html(trans('Solid-state drive','UIMachineSettingsStorage'));  
     		document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.checked = (ma.nonRotational ? 'checked' : '');
-    		if($('#vboxIndex').data('vboxConfig').enableHDFlushConfig && ma.ignoreFlush !== '') {
+    		if($('#vboxPane').data('vboxConfig').enableHDFlushConfig && ma.ignoreFlush !== '') {
 	    		$('#vboxSettingsControllerDeviceOptionFlushRow').css({'display':''});
 	    		$(document.forms['frmVboxSettings'].vboxSettingsControllerDeviceFlush).prop('checked',(ma.ignoreFlush ? true : false));
     		} else {

@@ -335,7 +335,7 @@ var vmmButtons = new Array(
 					l.add('mediumAddISCSI',function(ret){
 						if(ret && ret.id) {
 							var nl = new vboxLoader();
-							nl.add('vboxGetMedia',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
+							nl.add('vboxGetMedia',function(dat){$('#vboxPane').data('vboxMedia',dat);});
 							nl.onLoad = function() {
 								vboxVMMFillMedia((ret && ret.id ? ret.id : null));
 							};
@@ -367,7 +367,7 @@ var vmmButtons = new Array(
 		'name' : 'vmmcopy',
 		'label' : trans('Copy...','VBoxMediaManagerDlg'),
 		'icon' : 'vdm_add',
-		'separator' : $('#vboxIndex').data('vboxConfig').enableAdvancedConfig,
+		'separator' : $('#vboxPane').data('vboxConfig').enableAdvancedConfig,
 		'enabled' : function (item) {
 			if(!item) return false;
 			if($("#vboxVMMTabs").tabs('option','selected')) return false;
@@ -430,7 +430,7 @@ var vmmButtons = new Array(
 					
 					if(ret && ret.result == 1) {
 						var l = new vboxLoader();
-						l.add('vboxGetMedia',function(data){$('#vboxIndex').data('vboxMedia',data);});
+						l.add('vboxGetMedia',function(data){$('#vboxPane').data('vboxMedia',data);});
 						l.onLoad = function() {
 							if($('#vboxVirtualMediaManager').data('hideDiff')) {
 								var d = vboxMedia.getMediumById(med.id);
@@ -511,7 +511,7 @@ var vmmButtons = new Array(
 			var q = '';
 			
 			// If we are removing a hard disk and configured to allow deletions
-			if(m.deviceType == 'HardDisk' && $('#vboxIndex').data('vboxConfig').deleteOnRemove && m.format != 'iSCSI') {
+			if(m.deviceType == 'HardDisk' && $('#vboxPane').data('vboxConfig').deleteOnRemove && m.format != 'iSCSI') {
 
 				
 				q = trans('<p>Do you want to delete the storage unit of the hard disk <nobr><b>%1</b></nobr>?</p><p>If you select <b>Delete</b> ' +
@@ -524,7 +524,7 @@ var vmmButtons = new Array(
 						if(ret && ret.progress) {
 							vboxProgress(ret.progress,function(){
 								var l = new vboxLoader();
-								l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
+								l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
 								l.onLoad = vboxVMMFillMedia;
 								l.run();
 							},'progress_media_delete_90px.png',trans('Delete','UIMessageCenter'),
@@ -537,7 +537,7 @@ var vmmButtons = new Array(
 				buttons[trans('Keep','UIMessageCenter')] = function(){
 					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType},function(ret){
 						var l = new vboxLoader();
-						l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
+						l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
 						l.onLoad = vboxVMMFillMedia;
 						l.run();
 					});
@@ -553,7 +553,7 @@ var vmmButtons = new Array(
 					var b = this;
 					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType},function(ret){
 						var l = new vboxLoader();
-						l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
+						l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
 						l.onLoad = vboxVMMFillMedia;
 						$(b).empty().remove();
 						l.run();
@@ -605,7 +605,7 @@ var vmmButtons = new Array(
 				vboxAjaxRequest('mediumRelease',{'medium':m.location,'type':m.deviceType},function(ret){
 					
 					var l = new vboxLoader();
-					l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
+					l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
 					l.onLoad = function(){
 						vboxVMMFillMedia(m.id);
 					};
@@ -635,7 +635,7 @@ var vmmButtons = new Array(
 
 			// Force a refresh of media
 			var l = new vboxLoader();
-			l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
+			l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
 			l.onLoad = vboxVMMFillMedia;
 			l.run();
 			
@@ -646,7 +646,7 @@ var vmmButtons = new Array(
 );
 
 // Check for advanced config
-if(!$('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
+if(!$('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
 	vmmButtons.shift();
 	vmmButtons.shift();
 	vmmButtons.shift();
@@ -670,7 +670,7 @@ vmmMenu.addMenuBar('vboxMMMenu');
 var vmmCMButtons;
 
 // Check for advanced config. We don't want these in our context menu
-if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
+if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
 	vmmCMButtons = vmmButtons.slice(3,-1);
 } else {
 	vmmCMButtons = vmmButtons.slice(0,-1);
@@ -862,7 +862,7 @@ function vboxVMMFillMedia(sel) {
 	$('#vmmCDsIcon').attr('src','images/vbox/cd_16px.png');
 	$('#vmmFloppysIcon').attr('src','images/vbox/fd_16px.png');
 		
-	var media = $('#vboxIndex').data('vboxMedia').sort(function(a,b) {
+	var media = $('#vboxPane').data('vboxMedia').sort(function(a,b) {
 		return strnatcasecmp(a.name,b.name);
 	});
 

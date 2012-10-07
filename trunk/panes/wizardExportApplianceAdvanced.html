@@ -144,24 +144,24 @@ var vboxApplianceProps = {
 /* Browse for export location */
 function wizardExportApplianceBrowseLocation() {
 
-	var dsepRegEx = $('#vboxIndex').data('vboxConfig').DSEP;
+	var dsepRegEx = $('#vboxPane').data('vboxConfig').DSEP;
 	if(dsepRegEx == '\\') dsepRegEx += '\\';
 		
 	// Get current location
 	var loc = document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation.value;
-	if(loc.indexOf($('#vboxIndex').data('vboxConfig').DSEP) > -1) {
+	if(loc.indexOf($('#vboxPane').data('vboxConfig').DSEP) > -1) {
 		var r = new RegExp(dsepRegEx+'([^'+dsepRegEx+']*)?$');
 		loc = loc.replace(r,'');
 	} else {
 		// no path set
-		loc = $('#vboxIndex').data('vboxConfig').version.settingsFilePath.substring(0,$('#vboxIndex').data('vboxConfig').version.settingsFilePath.length - 27);
+		loc = $('#vboxPane').data('vboxConfig').version.settingsFilePath.substring(0,$('#vboxPane').data('vboxConfig').version.settingsFilePath.length - 27);
 	}
 	vboxFileBrowser(loc,function(f){
 		if(!f) return;
 		// get file name
 		var r = new RegExp('.*'+dsepRegEx);
 		file = $(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val().replace(r,'');
-		document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation.value = f+($('#vboxIndex').data('vboxConfig').DSEP)+file;
+		document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation.value = f+($('#vboxPane').data('vboxConfig').DSEP)+file;
 	},true,trans('Select a file to export into','UIWizardExportAppPage3'));
 
 }
@@ -194,9 +194,9 @@ function vboxWizardExportApplianceOVFName() {
 	
 	// If there is already a folder chosen, don't change it
 	if(jQuery.trim($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val())) {
-		name = vboxDirname(jQuery.trim($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val())) + $('#vboxIndex').data('vboxConfig').DSEP + name + '.ova';
+		name = vboxDirname(jQuery.trim($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val())) + $('#vboxPane').data('vboxConfig').DSEP + name + '.ova';
 	} else {
-		name = $('#vboxIndex').data('vboxConfig').version.settingsFilePath.substring(0,$('#vboxIndex').data('vboxConfig').version.settingsFilePath.length - 27) + $('#vboxIndex').data('vboxConfig').DSEP + name + '.ova';
+		name = $('#vboxPane').data('vboxConfig').version.settingsFilePath.substring(0,$('#vboxPane').data('vboxConfig').version.settingsFilePath.length - 27) + $('#vboxPane').data('vboxConfig').DSEP + name + '.ova';
 	}
 	
 	$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val(name);

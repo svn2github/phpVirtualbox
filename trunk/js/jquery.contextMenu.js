@@ -69,11 +69,11 @@ if(jQuery)( function() {
 
 						// Hide menus trigger
 						var smenu = this;
-						$('#vboxIndex').bind('contextMenuShowLevel',function(e,c){
+						$('#vboxPane').bind('contextMenuShowLevel',function(e,c){
 							if($(smenu).data('level') >= c.level && $(smenu).attr('id') != c.id) $(smenu).hide();
 						});
 						
-						$(this).detach().appendTo($('#vboxIndex'));
+						$(this).detach().appendTo($('#vboxPane'));
 						subMenus($(this),level + 1);
 					});
 									
@@ -95,7 +95,7 @@ if(jQuery)( function() {
 						$(menu).find('LI.hover').removeClass('hover');
 						$(this).addClass('hover');
 						
-						$('#vboxIndex').trigger('contextMenuShowLevel', {'level':$(this).parent().data('level'), 'id':$(this).parent().attr('id')});
+						$('#vboxPane').trigger('contextMenuShowLevel', {'level':$(this).parent().data('level'), 'id':$(this).parent().attr('id')});
 						
 						var subMenuId = $(this).data('subId');
 						if(subMenuId) showMenu($(this),$('#'+subMenuId),'submenu',e);
@@ -120,7 +120,7 @@ if(jQuery)( function() {
 					subMenus(menu,$(menu).data('level')+1);
 					
 					// Hide all other menus at this level
-					$('#vboxIndex').trigger('contextMenuShowLevel', {'level':$(menu).data('level'), 'id':$(menu).attr('id')});
+					$('#vboxPane').trigger('contextMenuShowLevel', {'level':$(menu).data('level'), 'id':$(menu).attr('id')});
 					
 					// Detect mouse position
 					var d = {};
@@ -187,7 +187,7 @@ if(jQuery)( function() {
 						if(m) {
 							$(m).addClass('contextSubMenu contextMenuLevel' + ($(menu).data('level')+1)).data('level',($(menu).data('level')+1))
 							// Hide menus trigger
-							$('#vboxIndex').bind('contextMenuShowLevel',function(e,c){
+							$('#vboxPane').bind('contextMenuShowLevel',function(e,c){
 								if($(m).data('level') >= c.level && $(m).attr('id') != c.id) $(m).hide();
 							});
 					

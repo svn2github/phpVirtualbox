@@ -58,7 +58,7 @@ $('#vboxSettingsTabParallelPort').find(".translate").html(function(i,h){return t
 var ul = $('<ul />');
 $(vboxSettingsPPortContainer).append(ul);
 
-for(var i = 0; i < parseInt($('#vboxIndex').data('vboxSystemProperties').parallelPortCount); i++) {
+for(var i = 0; i < parseInt($('#vboxPane').data('vboxSystemProperties').parallelPortCount); i++) {
 
 	
 	/* tab */
@@ -92,7 +92,7 @@ for(var i = 0; i < parseInt($('#vboxSettingsDialog').data('vboxMachineData').par
 
 	var a = (i + 1); 
 	
-	if(a > $('#vboxIndex').data('vboxSystemProperties').parallelPortCount) continue;
+	if(a > $('#vboxPane').data('vboxSystemProperties').parallelPortCount) continue;
 
 	// Port Number
 	var pNum = vboxParallelPorts.getPortName($('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].IRQ,$('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].IOBase);
@@ -150,7 +150,7 @@ $('#vboxSettingsDialog').one('show',function(){
 /* Change settings onSave() */
 $('#vboxSettingsDialog').bind('save',function(){
 
-	for(var i = 0; i < parseInt($('#vboxIndex').data('vboxSystemProperties').parallelPortCount); i++) {
+	for(var i = 0; i < parseInt($('#vboxPane').data('vboxSystemProperties').parallelPortCount); i++) {
 
 		var a = (i + 1); 
 

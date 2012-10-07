@@ -92,22 +92,22 @@ var vboxApplianceImportProps = {
 		'CPU' : {'label':'CPU','icon':'cpu','edit':'text','postEdit':function(val,old){
 			val = parseInt(val);
 			if(isNaN(val)) return old;
-			return Math.min($('#vboxIndex').data('vboxSystemProperties').maxGuestCPUCount,Math.max($('#vboxIndex').data('vboxSystemProperties').minGuestCPUCount,val));			
+			return Math.min($('#vboxPane').data('vboxSystemProperties').maxGuestCPUCount,Math.max($('#vboxPane').data('vboxSystemProperties').minGuestCPUCount,val));			
 		}},
 		'Memory' : {'label':'RAM','icon':'ram','edit':'text','display':function(val){
 			return Math.max(parseInt(val),0) + ' ' + trans('MB','VBoxGlobal');
 		},'postEdit':function(val,old) {
 			val = parseInt(val);
 			if(isNaN(val)) return old;
-			return Math.min($('#vboxIndex').data('vboxSystemProperties').maxGuestRAM,Math.max($('#vboxIndex').data('vboxSystemProperties').minGuestRAM,val));
+			return Math.min($('#vboxPane').data('vboxSystemProperties').maxGuestRAM,Math.max($('#vboxPane').data('vboxSystemProperties').minGuestRAM,val));
 		}},
 		'SoundCard' : {'label':'Sound Card','icon':'sound','checkbox':true,'edit':'options','display':function(val){
-			return trans(vboxAudioController($('#vboxIndex').data('vboxAudioControllerTypes')[val]),'VBoxGlobal');
+			return trans(vboxAudioController($('#vboxPane').data('vboxAudioControllerTypes')[val]),'VBoxGlobal');
 		}},
 		'CDROM' : {'label':'DVD','icon':'cd','checkbox':true,'edit':'checkbox'},
 		'USBController' : {'label':'USB Controller','icon':'usb','checkbox':true},
 		'NetworkAdapter' : {'label':'Network Adapter','icon':'nw','checkbox':true,'edit':'options','option_offset':-1,'display':function(val){
-			return trans(vboxNetworkAdapterType($('#vboxIndex').data('vboxNetworkAdapterTypes')[val]),'VBoxGlobal');
+			return trans(vboxNetworkAdapterType($('#vboxPane').data('vboxNetworkAdapterTypes')[val]),'VBoxGlobal');
 		}},
 		'Floppy' : {'label':'Floppy','icon':'floppy','checkbox':true},
 		'HardDiskControllerIDE' : {'label':'Hard Disk Controller (IDE)','icon':'ide','edit':''},
@@ -146,12 +146,12 @@ vboxApplianceImportProps['NetworkAdapter']['options'] = [];
 vboxApplianceImportProps['SoundCard']['options'] = [];
 
 // Network adapters
-var cs = $('#vboxIndex').data('vboxNetworkAdapterTypes');
+var cs = $('#vboxPane').data('vboxNetworkAdapterTypes');
 for(var i = 1; i < cs.length; i++) {
 	vboxApplianceImportProps['NetworkAdapter']['options'][(i-1)] = trans(vboxNetworkAdapterType(cs[i]),'VBoxGlobal');
 }
 // Sound cards
-var cs = $('#vboxIndex').data('vboxAudioControllerTypes');
+var cs = $('#vboxPane').data('vboxAudioControllerTypes');
 for(var i = 0; i < cs.length; i++) {
 	vboxApplianceImportProps['SoundCard']['options'][i] = trans(vboxAudioController(cs[i]),'VBoxGlobal');
 }
@@ -162,7 +162,7 @@ for(var i = 0; i < cs.length; i++) {
 $('ul.vboxOSTypesMenuList').remove();
 
 // shorthand
-var vboxOSTypes = $('#vboxIndex').data('vboxOSTypes');
+var vboxOSTypes = $('#vboxPane').data('vboxOSTypes');
 var vboxSettingsOSTypes = {};
 var vboxSettingsOSTypesObj = {};
 
@@ -195,17 +195,17 @@ for(var i in vboxSettingsOSTypes) {
 	}
 	$(li).append(ul2).appendTo(ul);
 }
-$('#vboxIndex').append(ul);
+$('#vboxPane').append(ul);
 
 
 
 /* Browse for import location */
 function wizardImportApplianceBrowseLocation() {
 
-	var dsepRegEx = $('#vboxIndex').data('vboxConfig').DSEP;
+	var dsepRegEx = $('#vboxPane').data('vboxConfig').DSEP;
 	if(dsepRegEx == '\\') dsepRegEx += '\\';
 		
-	var loc = $('#vboxIndex').data('vboxSystemProperties').defaultMachineFolder;
+	var loc = $('#vboxPane').data('vboxSystemProperties').defaultMachineFolder;
 
 	vboxFileBrowser(loc,function(f){
 		if(!f) return;
@@ -516,7 +516,7 @@ function vboxImportAppliancePropEdit(elm,desc) {
 				if(diskRows.length) {
 					var mfd = new vboxLoader();
 					mfd.add('vboxGetComposedMachineFilename',function(d){
-						var mfolder = vboxDirname(d.file) + $("#vboxIndex").data('vboxConfig').DSEP;
+						var mfolder = vboxDirname(d.file) + $("#vboxPane").data('vboxConfig').DSEP;
 						for(var i = 0; i < diskRows.length; i++) {
 							var tdc = $(diskRows[i]).children().eq(1);
 							var dname = vboxBasename($(tdc).data('descValue'));

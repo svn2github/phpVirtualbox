@@ -149,7 +149,7 @@
           	
           	$('<tr />').append($('<th />').attr({'style':'white-space: nowrap; width: auto; text-align: right;'}).html(trans('Remote:','UIMachineSettingsUSBFilterDetails'))).append($('<td />').attr({'style':'width: 100%'}).append(sel)).appendTo(tbl);
           	
-          	$(d).append(tbl).appendTo($('#vboxIndex'));
+          	$(d).append(tbl).appendTo($('#vboxPane'));
           	
 			var buttons = { };
 			buttons[trans('OK','QIMessageBox')] = function() {
@@ -294,7 +294,7 @@ if(!$('#vboxSettingsUSBFilterList').find('li.vboxListItem').first().trigger('cli
 if($('#vboxSettingsUSBAddDevice').attr('id')) {
 	$('#vboxSettingsUSBAddDevice').empty();
 } else {
-	$('#vboxIndex').append($('<ul />').attr({'class':'contextMenu contextMenuNoBG','style':'display: none','id':'vboxSettingsUSBAddDevice'}));
+	$('#vboxPane').append($('<ul />').attr({'class':'contextMenu contextMenuNoBG','style':'display: none','id':'vboxSettingsUSBAddDevice'}));
 }
 
 /* Hidden element that menu is bound to */

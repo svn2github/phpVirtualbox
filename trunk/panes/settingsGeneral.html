@@ -110,7 +110,7 @@ function vboxSnapshotBrowseFolder(btn) {
 /*
  * Hide start / stop config if not enabled
  */
-if(!$('#vboxIndex').data('vboxConfig').startStopConfig) {
+if(!$('#vboxPane').data('vboxConfig').startStopConfig) {
 	
 	$('#vboxSettingsTabGeneralBasic').find('tr.vboxStartStopConfig').hide();
 	
@@ -124,7 +124,7 @@ if(!$('#vboxIndex').data('vboxConfig').startStopConfig) {
  * Remove input if advancedconfig is not set
  * else set default values
  */
-if(!$('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
+if(!$('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
 	$('#vboxSettingsTabGeneralInputTab').remove();
 	$('#vboxSettingsTabGeneralInput').remove();
 } else {
@@ -132,7 +132,7 @@ if(!$('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
 	$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputMouse).val($('#vboxSettingsDialog').data('vboxMachineData').pointingHIDType);
 }
 
-if($('#vboxIndex').data('vboxConfig').enableCustomIcons) {
+if($('#vboxPane').data('vboxConfig').enableCustomIcons) {
 	
 	$('#vboxSettingsRowVMIcon').css('display','');
 	
@@ -163,7 +163,7 @@ var vboxSettingsOSTypes = new Array();
 var vboxSettingsOSTypesObj = {};
 
 // shorthand
-var vboxOSTypes = $('#vboxIndex').data('vboxOSTypes');
+var vboxOSTypes = $('#vboxPane').data('vboxOSTypes');
 	
 // Default OS Type set to my fav :) Eventually will move to config.php
 var vboxDefaultOSTypeId = 'Debian';
@@ -243,7 +243,7 @@ $('#vboxSettingsDialog').one('show',function(){
 $('#vboxSettingsDialog').bind('save',function(){
 
 	// Start / stop config
-	if($('#vboxIndex').data('vboxConfig').startStopConfig) {
+	if($('#vboxPane').data('vboxConfig').startStopConfig) {
 		$('#vboxSettingsDialog').data('vboxMachineData').startupMode = document.forms['frmVboxSettings'].vboxStartStopConfigStartup.value;
 	}
 
@@ -255,12 +255,12 @@ $('#vboxSettingsDialog').bind('save',function(){
 	$('#vboxSettingsDialog').data('vboxMachineData').GUI.SaveMountedAtRuntime = (document.forms['frmVboxSettings'].vboxSettingsGeneralRemovableMedia.checked ? 'yes' : 'no');
 	$('#vboxSettingsDialog').data('vboxMachineData').description = 	$(document.forms['frmVboxSettings'].vboxSettingsGeneralDescription).val();
 	
-	if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
+	if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
 		$('#vboxSettingsDialog').data('vboxMachineData').keyboardHIDType = $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputKeyboard).val();
 		$('#vboxSettingsDialog').data('vboxMachineData').pointingHIDType = $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputMouse).val();
 	}
 
-	if($('#vboxIndex').data('vboxConfig').enableCustomIcons)
+	if($('#vboxPane').data('vboxConfig').enableCustomIcons)
 		$('#vboxSettingsDialog').data('vboxMachineData').customIcon = $(document.forms['frmVboxSettings'].vboxSettingsGeneralIcon).val();
 
 	

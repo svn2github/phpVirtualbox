@@ -71,7 +71,7 @@ var ad = vboxSettingsAudioDrivers[$('#vboxSettingsDialog').data('vboxHostDetails
 
 // Failsafe
 if(!ad) {
-	ad = [$('#vboxIndex').data('vboxSystemProperties').defaultAudioDriver];
+	ad = [$('#vboxPane').data('vboxSystemProperties').defaultAudioDriver];
 }
 if(jQuery.inArray($('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.audioDriver, ad) < 0)
 	ad[ad.length] = $('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.audioDriver;

@@ -26,7 +26,7 @@ function vboxShowLogsInit(vm) {
 	}
 
 	// Pattern for regexp replacement
-	var preg = new RegExp('.*'+$('#vboxIndex').data('vboxConfig').DSEP.replace('\\','\\\\'));
+	var preg = new RegExp('.*'+$('#vboxPane').data('vboxConfig').DSEP.replace('\\','\\\\'));
 
 	var ul = $('<ul />').attr({'id':'vboxVMLogsUL'});
 	for(var i = 0; i < logs.length; i++) {

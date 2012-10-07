@@ -141,7 +141,7 @@ function newVMToggleNewDisk(dis) {
 
 /* Mem size slider */
 var min = 4;
-var max = parseInt($('#vboxIndex').data('vboxHostDetails').memorySize);
+var max = parseInt($('#vboxPane').data('vboxHostDetails').memorySize);
 
 $('#wizardNewVMSize').data('form','frmwizardNewVM');
 
@@ -222,7 +222,7 @@ var newVMOSTypes = new Array();
 var newVMOSTypesObj = {};
 
 // shorthand
-var vboxOSTypes = $('#vboxIndex').data('vboxOSTypes');
+var vboxOSTypes = $('#vboxPane').data('vboxOSTypes');
 	
 // Default OS Type set to my fav :) Eventually will move to config.php
 var vboxDefaultOSTypeId = 'Debian';

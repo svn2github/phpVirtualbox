@@ -190,7 +190,7 @@ $('#vboxSettingsTabNetAdapter').find('input.vboxSettingsNetMacGen').click(functi
 var ul = $('<ul />');
 $(vboxSettingsNetContainer).append(ul);
 
-for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
+for(var i = 0; i < parseInt($('#vboxPane').data('vboxConfig').nicMax); i++) {
 
 	
 	/* tab */
@@ -216,7 +216,7 @@ $("#vboxSettingsTabNetAdapter").empty().remove();
 
 /* Net values */
 var vboxVDEFound = false; // check for VDE attachments
-for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
+for(var i = 0; i < parseInt($('#vboxPane').data('vboxConfig').nicMax); i++) {
 
 	var a = (i + 1); 
 
@@ -274,7 +274,7 @@ for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
 	}).val(trans('Port Forwarding','UIMachineSettingsNetwork'));
 	
 	// Set Nat values
-	if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
+	if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
 		document.forms['frmVboxSettings'].elements['vboxSettingsNetAliasModeProxyOnly'+a].checked = (($('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.aliasMode & 2) ? true : false);
 		document.forms['frmVboxSettings'].elements['vboxSettingsNetAliasModeSamePorts'+a].checked = (($('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.aliasMode & 4) ? true : false);
 		document.forms['frmVboxSettings'].elements['vboxSettingsNetPassDNSDomain'+a].checked = ($('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.DNSPassDomain ? true : false);
@@ -286,8 +286,8 @@ for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
 
 }
 /* Disable VDE selection? */
-if(!vboxVDEFound && !$('#vboxIndex').data('vboxConfig').enableVDE) {
-	for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
+if(!vboxVDEFound && !$('#vboxPane').data('vboxConfig').enableVDE) {
+	for(var i = 0; i < parseInt($('#vboxPane').data('vboxConfig').nicMax); i++) {
 		$(document.forms['frmVboxSettings'].elements['vboxSettingsNetAttachedTo'+(i+1)]).children().last().remove();
 	}
 }	
@@ -339,7 +339,7 @@ function vboxSettingsUpdateNetworkOptions(sel) {
 		$(nsel).children().remove();
 		$(nsel).prop('disabled',true);
 		
-		if(sel.value == 'NAT' && $('#vboxIndex').data('vboxConfig').enableAdvancedConfig) ptable.find('tr.vboxSettingsAdvancedNat').css('display','');
+		if(sel.value == 'NAT' && $('#vboxPane').data('vboxConfig').enableAdvancedConfig) ptable.find('tr.vboxSettingsAdvancedNat').css('display','');
 		else ptable.find('tr.vboxSettingsAdvancedNat').css('display','none');
 
 		
@@ -399,7 +399,7 @@ $('#vboxSettingsDialog').one('show',function(){
 	
 	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 		
-		for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
+		for(var i = 0; i < parseInt($('#vboxPane').data('vboxConfig').nicMax); i++) {
 			
 			var a = (i + 1);
 			
@@ -426,7 +426,7 @@ $('#vboxSettingsDialog').one('show',function(){
 }).bind('save',function(){
 
 	/* Net */
-	for(var i = 0; i < parseInt($('#vboxIndex').data('vboxConfig').nicMax); i++) {
+	for(var i = 0; i < parseInt($('#vboxPane').data('vboxConfig').nicMax); i++) {
 
 		var a = (i + 1); 
 
@@ -452,7 +452,7 @@ $('#vboxSettingsDialog').one('show',function(){
 		}
 		
 		// Set Nat values
-		if($('#vboxIndex').data('vboxConfig').enableAdvancedConfig) {
+		if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
 			var aliasMode = $('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.aliasMode & 1;
 			if(document.forms['frmVboxSettings'].elements['vboxSettingsNetAliasModeProxyOnly'+a].checked) {
 				aliasMode |= 2;

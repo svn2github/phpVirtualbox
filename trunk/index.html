@@ -47,6 +47,9 @@
    	<script type="text/javascript" src="js/jquery.mediumselect.js"></script>
    	<script type="text/javascript" src="js/phpvirtualbox.js"></script>
     <script type="text/javascript" src="js/utils.js"></script>
+    <script type="text/javascript" src="js/eventlistener.js"></script>
+    <script type="text/javascript" src="js/chooser.js"></script>
+    <script type="text/javascript" src="js/datamediator.js"></script>
 	<script type="text/javascript" src="js/dialogs.js"></script>
 	<script type="text/javascript" src="js/phptest.php"></script>
 
@@ -54,10 +57,6 @@
 	<!-- Main Setup -->
 	<script type='text/javascript'>
 	
-		// Global vboxChooser object
-		var vboxChooser = null;
-		var vboxEventSubscription = null;
-		
 		$(document).ready(function(){
 
 			
@@ -144,7 +143,7 @@
 				
 				$('#vboxResizeOverlay').remove();
 				$('body').disableSelection().css({'cursor':(jQuery.browser.opera ? 'e-resize' : 'col-resize')});
-				$('#vboxIndex').append($('<div />').attr({'id':'vboxResizeOverlay','style':'width:100%;height:100%;border:0px;margin:0px;padding:0px;position:absolute;top:0px;left:0px;z-index:10;cursor:'+(jQuery.browser.opera ? 'e-resize' : 'col-resize')}));
+				$('#vboxPane').append($('<div />').attr({'id':'vboxResizeOverlay','style':'width:100%;height:100%;border:0px;margin:0px;padding:0px;position:absolute;top:0px;left:0px;z-index:10;cursor:'+(jQuery.browser.opera ? 'e-resize' : 'col-resize')}));
 				$('#vboxResizeBar').data('vboxX',e.pageX);
 				
 			},'stop':function(e){
@@ -180,7 +179,7 @@
 				
 				$('#vboxResizeOverlay').remove();
 				$('body').disableSelection().css({'cursor':(jQuery.browser.opera ? 'n-resize' : 'row-resize')});
-				$('#vboxIndex').append($('<div />').attr({'id':'vboxResizeOverlay','style':'width:100%;height:100%;border:0px;margin:0px;padding:0px;position:absolute;top:0px;left:0px;z-index:10;cursor:'+(jQuery.browser.opera ? 'n-resize' : 'row-resize')}));
+				$('#vboxPane').append($('<div />').attr({'id':'vboxResizeOverlay','style':'width:100%;height:100%;border:0px;margin:0px;padding:0px;position:absolute;top:0px;left:0px;z-index:10;cursor:'+(jQuery.browser.opera ? 'n-resize' : 'row-resize')}));
 				$('#vboxResizeBarProgress').data('vboxY',e.pageY);
 				
 			},'stop':function(e){
@@ -224,47 +223,43 @@
 			/*
 			 * Refresh data when host changes
 			 */
-			$('#vboxIndex').bind('hostChange',function(){
-				
-				// Stop event listener
-				if(vboxEventSubscription) {
-					vboxEventSubscription.stop();
-				}
+			$('#vboxPane').bind('hostChange',function(){
 				
 				var l = new vboxLoader();
-				l.add('getConfig',function(d){$('#vboxIndex').data('vboxConfig',d);});
-				l.add('vboxGetGuestOSTypes',function(d){$('#vboxIndex').data('vboxOSTypes',d);});
-				l.add('vboxSystemPropertiesGet',function(d){$('#vboxIndex').data('vboxSystemProperties',d);});
-				l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
-				l.add('vboxGroupDefinitionsGet',function(d){$('#vboxIndex').data('vboxVMGroups',d);});
-				l.add('hostGetDetails',function(d){$('#vboxIndex').data('vboxHostDetails',d);});
-				l.add('vboxRecentMediaGet',function(d){$('#vboxIndex').data('vboxRecentMedia',d);});
-				l.add('vboxRecentMediaPathsGet',function(d){$('#vboxIndex').data('vboxRecentMediaPaths',d);});
-				l.add('vboxGetEnumerationMap',function(d){$('#vboxIndex').data('vboxMediumVariants',d);},{'class':'MediumVariant','ValueMap':1});
+				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d);});
+				l.add('vboxGetGuestOSTypes',function(d){$('#vboxPane').data('vboxOSTypes',d);});
+				l.add('vboxSystemPropertiesGet',function(d){$('#vboxPane').data('vboxSystemProperties',d);});
+				l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
+				l.add('hostGetDetails',function(d){$('#vboxPane').data('vboxHostDetails',d);});
+				l.add('vboxRecentMediaGet',function(d){$('#vboxPane').data('vboxRecentMedia',d);});
+				l.add('vboxRecentMediaPathsGet',function(d){$('#vboxPane').data('vboxRecentMediaPaths',d);});
+				l.add('vboxGetEnumerationMap',function(d){$('#vboxPane').data('vboxMediumVariants',d);},{'class':'MediumVariant','ValueMap':1});
 				
-				l.onLoad = function(){$('#vboxIndex').trigger('hostChanged');};
-
+				l.onLoad = function(){
+					$('#vboxPane').trigger('hostChanged');
+				};
+	
 				l.run();
+								
 			});
 			
 			
 			/*
 			 * Load panes all and data after valid login
 			 */
-			$('#vboxIndex').bind('login', function() {
+			$('#vboxPane').bind('login', function() {
 				
 				var l = new vboxLoader();
 				
 				// Get data and store it using data()
-				l.add('getConfig',function(d){$('#vboxIndex').data('vboxConfig',d);});
-				l.add('vboxGetGuestOSTypes',function(d){$('#vboxIndex').data('vboxOSTypes',d);});
-				l.add('vboxSystemPropertiesGet',function(d){$('#vboxIndex').data('vboxSystemProperties',d);});
-				l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
-				l.add('vboxGroupDefinitionsGet',function(d){$('#vboxIndex').data('vboxVMGroups',d);});
-				l.add('hostGetDetails',function(d){$('#vboxIndex').data('vboxHostDetails',d);});
-				l.add('vboxRecentMediaGet',function(d){$('#vboxIndex').data('vboxRecentMedia',d);});
-				l.add('vboxRecentMediaPathsGet',function(d){$('#vboxIndex').data('vboxRecentMediaPaths',d);});
-				l.add('vboxGetEnumerationMap',function(d){$('#vboxIndex').data('vboxMediumVariants',d);},{'class':'MediumVariant','ValueMap':1});
+				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d);});
+				l.add('vboxGetGuestOSTypes',function(d){$('#vboxPane').data('vboxOSTypes',d);});
+				l.add('vboxSystemPropertiesGet',function(d){$('#vboxPane').data('vboxSystemProperties',d);});
+				l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
+				l.add('hostGetDetails',function(d){$('#vboxPane').data('vboxHostDetails',d);});
+				l.add('vboxRecentMediaGet',function(d){$('#vboxPane').data('vboxRecentMedia',d);});
+				l.add('vboxRecentMediaPathsGet',function(d){$('#vboxPane').data('vboxRecentMediaPaths',d);});
+				l.add('vboxGetEnumerationMap',function(d){$('#vboxPane').data('vboxMediumVariants',d);},{'class':'MediumVariant','ValueMap':1});
 	
 				// Load HTML panes and append them to their respective locations
 				l.addFileToDOM('panes/vmlist.html',$('#vboxPaneVMList'));
@@ -274,22 +269,19 @@
 	
 				l.onLoad = function() {
 	
-					// Subscribe to events
-					vboxEventSubscription = new vboxEventListener();
-					vboxEventSubscription.start();
 					
 					// Resize to last setting
 					vboxParseCookies();
-					if($('#vboxIndex').data('vboxCookies')['vboxPaneX']) {
-						$('#vboxChooserDiv').css('width',($('#vboxIndex').data('vboxCookies')['vboxPaneX'])+'px');
+					if($('#vboxPane').data('vboxCookies')['vboxPaneX']) {
+						$('#vboxChooserDiv').css('width',($('#vboxPane').data('vboxCookies')['vboxPaneX'])+'px');
 					}
-					if($('#vboxIndex').data('vboxCookies')['vboxPaneY']) {
-						var nx = $('#vboxIndex').data('vboxCookies')['vboxPaneY'];
+					if($('#vboxPane').data('vboxCookies')['vboxPaneY']) {
+						var nx = $('#vboxPane').data('vboxCookies')['vboxPaneY'];
 						$('#vboxProgressOps').css({'height':(nx)+'px'}).parent().css({'height':(nx)+'px'});
 					}
 					
 					// Let everyone know that no vms are selected
-					$('#vboxIndex').trigger('vmSelectionListChanged',[vboxChooser]);
+					$('#vboxPane').trigger('vmSelectionListChanged',[vboxChooser]);
 					
 				};
 				
@@ -308,15 +300,15 @@
 			function vboxCheckSession(tried) {
 				
 				// check session info
-				if($('#vboxIndex').data('vboxSession') && $('#vboxIndex').data('vboxSession').valid) {
+				if($('#vboxPane').data('vboxSession') && $('#vboxPane').data('vboxSession').valid) {
 					
 					// Session is valid, trigger login
-					$('#vboxIndex').trigger('login');
+					$('#vboxPane').trigger('login');
 					return;
 				}
 				
 				// Was there an error? Assume it was displayed and just return from function
-				if($('#vboxIndex').data('vboxSession') && !$('#vboxIndex').data('vboxSession').result) {
+				if($('#vboxPane').data('vboxSession') && !$('#vboxPane').data('vboxSession').result) {
 					return;
 				}
 				
@@ -334,7 +326,7 @@
 
 			/** Load login form */
 			var login = new vboxLoader();
-			login.add('getSession',function(d){$('#vboxIndex').data('vboxSession',d);});
+			login.add('getSession',function(d){$('#vboxPane').data('vboxSession',d);});
 			login.addFileToDOM('panes/login.html');
 			login.onLoad = function() {
 
@@ -349,7 +341,7 @@
 					
 					// A valid login should create a valid session
 					var trylogin = new vboxLoader();
-					trylogin.add('login',function(d){$('#vboxIndex').data('vboxSession',d);},{'u':u,'p':p});
+					trylogin.add('login',function(d){$('#vboxPane').data('vboxSession',d);},{'u':u,'p':p});
 					trylogin.onLoad = function() { vboxCheckSession(true);};
 					trylogin.run();
 				};
@@ -377,7 +369,7 @@
 
 </head>
 <body>
-<div id='vboxIndex' style='height: 100%; margin: 0px; padding: 0px;'>
+<div id='vboxPane' style='height: 100%; margin: 0px; padding: 0px;'>
 <table id='vboxTableMain' cellpadding=0 cellspacing=0 style="height: 100%; width: 100%; padding: 0px; margin: 0px; border: 0px; border-spacing: 0px;">
 	<tr style='vertical-align: middle;'>
 		<td style='height:20px;border:0px;padding:0px;margin:0px;border-spacing:0px;'>

@@ -20,7 +20,7 @@ var tButtons = [
 		return (vboxVMActions['settings'].enabled(chooser));
 	},click:function(){
 		var vm = vboxChooser.getSingleSelected();
-		if(!vm || vboxVMStates.isRunning(vm)) return;
+		if(!vm || vboxVMStates.isRunning(vm) || vboxVMStates.isPaused(vm)) return;
 		vboxVMActions['settings'].click();
 		
 	}}),
@@ -91,7 +91,7 @@ for(var i in vboxChooserSettingsMenu) {
 }
 
 /* Append 'Settings' button Menu */
-$('#vboxIndex').append(ul);
+$('#vboxPane').append(ul);
 
 
 
@@ -125,11 +125,7 @@ vboxChooserToolbarTop.getButtonElement('settings').contextMenu({
 				break;
 				
 			case 'RemoteDisplay':
-				var l = new vboxLoader();
-				l.add('consoleVRDEServerSave',function(){
-					// pass
-				},{'vm':vm.id,'enabled':((vm.consoleInfo && vm.consoleInfo.enabled) ? 0 : 1)});
-				l.run();
+				vboxAjaxRequest('consoleVRDEServerSave',{'vm':vm.id,'enabled':-1});
 				break;
 
 			case 'settings':
@@ -167,10 +163,7 @@ function vboxChooserToolbarMediumMount(medium) {
 	var mount = new vboxLoader();
 	mount.add('mediumMount',function(ret,xtra){
 		var l = new vboxLoader();
-		l.add('vboxGetMedia',function(d){$('#vboxIndex').data('vboxMedia',d);});
-		l.onLoad = function() {
-			$('#vboxIndex').trigger('vmChanged',[vmid]);
-		};
+		l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
 		l.run();		
 	},args);
 	mount.run();	
@@ -190,7 +183,7 @@ function vboxChooserToolbarStorageUpdate(menu) {
 
 // Update host drives and recent media on host change.
 // Just recreate the menus
-$('#vboxIndex').bind('hostChanged',function(){
+$('#vboxPane').bind('hostChanged',function(){
 	vboxToolbarMediaMenuDVD = new vboxMediaMenu('DVD',vboxChooserToolbarMediumMount,''); 
 	vboxToolbarMediaMenuFD = new vboxMediaMenu('Floppy',vboxChooserToolbarMediumMount,'');	
 });
@@ -274,13 +267,12 @@ function vboxChooserToolbarUSBUpdate(menu) {
 /*
  *  
  * Update vboxSettingsMenu items. Called when 
- * vboxChooser selection changes $('#vboxIndex').onvmSelectionListChanged
+ * vboxChooser selection changes $('#vboxPane').onvmSelectionListChanged
  *
  */
-function vboxUpdateSettingsMenu() {
+function vboxUpdateSettingsMenu(vm) {
 
-	var vm = vboxChooser.getSingleSelected();
-	if(vboxVMStates.isRunning(vm)) {
+	if(vboxVMStates.isRunning(vm) || vboxVMStates.isPaused(vm)) {
 		$("#vboxToolbarButton-vboxPaneToolbar-settings").enableContextMenu();
 	} else {
 		$("#vboxToolbarButton-vboxPaneToolbar-settings").disableContextMenu();
@@ -385,8 +377,8 @@ function vboxUpdateSettingsMenu() {
 	}
 	
 	// Enable remote display?
-	if(vm && vm.VRDEServer && vm.VRDEServer.VRDEExtPack) {
-		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp' + (vm.consoleInfo && vm.consoleInfo.enabled ? '_on' : '') + '_16px.png)'}).parent().removeClass('disabled');
+	if(vm && vm.VRDEServer) {
+		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp' + (vm.VRDEServer.enabled > 0 ? '_on' : '') + '_16px.png)'}).parent().removeClass('disabled');
 	} else {
 		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp_disabled_16px.png)'}).parent().addClass('disabled');
 	}	
@@ -399,22 +391,26 @@ function vboxUpdateSettingsMenu() {
  Bind events...
  */
 
-// Loading
-$('#vboxIndex').bind('vmLoading',function(){
-
-	vboxChooserToolbarTop.update(vboxChooser);
-	$('#vboxVMSettingsMenu').disableContextMenu();
-
-// Loaded
-}).bind('vmLoaded',function(){
-	vboxChooserToolbarTop.update(vboxChooser);
-	vboxUpdateSettingsMenu(vboxChooser);
-	
-// Selection changed
-}).bind('vmSelectionListChanged',function(e,chooser){
+// Selection list changed
+$('#vboxPane').bind('vmSelectionListChanged',function(e,chooser) {
 	
 	vboxChooserToolbarTop.update(chooser);
 	vboxUpdateSettingsMenu();
+	
+	// Check for a single selected VM and
+	// update settings menu based on its runtime data
+	if(chooser.selectedVMs.length == 1 && (chooser.isSelectedInState('Running') || chooser.isSelectedInState('Paused'))) {
+		
+		// Get data
+		$.when(vboxVMDataMediator.getVMDetails(chooser.selectedVMs[0]),
+				vboxVMDataMediator.getVMRuntimeData(chooser.selectedVMs[0]))
+			.then(function(details, runtime) {
+				
+				vboxUpdateSettingsMenu($.extend({},details,vboxVMDataMediator.getVMData(details.id),runtime));
+
+			});
+		
+	}
 
 // Update menu on state changes
 }).bind('vboxMachineOrSessionStateChanged',function(e, vmid){
@@ -422,15 +418,24 @@ $('#vboxIndex').bind('vmLoading',function(){
 	// Update menus if the VM is selected
 	if(vboxChooser.isVMSelected(vmid)) {
 		vboxChooserToolbarTop.update(vboxChooser);
-		vboxUpdateSettingsMenu(vboxChooser);
 	}
+	
+	// Check for a single selected VM and
+	// update settings menu based on its runtime data
+	if(vboxChooser.getSingleSelectedId() == vmid) {
+		
+		$.when(vboxVMDataMediator.getVMDataCombined(vmid)).then(function(d) {
+			vboxUpdateSettingsMenu(d);
+		});
+	}
+
 
 // Update menu on session state change
 // Update VRDE icon
-}).bind('vboxVRDEServerInfoChanged',function(e, vm, consoleInfo) {
-	
+}).bind('vboxVRDEServerChanged',function(e, vm, data) {
+		
 	if(vboxChooser.getSingleSelectedId() == vm) {
-		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp' + (consoleInfo && consoleInfo.enabled ? '_on' : '') + '_16px.png)'}).parent().removeClass('disabled');
+		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp' + (data && data.enabled ? '_on' : '') + '_16px.png)'}).parent().removeClass('disabled');
 	}
 	
 });

@@ -37,21 +37,8 @@ var tabs = [
     	name:'vboxTabVMConsole',
     	content:'tabVMConsole',
     	label:'Console',
-    	bindEvents: {
-    		'OnVRDEServerInfoChanged' : function(e,vmid,consoleInfo) {
-    			
-	    		var selVM = vboxChooser.getSingleSelected();	    		
-	    		var enabled = (selVM && selVM.id == vmid && vboxVMStates.isRunning(selVM) && consoleInfo && consoleInfo.enabled && consoleInfo.consolePort > 0);
-	    		
-	    		if(enabled) tabsMain.enableTab(tabsMain.getTabByName('vboxTabVMConsole'));
-	    		else tabsMain.disableTab(tabsMain.getTabByName('vboxTabVMConsole'));
-
-    		}
-    	},
-    	icon:'vrdp',
-    	enabled:function(vm){
-    		return (vm && vm.id != 'host' && vboxVMStates.isRunning(vm) && vm.consoleInfo && vm.consoleInfo.consolePort > 0);
-    	}
+    	selfManageEnabled: true,
+    	icon:'vrdp'
    	}
 ];
 
@@ -66,7 +53,7 @@ var tabLoader = new vboxLoader();
 for(var i = 0; i < tabs.length; i++) {
 
 	// Tab disabled?
-	if($('#vboxIndex').data('vboxConfig')['disable' + tabs[i].name.substring(4)])
+	if($('#vboxPane').data('vboxConfig')['disable' + tabs[i].name.substring(4)])
 		continue;
 
 	// Tab link
@@ -82,27 +69,14 @@ tabLoader.onLoad = function(){
 	for(var i = 0; i < tabs.length; i++) {
 
 		// Tab disabled?
-		if($('#vboxIndex').data('vboxConfig')['disable' + tabs[i].name.substring(4)])
+		if($('#vboxPane').data('vboxConfig')['disable' + tabs[i].name.substring(4)])
 			continue;
 
 		tabsMain.addTab(tabs[i]);
 		
-		// Bind events
-		if(tabs[i].bindEvents) {
-			
-			for(var a in tabs[i].bindEvents) {
-				
-				if(typeof(a) != 'string') continue;
-				
-				$('#vboxIndex').bind(a,tabs[i].bindEvents[a]);
-			}
-		}
-		
 	}
 	
-	$('#vboxIndex').bind('vmSelectionListChanged',tabsMain.updateTabs)
-		.bind('vmLoading',tabsMain.updateTabs)
-		.bind('vmLoaded',tabsMain.updateTabs);
+	$('#vboxPane').bind('vmSelectionListChanged',tabsMain.updateTabs);
 
 	// Add "click" functionality to each tab
 	$('#tablistMain').children().click(function(){
@@ -120,6 +94,13 @@ tabLoader.onLoad = function(){
 
 	// Initial update of tabs
 	tabsMain.updateTabs();
+	
+	// Watch for tabs asking to be enabled / disabled
+	$('#tabMainContent').bind('enableTab',function(e,tabName) {
+		tabsMain.enableTab(tabsMain.getTabByName(tabName));
+	}).bind('disableTab',function(e,tabName) {
+		tabsMain.disableTab(tabsMain.getTabByName(tabName));
+	});
 
 
 };
@@ -143,11 +124,18 @@ function vboxTabs(id) {
 	
 	// Add a tab to list
 	this.addTab = function (tab) {
+		
 		if(!this.tabSelected) {
 			this.tabSelected = '#'+tab.name;
 			$('#tablistMain').find('a[href=#'+tab.name+']').parent().addClass('selected');
 		}
 		this.tabs[this.tabs.length] = tab;
+		
+		// Initially Disable tab if it manages
+		// its enabled / disabled status itself
+		if(tab.selfManageEnabled) {
+			self.disableTab(tab);
+		}
 	};
 	
 	// Get a tab by name
@@ -189,9 +177,8 @@ function vboxTabs(id) {
 			// No enable test? Skip
 			if(!self.tabs[i].enabled) continue;
 			
-			// Disable non-multiSelect tabs if more than one
-			// item is selected or if it fails the "enabled" test
-			if(!vboxChooser || vboxChooser.selectionMode != vboxSelectionModeSingleVM ||
+			// Other tabs require that one vm is selected
+			if(!vboxChooser || vboxChooser.selectedVMs.length != 1 ||
 					!self.tabs[i].enabled(vm)) {
 				
 				self.disableTab(self.tabs[i]);

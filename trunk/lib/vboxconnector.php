@@ -102,13 +102,31 @@ class vboxconnector {
 			
 		// Get event list request
 		'getEvents' => array(
-			'items' => array('vboxHandle','vboxEventListenerHandle','vboxMachineEventListener'),
+			'items' => array('vboxHandle','vboxEventListeners'),
+			'keyName' => 'eventListener'
+		),
+			
+		// Unsubscribe to events
+		'unsubscribeEvents' => array(
+			'items' => array('vboxHandle','vboxEventListeners'),
 			'keyName' => 'eventListener'
 		),
 
+		// Subscribe to events
+		'subscribeEvents' => array(
+			'items' => array('vboxHandle','vboxEventListeners'),
+			'keyName' => 'eventListener'
+		),
+
+		// Subscribe to machine events
+		'machineSubscribeEvents' => array(
+				'items' => array('vboxHandle','vboxEventListeners'),
+				'keyName' => 'eventListener'
+		),
+				
 		// Stop event listeners
 		'destroyEventListeners' => array(
-			'items' => array('vboxHandle','vboxEventListenerHandle','vboxMachineEventListener'),
+			'items' => array('vboxHandle','vboxEventListeners'),
 			'keyName' => 'eventListener'
 		),
 				
@@ -212,8 +230,6 @@ class vboxconnector {
 				$this->websessionManager = new IWebsessionManager($this->client);
 				$this->vbox = new IVirtualBox($this->client, $this->persistentRequest['vboxHandle']);
 				
-				//$this->messages[] = 'VBOX: ' . $this->vbox->handle;
-				
 				// force valid vbox check
 				$ev = $this->vbox->eventSource;
 				
@@ -230,8 +246,6 @@ class vboxconnector {
 		try {
 			$this->websessionManager = new IWebsessionManager($this->client);
 			$this->vbox = $this->websessionManager->logon($this->settings->username,$this->settings->password);
-			
-			$this->messages[] = "Created: vbox " . $this->vbox->handle;
 			
 		} catch (Exception $e) {
 			
@@ -306,223 +320,70 @@ class vboxconnector {
 	}
 	
 	/**
-	 * Get console events for the given machine
-	 * @param string $vm ID of machine
-	 * @return array list of events
-	 */
-	private function machineGetEvents($vm) {
-		
-		// No vm selected
-		if(!$vm) return array();
-
-		$this->connect();
-		
-		// Event list to return
-		$eventlist = array();
-		
-		// Entire thing wrpped in try / catch so that we always return
-		// an array. Machines can be stopped during this process which
-		// throws exceptions.
-		try {
-		
-			$eventSourceObjects = $this->_getMachineEventListener(false, $vm);
-			
-			
-			try {
-				
-				$event = $eventSourceObjects['source']->getEvent($eventSourceObjects['listener'],1000);
-				
-			} catch (Exception $e) {
-	
-				try {
-					// Event listener handle was probably bad
-					$this->persistentRequest['vboxMachineEventListener'] = null;
-					$eventSourceObjects = $this->_getMachineEventListener(false, $vm);
-					$event = $eventSourceObjects['source']->getEvent($eventSourceObjects['listener'],1000);
-					
-				} catch (Exception $e) {
-					$this->messages[] = 'Error: '. $e->getMessage();
-					return array();
-				}			
-			}
-			
-			while($event->handle) {
-				
-				$this->messages[] = $event->type->__toString();
-				
-				// Only keep the last event of one particular type
-				$eventlist[$event->type->__toString()] = $this->_getEventData($event);
-			
-				$eventSourceObjects['source']->eventProcessed($eventSourceObjects['listener'], $event);
-				
-				$event->releaseRemote();
-				
-				$event = $eventSourceObjects['source']->getEvent($eventSourceObjects['listener'],10);
-			}
-		
-			// Enrich events
-			foreach($eventlist as $k=>$event) {
-				
-				$eventlist[$k]['machineId'] = $vm;
-				
-				switch($event['eventType']) {
-				
-					/* VRDE server enabled / disabled */
-					case 'OnVRDEServerInfoChanged':
-						try {
-							$machine = $this->vbox->findMachine($vm);
-							$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
-							$machine->lockMachine($this->session->handle, 'Shared');
-							
-							$eventlist[$k]['enrichmentData'] = array(
-									'enabled' => intval($this->session->console->machine->VRDEServer->enabled),
-									'consolePort' => $this->session->console->VRDEServerInfo->port
-							);
-							
-							$this->session->unlockMachine();
-						} catch (Exception $e) {
-							//pass	
-						}
-						break;
-						
-					/* Medium mounted / removed */
-					case 'dOnMediumChanged':
-						try {
-							$machine = $this->vbox->findMachine($vm);
-							$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
-							$machine->lockMachine($this->session->handle, 'Shared');
-								
-							$eventlist[$k]['enrichmentData'] = array(
-									'enabled' => intval($this->session->console->machine->VRDEServer->enabled),
-									'consolePort' => $this->session->console->VRDEServerInfo->port
-							);
-								
-							$this->session->unlockMachine();
-						} catch (Exception $e) {
-							//pass
-						}
-						break;
-						
-						
-				}
-							
-			}
-		
-		// Machine was probably stopped
-		} catch (Exception $e) {
-			if(!is_array($eventlist)) $eventlist = array();	
-		}
-		
-		return array_values($eventlist);
-		
-
-	}
-
-	/**
-	 * Return a new or the existing machine event listener
+	 * Add a machine event listener to the list
+	 * 
 	 * @param boolean $noCreate do not attempt to create a listener
 	 * @return IEventListener
 	 */
-	private function _getMachineEventListener($noCreate, $vm) {
+	private function _machineSubscribeEvents($vm) {
 	
-		/* See if the existing listener matches the current vm. If not
-		 * unregister the existing listener
-		 */
-		
-		if($this->persistentRequest['vboxMachineEventListener'] && $this->persistentRequest['vboxMachineEventListener']['vm'] &&
-				@$this->persistentRequest['vboxMachineEventListener']['vm'] != $vm) {
-			$this->machineUnsubscribeEvents();
-		}
-		
-		/* Check for existing event listener handle */
-		if(@$this->persistentRequest['vboxMachineEventListener']['listener']) {
-	
-			try {	
-	
-				return array(
-					'listener' => new IEventListener($this->client, $this->persistentRequest['vboxMachineEventListener']['listener']),
-					'vm' => $vm,
-					'source' => new IEventSource($this->client, $this->persistentRequest['vboxMachineEventListener']['source'])
-				);
+		// Check for existing listener
+		if($this->persistentRequest['vboxEventListeners'][$vm]) {
 				
-	
-			} catch (Exception $e) {
-				// null
-			}
-		}
-		
-		// Do not create is set
-		if($noCreate) return null;
-	
-		/* @var $machine IMachine */
-		$machine = $this->vbox->findMachine($vm);
-		$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
-		$machine->lockMachine($this->session->handle, 'Shared');
-		
-		// Create and register event listener
-		$listener = $this->session->console->eventSource->createListener();
-		$this->session->console->eventSource->registerListener($listener,array('Any'), false);
-		
-		// Persist
-		$this->persistentRequest['vboxMachineEventListener'] = array(
-				'listener' => $listener->handle,
-				'vm' => $vm,
-				'source' => $this->session->console->eventSource->handle);
-		
-		$this->session->unlockMachine();
-		unset($this->session);
-	
-		return $this->_getMachineEventListener(true, $vm);
-	}
-	
-	/**
-	 * Unubscribe from all machine events
-	 */
-	private function machineUnsubscribeEvents() {
-	
-		$this->connect();
-	
-		/* See if the existing listener matches the current vm. If not
-		 * unregister the existing listener
-		 */
-		if(@$this->persistentRequest['vboxMachineEventListener']['vm'] && @$this->persistentRequest['vboxMachineEventListener']['listener']) {
-			
-			$vm = $this->persistentRequest['vboxMachineEventListener']['vm'];
-			
 			try {
-				try {
-					/* @var $machine IMachine */
-					$machine = $this->vbox->findMachine($vm);
-					
-				} catch (Exception $e) {
-					// Machine no longer exists..
-					$machine = null;
-				}
-				
-				// If the machine was found, attempt to unregister the listener
-				if($machine) {
-					
-					$machine->releaseRemote();
-
-					// Unregister listener
-					$listener = new IEventListener($this->client, $this->persistentRequest['vboxMachineEventListener']['listener']);
-					$source = new IEventSource($this->client, $this->persistentRequest['vboxMachineEventListener']['source']);
-					$source->unregisterListener($listener);
-					
-					$listener->releaseRemote();
-					$source->releaseRemote();
-					
-					
-				}
-				
+		
+				$listener = new IEventListener($this->client, $this->persistentRequest['vboxEventListeners'][$vm]['listener']);
+				$source = new IEventSource($this->client, $this->persistentRequest['vboxEventListeners'][$vm]['source']);
+		
+				$source->unregisterListener($listener);
+		
+				$listener->releaseRemote();
+				$source->releaseRemote();
+		
 			} catch (Exception $e) {
+				// Pass 
+			}
+		}
+		
+		try {
 			
+			/* @var $machine IMachine */
+			$machine = $this->vbox->findMachine($vm);
+			
+			/* Ignore if not running */
+			$state = $machine->state->__toString();
+			if($state != 'Running' && $state != 'Paused') {
+				$machine->releaseRemote();
+				return;
 			}
 			
-				
-		}
-		$this->persistentRequest['vboxMachineEventListener'] = null;
+			$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
+			$machine->lockMachine($this->session->handle, 'Shared');
 			
+			// Create and register event listener
+			$listener = $this->session->console->eventSource->createListener();
+			$this->session->console->eventSource->registerListener($listener,array('Any'), false);
+	
+			// Add to event listener list
+			$this->persistentRequest['vboxEventListeners'][$vm] = array(
+					'listener' => $listener->handle,
+					'source' => $this->session->console->eventSource->handle);
+			
+			
+			$machine->releaseRemote();
+			
+		} catch (Exception $e) {
+			// pass
+		}
+		
+		if($this->session) {
+			try {
+				$this->session->unlockMachine();
+			} catch (Exception $e) {
+				// pass
+			}
+			unset($this->session);
+		}
 	}
 	
 	/**
@@ -534,15 +395,239 @@ class vboxconnector {
 	 */
 	public function remote_getEvents($args, &$response) {
 		
-		// Global events first
-		$response['data']['events'] = $this->vboxGetEvents();
+		$this->connect();
 		
-		// Machine events?
-		if($args['vm']) {
-			$response['data']['events'] = array_merge($response['data']['events'],$this->machineGetEvents($args['vm']));
-		} else {
-			$this->machineUnsubscribeEvents();
+		$eventlist = array();
+		
+		// This should be an array
+		if(!is_array($this->persistentRequest['vboxEventListeners']))
+				$this->persistentRequest['vboxEventListeners'] = array();
+		
+		// Get events from each configured event listener
+		foreach($this->persistentRequest['vboxEventListeners'] as $k => $el) {
+			
+			try {
+				
+				$listener = new IEventListener($this->client, $el['listener']);
+				$source = new IEventSource($this->client, $el['source']);
+				
+				$event = $source->getEvent($listener,($k == 'vbox' ? 1000 : 100));
+
+				try {
+
+					while($event->handle) {
+							
+						$eventData = $this->_getEventData($event, $k);
+
+						// Only keep the last event of one particular type
+						$eventlist[$eventData['dedupId']] = $eventData;
+							
+						$source->eventProcessed($listener, $event);
+						$event->releaseRemote();
+						$event = $source->getEvent($listener,100);
+					}
+
+				} catch (Exception $e) {
+					// pass - Exceptions in event processing are ok
+				}
+				
+			} catch (Exception $e) {
+				
+				// Probably a machine that was powered off
+				unset($this->persistentRequest['vboxEventListeners'][$k]);
+				
+			}
+			
 		}
+
+		// Enrich events
+		foreach($eventlist as $k=>$event) {
+				
+			switch($event['eventType']) {
+		
+				/* Network adapter changed */
+				case 'OnNetworkAdapterChanged':
+					
+					try {
+							
+						$machine = $this->vbox->findMachine($event['sourceId']);
+						$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
+							
+						// Session locked?
+						if($this->session->state->__toString() != 'Unlocked')
+							$this->session->unlockMachine();
+							
+						$machine->lockMachine($this->session->handle, 'Shared');
+					
+						try {
+							
+							list($eventlist[$k]['enrichmentData']) = $this->_machineGetNetworkAdapters($this->session->machine, $event['networkAdapterSlot']);
+						
+						} catch (Exception $e) {
+							// Just unlock the machine
+							$eventlist[$k]['enrichmentData'] = array($e->getMessage());
+						}
+							
+						$this->session->unlockMachine();
+						$machine->releaseRemote();
+							
+					} catch (Exception $e) {
+						$eventlist[$k]['enrichmentData'] = array($e->getMessage());
+					}
+					break;
+						
+			
+				/* VRDE server changed */
+				case 'OnVRDEServerChanged':
+					try {
+							
+						$machine = $this->vbox->findMachine($event['sourceId']);
+						$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
+							
+						// Session locked?
+						if($this->session->state->__toString() != 'Unlocked')
+							$this->session->unlockMachine();
+							
+						$machine->lockMachine($this->session->handle, 'Shared');
+						$vrde = $this->session->machine->VRDEServer;
+						
+						try {
+							$eventlist[$k]['enrichmentData'] = (!$vrde ? null : array(
+								'enabled' => intval($vrde->enabled),
+								'ports' => $vrde->getVRDEProperty('TCP/Ports'),
+								'netAddress' => $vrde->getVRDEProperty('TCP/Address'),
+								'authType' => $vrde->authType->__toString(),
+								'authTimeout' => $vrde->authTimeout,
+								'allowMultiConnection' => intval($vrde->allowMultiConnection)
+								)
+							);
+						} catch (Exception $e) {
+							// Just unlock the machine
+							$eventlist[$k]['enrichmentData'] = array($e->getMessage());
+						}
+							
+						$this->session->unlockMachine();
+						$machine->releaseRemote();
+							
+					} catch (Exception $e) {
+						$eventlist[$k]['enrichmentData'] = array($e->getMessage());
+					}
+					break;
+						
+					
+					
+				/* VRDE server info changed. Just need port */
+				case 'OnVRDEServerInfoChanged':
+					try {
+							
+						$machine = $this->vbox->findMachine($event['sourceId']);
+						$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
+							
+						// Session locked?
+						if($this->session->state->__toString() != 'Unlocked')
+							$this->session->unlockMachine();
+							
+						$machine->lockMachine($this->session->handle, 'Shared');
+				
+						try {
+							$eventlist[$k]['enrichmentData'] = array(
+									'port' => $this->session->console->VRDEServerInfo->port
+							);
+						} catch (Exception $e) {
+							// Just unlock the machine
+							$eventlist[$k]['enrichmentData'] = array($e->getMessage());
+						}
+							
+						$this->session->unlockMachine();
+						$machine->releaseRemote();
+						
+					} catch (Exception $e) {
+						$eventlist[$k]['enrichmentData'] = array($e->getMessage());
+					}
+					break;
+				
+				
+				
+				/* Medium mounted / removed */
+				case 'dOnMediumChanged':
+					try {
+						$machine = $this->vbox->findMachine($vm);
+						$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
+							
+						// Session locked?
+						if($this->session->state->__toString() != 'Unlocked')
+							$this->session->unlockMachine();
+				
+						$machine->lockMachine($this->session->handle, 'Shared');
+				
+						$eventlist[$k]['enrichmentData'] = array(
+								'enabled' => intval($this->session->console->machine->VRDEServer->enabled),
+								'consolePort' => $this->session->console->VRDEServerInfo->port
+						);
+				
+						$this->session->unlockMachine();
+					} catch (Exception $e) {
+						//pass
+					}
+					break;
+				
+				
+				/* Machine registered */
+				case 'OnMachineRegistered':
+					if(!$event['registered']) break;
+
+				/* enrich with basic machine data */
+				case 'OnMachineDataChanged':
+						
+					try {
+		
+						$machine = $this->vbox->findMachine($event['machineId']);
+		
+						$groups = $machine->groups;
+						usort($groups, 'strnatcasecmp');
+							
+						$eventlist[$k]['enrichmentData'] = array(
+								'id' => $event['machineId'],
+								'name' => @$this->settings->enforceVMOwnership ? preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $machine->name) : $machine->name,
+								'state' => $machine->state->__toString(),
+								'sessionState' => $machine->sessionState->__toString(),
+								'OSTypeId' => $machine->getOSTypeId(),
+								'owner' => (@$this->settings->enforceVMOwnership ? $machine->getExtraData("phpvb/sso/owner") : ''),
+								'groups' => $groups,
+								'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
+								'customIcon' => (@$this->settings->enableCustomIcons ? $machine->getExtraData('phpvb/icon') : '')
+						);
+						$machine->releaseRemote();
+		
+					} catch (Exception $e) {
+						// pass
+					}
+					break;
+		
+					
+					
+				/* enrich with snapshot name */
+				case 'OnSnapshotTaken':
+						
+					try {
+						$machine = $this->vbox->findMachine($event['machineId']);
+						$eventlist[$k]['enrichmentData'] = array(
+								'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
+								'snapshotCount' => $machine->snapshotCount
+						);
+						$machine->releaseRemote();
+		
+					} catch (Exception $e) {
+						// pass
+					}
+					break;
+						
+			}
+				
+		}
+		
+		$response['data']['events'] = array_values($eventlist);
+		
 		
 		// Append key so that we aren't getting stale events after
 		// a phpvirtualbox server change
@@ -551,165 +636,176 @@ class vboxconnector {
 		return ($response['data']['result'] = 1);
 		
 	}
+
+	/**
+	 * Subscribe to vbox and machine events
+	 *
+	 * @param array $args array of arguments. See function body for details.
+	 * @param array $response response data passed byref populated by the function
+	 */
+	private function remote_machineSubscribeEvents($args, &$response) {
+	
+		$this->connect();
+		$this->_machineSubscribeEvents($args['vm']);
+		
+	}
 	
 	/**
-	 * Get pending VBOX events
-	 * @return array list of events 
+	 * Unsubscribe from vbox and machine events
+	 * 
+	 * @param array $args array of arguments. See function body for details.
+	 * @param array $response response data passed byref populated by the function
 	 */
-	private function vboxGetEvents() {
+	private function remote_unsubscribeEvents($args, &$response) {
+
+		$this->connect();
 		
-		// Event list to return
-		$eventlist = array();
+		if(!is_array($this->persistentRequest['vboxEventListeners']))
+			$this->persistentRequest['vboxEventListeners'] = array();
+		
+		// Get events from each configured event listener
+		foreach($this->persistentRequest['vboxEventListeners'] as $k => $el) {
+				
+			try {
+		
+				$listener = new IEventListener($this->client, $el['listener']);
+				$source = new IEventSource($this->client, $el['source']);
+				
+				$source->unregisterListener($listener);
+				
+				$source->releaseRemote();
+				$listener->releaseRemote();
+				
+				
+				
+			} catch (Exception $e) {
+				$this->errors[] = $e;
+			}
+			
+			$this->persistentRequest['vboxEventListeners'][$k] = null;
+		
+		}
+		
+		$this->websessionManager->logoff($this->vbox->handle);
+		
+		return ($response['data']['result'] = 1);
+	}
+	
+	/**
+	 * Subscribe to vbox and machine events
+	 * 
+	 * @param array $args array of arguments. See function body for details.
+	 * @param array $response response data passed byref populated by the function
+	 */
+	private function remote_subscribeEvents($args, &$response) {
 		
 		$this->connect();
 		
-		$listener = $this->_getVBoxEventListener();
-		
-		try {
-			$event = $this->vbox->eventSource->getEvent($listener,1000);
-		} catch (Exception $e) {
+		// Check for existing listener
+		if($this->persistentRequest['vboxEventListeners']['vbox']) {
 			
-			// Event listener handle was probably bad
-			$this->persistentRequest['vboxEventListenerHandle'] = null;;
-			$listener = $this->_getVBoxEventListener();
-			$event = $this->vbox->eventSource->getEvent($listener,1000);
-		}
-		
-		$eventId = 0;
-		while($event->handle) {
-			
-			// Only keep the last event of one particular type
-			$eventData = $this->_getEventData($event);
-			if(@$eventData['machineId']) {
-				$eventlist[$eventData['eventType'].'-'.$eventData['machineId']] = $eventData;
-			} else {
-				$eventlist[$event->type->__toString().'-'.($eventId++)] = $eventData;
-			}
-						
-			
-			$this->vbox->eventSource->eventProcessed($listener, $event);
-			$event->releaseRemote();
-			$event = $this->vbox->eventSource->getEvent($listener,500);
-		}
-		
-		// Enrich events
-		foreach($eventlist as $k=>$event) {
-			
-			switch($event['eventType']) {
+			try {
 				
-				/* Machine registered */
-				case 'OnMachineRegistered':
-					if(!$event['registered']) break;
-					
-				/* enrich with basic machine data */
-				case 'OnMachineDataChanged':
-					
-					try {
-						
-						$machine = $this->vbox->findMachine($event['machineId']);
-						
-						$groups = $machine->groups;
-						usort($groups, 'strnatcasecmp');
-							
-						$eventlist[$k]['enrichmentData'] = array(
-							'id' => $event['machineId'],
-							'name' => @$this->settings->enforceVMOwnership ? preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $machine->name) : $machine->name,
-							'state' => $machine->state->__toString(),
-							'sessionState' => $machine->sessionState->__toString(),
-							'OSTypeId' => $machine->getOSTypeId(),
-							'owner' => (@$this->settings->enforceVMOwnership ? $machine->getExtraData("phpvb/sso/owner") : ''),
-							'groups' => $groups,
-							'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
-							'customIcon' => (@$this->settings->enableCustomIcons ? $machine->getExtraData('phpvb/icon') : '')
-						);
-						$machine->releaseRemote();
-						
-					} catch (Exception $e) {
-						// pass
-					}
-					break;
+				$listener = new IEventListener($this->client, $this->persistentRequest['vboxEventListeners']['vbox']['listener']);
+				$source = new IEventSource($this->client, $this->persistentRequest['vboxEventListeners']['vbox']['source']);
 				
-				/* enrich with snapshot name */
-				case 'OnSnapshotTaken':
-					
-					try {
-						$machine = $this->vbox->findMachine($event['machineId']);
-						$eventlist[$k]['enrichmentData'] = array(
-							'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
-							'snapshotCount' => $machine->snapshotCount
-						);
-						$machine->releaseRemote();
-						
-					} catch (Exception $e) {
-						// pass
-					}
-					break;
-					
+				$source->unregisterListener($listener);
+				
+				$listener->releaseRemote();
+				$source->releaseRemote();
+				
+			} catch (Exception $e) {
+				// Pass
 			}
-			
 		}
-		return array_values($eventlist);
+		
+		// Create and register event listener
+		$listener = $this->vbox->eventSource->createListener();
+		$this->vbox->eventSource->registerListener($listener,array('MachineEvent','SnapshotEvent','OnMediumRegistered','OnExtraDataChanged'), false);
+		
+		// Add to event listener list
+		$this->persistentRequest['vboxEventListeners']['vbox'] = array(
+			'listener' => $listener->handle,
+			'source' => $this->vbox->eventSource->handle);
+		
+		// Subscribe to each machine in list
+		foreach($args['vms'] as $vm) {
+			$this->_machineSubscribeEvents($vm);
+		}
 		
 	}
 	
 	/**
 	 * Return relevant event data for the event.
 	 * 
-	 * @param unknown_type $event
+	 * @param IEvent $event
+	 * @param String $listenerKey Key of event listener - 'vbox' or
+	 * 		machine id
 	 */
-	private function _getEventData($event) {
+	private function _getEventData($event, $listenerKey) {
 		
-		$data = array('eventType'=>$event->type->__toString());
+		$data = array('eventType'=>$event->type->__toString(),'sourceId'=>$listenerKey);
 		
 		// Convert to parent class
-		$parentClass = 'I'.substr($event->type->__toString(),2).'Event';		
+		$parentClass = 'I'.substr($data['eventType'],2).'Event';		
 		$eventDataObject = new $parentClass($this->client, $event->handle);
 		
+		// Dedup ID is at least listener key ('vbox' or machine id) and event type
+		$data['dedupId'] = $listenerKey .'-' . $data['eventType'];
 		
 		switch($data['eventType']) {
 			
 			case 'OnMachineStateChanged':
 				$data['machineId'] = $eventDataObject->machineId;
 				$data['state'] = $eventDataObject->state->__toString();
+				$data['dedupId'] .= '-'. $data['machineId'];
 		        break;
 			
 			case 'OnMachineDataChanged':
 		        $data['machineId'] = $eventDataObject->machineId;
+		        $data['dedupId'] .= '-'. $data['machineId'];
 		        break;
 
 			case 'OnExtraDataChanged':
 		        $data['machineId'] = $eventDataObject->machineId;
 		        $data['key'] = $eventDataObject->key;
 		        $data['value'] = $eventDataObject->value;
+		        $data['dedupId'] .= '-'. $data['machineId'] .'-' . $data['key'];
 		        break;
 		        
 			case 'OnMediumRegistered':
 		        $data['mediumId'] = $eventDataObject->mediumId;
 		        $data['registered'] = $eventDataObject->registered;
+		        $data['dedupId'] .= '-'. $data['mediumId'];
 		        break;
 		        
 			case 'OnMachineRegistered':
 		        $data['machineId'] = $eventDataObject->machineId;
 		        $data['registered'] = $eventDataObject->registered;
+		        $data['dedupId'] .= '-'. $data['machineId'];
 		        break;
 		        
 			case 'OnSessionStateChanged':
 				$data['machineId'] = $eventDataObject->machineId;
 				$data['state'] = $eventDataObject->state->__toString();
+				$data['dedupId'] .= '-'. $data['machineId'];
 		        break;
 		        
 		    /* Snapshot events */
 			case 'OnSnapshotTaken':
 				$data['machineId'] = $eventDataObject->machineId;
 				$data['snapshotId'] = $eventDataObject->snapshotId;
+				$data['dedupId'] .= '-'. $data['machineId'] .'-' . $data['snapshotId'];
 		        break;
 			case 'OnSnapshotDeleted':
 				$data['machineId'] = $eventDataObject->machineId;
 				$data['snapshotId'] = $eventDataObject->snapshotId;
+				$data['dedupId'] .= '-'. $data['machineId'] .'-' . $data['snapshotId'];
 				break;		        
 			case 'OnSnapshotChanged':
 				$data['machineId'] = $eventDataObject->machineId;
 				$data['snapshotId'] = $eventDataObject->snapshotId;
+				$data['dedupId'] .= '-'. $data['machineId'] .'-' . $data['snapshotId'];
 		        break;
 		        
 			case 'OnGuestPropertyChanged':
@@ -717,20 +813,36 @@ class vboxconnector {
 				$data['name'] = $eventDataObject->name;
 				$data['value'] = $eventDataObject->value;
 				$data['flags'] = $eventDataObject->flags;
+				$data['dedupId'] .= '-'. $data['machineId'] .'-' . $data['name'];
 		        break;
 		       
 			case 'OnAdditionsStateChanged':
 		        $data['machineId'] = $eventDataObject->machineId;
+		        $data['dedupId'] .= '-'. $data['machineId'];
 		        break;
 
+			case 'OnCPUChanged':
+				$data['cpu'] = $eventDataObject->cpu;
+				$data['add'] = $eventDataObject->add;
+				$data['dedupId'] .= '-' . $data['cpu'];
+				break;
+				
+			/* Same end-result as network adapter changed */
+			case 'OnNATRedirect':
+				$data['eventType'] = 'OnNetworkAdapterChanged';
+				$data['networkAdapterSlot'] = $eventDataObject->slot;
+				$data['dedupId'] = $listenerKey .'-OnNetworkAdapterChanged-'. $data['networkAdapterSlot'];
+				break;
+				
 			case 'OnNetworkAdapterChanged':
-		        $data['machineId'] = $eventDataObject->machineId;
+		        $data['networkAdapterSlot'] = $eventDataObject->networkAdapter->slot;
+		        $data['dedupId'] .= '-'. $data['networkAdapterSlot'];
 		        break;
 		        
 	        /* Storage controller of VM changed */
 	        case 'OnStorageControllerChanged':
 	        	$data['machineId'] = $eventDataObject->machineId;
-	        	$attribs = array('machineId');
+	        	$data['dedupId'] .= '-'. $data['machineId'];
 	        	break;
 	        	
 	        /* Medium attachment changed */
@@ -744,6 +856,7 @@ class vboxconnector {
 	        	} catch (Exception $e) {
 	        		$data['medium'] = '';
 	        	}
+	        	$data['dedupId'] .= '-'. $data['controller'] .'-'. $data['port'] .'-'.$data['device'];
 	        	break;
 	        	
 	        /* Generic machine changes that should query IMachine */
@@ -752,17 +865,20 @@ class vboxconnector {
 	        case 'OnUSBControllerChanged':
 	        	break;
 	        case 'OnSharedFolderChanged':
+	        	$data['global'] = $eventDataObject->global;
 	        	break;
 	        case 'OnVRDEServerInfoChanged':
 	        	break;
 	        case 'OnCPUExecutionCapChanged':
+	        	$data['executionCap'] = $eventDataObject->executionCap;
 	        	break;
 	        
 
         	/* Notification when a USB device is attached to or detached from the virtual USB controller */
 	        case 'OnUSBDeviceStateChanged':
-	        	$data['device'] = $eventDataObject->device;
+	        	$data['deviceId'] = $eventDataObject->device->id;
 	        	$data['attached'] = $eventDataObject->attached;
+	        	$data['dedupId'] .= '-'. $data['deviceId'];
 	        	break;
 	        	
 	        /* Machine execution error */
@@ -780,87 +896,11 @@ class vboxconnector {
         	        		
 		}
 		
+		
 		return $data;
 		
 	}
 	
-	/**
-	 * Return a new or the existing VBOX event listener
-	 * @param boolean $noCreate do not attempt to create a listener
-	 * @return IEventListener
-	 */
-	private function _getVBoxEventListener($noCreate) {
-		
-		/* Check for existing event listener handle */
-		if($this->persistentRequest['vboxEventListenerHandle']) {
-			
-			try {
-				
-				$listener = new IEventListener($this->client, $this->persistentRequest['vboxEventListenerHandle']);
-				//$this->messages[] = 'Using: ' . $listener->handle;
-				return $listener;
-				
-			} catch (Exception $e) {
-				// null
-			}
-		}
-		
-		// Do not create is set
-		if($noCreate) return null;
-		
-		// Create and register event listener
-		$listener = $this->vbox->eventSource->createListener();
-		$this->vbox->eventSource->registerListener($listener,array('MachineEvent','SnapshotEvent','OnMediumRegistered','OnExtraDataChanged'), false);
-		
-		$this->messages[] = 'Created: ' . $listener->handle;
-		
-		// Persist handle
-		$this->persistentRequest['vboxEventListenerHandle'] = $listener->handle;
-		
-		return $listener;
-		
-	}
-
-	/**
-	 * Stop event listeners
-	 * 
-	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
-	 */
-	public function remote_destroyEventListeners($args, &$response) {
-		
-		// No persistent handles exist. Nothing to do
-		if(!$this->persistentRequest['vboxHandle'])
-			return;
-
-		$this->connect();
-		
-		// Unregister vbox event listener 
-		try {
-			$listener = $this->_getVBoxEventListener(true);
-			if($listener)
-				$this->vbox->eventSource->unregisterListener($listener);
-		} catch (Exception $e) {
-			// nothing
-		}
-		
-
-		$this->persistentRequest['vboxEventListenerHandle'] = null;
-		
-		$this->machineUnsubscribeEvents();
-		
-		// Logoff web session manager
-		try {
-			$this->websessionManager->logoff($this->vbox->handle);
-		} catch (Exception $e) {
-			// nothing
-		}
-		
-		$this->persistentRequest = array();
-		return ($response['data']['result'] = 1);
-		
-	}
 
 	/**
 	 * Call overloader. Handles caching of vboxwebsrv data for some incoming requests.
@@ -1259,8 +1299,6 @@ class vboxconnector {
 			try {
 				$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 				
-				//$this->messages[] = $this->session->handle;
-				
 				$vmLocked = ($machine->sessionState->__toString() == 'Locked');
 				$machine->lockMachine($this->session->handle, ($vmLocked ? 'Shared' : 'Write'));
 				
@@ -1446,6 +1484,9 @@ class vboxconnector {
 		$m = $this->vbox->findMachine($args['vm']);
 		$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 		$m->lockMachine($this->session->handle, 'Shared');
+		if(intval($args['enabled']) == -1) {
+			$args['enabled'] = intval(!$this->session->machine->VRDEServer->enabled);
+		}
 		$this->session->machine->VRDEServer->enabled = intval($args['enabled']);
 
 		$this->session->unlockMachine();
@@ -2137,14 +2178,12 @@ class vboxconnector {
 
 		}
 
-		$this->session->machine->saveSettings();
-
 		// Rename goes last
 		if($m->name != $args['name']) {
 			$m->name = $args['name'];
-			$this->session->machine->saveSettings();
 		}
-		
+		$this->session->machine->saveSettings();
+
 		
 		$this->session->unlockMachine();
 		unset($this->session);
@@ -3090,27 +3129,6 @@ class vboxconnector {
 
 	}
 
-	/**
-	 * Get machine data that may change at runtime
-	 * 
-	 * @param array $args arguments passed to function
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
-	 */
-	public function remote_machineGetRuntimeDetails($args, &$response) {
-
-		// Connect to vboxwebsrv
-		$this->connect();
-		
-		/*
-		 * 5.13.13 getGuestEnteredACPIMode
-boolean IConsole::getGuestEnteredACPIMode()
-Checks if the guest entered the ACPI mode G0 (working) or G1 (sleeping). If this method
-returns false, the guest will most likely not respond to external ACPI events.
-If this method fails, the following error codes may be reported:
- VBOX_E_INVALID_VM_STATE: Virtual machine not in Running state.
-		 */
-	}
 	
 	/**
 	 * Get VirtualBox host memory usage information
@@ -3368,55 +3386,6 @@ If this method fails, the following error codes may be reported:
 				$data['startupMode'] = $machine->getExtraData('pvbx/startupMode');
 			}
 
-			$mdlm = floor($machine->lastStateChange/1000);
-
-			// Get current console port
-			if($data['state'] == 'Running' || $data['state'] == 'Paused') {
-
-				$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
-				$machine->lockMachine($this->session->handle, 'Shared');
-				$console = $this->session->console;
-				
-				// Get guest additions version
-				if(@$this->settings->enableGuestAdditionsVersionDisplay) {
-					$data['guestAdditionsVersion'] = $console->guest->additionsVersion;
-				}
-									
-				$data['consoleInfo'] = array();
-				$data['consoleInfo']['enabled'] = intval($console->machine->VRDEServer->enabled);
-				$data['consoleInfo']['consolePort'] = $console->VRDEServerInfo->port;
-				
-				
-				// Close session if it was opened
-				if($this->session) {
-					$this->session->unlockMachine();
-					unset($this->session);
-				}
-				
-			}
-
-			// Get removable media
-			for($a = 0; $a < count($data['storageControllers']); $a++) {
-				if(!is_array($data['storageControllers'][$a]['mediumAttachments'])) continue;
-				$mas = null;
-				for($b = 0; $b < count(@$data['storageControllers'][$a]['mediumAttachments']); $b++) {
-					if($data['storageControllers'][$a]['mediumAttachments'][$b]['type'] != 'DVD') continue;
-					if($data['storageControllers'][$a]['mediumAttachments'][$b]['temporaryEject']) continue;
-					if(!$mas)
-						$mas = $machine->getMediumAttachmentsOfController($data['storageControllers'][$a]['name']);
-
-					// Find controller
-					foreach($mas as $ma) {
-						if($ma->port != $data['storageControllers'][$a]['mediumAttachments'][$b]['port'] || $ma->device != $data['storageControllers'][$a]['mediumAttachments'][$b]['device'])
-							continue;
-						$mid = ($ma->medium->handle ? $ma->medium->id : null);
-						if($mid != @$data['storageControllers'][$a]['mediumAttachments'][$b]['medium']['id'])
-							$data['refreshMedia'] = 1;
-
-						$data['storageControllers'][$a]['mediumAttachments'][$b]['medium'] = ($mid ? array('id'=>$mid) : null);
-					}
-				}
-			}
 
 		}
 
@@ -3428,6 +3397,82 @@ If this method fails, the following error codes may be reported:
 		return true;
 	}
 
+	/**
+	 * Get runtime data of machine.
+	 * 
+	 * @param array $args array of arguments. See function body for details.
+	 * @param array $response response data passed byref populated by the function
+	 * @return boolean true on success
+	 */
+	public function remote_machineGetRuntimeData($args, &$response) {
+
+		$this->connect();
+		
+		/* @var $machine IMachine */
+		$machine = $this->vbox->findMachine($args['vm']);
+		$data = array(
+			'id' => $args['vm'],
+			'state' => $machine->state->__toString()
+		);
+		
+		/*
+		 * 5.13.13 getGuestEnteredACPIMode
+		boolean IConsole::getGuestEnteredACPIMode()
+		Checks if the guest entered the ACPI mode G0 (working) or G1 (sleeping). If this method
+		returns false, the guest will most likely not respond to external ACPI events.
+		If this method fails, the following error codes may be reported:
+		 VBOX_E_INVALID_VM_STATE: Virtual machine not in Running state.
+		*/
+		
+		// Get current console port
+		if($data['state'] == 'Running' || $data['state'] == 'Paused') {
+		
+			$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
+			$machine->lockMachine($this->session->handle, 'Shared');
+			$console = $this->session->console;
+		
+			// Get guest additions version
+			if(@$this->settings->enableGuestAdditionsVersionDisplay) {
+				$data['guestAdditionsVersion'] = $console->guest->additionsVersion;
+			}
+			
+			
+			$smachine = $this->session->machine;
+			
+			$data['CPUExecutionCap'] = $smachine->CPUExecutionCap;
+			$data['VRDEServerInfo'] = array('port' => $console->VRDEServerInfo->port);
+			
+			$vrde = $smachine->VRDEServer;
+			
+			$data['VRDEServer'] = (!$vrde ? null : array(
+					'enabled' => intval($vrde->enabled),
+					'ports' => $vrde->getVRDEProperty('TCP/Ports'),
+					'netAddress' => $vrde->getVRDEProperty('TCP/Address'),
+					'authType' => $vrde->authType->__toString(),
+					'authTimeout' => $vrde->authTimeout,
+					'allowMultiConnection' => intval($vrde->allowMultiConnection)
+			));
+		
+			// Get removable media
+			$data['storageControllers'] = $this->_machineGetStorageControllers($smachine);
+			
+			// Get network adapters
+			$data['networkAdapters'] = $this->_machineGetNetworkAdapters($smachine);
+		
+			$machine->releaseRemote();
+			
+			// Close session and unlock machine
+			$this->session->unlockMachine();
+			unset($this->session);
+		
+		}
+		
+		
+		$response['data'] = $data;
+		return ($response['data']['result'] = 1);
+		
+	}
+	
 	/**
 	 * Remove a virtual machine
 	 *
@@ -3683,13 +3728,14 @@ If this method fails, the following error codes may be reported:
 	 * Return a list of network adapters attached to machine $m
 	 *
 	 * @param IMachine $m virtual machine instance
+	 * @param int $slot optional slot of single network adapter to get
 	 * @return array of network adapter information
 	 */
-	private function _machineGetNetworkAdapters(&$m) {
+	private function _machineGetNetworkAdapters(&$m, $slot=false) {
 
 		$adapters = array();
 
-		for($i = 0; $i < $this->settings->nicMax; $i++) {
+		for($i = ($slot === false ? 0 : $slot); $i < ($slot === false ? $this->settings->nicMax : ($slot+1)); $i++) {
 
 			/* @var $n INetworkAdapter */
 			$n = $m->getNetworkAdapter($i);
@@ -3705,7 +3751,7 @@ If this method fails, the following error codes may be reported:
 			$adapters[] = array(
 				'adapterType' => $n->adapterType->__toString(),
 				'slot' => $n->slot,
-				'enabled' => $n->enabled,
+				'enabled' => intval($n->enabled),
 				'MACAddress' => $n->MACAddress,
 				'attachmentType' => $at,
 				'genericDriver' => $n->genericDriver,
@@ -3871,7 +3917,7 @@ If this method fails, the following error codes may be reported:
 			$df->releaseRemote();
 		}
 		$r = array(
-			'enabled' => $u->enabled,
+			'enabled' => intval($u->enabled),
 			'enabledEHCI' => $u->enabledEHCI,
 			'deviceFilters' => $deviceFilters);
 		$u->releaseRemote();
@@ -3915,7 +3961,7 @@ If this method fails, the following error codes may be reported:
 			'monitorCount' => $m->monitorCount,
 			'pageFusionEnabled' => intval($m->pageFusionEnabled),
 			'VRDEServer' => (!$m->VRDEServer ? null : array(
-				'enabled' => $m->VRDEServer->enabled,
+				'enabled' => intval($m->VRDEServer->enabled),
 				'ports' => $m->VRDEServer->getVRDEProperty('TCP/Ports'),
 				'netAddress' => $m->VRDEServer->getVRDEProperty('TCP/Address'),
 				'authType' => $m->VRDEServer->authType->__toString(),
@@ -3924,7 +3970,7 @@ If this method fails, the following error codes may be reported:
 				'VRDEExtPack' => (string)$m->VRDEServer->VRDEExtPack
 				)),
 			'audioAdapter' => array(
-				'enabled' => $m->audioAdapter->enabled,
+				'enabled' => intval($m->audioAdapter->enabled),
 				'audioController' => $m->audioAdapter->audioController->__toString(),
 				'audioDriver' => $m->audioAdapter->audioDriver->__toString(),
 				),
@@ -5007,7 +5053,7 @@ If this method fails, the following error codes may be reported:
 			// Normal medium
 			} else {
 				/* @var $med IMedium */
-				$med = $this->vbox->openMedium($args['medium']['id'],$args['medium']['deviceType']);
+				$med = $this->vbox->openMedium($args['medium']['location'],$args['medium']['deviceType']);
 			}
 		}
 
@@ -5324,14 +5370,12 @@ If this method fails, the following error codes may be reported:
 		// Save a list of valid paths
 		$validGroupPaths = array();
 		
+		
 		// Write out each group definition
 		foreach($args['groupDefinitions'] as $groupDef) {
 			
-			if(count($strArr)) {
-				$this->vbox->setExtraData('GUI/GroupDefinitions'.$groupDef['path'], $groupDef['order']);
-				$validGroupPaths[] = $groupDef['path'];
-			}
-				
+			$this->vbox->setExtraData('GUI/GroupDefinitions'.$groupDef['path'], $groupDef['order']);
+			$validGroupPaths[] = $groupDef['path'];
 			
 		}
 		

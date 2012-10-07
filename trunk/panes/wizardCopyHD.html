@@ -97,7 +97,7 @@
 // Fill HD type options
 var vboxHDTypesTbl = $('#wizardCopyHDStep2').find('table.vboxOptions').first();
 vboxHDTypesTbl.children().remove();
-var vboxHDTypes = $('#vboxIndex').data('vboxSystemProperties').mediumFormats;
+var vboxHDTypes = $('#vboxPane').data('vboxSystemProperties').mediumFormats;
 for(var i = 0; i < vboxHDTypes.length; i++) {
 	if(jQuery.inArray('CreateFixed',vboxHDTypes[i].capabilities) < 0 && jQuery.inArray('CreateDynamic',vboxHDTypes[i].capabilities) < 0) continue;
 	if(jQuery.inArray('HardDisk',vboxHDTypes[i].deviceTypes) > -1) {
@@ -106,7 +106,7 @@ for(var i = 0; i < vboxHDTypes.length; i++) {
 	}
 }
 // Select default HD format and place it at the top
-vboxHDTypesTbl.find('input[value='+$('#vboxIndex').data('vboxSystemProperties').defaultHardDiskFormat+']').prop('checked',true).closest('tr').detach().prependTo(vboxHDTypesTbl);
+vboxHDTypesTbl.find('input[value='+$('#vboxPane').data('vboxSystemProperties').defaultHardDiskFormat+']').prop('checked',true).closest('tr').detach().prependTo(vboxHDTypesTbl);
 
 var sButtons = new Array(
 	{
@@ -172,7 +172,7 @@ function wizardCopyHDBrowseLocation() {
 		if(!f) return;
 		// get file name
 		file = document.forms['frmwizardCopyHD'].elements.wizardCopyHDLocation.value;
-		document.forms['frmwizardCopyHD'].elements.wizardCopyHDLocation.value = f+$('#vboxIndex').data('vboxConfig').DSEP+file;
+		document.forms['frmwizardCopyHD'].elements.wizardCopyHDLocation.value = f+$('#vboxPane').data('vboxConfig').DSEP+file;
 	},true);
 
 }

@@ -162,7 +162,7 @@
 				$(list).attr('class', 'vboxMediumSelect');
 				$(list).css({'display':'none'});
 				
-				$('#vboxIndex').append(list);
+				$('#vboxPane').append(list);
 			}
 
 			// Hide list if it exists

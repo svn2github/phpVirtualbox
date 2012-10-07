@@ -95,7 +95,7 @@ var sButtons = new Array(
 		'label' : trans('Remove User','UIUsers'),
 		'icon' : 'delete',
 		'noDisabledIcon' : true,
-		'enabled' : function (item) { return (item && $(item).data('username') && $(item).data('username') != $('#vboxIndex').data('vboxSession').user); },
+		'enabled' : function (item) { return (item && $(item).data('username') && $(item).data('username') != $('#vboxPane').data('vboxSession').user); },
 		'click' : function () {
 			var buttons = {};
 			buttons[trans('OK','QIMessageBox')] = function() {
@@ -119,7 +119,7 @@ var sButtons = new Array(
 		'label' : trans('Change Password','UIUsers'),
 		'icon' : 'register',
 		'noDisabledIcon' : true,
-		'enabled' : function (item) { return (item && $(item).data('username') && $(item).data('username') == $('#vboxIndex').data('vboxSession').user); },
+		'enabled' : function (item) { return (item && $(item).data('username') && $(item).data('username') == $('#vboxPane').data('vboxSession').user); },
 		'click' : function () {
 			var l = new vboxLoader();
 			l.addFileToDOM('panes/userEdit.html');
@@ -172,7 +172,7 @@ var sButtons = new Array(
 		'label' : trans('Edit User','UIUsers'),
 		'icon' : 'register',
 		'noDisabledIcon' : true,
-		'enabled' : function (item) { return (item && $(item).data('username') && $(item).data('username') != $('#vboxIndex').data('vboxSession').user); },
+		'enabled' : function (item) { return (item && $(item).data('username') && $(item).data('username') != $('#vboxPane').data('vboxSession').user); },
 		'click' : function () {
 			
 			var l = new vboxLoader();

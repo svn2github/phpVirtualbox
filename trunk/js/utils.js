@@ -71,9 +71,10 @@ function vboxTraverse(tree,prop,val,all,children) {
 function vboxAjaxRequest(fn,params,callback,xtra,run) {
 
 	// Fatal error previously occurred
-	if($('#vboxIndex').data('vboxFatalError')) return;
+	if($('#vboxPane').data('vboxFatalError')) return;
 	
-	// Fix for null callback
+	// Fix for args
+	if(typeof params == 'undefined') params = {};
 	if(typeof callback != 'function') callback = function() { return; };
 
 	// Keep run count for retries
@@ -87,14 +88,14 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 		function(d) {
 
 			// Fatal error previously occurred
-			if($('#vboxIndex').data('vboxFatalError')) return;
+			if($('#vboxPane').data('vboxFatalError')) return;
 
 			if(d) {
 				
 				// Append debug output to console
-				if(d.messages) {
+				if(d.messages && console && console.log) {
 					for(var i = 0; i < d.messages.length; i++) {
-						//console.log(d.messages[i]);
+						console.log(d.messages[i]);
 					}
 				}
 				
@@ -109,14 +110,14 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 						if(d.errors[i].fatal || d.errors[i].connection) {
 							
 							// Multiple Servers check
-							if(d.errors[i].connection && $('#vboxIndex').data('vboxConfig')	) {
+							if(d.errors[i].connection && $('#vboxPane').data('vboxConfig')	) {
 								
-								$('#vboxIndex').data('vboxFatalError',1);
-								$('#vboxIndex').css({'display':'none'});
+								$('#vboxPane').data('vboxFatalError',1);
+								$('#vboxPane').css({'display':'none'});
 								
 								s='';
-								if($('#vboxIndex').data('vboxConfig').servers && $('#vboxIndex').data('vboxConfig').servers.length) {
-									var servers = $('#vboxIndex').data('vboxConfig').servers;
+								if($('#vboxPane').data('vboxConfig').servers && $('#vboxPane').data('vboxConfig').servers.length) {
+									var servers = $('#vboxPane').data('vboxConfig').servers;
 									for(var a = 0; a < servers.length; a++) {
 										servers[a] = "<a href='?server="+servers[a].name+"'>"+$('<div />').html(servers[a].name).text()+"</a>";
 									}
@@ -132,9 +133,9 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 							} else if(!d.errors[i].connection || fn == 'login') {
 								
 								// If we have config data, and the error is fatal, halt processing
-								if(d.errors[i].fatal && $('#vboxIndex').data('vboxConfig')) {
-									$('#vboxIndex').data('vboxFatalError',1);
-									$('#vboxIndex').css({'display':'none'});
+								if(d.errors[i].fatal && $('#vboxPane').data('vboxConfig')) {
+									$('#vboxPane').data('vboxFatalError',1);
+									$('#vboxPane').css({'display':'none'});
 								}
 
 								vboxAlert(d.errors[i],{'width':'400px'});
@@ -160,28 +161,22 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 		"json").error(function(d,etext,xlr) {
 			
 			// Fatal error previously occurred
-			if($('#vboxIndex').data('vboxFatalError')) return;
+			if($('#vboxPane').data('vboxFatalError')) return;
 
-			// Opera sometimes fails for seemingly no reason.
-			// No idea why. This takes care of it though.
-			if((!etext || !etext.length || etext == 'error') && run < 4 && fn.indexOf('get') == 0) {
-				vboxAjaxRequest(fn,params,callback,xtra,(run+1));
-			} else {
-				if(etext != 'error') {
-					
-					// Halt on parse errors
-					if(etext.search(/parse/i) > -1) {
-						$('#vboxIndex').data('vboxFatalError',1);
-					}
-					
-					if(console && console.log)
-						console.log(etext + ': '+ d.responseText);
-					
-					vboxAlert({'error':'Ajax error: ' + etext,'details':d.responseText},{'width':'400px'});
-					//alert('ajax error: ' + + " " + d.responseText);
+			if(etext != 'error') {
+				
+				// Halt on parse errors
+				if(etext.search(/parse/i) > -1) {
+					$('#vboxPane').data('vboxFatalError',1);
 				}
-				callback({},xtra);
+				
+				if(console && console.log)
+					console.log(etext + ': '+ d.responseText);
+				
+				vboxAlert({'error':'Ajax error: ' + etext,'details':d.responseText},{'width':'400px'});
+				//alert('ajax error: ' + + " " + d.responseText);
 			}
+			callback({},xtra);
 		});
 
 	
@@ -212,10 +207,10 @@ function vboxGetFile(file,callback,cparams) {
  * @return {String} VRDE host for VM
  */
 function vboxGetVRDEAddress(vm) {
-	var chost = ($('#vboxIndex').data('vboxConfig').consoleHost ? $('#vboxIndex').data('vboxConfig').consoleHost : (vm && vm.VRDEServer && vm.VRDEServer.netAddress ? vm.VRDEServer.netAddress : null));
+	var chost = ($('#vboxPane').data('vboxConfig').consoleHost ? $('#vboxPane').data('vboxConfig').consoleHost : (vm && vm.VRDEServer && vm.VRDEServer.netAddress ? vm.VRDEServer.netAddress : null));
 	if(!chost) {
 		// Set to host
-		chost = $('#vboxIndex').data('vboxConfig').host;
+		chost = $('#vboxPane').data('vboxConfig').host;
 		// Check for localhost / 127.0.0.1
 		if(chost == 'localhost' || chost == '127.0.0.1')
 			chost = location.hostname;
@@ -641,7 +636,7 @@ function vboxInitDisplay(root,context) {
 	/*
 	 * File / Folder browsers
 	 */
-	if($('#vboxIndex').data('vboxConfig').browserDisable) {
+	if($('#vboxPane').data('vboxConfig').browserDisable) {
 		$(root).find('table td.vboxFileFolderInput input.vboxImgButton').hide();
 	}
 
@@ -708,7 +703,7 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 
 			// Media must be refreshed
 			var ml = new vboxLoader();
-			ml.add('vboxGetMedia',function(dat){$('#vboxIndex').data('vboxMedia',dat);});
+			ml.add('vboxGetMedia',function(dat){$('#vboxPane').data('vboxMedia',dat);});
 			ml.run();
 			
 			if(d.errored)
@@ -717,7 +712,7 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 		// There's no CDROM drive
 		} else if(d && d.result && d.result == 'nocdrom') {
 			
-			var vm = vboxChooser.vms[vmid];
+			var vm = vboxVMDataMediator.getVMData(vmid);
 			vboxAlert(trans("<p>Could not insert the VirtualBox Guest Additions " +
 	                "installer CD image into the virtual machine <b>%1</b>, as the machine " +
 	                "has no CD/DVD-ROM drives. Please add a drive using the " +
@@ -737,8 +732,8 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 			var b = {};
 			b[trans('Yes','QIMessageBox')] = function() {
 				var url = 'http://download.virtualbox.org/virtualbox/%1/VBoxGuestAdditions_%2.iso';
-				url = url.replace('%1',$('#vboxIndex').data('vboxConfig').version.string.replace('_OSE',''));
-				url = url.replace('%2',$('#vboxIndex').data('vboxConfig').version.string.replace('_OSE',''));
+				url = url.replace('%1',$('#vboxPane').data('vboxConfig').version.string.replace('_OSE',''));
+				url = url.replace('%2',$('#vboxPane').data('vboxConfig').version.string.replace('_OSE',''));
 				$(this).remove();
 				window.open(url);
 			};
@@ -916,8 +911,6 @@ function vboxProgressUpdateModal(d,e) {
  */
 function vboxProgressUpdate(d,e,modal) {
 	
-	//console.log(modal);
-	//console.log(d);
 	// check for completed progress
 	if(!d || !d['progress'] || d['info']['completed'] || d['info']['canceled']) {
 		
@@ -956,8 +949,8 @@ function vboxProgressUpdate(d,e,modal) {
 		$("#vboxProgress"+e.pid).addClass('vboxProgressComplete');
 		
 		// Check for max elements
-		if($('#vboxIndex').data('vboxConfig').maxProgressList) {
-			var maxList = $('#vboxIndex').data('vboxConfig').maxProgressList; 
+		if($('#vboxPane').data('vboxConfig').maxProgressList) {
+			var maxList = $('#vboxPane').data('vboxConfig').maxProgressList; 
 	        try {
 	        	maxList = Math.max(2,parseInt(maxList));
 		    } catch (e) {
@@ -1098,29 +1091,29 @@ function vboxValidateCtrl(k) {
 	return false;
 }
 
-/** Parse Cookies and populate $('#vboxIndex').data('vboxCoolies') */
+/** Parse Cookies and populate $('#vboxPane').data('vboxCoolies') */
 function vboxParseCookies() {
-	if($('#vboxIndex').data('vboxCookiesParsed')) return;
+	if($('#vboxPane').data('vboxCookiesParsed')) return;
 	var cookies = {};
 	var c = document.cookie.split('; ');
 	for(var i = 0; i < c.length; i++) {
 		var nv = c[i].split('=');
 		cookies[nv[0]] = nv[1];
 	}	
-	$('#vboxIndex').data('vboxCookies', cookies);
-	$('#vboxIndex').data('vboxCookiesParsed',true);
+	$('#vboxPane').data('vboxCookies', cookies);
+	$('#vboxPane').data('vboxCookiesParsed',true);
 }
 
 /**
- * Set a cookie and update $('#vboxIndex').data('vboxCookies') 
+ * Set a cookie and update $('#vboxPane').data('vboxCookies') 
  * @param {String} k - cookie key
  * @param {any} v - cookie value
  */
 function vboxSetCookie(k,v) {
 	var exp = new Date(2020,12,24);
 	document.cookie = k+"="+v+"; expires="+exp.toGMTString()+"; path=/";
-	if($('#vboxIndex').data('vboxCookiesParsed'))
-			$('#vboxIndex').data('vboxCookies')[k] = v;
+	if($('#vboxPane').data('vboxCookiesParsed'))
+			$('#vboxPane').data('vboxCookies')[k] = v;
 }
 
 /**
@@ -1129,7 +1122,7 @@ function vboxSetCookie(k,v) {
  * @return {String} path minus file name
  */
 function vboxDirname(p) {
-	var pos = p.lastIndexOf($('#vboxIndex').data('vboxConfig').DSEP);
+	var pos = p.lastIndexOf($('#vboxPane').data('vboxConfig').DSEP);
 	if(pos > -1) {
 		return p.substring(0,pos);
 	}
@@ -1141,7 +1134,7 @@ function vboxDirname(p) {
  * @return {String} file name portion of path
  */
 function vboxBasename(p) {
-	var pos = p.lastIndexOf($('#vboxIndex').data('vboxConfig').DSEP);
+	var pos = p.lastIndexOf($('#vboxPane').data('vboxConfig').DSEP);
 	if(pos > -1) {
 		return p.substring((pos+1));
 	}

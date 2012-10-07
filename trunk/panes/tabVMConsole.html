@@ -9,7 +9,7 @@
 <div id='vboxTabVMConsole' class='vboxTabContent' style='display:none;'>
   <div id='vboxTabVMUnavailable' style='display: none' class='translate'>Virtual machine is not running or is not configured to accept RDP connections.</div>
   <div id='vboxRDPFormContainer'  style='padding-top: 8px; display: none'>
-	<form name="vboxRDPForm" onsubmit="return false">
+	<form name="vboxRDPForm" onsubmit="return false;">
 		<div class='vboxInvisible' id='vboxRDPConnParams'>
 		
 			<span id='vboxConsoleLoginInfo'>
@@ -50,8 +50,8 @@ var vboxConsoleDetached = false;
 
 
 // Custom resolutions
-if($("#vboxIndex").data('vboxConfig').consoleResolutions) {
-	var res = $("#vboxIndex").data('vboxConfig').consoleResolutions;
+if($("#vboxPane").data('vboxConfig').consoleResolutions) {
+	var res = $("#vboxPane").data('vboxConfig').consoleResolutions;
 	// first one must be valid
 	if(res[0].split('x').length == 2) {
 		document.vboxRDPForm.vboxRDPSizeSelect.options.length = 0;
@@ -69,55 +69,159 @@ $(document.vboxRDPForm.vboxVRDPDetachBtn).val(trans("Detach",'VBoxConsoleWgt'));
 $("#vboxRDPStatus").html(trans("Loading ...",'UIVMDesktop'));
 if(vboxConsoleDetached) window.status = $("#vboxRDPStatus").text();
 
-// Listen for tab events
-$('#vboxIndex').bind('vmLoading',function(){
-	$('#vboxRDPFormContainer').css({'display':'none'});
-	$('#FlashRDPContainer').css({'visibility':'hidden'});
+// Disable / enable tab on selection list changes
+$('#vboxPane').bind('vmSelectionListChanged', function(){
+
+	var vm = vboxChooser.getSingleSelected();
+	
+	// Initially disable tab
+	$('#vboxTabVMConsole').parent().trigger('disableTab', ['vboxTabVMConsole']);
+	
+	if(!vm || !vboxVMStates.isRunning(vm)) {
+		$('#vboxRDPFormContainer').css({'display':'none'});
+		$('#FlashRDPContainer').css({'visibility':'hidden'});
+		$('#vboxTabVMUnavailable').css({'display':'none'});
+		
+	} else {
+		
+		// VM is running, get runtime data
+		vboxVMDataMediator.getVMRuntimeData(vm.id, function(runtimeInfo) {
+			
+			if(runtimeInfo.VRDEServerInfo && runtimeInfo.VRDEServerInfo.port > 0) {
+				
+				$('#vboxRDPFormContainer').css({'display':''});
+				$('#FlashRDPContainer').css({'visibility':'visible'});
+				$('#vboxTabVMUnavailable').css({'display':'none'});
+				
+				$('#vboxTabVMConsole').parent().trigger('enableTab', ['vboxTabVMConsole']);		
+			}
+			
+		});
+		
+	}
+	
+
+// Update on console info change
+}).bind('vboxVRDEServerInfoChanged',function(e,vmid,VRDEServerInfo) {
+	
+	var selVM = vboxChooser.getSingleSelected();	    		
+	var enabled = (selVM && selVM.id == vmid && vboxVMStates.isRunning(selVM) && VRDEServerInfo && VRDEServerInfo.port > 0);
+	
+	if(enabled) {
+		
+		$('#vboxTabVMConsole').parent().trigger('enableTab', ['vboxTabVMConsole']);
+
+		$('#vboxRDPFormContainer').css({'display':''});
+		$('#FlashRDPContainer').css({'visibility':'visible'});
+		$('#vboxTabVMUnavailable').css({'display':'none'});
+
+		
+		var chost = vboxGetVRDEAddress(selVM);
+		chost+=':'+VRDEServerInfo.port;
+		
+		if($(document.vboxRDPForm.serverAddress).val() != chost) {
+			
+			// console host changed
+			vboxRDPDisconnect();
+			
+		}
+		$(document.vboxRDPForm.serverAddress).val(chost);
+
+	} else {
+		$('#vboxTabVMConsole').parent().trigger('disableTab', ['vboxTabVMConsole']);
+	}
+
+// Update tab on machine state change
+}).bind('vboxMachineStateChanged', function(e, vmid, state){
+
+	var selVMId = vboxChooser.getSingleSelectedId();	    		
+	var enabled = (selVMId == vmid && vboxVMStates.isRunning({'state':state}));
+	
+	$('#vboxTabVMConsole').parent().trigger('disableTab', ['vboxTabVMConsole']);
+	
+	if(enabled) {
+		
+		// VM is running, get runtime data
+		$.when(vboxVMDataMediator.getVMRuntimeData(vmid)).then(function(vm) {
+			
+			if(vm.VRDEServerInfo && vm.VRDEServerInfo.port > 0) {
+				
+				$('#vboxTabVMConsole').parent().trigger('enableTab', ['vboxTabVMConsole']);		
+				
+				$('#vboxRDPFormContainer').css({'display':''});
+				$('#FlashRDPContainer').css({'visibility':'visible'});
+				$('#vboxTabVMUnavailable').css({'display':'none'});
+
+			}
+			
+		});
+
+	}
 });
+
+/*
+ * Populate console info values when this tab is shown
+ */
 
 $('#vboxTabVMConsole').bind('show',function(){
 
 	var vm = vboxChooser.getSingleSelected();
 	
-	if(!vm || !vboxVMStates.isRunning(vm) || !vm.consoleInfo || !vm.consoleInfo.consolePort) {
+	if(!vm || !vboxVMStates.isRunning(vm)) {
 		$('#vboxRDPFormContainer').css({'display':'none'});
 		$('#FlashRDPContainer').css({'visibility':'hidden'});
 		$('#vboxTabVMUnavailable').css({'display':''});
 		return;
 	}
 	
-	// Hide login form if authtype is not set
-	if(vm.VRDEServer.authType == 'Null') {
-		$('#vboxConsoleLoginInfo').hide();
-	} else {
-		$('#vboxConsoleLoginInfo').show();
-	}
-	$('#vboxConsoleLoginInfo').data('vboxVRDPauthType',vm.VRDEServer.authType);
+	$('#vboxConsoleLoginInfo').hide();
 
-	$('#vboxTabVMUnavailable').css({'display':'none'});
-	
-	vboxRDPDisconnect();
-	$("#vboxRDPStatus").html('');
-	if(vboxConsoleDetached) window.status = $("#vboxRDPStatus").text();
-	
-	var chost = vboxGetVRDEAddress(vm);
-	chost+=':'+vm.consoleInfo.consolePort;
-	$(document.vboxRDPForm.serverAddress).val(chost);
-
-	// Set default console size for this VM?
-	if($('#vboxIndex').data('vboxCookiesParsed')) {
-		var cs = $('#vboxIndex').data('vboxCookies')['vbox'+vm.id+'ConsoleSize'];
-		if(cs) {
-			$(document.vboxRDPForm.vboxRDPSizeSelect).children('[value='+cs+']').first().prop('selected',true);	
+	/* Load runtime data. This will tell us if the VRDE server is actually active */
+	/* And details. This will give us info about the VRDEServer configuration */
+	$.when(vboxVMDataMediator.getVMRuntimeData(vm.id),vboxVMDataMediator.getVMDetails(vm.id))
+		.then(function(runtimeData, detailsData) {
+		
+		/* Not active */
+		if(!(runtimeData.VRDEServerInfo && runtimeData.VRDEServerInfo.port > 0)) {
+			$('#vboxTabVMUnavailable').css({'display':''});
+			$('#vboxTabVMConsole').parent().trigger('disableTab',['vboxTabVMConsole']);
+			return;
 		}
-	}
+		
+		// Hide login form if authtype is not set
+		if(detailsData.VRDEServer.authType != 'Null') {
+			$('#vboxConsoleLoginInfo').show();
+		}
+		$('#vboxConsoleLoginInfo').data('vboxVRDPauthType',detailsData.VRDEServer.authType);
+
+		/* Active */
+		$('#vboxRDPFormContainer').css({'display':''});
+		$('#FlashRDPContainer').css({'visibility':'visible'});
+		$('#vboxTabVMUnavailable').css({'display':'none'});
+
+		vboxRDPDisconnect();
+		$("#vboxRDPStatus").html('');
+		if(vboxConsoleDetached) window.status = $("#vboxRDPStatus").text();
+		
+		var chost = vboxGetVRDEAddress(detailsData);
+		chost+=':'+runtimeData.VRDEServerInfo.port;
+		$(document.vboxRDPForm.serverAddress).val(chost);
 	
-	// for detached console <title>
-	$('#vboxTabVMConsole').data('vmname',vm.name);
-
-	$('#vboxRDPFormContainer').css({'display':''});
-
-	vboxRDPLoad();
+		// Set default console size for this VM?
+		if($('#vboxPane').data('vboxCookiesParsed')) {
+			var cs = $('#vboxPane').data('vboxCookies')['vbox'+detailsData.id+'ConsoleSize'];
+			if(cs) {
+				$(document.vboxRDPForm.vboxRDPSizeSelect).children('[value='+cs+']').first().prop('selected',true);	
+			}
+		}
+		
+		// for detached console <title>
+		$('#vboxTabVMConsole').data('vmname',detailsData.name);
+	
+		$('#vboxRDPFormContainer').css({'display':''});
+	
+		vboxRDPLoad();
+	});
 	
 });
    
@@ -169,7 +273,7 @@ function RDPWebEventLoaded(flashid) {
     var flash = RDPWebClient.getFlashById("FlashRDP");
     
 	// Apply keyboard layout
-	flash.setProperty("keyboardLayout", ($('#vboxIndex').data('vboxConfig').consoleKeyboardLayout == 'DE' ? 'de' : 'en'));
+	flash.setProperty("keyboardLayout", ($('#vboxPane').data('vboxConfig').consoleKeyboardLayout == 'DE' ? 'de' : 'en'));
  
 	if (window.addEventListener) {
 	    window.addEventListener("contextmenu", function(event) { return RDPWebClient._MozillaContextMenu(event); }, true);
@@ -184,7 +288,7 @@ function RDPWebEventLoaded(flashid) {
 	}
 
 	// Connect if "detached"
-	if(window.opener && window.opener.document.getElementById('vboxIndex')) {
+	if(window.opener && window.opener.document.getElementById('vboxPane')) {
 		$('#vboxTabVMUnavailable').css({'display':'none'});
 		$('#vboxRDPFormContainer').css({'display':'none'});	
 		$('#vboxRDPSize').val($(window.opener.document.getElementById('vboxRDPSize')).val());	
@@ -209,7 +313,7 @@ function RDPWebEventLoaded(flashid) {
 		$('#vboxRDPFormContainer').css('display','');
 		
 		// Did not explicitly disconnect from this VM and has no auth settings so reconnect
-    	if($('#vboxIndex').data('vboxCookies')['vbox'+vboxChooser.getSingleSelectedId()+'ConsoleConnected'] == 'true' && $('#vboxConsoleLoginInfo').data('vboxVRDPauthType') == 'Null') {
+    	if($('#vboxPane').data('vboxCookies')['vbox'+vboxChooser.getSingleSelectedId()+'ConsoleConnected'] == 'true' && $('#vboxConsoleLoginInfo').data('vboxVRDPauthType') == 'Null') {
     		document.vboxRDPForm.connectionButton.click();    		
     	}
 	}
@@ -328,7 +432,7 @@ function vboxRDPDetach() {
 	var newwin = window.open('about:blank','vboxConsoleDetachedWin'+$('#vboxTabVMConsole').data('vmname'),'toolbar=0,menubar=0,location=0,directories=0,status=true,resize=true,width='+(parseInt(wh[0])+20)+',height='+(parseInt(wh[1])+20)+'');
 
 	newwin.document.open();	
-	newwin.document.write('<html><head><title>'+$('#vboxTabVMConsole').data('vmname') + ' - ' + trans('Console','UIVMDesktop')+'</title></head><body style="margin: 0px; border: 0px; padding: 0px; overflow: hidden;"><div style="margin: 0px; border: 0px; padding: 0px" id="vboxIndex"><img src="images/spinner.gif" /></div></body></html>');
+	newwin.document.write('<html><head><title>'+$('#vboxTabVMConsole').data('vmname') + ' - ' + trans('Console','UIVMDesktop')+'</title></head><body style="margin: 0px; border: 0px; padding: 0px; overflow: hidden;"><div style="margin: 0px; border: 0px; padding: 0px" id="vboxPane"><img src="images/spinner.gif" /></div></body></html>');
 	newwin.document.close();
 	var newHead = newwin.document.getElementsByTagName('HEAD')[0];
 	
@@ -352,8 +456,8 @@ function vboxRDPDetach() {
 			}\
 			function vboxConsoleDetachedOnload(){\
 			l = new vboxLoader();\
-			l.add('getConfig',function(d){$('#vboxIndex').data('vboxConfig',d);});\
-			l.addFile('panes/tabVMConsole.html',function(d){$('#vboxIndex').children().remove();$('#vboxIndex').append(d);$('#vboxTabVMConsole').css('display','');vboxRDPLoad();});\
+			l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d);});\
+			l.addFile('panes/tabVMConsole.html',function(d){$('#vboxPane').children().remove();$('#vboxPane').append(d);$('#vboxTabVMConsole').css('display','');vboxRDPLoad();});\
 			l.run();};\
 			setTimeout(\"vboxConsoleCheckLoad()\",1000);";
 	newHead.appendChild(script);

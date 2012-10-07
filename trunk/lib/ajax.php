@@ -131,6 +131,10 @@ try {
 		case 'getSession':
 			
 			
+			if(!function_exists('session_start')) {
+				throw new Exception("PHP session support is required by phpVirtualBox but is not enabled or available in your PHP installation.", vboxconnector::PHPVB_ERRNO_FATAL);
+			}
+			
 			$settings = new phpVBoxConfigClass();
 			if(method_exists($settings->auth,'autoLoginHook'))
 			{
@@ -277,8 +281,6 @@ try {
 				$vbox->settings->auth->heartbeat($vbox);
 			}
 			
-			session_write_close();
-				
 			/*
 			 *  Persistent request config
 			 */
@@ -288,14 +290,16 @@ try {
 				$hc = $vbox->persistentRequestConfig[$vboxRequest['fn']];
 					
 				// Array key in cookie that we are looking for
-				$cookieKeyPrefix = $vbox->settings->key.'vboxPersistentHandle'.$hc['keyName'].
+				$sessionKeyPrefix = $vbox->settings->key.'vboxPersistentHandle'.$hc['keyName'].
 					(($hc['keyValue'] && $vboxRequest[$hc['keyValue']]) ? $vboxRequest[$hc['keyValue']] : '');
 				
 				// Each handle
 				foreach($hc['items'] as $h) {
-					$vbox->persistentRequest[$h] = @unserialize($_COOKIE[$cookieKeyPrefix.'-'.$h]);
+					$vbox->persistentRequest[$h] = @$_SESSION[$sessionKeyPrefix.'-'.$h];
 				}
 					
+			} else {
+				session_write_close();				
 			}
 			
 			/*
@@ -312,13 +316,19 @@ try {
 				$hc = $vbox->persistentRequestConfig[$vboxRequest['fn']];
 					
 				// Array key in cookie that we are looking for
-				$cookieKeyPrefix = $vbox->settings->key.'vboxPersistentHandle'.$hc['keyName'].
+				$sessionKeyPrefix = $vbox->settings->key.'vboxPersistentHandle'.$hc['keyName'].
 					(($hc['keyValue'] && $vboxRequest[$hc['keyValue']]) ? $vboxRequest[$hc['keyValue']] : '');
 				
 				// Each handle
 				foreach($hc['items'] as $h) {
-					setcookie($cookieKeyPrefix.'-'.$h,serialize($vbox->persistentRequest[$h]));	
+					if($vbox->persistentRequest[$h]) {
+						$_SESSION[$sessionKeyPrefix.'-'.$h] = $vbox->persistentRequest[$h];	
+					} else {
+						unset($_SESSION[$sessionKeyPrefix.'-'.$h]);
+					}
 				}
+				
+				session_write_close();
 				
 			}
 						

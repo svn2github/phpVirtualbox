@@ -85,7 +85,7 @@ $('#vboxPane').bind('vmSelectionListChanged', function(){
 	} else {
 		
 		// VM is running, get runtime data
-		vboxVMDataMediator.getVMRuntimeData(vm.id, function(runtimeInfo) {
+		$.when(vboxVMDataMediator.getVMRuntimeData(vm.id)).then(function(runtimeInfo) {
 			
 			if(runtimeInfo.VRDEServerInfo && runtimeInfo.VRDEServerInfo.port > 0) {
 				

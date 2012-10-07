@@ -77,7 +77,7 @@ if(jQuery)( function() {
 						subMenus($(this),level + 1);
 					});
 									
-				}
+				};
 				
 				/*
 				 * 
@@ -109,12 +109,14 @@ if(jQuery)( function() {
 						if( callback ) callback( $(this).attr('href').substr(1), $(srcElement), null, this); //{x: x - offset.left, y: y - offset.top, docX: x, docY: y} , this);
 						return false;
 					});
-				}
+				};
 				
 				var showMenu = function(srcElement, menu, mode, e) {
 					
 					// Check menu
-					if(!$(menu)[0]) return;
+					if(!$(menu)[0]) {
+						return;
+					}
 
 					// Detach sub menus
 					subMenus(menu,$(menu).data('level')+1);

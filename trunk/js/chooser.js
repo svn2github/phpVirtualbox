@@ -1574,7 +1574,7 @@ $(document).ready(function(){
 		
 	
 	// Snapshot taken
-	}).bind('vboxPreSnapshotTaken',function(e,vmid) {
+	}).bind('vboxSnapshotTaken',function(e,vmid) {
 		
 		vboxChooser.updateVMElement(vboxVMDataMediator.getVMData(vmid));
 	

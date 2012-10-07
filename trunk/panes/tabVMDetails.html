@@ -132,26 +132,11 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 	// Target for actions
 	var targetDiv = $('#vboxVMDetails');
 
-	// Loading scren
-	if(vboxChooser.selectedVMs.length == 1 && $('#vboxTabVMDetails').css('display') != 'none') {
-			
-		// Hide all tab children first
-		$('#vboxTabVMDetails').css({'display':'table','width':'100%'}).children().hide();
-			
-		// Display loading div
-		$('#vboxDetailsLoading').show().css('display','table-cell');
-	
-		targetDiv.children().empty().remove();
-
-	}
-	
-	// Get and show details and runtime data again
-	
+	// Get and show details and runtime data again	
 	$.when(vboxVMDataMediator.getVMDataCombined(vmid)).then(function(d) {
-
+		// if there's only one, we'll have to remove existing data
 		if(vboxChooser.selectedVMs.length == 1) {
-			targetDiv.siblings().hide();
-			targetDiv.show();
+			targetDiv.children().empty().remove();
 		}
 		__vboxDisplayDetailsData(d, (vboxChooser.selectedVMs.length > 1), targetDiv);
 	});
@@ -165,23 +150,10 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 	// Not a selected VM, nothing to do
 	if(!vboxChooser.isVMSelected(vmid)) return;
 	
-	// Dummy deferred object that is already resolved
-	var runtimeDataCallback = $.Deferred();
-	runtimeDataCallback.resolve({});
-	
 	// Redraw all sections that ask for a redraw on state changes
-	if(state == 'Running') {
-		runtimeDataCallback = vboxVMDataMediator.getVMRuntimeData(vmid);
-	}
-	
-	// Get data
-	$.when(vboxVMDataMediator.getVMDetails(vmid),
-			runtimeDataCallback)
-				
-		.then(function(details, runtime) {
+	$.when(vboxVMDataMediator.getVMDataCombined(vmid)).then(function(vmData) {
 
-			// Extend all data sources
-			var vmData = $.extend({},vboxVMDataMediator.getVMData(details.id),details,runtime);
+			
 			var multiSelect = (vboxChooser.selectedVMs.length > 1);
 			
 			// Each section

@@ -260,14 +260,16 @@ vboxTopMenuBar.addMenu(menu);
 
 vboxTopMenuBar.addMenuBar('vboxMenu');
 
-$('#vboxPane').bind('vmLoaded',vboxTopMenuBar.update)
-	.bind('vmSelectionListChanged',function(e, chooser){
+$('#vboxPane').bind('vmSelectionListChanged',function(e, chooser){
 		vboxTopMenuBar.update(chooser);
-	}).bind('vboxMachineOrSessionStateChanged',function(e, vmid){
-		// Update menus if the VM is selected
-		if(vboxChooser.isVMSelected(vmid))
-			vboxTopMenuBar.update(self);
-	});
+
+}).bind('vboxMachineOrSessionStateChanged',function(e, vmid){
+	
+	// Update menus if the VM is selected
+	if(vboxChooser.isVMSelected(vmid))
+		vboxTopMenuBar.update(self);
+
+});
 
 
 </script>

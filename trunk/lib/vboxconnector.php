@@ -124,12 +124,6 @@ class vboxconnector {
 				'keyName' => 'eventListener'
 		),
 				
-		// Stop event listeners
-		'destroyEventListeners' => array(
-			'items' => array('vboxHandle','vboxEventListeners'),
-			'keyName' => 'eventListener'
-		),
-				
 		// Get progress status request
 		'progressGet' => array(
 			'items' => array('vboxHandle'),
@@ -201,10 +195,9 @@ class vboxconnector {
 	public function connect() {
 
 		// Already connected?
-		if(@$this->connected) return true;
+		if(@$this->connected)
+			return true;
 		
-		global $_SESSION;
-
 		// Valid session?
 		if(!@$this->skipSessionCheck && !$_SESSION['valid']) {
 			throw new Exception(trans('Not logged in.','UIUsers'),vboxconnector::PHPVB_ERRNO_FATAL);
@@ -320,10 +313,9 @@ class vboxconnector {
 	}
 	
 	/**
-	 * Add a machine event listener to the list
+	 * Add a machine event listener to the listener list
 	 * 
-	 * @param boolean $noCreate do not attempt to create a listener
-	 * @return IEventListener
+	 * @param string $vm id of virtual machine to subscribe to
 	 */
 	private function _machineSubscribeEvents($vm) {
 	
@@ -429,11 +421,25 @@ class vboxconnector {
 
 				} catch (Exception $e) {
 					// pass - Exceptions in event processing are ok
+					// as machines can be powered off and their event
+					// listeners can go away
 				}
 				
 			} catch (Exception $e) {
 				
 				// Probably a machine that was powered off
+				
+				// Release remote references
+				if($listener)
+					try { $listener->releaseRemote(); } catch (Exceptoin $e) {
+						/// pass
+					}
+				if($source)
+					try { $source->releaseRemote(); } catch (Exceptoin $e) { 
+						// pass
+					}
+				
+				// Remove listener from list
 				unset($this->persistentRequest['vboxEventListeners'][$k]);
 				
 			}
@@ -546,32 +552,6 @@ class vboxconnector {
 					}
 					break;
 				
-				
-				
-				/* Medium mounted / removed */
-				case 'dOnMediumChanged':
-					try {
-						$machine = $this->vbox->findMachine($vm);
-						$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
-							
-						// Session locked?
-						if($this->session->state->__toString() != 'Unlocked')
-							$this->session->unlockMachine();
-				
-						$machine->lockMachine($this->session->handle, 'Shared');
-				
-						$eventlist[$k]['enrichmentData'] = array(
-								'enabled' => intval($this->session->console->machine->VRDEServer->enabled),
-								'consolePort' => $this->session->console->VRDEServerInfo->port
-						);
-				
-						$this->session->unlockMachine();
-					} catch (Exception $e) {
-						//pass
-					}
-					break;
-				
-				
 				/* Machine registered */
 				case 'OnMachineRegistered':
 					if(!$event['registered']) break;
@@ -606,7 +586,7 @@ class vboxconnector {
 		
 					
 					
-				/* enrich with snapshot name */
+				/* enrich with snapshot name and new snapshot count*/
 				case 'OnSnapshotTaken':
 						
 					try {
@@ -638,16 +618,18 @@ class vboxconnector {
 	}
 
 	/**
-	 * Subscribe to vbox and machine events
+	 * Subscribe to a single machine's events
 	 *
 	 * @param array $args array of arguments. See function body for details.
 	 * @param array $response response data passed byref populated by the function
+	 * @return boolean true on success
 	 */
 	private function remote_machineSubscribeEvents($args, &$response) {
 	
 		$this->connect();
 		$this->_machineSubscribeEvents($args['vm']);
 		
+		return ($response['data']['result'] = 1);
 	}
 	
 	/**
@@ -655,6 +637,7 @@ class vboxconnector {
 	 * 
 	 * @param array $args array of arguments. See function body for details.
 	 * @param array $response response data passed byref populated by the function
+	 * @return boolean true on success
 	 */
 	private function remote_unsubscribeEvents($args, &$response) {
 
@@ -696,6 +679,7 @@ class vboxconnector {
 	 * 
 	 * @param array $args array of arguments. See function body for details.
 	 * @param array $response response data passed byref populated by the function
+	 * @return boolean true on success
 	 */
 	private function remote_subscribeEvents($args, &$response) {
 		
@@ -733,6 +717,8 @@ class vboxconnector {
 			$this->_machineSubscribeEvents($vm);
 		}
 		
+		return ($response['data']['result'] = 1);
+		
 	}
 	
 	/**
@@ -741,6 +727,7 @@ class vboxconnector {
 	 * @param IEvent $event
 	 * @param String $listenerKey Key of event listener - 'vbox' or
 	 * 		machine id
+	 * @return array associative array of event attributes
 	 */
 	private function _getEventData($event, $listenerKey) {
 		
@@ -966,7 +953,7 @@ class vboxconnector {
 	 * 
 	 * @param array $args array of arguments. See function body for details.
 	 * @param array $response response data passed byref populated by the function
-	 * @return boolean
+	 * @return boolean true on success
 	 */
 	public function remote_fileExists($args,&$response) {
 
@@ -1005,17 +992,17 @@ class vboxconnector {
 
 
 		$response['data']['exists'] = count($exists);
-		return true;
+		
+		return ($response['data']['result'] = 1);
 	}
 
 	/**
-	 * Save a vm's shared folder settings
+	 * Set a vm's shared folders
 	 *
-	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
+	 * @param array $args array containing 'sharedFolders' data
 	 * @return boolean true on success
 	 */
-	public function remote_machineSaveSharedFolders($args,&$response) {
+	private function _machineSetSharedFolders($args) {
 
 		// Compose incoming list
 		$sf_inc = array();
@@ -1084,7 +1071,7 @@ class vboxconnector {
 		foreach($tsf as $sf) $this->session->console->removeSharedFolder($sf->name);
 
 		
-		return true;
+		return ($response['data']['result'] = 1);
 
 	}
 
@@ -1118,8 +1105,8 @@ class vboxconnector {
 				'linux' => '/usr/share/virtualbox/VBoxGuestAdditions.iso',
 				'osx' => '/Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso',
 				'sunos' => '/opt/VirtualBox/additions/VBoxGuestAdditions.iso',
-				'windows' => 'C:\\Program Files\\Oracle\\VirtualBox\\VBoxGuestAdditions.iso',
-				'windowsx86' => 'C:\\Program Files (x86)\\Oracle\\VirtualBox\\VBoxGuestAdditions.iso' // Does this exist?
+				'windows' => 'C:\Program Files\Oracle\VirtualBox\VBoxGuestAdditions.iso',
+				'windowsx86' => 'C:\Program Files (x86)\Oracle\VirtualBox\VBoxGuestAdditions.iso' // Does this exist?
 			);
 			$hostos = $this->vbox->host->operatingSystem;
 			if(stripos($hostos,'windows') !== false) {
@@ -1233,7 +1220,7 @@ class vboxconnector {
 		unset($this->session);
 		$machine->releaseRemote();
 
-		$response['data']['result'] = 1;
+		return ($response['data']['result'] = 1);
 	}
 
 	/**
@@ -1241,6 +1228,7 @@ class vboxconnector {
 	 * 
 	 * @param array $args array of arguments. See function body for details.
 	 * @param array $response response data passed byref populated by the function
+	 * @return boolean true on success
 	 */
 	public function remote_consoleUSBDeviceDetach($args,&$response) {
 
@@ -1258,7 +1246,7 @@ class vboxconnector {
 		unset($this->session);
 		$machine->releaseRemote();
 
-		$response['data']['result'] = 1;
+		return ($response['data']['result'] = 1);
 	}
 
 	/**
@@ -1326,13 +1314,12 @@ class vboxconnector {
 	}
 
 	/**
-	 * Save a vm's network adapter settings
+	 * Set a vm's network adapter settings
 	 * 
-	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @param array $args array of networking adapters
+	 * @param IMachine $machine reference to VM
 	 */
-	public function remote_machineSaveNetwork($args,&$response) {
+	private function _machineSetNetwork($args,&$machine) {
 
 		// Network Adapters
 		$netprops = array('enabled','attachmentType','bridgedInterface','hostOnlyInterface','internalNetwork','NATNetwork','cableConnected','promiscModePolicy','genericDriver');
@@ -1341,7 +1328,7 @@ class vboxconnector {
 		for($i = 0; $i < count($args['networkAdapters']); $i++) {
 
 			/* @var $n INetworkAdapter */
-			$n = $this->session->machine->getNetworkAdapter($i);
+			$n = $machine->getNetworkAdapter($i);
 
 			// Skip disabled adapters
 			if(!$n->enabled) {
@@ -1410,7 +1397,6 @@ class vboxconnector {
 			$n->releaseRemote();
 		}
 
-		return ($response['data']['result'] = 1);
 	}
 
 	/**
@@ -1484,9 +1470,11 @@ class vboxconnector {
 		$m = $this->vbox->findMachine($args['vm']);
 		$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 		$m->lockMachine($this->session->handle, 'Shared');
+		
 		if(intval($args['enabled']) == -1) {
 			$args['enabled'] = intval(!$this->session->machine->VRDEServer->enabled);
 		}
+		
 		$this->session->machine->VRDEServer->enabled = intval($args['enabled']);
 
 		$this->session->unlockMachine();
@@ -1618,10 +1606,10 @@ class vboxconnector {
 
 
 		/* Networking */
-		$this->remote_machineSaveNetwork($args,$null);
+		$this->_machineSetNetwork($args,$this->session->machine);
 
 		/* Shared Folders */
-		$this->remote_machineSaveSharedFolders($args,$null);
+		$this->_machineSetSharedFolders($args,$null);
 
 		/*
 		 * USB Filters
@@ -1688,7 +1676,6 @@ class vboxconnector {
 
 		$this->session->machine->saveSettings();
 		$this->session->unlockMachine();
-		$this->session->releaseRemote();
 		unset($this->session);
 		$m->releaseRemote();
 
@@ -1709,7 +1696,9 @@ class vboxconnector {
 		// create session and lock machine
 		/* @var $machine IMachine */
 		$machine = $this->vbox->findMachine($args['id']);
-		$vmRunning = ($machine->state->__toString() == 'Running');
+		
+		$vmState = $machine->state->__toString();
+		$vmRunning = ($vmState == 'Running' || $vmState == 'Paused');
 		$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 		$machine->lockMachine($this->session->handle, ($vmRunning ? 'Shared' : 'Write'));
 
@@ -1726,7 +1715,7 @@ class vboxconnector {
 
 		// Shorthand
 		/* @var $m IMachine */
-		$m = &$this->session->machine;
+		$m = $this->session->machine;
 
 		// General machine settings
 		if (@$this->settings->enforceVMOwnership )
@@ -1965,10 +1954,6 @@ class vboxconnector {
 
 		}
 		
-		// Expire media?
-		ksort($attachedEx);
-		ksort($attachedNew);
-
 		/*
 		 *
 		 * Network Adapters
@@ -1977,8 +1962,7 @@ class vboxconnector {
 
 		$netprops = array('enabled','attachmentType','adapterType','MACAddress','bridgedInterface','hostOnlyInterface','internalNetwork','NATNetwork','cableConnected','promiscModePolicy','genericDriver');
 		if(@$this->settings->enableVDE) $netprops[] = 'VDENetwork';
-		$adapters = $this->_machineGetNetworkAdapters($this->session->machine);
-
+	
 		for($i = 0; $i < count($args['networkAdapters']); $i++) {
 
 			$n = $m->getNetworkAdapter($i);
@@ -2017,6 +2001,7 @@ class vboxconnector {
 			foreach($inprops as $k => $v)
 				$n->setProperty($k, $v);
 			
+			// Nat redirects and advanced settings
 			if($args['networkAdapters'][$i]['attachmentType'] == 'NAT') {
 
 				// Remove existing redirects
@@ -2046,14 +2031,12 @@ class vboxconnector {
 		}
 
 		// Serial Ports
-		$spChanged = false;
 		for($i = 0; $i < count($args['serialPorts']); $i++) {
 
 			/* @var $p ISerialPort */
 			$p = $m->getSerialPort($i);
 
 			if(!($p->enabled || intval($args['serialPorts'][$i]['enabled']))) continue;
-			$spChanged = true;
 			try {
 				$p->enabled = intval($args['serialPorts'][$i]['enabled']);
 				$p->IOBase = @hexdec($args['serialPorts'][$i]['IOBase']);
@@ -2096,7 +2079,6 @@ class vboxconnector {
 		}
 
 
-		$sharedchanged = false;
 		$sharedEx = array();
 		$sharedNew = array();
 		foreach($this->_machineGetSharedFolders($m) as $s) {
@@ -2107,7 +2089,6 @@ class vboxconnector {
 		}
 		// Compare
 		if(count($sharedEx) != count($sharedNew) || (@serialize($sharedEx) != @serialize($sharedNew))) {
-			$sharedchanged = true;
 			foreach($sharedEx as $s) { $m->removeSharedFolder($s['name']);}
 			try {
 				foreach($sharedNew as $s) {
@@ -3017,7 +2998,7 @@ class vboxconnector {
 			if($mstate == $states[$state]['result']) {
 				$response['data']['result'] = 0;
 				$machine->releaseRemote();
-				throw new Exception('Machine is already in requested state.');
+				return;
 			}
 		}
 
@@ -3372,13 +3353,11 @@ class vboxconnector {
 			$data['name'] = preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $data['name']);
 		}
 
-		// Runtime items when not obtaining snapshot machine info
+		// Items when not obtaining snapshot machine info
 		if(!$snapshot) {
 
-			$data['state'] = $machine->state->__toString();
 			$data['currentSnapshot'] = ($machine->currentSnapshot->handle ? array('id'=>$machine->currentSnapshot->id,'name'=>$machine->currentSnapshot->name) : null);
 			$data['snapshotCount'] = $machine->snapshotCount;
-			$data['sessionState'] = $machine->sessionState->__toString();
 			$data['currentStateModified'] = $machine->currentStateModified;
 
 			// Start / stop config
@@ -3544,8 +3523,6 @@ class vboxconnector {
 	 * @return boolean true on success
 	 */
 	public function remote_machineCreate($args, &$response) {
-
-		global $_SESSION;
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -3815,7 +3792,6 @@ class vboxconnector {
 					'owner' => (@$this->settings->enforceVMOwnership ? $machine->getExtraData("phpvb/sso/owner") : ''),
 					'groups' => $groups,
 					'id' => $machine->id,
-					'lastStateChange' => floor($machine->lastStateChange/1000),
 					'sessionState' => $machine->sessionState->__toString(),
 					'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
 					'customIcon' => (@$this->settings->enableCustomIcons ? $machine->getExtraData('phpvb/icon') : '')
@@ -4521,7 +4497,6 @@ class vboxconnector {
 				'useHostIOCache' => intval($c->useHostIOCache),
 				'minPortCount' => $c->minPortCount,
 				'maxPortCount' => $c->maxPortCount,
-				'instance' => $c->instance,
 				'portCount' => $c->portCount,
 				'bus' => $c->bus->__toString(),
 				'controllerType' => $c->controllerType->__toString(),
@@ -5310,6 +5285,7 @@ class vboxconnector {
 	/**
 	 * Return a string representing the VirtualBox ExtraData key
 	 * for this port + device + bus type IgnoreFlush setting
+	 * 
 	 * @param integer port medium attachment port number
 	 * @param integer device medium attachment device number
 	 * @param string cType controller type
@@ -5391,7 +5367,7 @@ class vboxconnector {
 	}
 	
 	/**
-	 * Return group definitions in an easily consumable format
+	 * Return group definitions
 	 * 
 	 * @param array $args array of arguments. See function body for details
 	 * @param array $response response data passed byref populated by the function

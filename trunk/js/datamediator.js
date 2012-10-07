@@ -222,8 +222,10 @@ $(document).ready(function(){
 	}).bind('vboxPreSnapshotTaken',function(e,vmid,snapshotid,data) {
 		
 		if(vboxVMDataMediator.vmData[vmid]) {
-			$.extend(vboxVMDataMediator.vmData[vmid], data);
+			vboxVMDataMediator.vmData[vmid].currentSnapshotName = data.currentSnapshotName;
 		}
+		if(vboxVMDataMediator.vmDetailsData[vmid])
+			vboxVMDataMediator.vmDetailsData[vmid].snapshotCount = data.snapshotCount;
 		
 	// Expire all data for a VM when machine is unregistered
 	}).bind('vboxPreMachineRegistered', function(e, vmid, registered, data) {

@@ -447,49 +447,17 @@ vboxSnapshotToolbar._timeSpans.sort(function(a,b){return (a > b ? -1 : 1);});
 
 
 
-/* Loading VM */
-$('#vboxPane').bind('vmLoading',function(){
-
-	vboxSnapshotToolbar.disable();
-	
-	if(vboxSnapshotToolbar._timer) {
-		window.clearTimeout(vboxSnapshotToolbar._timer);
-		vboxSnapshotToolbar._timer = null;
-	}
-		
-	$('#vboxTabVMSnapshots').data('lastVM',0);
-	
-	$('#vboxSnapshotList').children().remove();
+/* Selected VM changed */
+$('#vboxPane').bind('vmSelectionListChanged',function(){
 	
 	$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop'));
-	
-	// Append spinner
-	$('#vboxSnapshotList').append($('<li />').attr({'class':'last'}).html("<div><img src='images/spinner.gif'></div>"));
-	
-/* VM Finished loading */
-}).bind('vmLoaded',function(e,vm){
 
-	var selvm = vboxChooser.getSingleSelected();
-	
-	if(selvm && selvm.id == vm.id) {
-
-		$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
-	} else {
-		$('#vboxTabVMSnapshots').data('lastVM', null);
-	}
-	
-	if(vboxSnapshotToolbar._timer)
-		window.clearTimeout(vboxSnapshotToolbar._timer);
-
-/* Selected VM changed */
-}).bind('vmSelectionListChanged',function(){
-	
 	var vm = vboxChooser.getSingleSelected();
 	
 	if(vm) {
-		$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
-	} else {
-		$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop'));
+		$.when(vboxVMDataMediator.getVMDetails(vm.id)).then(function(vm) {
+			$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
+		});
 	}
 
 /* Snapshot taken event */

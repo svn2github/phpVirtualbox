@@ -431,8 +431,9 @@ var vboxVMDetailsSections = {
 				.bind('contextmenu', function() { return false; })
 				
 				// Menu setup for "open in new window"
-				.bind('beforeshow', function(e, d) {
+				.bind('beforeshow', function(e, vmid) {
 					
+					var d = vboxVMDataMediator.getVMData(vmid);
 					
 					if(vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d)) {
 						$('#vboxDetailsViewSavedSS')
@@ -3613,7 +3614,10 @@ function vboxLoader() {
 	this._loadStarted = {};
 	this.hideRoot = false;
 	this.noLoadingScreen = false;
-
+	
+	this._data = [];
+	this._files = [];
+	
 	/**
 	 * Add data item to list of items to load
 	 * 
@@ -3628,12 +3632,7 @@ function vboxLoader() {
 	 */
 	self.add = function(dataFunction, callback, params) {
 		if (params === undefined) params = {};
-		this._load[this._load.length] = {
-			'dataFunction' : dataFunction,
-			'type' : 'data',
-			'callback' : callback,
-			'params' : params
-		};
+		this._data[this._data.length] = vboxAjaxRequest(dataFunction,params,callback);
 	};
 
 	/**
@@ -3647,12 +3646,9 @@ function vboxLoader() {
 	 * @see vboxAjaxRequest()
 	 */
 	self.addFile = function(file,callback) {
-		params = {};		
-		this._load[this._load.length] = {
-				'type' : 'file',
+		this._files[this._files.length] = {
 				'callback' : callback,
 				'file' : file,
-				'params' : params
 			};		
 	};
 
@@ -3668,27 +3664,7 @@ function vboxLoader() {
 	self.addFileToDOM = function(file,elm) {
 		if(elm === undefined) elm = $('body').children('div').first();
 		var callback = function(f){elm.append(f);};
-		self.addFile(file,callback,{});
-	};
-	
-	/**
-	 * Add file to list of items to load
-	 * 
-	 * @memberOf vboxLoader
-	 * @param {String}
-	 *            file - URL of script file to load
-	 * @param {Function}
-	 *            callback - callback to run when file is loaded
-	 * @see vboxAjaxRequest()
-	 */	
-	self.addScript = function(file,callback) {
-		params = {};		
-		this._load[this._load.length] = {
-				'type' : 'script',
-				'callback' : callback,
-				'file' : file,
-				'params' : params
-			};		
+		self.addFile(file,callback);
 	};
 	
 	/**
@@ -3739,121 +3715,25 @@ function vboxLoader() {
 	 */
 	self.run = function() {
 
-		this._loadStarted = {'data':false,'files':false,'scripts':false};
-		
 		if(!self.noLoadingScreen) {
-
 			self.showLoading();
 		}
 		
-		this._loadOrdered();
-	};
-	
-	/**
-	 * Load items in order of data, scripts, then files
-	 * 
-	 * @memberOf vboxLoader
-	 */
-	self._loadOrdered = function() {
-		
-		var dataLeft = 0;
-		var scriptsLeft = 0;
-		var filesLeft = 0;
-
-		for ( var i = 0; i < self._load.length; i++) {
-			if(!self._load[i]) continue;
-			if(self._load[i].type == 'data') {
-				dataLeft = 1;
-			} else if(self._load[i].type == 'script') {
-				scriptsLeft = 1;
-			} else if(self._load[i].type == 'file') {
-				filesLeft = 1;
+		// Data first
+		$.when.apply($, self._data).then(function() {
+			
+			// files
+			for(var i = 0; i < self._files.length; i++) {
+				self._files[i] = jQuery.get(self._files[i]['file'],self._files[i]['callback']);
 			}
-		}
-		
-		// Everything loaded? Stop
-		if(dataLeft + scriptsLeft + filesLeft == 0) { self._stop();	return; }
-		
-		// Data left to load
-		if(dataLeft) {
-			if(self._loadStarted['data']) return;
-			self._loadStarted['data'] = true;
-			self._loadData();
-			return;
-		}
-		
-		// Scripts left to load
-		if(scriptsLeft) {
-			if(self._loadStarted['scripts']) return;
-			self._loadStarted['scripts'] = true;
-			self._loadScripts();
-			return;
-		}
-
-		// files left to load
-		if(self._loadStarted['files']) return;
-		self._loadStarted['files'] = true;
-		self._loadFiles();
-		
+			
+			$.when.apply($, self._files).then(function() {
+				self._stop();
+			});
+				
+		});
 		
 	};
-	
-
-	/**
-	 * Load all data in queue
-	 * 
-	 * @memberOf vboxLoader
-	 */
-	self._loadData = function() {
-		for ( var i = 0; i < self._load.length; i++) {
-			if(self._load[i] && self._load[i].type == 'data') {
-				vboxAjaxRequest(self._load[i].dataFunction,self._load[i].params,self._ajaxhandler,{'id':i});
-			}
-		}
-	};
-
-	/**
-	 * Load all scripts in queue
-	 * 
-	 * @memberOf vboxLoader
-	 */
-	self._loadScripts = function() {
-		for ( var i = 0; i < self._load.length; i++) {
-			if(self._load[i] && self._load[i].type == 'script') {
-				vboxGetScript(self._load[i].file,self._ajaxhandler,{'id':i});
-			}
-		}
-	};
-
-	/**
-	 * Load all files in queue
-	 * 
-	 * @memberOf vboxLoader
-	 */
-	self._loadFiles = function() {
-		for ( var i = 0; i < self._load.length; i++) {
-			if(self._load[i] && self._load[i].type == 'file') {
-				vboxGetFile(self._load[i].file,self._ajaxhandler,{'id':i});
-			}
-		}
-	};
-	
-	/**
-	 * AJAX call returned. Call appropriate callback and check for completion
-	 * 
-	 * @memberOf vboxLoader
-	 * @param {Object}
-	 *            d - data returned from ajax call
-	 * @param {Object}
-	 *            i - extra data - contains request id
-	 */
-	self._ajaxhandler = function(d, i) {
-		if(self._load[i.id].callback) self._load[i.id].callback(d,self._load[i.id].params);
-		self._load[i.id].loaded = true;
-		delete self._load[i.id];
-		self._loadOrdered();
-	};
-
 	
 	/**
 	 * Remove loading screen and show body

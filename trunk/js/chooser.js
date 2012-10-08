@@ -62,6 +62,9 @@ var vboxChooser = {
 	_vmContextMenuObj : null,
 	_vmGroupContextMenuObj : null,
 	
+	/* Holds history of showing only single groups */
+	_showOnlyGroupHistory : [],
+	
 	/**
 	 * Set anchor id to draw to
 	 */
@@ -1335,6 +1338,68 @@ var vboxChooser = {
 	},
 	
 	/*
+	 * Show only single group element identified by gelm
+	 */
+	showOnlyGroupElm : function(gelm) {
+
+		// Going backwards affects animations
+		var back = false;
+		
+		// gelm is null if we're going backwards
+		if(!gelm) {
+			if(vboxChooser._showOnlyGroupHistory.length > 1) {
+				// this gets rid of current
+				vboxChooser._showOnlyGroupHistory.pop();
+				// selects previous
+				gelm = vboxChooser._showOnlyGroupHistory.pop();
+				back = true;
+			} else {
+				gelm = null;
+			}
+		} else {
+			vboxChooser._showOnlyGroupHistory[vboxChooser._showOnlyGroupHistory.length] = gelm;			
+		}
+		
+		
+		if($(gelm)[0]) {
+			
+			
+			// Pull everything up
+			$.when(vboxChooser._anchor.hide('slide', {direction: (back ? 'right' : 'left'), distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200)).then(function() {
+				
+				/* hide host when showing only a group */
+				$('table.vboxChooserItem-'+vboxChooser._anchorid+'-host').hide();
+
+				/* Undo anything previously performed by this */
+				vboxChooser._anchor.find('div.vboxChooserGroupHide').removeClass('vboxChooserGroupHide').removeClass('vboxChooserGroupHideShowContainer');
+				vboxChooser._anchor.find('div.vboxChooserGroupShowOnly').removeClass('vboxChooserGroupShowOnly');
+
+				$(gelm).parents('div.vboxChooserGroup').addClass('vboxChooserGroupHide').addClass('vboxChooserGroupHideShowContainer').siblings().addClass('vboxChooserGroupHide');
+				$(gelm).addClass('vboxChooserGroupShowOnly').siblings().addClass('vboxChooserGroupHide');
+				vboxChooser._anchor.show('slide', {direction: (back ? 'left' : 'right'), distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200);
+				
+			});
+			
+		} else {
+
+			vboxChooser._showOnlyGroupHistory = [];
+
+			// Pull everything up
+			$.when(vboxChooser._anchor.hide('slide', {direction: 'right', distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200)).then(function() {
+
+				/* show host when going back to main list */
+				$('table.vboxChooserItem-'+vboxChooser._anchorid+'-host').show();
+	
+				vboxChooser._anchor.find('div.vboxChooserGroupHide').removeClass('vboxChooserGroupHide').removeClass('vboxChooserGroupHideShowContainer');
+				vboxChooser._anchor.find('div.vboxChooserGroupShowOnly').removeClass('vboxChooserGroupShowOnly');
+				
+				vboxChooser._anchor.show('slide', {direction: 'left', distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200);
+			});
+		}
+			
+	},
+	
+	/*
 	 * Return HTML for group with VM place-holders
 	 */
 	groupHTML : function(gpath) {
@@ -1367,10 +1432,26 @@ var vboxChooser = {
 
 								return false;
 							})
+				).append(
+						$('<span />').addClass('vboxChooserGroupShowOnlyBack')
+							.click(function(e) {
+								e.stopPropagation();
+								e.preventDefault();
+								vboxChooser.showOnlyGroupElm();
+								return false;
+
+							})
 				)
 				.append($('<span />').html(gname).addClass('vboxChooserGroupName'))
 				.append($('<span />').addClass('vboxChooserGroupInfo').html(
 						"<span class='vboxChooserGroupCounts' />"
+						).append(
+							$('<span />').addClass('vboxChooserGroupShowOnly').click(function(e){
+								e.stopPropagation();
+								e.preventDefault();
+								vboxChooser.showOnlyGroupElm($(this).closest('div.vboxChooserGroup'));
+								return false;
+							})
 						))
 				.append(
 					$('<div />').addClass('vboxChooserDropTarget').addClass('vboxChooserDropTargetBottom')

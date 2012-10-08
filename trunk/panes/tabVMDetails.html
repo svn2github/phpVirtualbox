@@ -370,13 +370,13 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 		
 		var menu = section.contextMenu();
 				
-		$(vboxDetailsSection).mouseup( function(e) {
+		$(vboxDetailsSection).mouseup({'vmid':data.id},function(e) {
 
 			$('ul.contextMenu').hide();
 			
 			if(e.button == 2) {
 
-				$(menu).trigger('beforeshow', data);
+				$(menu).trigger('beforeshow', e.data.vmid);
 				
 				vboxPositionEvent(menu, e);
 				$(menu).show();

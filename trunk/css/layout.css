@@ -563,6 +563,86 @@ ul.vboxMenuBar li {
 	-moz-border-radius: 8px;
 }
 
+/* Hide / show only 1 group */
+#vboxPaneVMList div.vboxChooserGroupHide {
+	border: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+
+#vboxPaneVMList div.vboxChooserGroupHide > div, /* all children of hidden elements are hidden */
+#vboxPaneVMList div.vboxChooserGroupHide div.vboxChooserGroupHeader, /* all headers are hidden */
+#vboxPaneVMList div.vboxChooserGroupHide div.vboxChooserGroupVMs, /* VM lists are hidden */
+#vboxPaneVMList div.vboxChooserGroupHideShowContainer div.vboxChooserGroupShowOnly ~ div, /* siblings of only group shown are hidden */
+#vboxPaneVMList div.vboxChooserGroupHideShowContainer ~ div /* siblings of parent containers are hidden */
+{
+	display: none;
+}
+
+#vboxPaneVMList div.vboxChooserGroupHideShowContainer > div.vboxChooserGroup, /* each parent container group list must be shown */
+#vboxPaneVMList div.vboxChooserGroupShowOnly div.vboxChooserGroup, /* sub-groups are shown */
+#vboxPaneVMList div.vboxChooserGroupShowOnly div.vboxChooserGroupHeader, /* headers shown */
+#vboxPaneVMList div.vboxChooserGroupShowOnly div.vboxChooserGroupVMs /* vm lists are shown */
+{ 
+	display: block;
+}
+/* except for collapsed ones */
+#vboxPaneVMList div.vboxChooserGroupShowOnly div.vboxVMGroupCollapsed div.vboxChooserGroup,
+#vboxPaneVMList div.vboxChooserGroupShowOnly div.vboxVMGroupCollapsed div.vboxChooserGroupVMs,
+#vboxPaneVMList div.vboxChooserGroupShowOnly div.vboxVMGroupCollapsed div.vboxChooserDropTargetBottom
+{ display: none; }
+
+#vboxPaneVMList div.vboxChooserGroupHideShowContainer > div.vboxChooserGroup {
+	margin: 0px;
+	padding: 0px;
+}
+#vboxPaneVMList div.vboxChooserGroupShowOnly {
+	margin: 2px;
+	display: block;
+	border: 0px;
+}
+
+#vboxPaneVMList div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader {
+	-moz-border-radius-bottomleft: 8px/*{cornerRadius}*/; -webkit-border-bottom-left-radius: 8px/*{cornerRadius}*/; border-bottom-left-radius: 8px/*{cornerRadius}*/; -moz-border-radius-bottomright: 8px/*{cornerRadius}*/; -webkit-border-bottom-right-radius: 8px/*{cornerRadius}*/; border-bottom-right-radius: 8px/*{cornerRadius}*/;	
+	-moz-border-radius-topleft: 0px/*{cornerRadius}*/; -webkit-border-top-left-radius: 0px/*{cornerRadius}*/; border-top-left-radius: 0px/*{cornerRadius}*/; -moz-border-radius-topright: 0px/*{cornerRadius}*/; -webkit-border-top-right-radius: 0px/*{cornerRadius}*/; border-top-right-radius: 0px/*{cornerRadius}*/;
+	display: block;
+}
+
+#vboxPaneVMList div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader span.vboxChooserGroupShowOnly,
+#vboxPaneVMList div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader span.vboxChooserGroupNameArrowCollapse {
+	display: none;
+}
+#vboxPaneVMList div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader span.vboxChooserGroupShowOnlyBack {
+	display: inline-block;
+}
+#vboxPaneVMList div.vboxChooserGroupHeader span.vboxChooserGroupShowOnly {
+	position: relative;
+	top: 1px;
+	display: inline-block;
+	margin: 0px;
+	margin-left: 2px;
+	margin-right: 2px;
+	padding: 0px;
+	cursor: pointer;
+	width: 8px;
+	height: 13px;
+	background-repeat: no-repeat;
+	background-image: url(../images/arrow_grad_right.png);
+}
+
+#vboxPaneVMList div.vboxChooserGroupHeader span.vboxChooserGroupShowOnlyBack {
+	position: relative;
+	left: -5px;
+	top: 1px;
+	margin: 0px;
+	padding: 0px;
+	cursor: pointer;
+	width: 13px;
+	height: 13px;
+	background-repeat: no-repeat;
+	background-image: url(../images/arrow_grad_left.png);
+	display: none;
+}
 
 /* Toolbar above vm list */
 #vboxPaneToolbar { float: left; }

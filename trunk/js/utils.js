@@ -181,26 +181,7 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 
 	
 }
-/**
- * Load a script file
- * @param {String} file - URL to script file
- * @param {Function} callback - function to call when script is loaded
- * @param {any} cparams - extra parameter passed to callback function (optional)
- * @return jQuery.getScript return value
- */
-function vboxGetScript(file,callback,cparams) {
-	return jQuery.getScript(file,function(f){callback(f,cparams);});
-}
-/**
- * Load an HTML file
- * @param {String} file - URL to file
- * @param {Function} callback - function to call when file is loaded
- * @param {any} cparams - extra parameter passed to callback function (optional)
- * @return jQuery.get return value
- */
-function vboxGetFile(file,callback,cparams) {
-	return jQuery.get(file,function(f){callback(f,cparams);});
-}
+
 /**
  * Return VRDE address (host) of VM
  * @param {Object} vm - virtual machine object

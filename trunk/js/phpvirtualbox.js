@@ -1368,10 +1368,11 @@ var vboxVMActions = {
 			
 			var vmid = vboxChooser.getSingleSelectedId();
 			
-			vboxVMDataMediator.expireVMDetails(vmid);
-			vboxVMDataMediator.expireVMRuntimeData(vmid);
-			
-			$('#vboxPane').trigger('vboxMachineDataChanged',[vmid, vboxVMDataMediator.getVMData(vmid)]);
+			var l = new vboxLoader();
+			l.showLoading();
+			$.when(vboxVMDataMediator.refreshVMData(vmid)).then(function(){
+				l.removeLoading();
+			});
 			
     	},
 		enabled: function(){
@@ -1453,6 +1454,9 @@ var vboxVMActions = {
     		vboxChooser.groupSelectedItems();
     	},
     	enabled: function() {
+    		
+    		if(!$('#vboxPane').data('vboxSession').admin)
+    			return false;
     		
     		if (!vboxChooser || (vboxChooser.getSingleSelectedId() == 'host'))
     			return false;

@@ -68,6 +68,12 @@ var vboxChooser = {
 	setAnchorId : function(aid) {
 		vboxChooser._anchorid = aid;
 		vboxChooser._anchor = $('#'+aid);
+		
+		vboxChooser._anchor.hover(function(){
+			$(this).addClass('vboxChooserDropTargetHoverRoot');
+		},function() {
+			$(this).removeClass('vboxChooserDropTargetHoverRoot');
+		});
 	},
 	
 	/**
@@ -145,6 +151,7 @@ var vboxChooser = {
 	selectionListChanged : function(selectionList) {
 		
 		if(!selectionList) selectionList = [];
+		vboxChooser._selectedList = selectionList;
 		
 		selectionMode = vboxSelectionModeNone;
 		
@@ -196,7 +203,6 @@ var vboxChooser = {
 
 		vboxChooser.selectionMode = selectionMode;
 		
-
 		$('#vboxPane').trigger('vmSelectionListChanged',[vboxChooser]);		
 		
 	},
@@ -1200,24 +1206,6 @@ var vboxChooser = {
 
 	},
 
-	/**
-	 *
-	 * Draw list to element with id anchorid
-	 * 
-	 *
-	 */
-	drawTo : function(anchorid) {
-		
-		// Anchor element
-		vboxChooser._anchorid = anchorid;
-		vboxChooser._anchor = $('#'+anchorid);
-
-		
-		
-		vboxChooser.start();
-
-	},
-		
 	/*
 	 * Select a single item in our list
 	 */
@@ -1341,8 +1329,7 @@ var vboxChooser = {
 			vboxChooser._anchor.children('table.vboxChooserItem-'+vboxChooser._anchorid+'-host').removeClass('vboxListItemSelected');
 			
 		}
-		vboxChooser._selectedList = selectedList;
-		vboxChooser.selectionListChanged(vboxChooser._selectedList);
+		vboxChooser.selectionListChanged(selectedList);
 
 		
 	},

@@ -298,8 +298,6 @@ try {
 					$vbox->persistentRequest[$h] = @$_SESSION[$sessionKeyPrefix.'-'.$h];
 				}
 					
-			} else {
-				session_write_close();				
 			}
 			
 			/*
@@ -328,9 +326,8 @@ try {
 					}
 				}
 				
-				session_write_close();
-				
 			}
+			session_write_close();
 						
 			
 	} // </switch()>

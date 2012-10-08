@@ -34,7 +34,7 @@ class vboxconnector {
 	var $errors = array();
 
 	/**
-	 * Holds any debug messages to be displayed on browser's console log
+	 * Holds any debug messages
 	 *
 	 * @var array
 	 */
@@ -124,6 +124,7 @@ class vboxconnector {
 				'keyName' => 'eventListener'
 		),
 				
+		
 		// Get progress status request
 		'progressGet' => array(
 			'items' => array('vboxHandle'),
@@ -138,6 +139,7 @@ class vboxconnector {
 			'keyValue' => 'progress'
 		)
 	);
+	
 	
 	/**
 	 * Holds VirtualBox host OS specific directory separator set by getDSep()
@@ -997,85 +999,6 @@ class vboxconnector {
 	}
 
 	/**
-	 * Set a vm's shared folders
-	 *
-	 * @param array $args array containing 'sharedFolders' data
-	 * @return boolean true on success
-	 */
-	private function _machineSetSharedFolders($args) {
-
-		// Compose incoming list
-		$sf_inc = array();
-		foreach($args['sharedFolders'] as $s) {
-			$sf_inc[$s['name']] = $s;
-		}
-
-
-		// Get list of perm shared folders
-		$psf_tmp = $this->session->machine->sharedFolders;
-		$psf = array();
-		foreach($psf_tmp as $sf) {
-			$psf[$sf->name] = $sf;
-		}
-
-		// Get a list of temp shared folders
-		$tsf_tmp = $this->session->console->sharedFolders;
-		$tsf = array();
-		foreach($tsf_tmp as $sf) {
-			$tsf[$sf->name] = $sf;
-		}
-
-		/*
-		 *  Step through list and remove non-matching folders
-		 */
-		foreach($sf_inc as $sf) {
-
-			// Already exists in perm list. Check Settings.
-			if($sf['type'] == 'machine' && $psf[$sf['name']]) {
-
-				/* Remove if it doesn't match */
-				if($sf['hostPath'] != $psf[$sf['name']]->hostPath || (bool)$sf['autoMount'] != (bool)$psf[$sf['name']]->autoMount || (bool)$sf['writable'] != (bool)$psf[$sf['name']]->writable) {
-
-					$this->session->machine->removeSharedFolder($sf['name']);
-					$this->session->machine->createSharedFolder($sf['name'],$sf['hostPath'],(bool)$sf['writable'],(bool)$sf['autoMount']);
-				}
-
-				unset($psf[$sf['name']]);
-
-			// Already exists in perm list. Check Settings.
-			} else if($sf['type'] != 'machine' && $tsf[$sf['name']]) {
-
-				/* Remove if it doesn't match */
-				if($sf['hostPath'] != $tsf[$sf['name']]->hostPath || (bool)$sf['autoMount'] != (bool)$tsf[$sf['name']]->autoMount || (bool)$sf['writable'] != (bool)$tsf[$sf['name']]->writable) {
-
-					$this->session->console->removeSharedFolder($sf['name']);
-					$this->session->console->createSharedFolder($sf['name'],$sf['hostPath'],(bool)$sf['writable'],(bool)$sf['autoMount']);
-
-				}
-
-				unset($tsf[$sf['name']]);
-
-			} else {
-
-				// Does not exist or was removed. Add it.
-				if($sf['type'] != 'machine') $this->session->console->createSharedFolder($sf['name'],$sf['hostPath'],(bool)$sf['writable'],(bool)$sf['autoMount']);
-				else $this->session->machine->createSharedFolder($sf['name'],$sf['hostPath'],(bool)$sf['writable'],(bool)$sf['autoMount']);
-			}
-
-		}
-
-		/*
-		 * Remove remaining
-		 */
-		foreach($psf as $sf) $this->session->machine->removeSharedFolder($sf->name);
-		foreach($tsf as $sf) $this->session->console->removeSharedFolder($sf->name);
-
-		
-		return ($response['data']['result'] = 1);
-
-	}
-
-	/**
 	 * Install guest additions
 	 *
 	 * @param array $args array of arguments. See function body for details.
@@ -1313,91 +1236,6 @@ class vboxconnector {
 		
 	}
 
-	/**
-	 * Set a vm's network adapter settings
-	 * 
-	 * @param array $args array of networking adapters
-	 * @param IMachine $machine reference to VM
-	 */
-	private function _machineSetNetwork($args,&$machine) {
-
-		// Network Adapters
-		$netprops = array('enabled','attachmentType','bridgedInterface','hostOnlyInterface','internalNetwork','NATNetwork','cableConnected','promiscModePolicy','genericDriver');
-		if(@$this->settings->enableVDE) $netprops[] = 'VDENetwork';
-
-		for($i = 0; $i < count($args['networkAdapters']); $i++) {
-
-			/* @var $n INetworkAdapter */
-			$n = $machine->getNetworkAdapter($i);
-
-			// Skip disabled adapters
-			if(!$n->enabled) {
-				$n->releaseRemote();
-				continue;
-			}
-
-			for($p = 0; $p < count($netprops); $p++) {
-				switch($netprops[$p]) {
-					case 'enabled':
-					case 'cableConnected':
-						break;
-					default:
-						if((string)$n->{$netprops[$p]} != (string)$args['networkAdapters'][$i][$netprops[$p]])
-							$n->{$netprops[$p]} = $args['networkAdapters'][$i][$netprops[$p]];
-				}
-			}
-
-			// Network properties
-			$eprops = $n->getProperties();
-			$eprops = array_combine($eprops[1],$eprops[0]);
-			$iprops = array_map(create_function('$a','$b=explode("=",$a); return array($b[0]=>$b[1]);'),preg_split('/[\r|\n]+/',$args['networkAdapters'][$i]['properties']));
-			$inprops = array();
-			foreach($iprops as $a) {
-				foreach($a as $k=>$v)
-				$inprops[$k] = $v;
-			}
-			
-			// Remove any props that are in the existing properties array
-			// but not in the incoming properties array
-			foreach(array_diff(array_keys($eprops),array_keys($inprops)) as $dk)
-				$n->setProperty($dk, '');
-				
-			// Set remaining properties
-			foreach($inprops as $k => $v)
-				$n->setProperty($k, $v);
-				
-			if(intval($n->cableConnected) != intval($args['networkAdapters'][$i]['cableConnected']))
-				$n->cableConnected = intval($args['networkAdapters'][$i]['cableConnected']);
-
-			if($args['networkAdapters'][$i]['attachmentType'] == 'NAT') {
-
-				// Remove existing redirects
-				foreach($n->NATEngine->getRedirects() as $r) {
-					$n->NATEngine->removeRedirect(array_shift(explode(',',$r)));
-				}
-				// Add redirects
-				foreach($args['networkAdapters'][$i]['redirects'] as $r) {
-					$r = explode(',',$r);
-					$n->NATEngine->addRedirect($r[0],$r[1],$r[2],$r[3],$r[4],$r[5]);
-				}
-
-				// Advanced NAT settings
-				if(@$this->settings->enableAdvancedConfig) {
-					$aliasMode = $n->NATEngine->aliasMode & 1;
-					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 2)) $aliasMode |= 2;
-					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 4)) $aliasMode |= 4;
-					$n->NATEngine->aliasMode = $aliasMode;
-					$n->NATEngine->DNSProxy = intval($args['networkAdapters'][$i]['NATEngine']['DNSProxy']);
-					$n->NATEngine->DNSPassDomain = intval($args['networkAdapters'][$i]['NATEngine']['DNSPassDomain']);
-					$n->NATEngine->DNSUseHostResolver = intval($args['networkAdapters'][$i]['NATEngine']['DNSUseHostResolver']);
-					$n->NATEngine->hostIP = $args['networkAdapters'][$i]['NATEngine']['hostIP'];
-				}
-
-			}
-			$n->releaseRemote();
-		}
-
-	}
 
 	/**
 	 * Clone a virtual machine
@@ -1445,6 +1283,9 @@ class vboxconnector {
 			}
 		} catch (Exception $null) {}
 
+		$m->releaseRemote();
+		$src->releaseRemote();
+		
 		$this->_util_progressStore($progress);
 
 		$response['data'] = array('progress' => $progress->handle, 'settingsFilePath' => $sfpath);
@@ -1606,11 +1447,147 @@ class vboxconnector {
 
 
 		/* Networking */
-		$this->_machineSetNetwork($args,$this->session->machine);
+		$netprops = array('enabled','attachmentType','bridgedInterface','hostOnlyInterface','internalNetwork','NATNetwork','cableConnected','promiscModePolicy','genericDriver');
+		if(@$this->settings->enableVDE) $netprops[] = 'VDENetwork';
 
+		for($i = 0; $i < count($args['networkAdapters']); $i++) {
+
+			/* @var $n INetworkAdapter */
+			$n = $m->getNetworkAdapter($i);
+
+			// Skip disabled adapters
+			if(!$n->enabled) {
+				$n->releaseRemote();
+				continue;
+			}
+
+			for($p = 0; $p < count($netprops); $p++) {
+				switch($netprops[$p]) {
+					case 'enabled':
+					case 'cableConnected':
+						break;
+					default:
+						if((string)$n->{$netprops[$p]} != (string)$args['networkAdapters'][$i][$netprops[$p]])
+							$n->{$netprops[$p]} = $args['networkAdapters'][$i][$netprops[$p]];
+				}
+			}
+
+			// Network properties
+			$eprops = $n->getProperties();
+			$eprops = array_combine($eprops[1],$eprops[0]);
+			$iprops = array_map(create_function('$a','$b=explode("=",$a); return array($b[0]=>$b[1]);'),preg_split('/[\r|\n]+/',$args['networkAdapters'][$i]['properties']));
+			$inprops = array();
+			foreach($iprops as $a) {
+				foreach($a as $k=>$v)
+				$inprops[$k] = $v;
+			}
+			
+			// Remove any props that are in the existing properties array
+			// but not in the incoming properties array
+			foreach(array_diff(array_keys($eprops),array_keys($inprops)) as $dk)
+				$n->setProperty($dk, '');
+				
+			// Set remaining properties
+			foreach($inprops as $k => $v)
+				$n->setProperty($k, $v);
+				
+			if(intval($n->cableConnected) != intval($args['networkAdapters'][$i]['cableConnected']))
+				$n->cableConnected = intval($args['networkAdapters'][$i]['cableConnected']);
+
+			if($args['networkAdapters'][$i]['attachmentType'] == 'NAT') {
+
+				// Remove existing redirects
+				foreach($n->NATEngine->getRedirects() as $r) {
+					$n->NATEngine->removeRedirect(array_shift(explode(',',$r)));
+				}
+				// Add redirects
+				foreach($args['networkAdapters'][$i]['redirects'] as $r) {
+					$r = explode(',',$r);
+					$n->NATEngine->addRedirect($r[0],$r[1],$r[2],$r[3],$r[4],$r[5]);
+				}
+
+				// Advanced NAT settings
+				if(@$this->settings->enableAdvancedConfig) {
+					$aliasMode = $n->NATEngine->aliasMode & 1;
+					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 2)) $aliasMode |= 2;
+					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 4)) $aliasMode |= 4;
+					$n->NATEngine->aliasMode = $aliasMode;
+					$n->NATEngine->DNSProxy = intval($args['networkAdapters'][$i]['NATEngine']['DNSProxy']);
+					$n->NATEngine->DNSPassDomain = intval($args['networkAdapters'][$i]['NATEngine']['DNSPassDomain']);
+					$n->NATEngine->DNSUseHostResolver = intval($args['networkAdapters'][$i]['NATEngine']['DNSUseHostResolver']);
+					$n->NATEngine->hostIP = $args['networkAdapters'][$i]['NATEngine']['hostIP'];
+				}
+
+			}
+			$n->releaseRemote();
+		}
+		
 		/* Shared Folders */
-		$this->_machineSetSharedFolders($args,$null);
+		$sf_inc = array();
+		foreach($args['sharedFolders'] as $s) {
+			$sf_inc[$s['name']] = $s;
+		}
 
+
+		// Get list of perm shared folders
+		$psf_tmp = $m->sharedFolders;
+		$psf = array();
+		foreach($psf_tmp as $sf) {
+			$psf[$sf->name] = $sf;
+		}
+
+		// Get a list of temp shared folders
+		$tsf_tmp = $this->session->console->sharedFolders;
+		$tsf = array();
+		foreach($tsf_tmp as $sf) {
+			$tsf[$sf->name] = $sf;
+		}
+
+		/*
+		 *  Step through list and remove non-matching folders
+		 */
+		foreach($sf_inc as $sf) {
+
+			// Already exists in perm list. Check Settings.
+			if($sf['type'] == 'machine' && $psf[$sf['name']]) {
+
+				/* Remove if it doesn't match */
+				if($sf['hostPath'] != $psf[$sf['name']]->hostPath || (bool)$sf['autoMount'] != (bool)$psf[$sf['name']]->autoMount || (bool)$sf['writable'] != (bool)$psf[$sf['name']]->writable) {
+
+					$m->removeSharedFolder($sf['name']);
+					$m->createSharedFolder($sf['name'],$sf['hostPath'],(bool)$sf['writable'],(bool)$sf['autoMount']);
+				}
+
+				unset($psf[$sf['name']]);
+
+			// Already exists in perm list. Check Settings.
+			} else if($sf['type'] != 'machine' && $tsf[$sf['name']]) {
+
+				/* Remove if it doesn't match */
+				if($sf['hostPath'] != $tsf[$sf['name']]->hostPath || (bool)$sf['autoMount'] != (bool)$tsf[$sf['name']]->autoMount || (bool)$sf['writable'] != (bool)$tsf[$sf['name']]->writable) {
+
+					$this->session->console->removeSharedFolder($sf['name']);
+					$this->session->console->createSharedFolder($sf['name'],$sf['hostPath'],(bool)$sf['writable'],(bool)$sf['autoMount']);
+
+				}
+
+				unset($tsf[$sf['name']]);
+
+			} else {
+
+				// Does not exist or was removed. Add it.
+				if($sf['type'] != 'machine') $this->session->console->createSharedFolder($sf['name'],$sf['hostPath'],(bool)$sf['writable'],(bool)$sf['autoMount']);
+				else $this->session->machine->createSharedFolder($sf['name'],$sf['hostPath'],(bool)$sf['writable'],(bool)$sf['autoMount']);
+			}
+
+		}
+
+		/*
+		 * Remove remaining
+		 */
+		foreach($psf as $sf) $m->removeSharedFolder($sf->name);
+		foreach($tsf as $sf) $this->session->console->removeSharedFolder($sf->name);
+		
 		/*
 		 * USB Filters
 		 */
@@ -2219,8 +2196,8 @@ class vboxconnector {
 
 				// Force web call to keep session open.
 				// Not sure if this is needed.
-				$session = $this->websessionManager->getSessionObject($this->vbox->handle);
-				if($session->state->__toString()) {}
+				$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
+				if($this->session->state->__toString()) {}
 				
 				/* @var $progress IProgress */
 				$progress = new IProgress($this->client,$args['progress']);
@@ -2276,7 +2253,7 @@ class vboxconnector {
 			} catch (Exception $null) {}
 
 			// Some progress operations seem to go away after completion
-			if(!($session->handle && $session->state->__toString() == 'Unlocked')) {
+			if(!($this->session->handle && $this->session->state->__toString() == 'Unlocked')) {
 				$this->errors[] = $e;
 				$result = 0;
 			}
@@ -2341,10 +2318,12 @@ class vboxconnector {
 			// Close session and logoff
 			try {
 
-				$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
-
-				if($this->session && $this->session->state->__toString() != 'Unlocked')
+				if(!$this->session)
+					$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
+				
+				if($this->session && $this->session->state->__toString() != 'Unlocked') {
 					$this->session->unlockMachine();
+				}
 
 				$this->session->releaseRemote();
 				unset($this->session);
@@ -3772,9 +3751,19 @@ class vboxconnector {
 		$this->connect();
 
 		$response['data']['vmlist'] = array();
+		
+		// Look for a request for a single vm
+		if($args['vm']) {
+			
+			$machines = array($this->vbox->findMachine($args['vm']));
+		
+		// Full list
+		} else {
+			//Get a list of registered machines
+			$machines = $this->vbox->machines;
+			
+		}
 
-		//Get a list of registered machines
-		$machines = $this->vbox->machines;
 
 
 		foreach ($machines as $machine) { /* @var $machine IMachine */
@@ -4374,7 +4363,6 @@ class vboxconnector {
 			// Open session to machine
 			$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 			$machine->lockMachine($this->session->handle, ($machine->sessionState->__toString() == 'Unlocked' ? 'Write' : 'Shared'));
-			$machine->releaseRemote();
 
 			/* @var $progress IProgress */
 			$progress = $this->session->console->takeSnapshot($args['name'],$args['description']);
@@ -4389,6 +4377,7 @@ class vboxconnector {
 				}
 			} catch (Exception $null) {}
 
+			
 			$this->_util_progressStore($progress);
 
 		} catch (Exception $e) {
@@ -4786,6 +4775,7 @@ class vboxconnector {
 				/* @var $mach IMachine */
 				$mach = $this->vbox->findMachine($uuid);
 			} catch (Exception $e) {
+				$this->errors[] = $e;
 				continue;
 			}
 			$attach = $mach->mediumAttachments;
@@ -5069,6 +5059,7 @@ class vboxconnector {
 				/* @var $mid IMachine */
 				$mid = $this->vbox->findMachine($mid);
 			} catch (Exception $e) {
+				$attachedTo[] = array('machine' => $mid .' ('.$e->getMessage().')', 'snapshots' => array());
 				continue;
 			}
 
@@ -5144,6 +5135,7 @@ class vboxconnector {
 			'items' => array('vboxHandle'),
 			'keyName' => 'progressOperation'.$progress->handle
 		);
+		
 		
 		return $progress->handle;
 	}

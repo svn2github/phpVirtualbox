@@ -420,12 +420,16 @@ function __vboxDisplayDetailsData(data, multiSelect, targetDiv) {
 		$('<input />').attr({'type':'button',
 			'value':trans('Refresh','UIVMLogViewer'),
 			'style':'background: url(images/vbox/refresh_16px.png) 2px 2px no-repeat; padding: 2px 2px 2px 18px; border: 1px solid #000; background-color: #eee;'
-		}).click(function(){
+		}).click({vmid:data.id},function(e){
+
+			
 			var l = new vboxLoader();
-			l.add('machineGetDetails',function(rd){
-				$('#vboxPane').trigger('vmSelectionListChanged');
-			},{'vm':data.id});
-			l.run();
+			l.showLoading();
+			$.when(vboxVMDataMediator.refreshVMData(e.data.vmid)).then(function(){
+				l.removeLoading();	
+			});
+			
+			
 		}).appendTo(d);
 
 		$(reasonDiv).append(d).appendTo(targetDiv);

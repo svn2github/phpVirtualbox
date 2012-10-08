@@ -157,6 +157,8 @@ var vboxVMDataMediator = {
 	// Get all data
 	getVMDataCombined : function(vmid) {
 		
+		if(!vboxVMDataMediator.vmData[vmid]) return;
+		
 		var runtime = function() { return {};};
 		if(vboxVMStates.isRunning({'state':vboxVMDataMediator.vmData[vmid].state}) || vboxVMStates.isPaused({'state':vboxVMDataMediator.vmData[vmid].state})) {
 			runtime = vboxVMDataMediator.getVMRuntimeData(vmid);
@@ -168,6 +170,23 @@ var vboxVMDataMediator = {
 		});
 		return def.promise();
 		
+	},
+	
+	// Refresh VM data
+	refreshVMData : function(vmid) {
+		
+		if(!vboxVMDataMediator.vmData[vmid]) return;
+		
+		var def = $.Deferred();
+		vboxAjaxRequest('vboxGetMachines',{'vm':vmid},function(d) {
+			vm = d.vmlist[0];
+			vboxVMDataMediator.vmData[vm.id] = vm;
+			def.resolve();
+			$('#vboxPane').trigger('vboxPreMachineDataChanged', [vm.id, vm]);
+			$('#vboxPane').trigger('vboxMachineDataChanged', [vm.id, vm]);
+		});
+		
+		return def.promise();
 	}
 
 };

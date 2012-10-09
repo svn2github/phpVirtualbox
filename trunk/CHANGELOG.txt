@@ -1,4 +1,18 @@
 -------------------------------------
+	4.2-1	2012-10-09
+-------------------------------------
+VirtualBox 4.2.x compatibility release
+
+Various regression bug fixes from beta versions
+
+Moved to using VirtualBox's passive event listener mechanism, and
+as a result:
+
+PHP session support is now required
+
+PHP minimum requirement is now at 5.2.0 (released in 2006)
+
+-------------------------------------
 	4.2-0b	2012-09-27
 -------------------------------------
 VirtualBox 4.2.x compatibility - beta release

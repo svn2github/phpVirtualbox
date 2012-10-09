@@ -871,7 +871,7 @@ var vboxChooser = {
 		var gHTML = vboxChooser.groupHTML('/'+tgname);
 
 		// Append group and vm elements
-		vboxChooser._anchor.find('div.vboxGroupSelected').detach().insertAfter(gHTML.children('div.vboxChooserGroupHeader'));
+		vboxChooser._anchor.find('div.vboxVMGroupSelected').detach().insertAfter(gHTML.children('div.vboxChooserGroupHeader'));
 		vboxChooser._anchor.find('table.vboxListItemSelected').detach().appendTo(gHTML.children('div.vboxChooserGroupVMs'));
 
 		gHTML.insertBefore($(target).children('div.vboxChooserGroupVMs'));
@@ -915,7 +915,7 @@ var vboxChooser = {
 					
 					// If this group is selected, we'll have to update its path
 					// in the selection list
-					var selected = $(elm2).hasClass('vboxGroupSelected');
+					var selected = $(elm2).hasClass('vboxVMGroupSelected');
 					var oldPath = null;
 					if(selected) {
 						oldPath = $(elm2).data('vmGroupPath');
@@ -950,7 +950,7 @@ var vboxChooser = {
 				if(gList.length + vmList.length == 0 && !$(elm).hasClass('vboxVMlistGroupRoot')) {
 					
 					// remove from selected list?
-					if(elm && $(elm).hasClass('vboxGroupSelected')) {
+					if(elm && $(elm).hasClass('vboxVMGroupSelected')) {
 					
 						var myPath = $(elm).data('vmGroupPath');
 						// Deselect item
@@ -1270,7 +1270,7 @@ var vboxChooser = {
 	
 			// Right click on group header and group is selected
 			// just return and show context menu
-			if($(this).hasClass('vboxChooserGroupHeader') && $(this).parent().hasClass('vboxGroupSelected')) {
+			if($(this).hasClass('vboxChooserGroupHeader') && $(this).parent().hasClass('vboxVMGroupSelected')) {
 				return;
 			
 			// Right click on VM and VM is already selected
@@ -1297,10 +1297,10 @@ var vboxChooser = {
 					return;
 
 					vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
-				vboxChooser._anchor.find('div.vboxGroupSelected').removeClass('vboxGroupSelected');
+				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected');
 				
 				// select current group
-				$(item).parent().addClass('vboxGroupSelected');
+				$(item).parent().addClass('vboxVMGroupSelected');
 
 				selectedList = [{
 					type: 'group',
@@ -1308,19 +1308,19 @@ var vboxChooser = {
 				}];
 
 			// Already selected, and ctrl key
-			} else if($(item).parent().hasClass('vboxGroupSelected')){
+			} else if($(item).parent().hasClass('vboxVMGroupSelected')){
 				
 				// Deselect item
 				selectedList = vboxChooser._selectedList.filter(function(v){
 					return (v.type != 'group' || (v.groupPath != $(item).parent().data('vmGroupPath')));
 				});
 				
-				$(item).parent().removeClass('vboxGroupSelected');
+				$(item).parent().removeClass('vboxVMGroupSelected');
 			
 			// Not already selected, and ctrl key
 			} else {
 	
-				$(item).parent().addClass('vboxGroupSelected');
+				$(item).parent().addClass('vboxVMGroupSelected');
 				
 				selectedList = vboxChooser._selectedList;
 				
@@ -1345,7 +1345,7 @@ var vboxChooser = {
 					return;
 
 				vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
-				vboxChooser._anchor.find('div.vboxGroupSelected').removeClass('vboxGroupSelected');
+				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected');
 				
 				// Select current VM
 				$(item).addClass('vboxListItemSelected').removeClass('vboxHover');
@@ -1535,7 +1535,7 @@ var vboxChooser = {
 			.data({'vmGroupPath':gpath})
 			.draggable({'cursorAt':{left: -10, top: -10},'helper':function(){
 				
-				return $(this).clone().addClass('vboxVMGroupCollapsed').addClass('vboxGroupSelected')
+				return $(this).clone().addClass('vboxVMGroupCollapsed').addClass('vboxVMGroupSelected')
 					.children('div.vboxChooserGroupHeader').removeClass('vboxHover').children('span.vboxChooserGroupNameArrowCollapse').hide()
 					.parent().parent().css({'width':$(this).width()+'px'});
 									
@@ -1595,7 +1595,7 @@ var vboxChooser = {
 	 * Return selected group elements
 	 */
 	getSelectedGroupElements : function() {
-		return vboxChooser._anchor.find('div.vboxGroupSelected');
+		return vboxChooser._anchor.find('div.vboxVMGroupSelected');
 	},
 	
 	

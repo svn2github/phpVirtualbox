@@ -253,10 +253,7 @@ try {
 			$settings = new phpVBoxConfigClass();
 			$settings->auth->logout($response);
 				
-			$vbox->logoff();
-				
-			if(function_exists('session_destroy'))
-				session_destroy();
+			session_destroy();
 		
 			break;
 					
@@ -282,12 +279,12 @@ try {
 			}
 			
 			/*
-			 *  Persistent request config
+			 *  Persistent session config
 			 */
-			if(@$vbox->persistentRequestConfig[$vboxRequest['fn']]) {
+			if(@$vbox->persistentSessionConfig[$vboxRequest['fn']]) {
 
 				// Get handler held in session for each config item
-				$hc = $vbox->persistentRequestConfig[$vboxRequest['fn']];
+				$hc = $vbox->persistentSessionConfig[$vboxRequest['fn']];
 					
 				// Array key in cookie that we are looking for
 				$sessionKeyPrefix = $vbox->settings->key.'vboxPersistentHandle'.$hc['keyName'].
@@ -297,8 +294,22 @@ try {
 				foreach($hc['items'] as $h) {
 					$vbox->persistentRequest[$h] = @$_SESSION[$sessionKeyPrefix.'-'.$h];
 				}
-					
+
+			} else {
+				
+				// Persistent session config is not set, close session
+				session_write_close();
+				
+				/*
+				 * Check for presistent request in $vboxRequest
+				 */
+				if(is_array($vboxRequest['persist'])) {
+					foreach($vboxRequest['persist'] as $k => $v) {
+						$vbox->persistentRequest[$k] = $v;
+					}
+				}
 			}
+			
 			
 			/*
 			 * Call to vboxconnector
@@ -306,12 +317,12 @@ try {
 			$vbox->$vboxRequest['fn']($vboxRequest,array(&$response));
 			
 			/*
-			 * Save persistent items in cookies
+			 * Save persistent items in session
 			 */
-			if(@$vbox->persistentRequestConfig[$vboxRequest['fn']]) {
+			if(@$vbox->persistentSessionConfig[$vboxRequest['fn']]) {
 			
 				// Get handler held in session for each config item
-				$hc = $vbox->persistentRequestConfig[$vboxRequest['fn']];
+				$hc = $vbox->persistentSessionConfig[$vboxRequest['fn']];
 					
 				// Array key in cookie that we are looking for
 				$sessionKeyPrefix = $vbox->settings->key.'vboxPersistentHandle'.$hc['keyName'].
@@ -326,9 +337,10 @@ try {
 					}
 				}
 				
+				session_write_close();
+				
+				
 			}
-			session_write_close();
-						
 			
 	} // </switch()>
 
@@ -344,6 +356,16 @@ try {
 		$vbox->errors = array();
 	}
 	$vbox->errors[] = $e;
+}
+
+/*
+ * Send back persistent request in response
+*/
+if(is_array($vbox->persistentRequest)) {
+
+	foreach($vbox->persistentRequest as $k => $v)
+		if($v) $response['persist'][$k] = $v;
+
 }
 
 // Add any messages

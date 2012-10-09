@@ -520,15 +520,15 @@ var vmmButtons = new Array(
 						'untouched which makes it possible to add this hard disk to the list later again.</p>','UIMessageCenter').replace('%1',m.location);
 				
 				buttons[trans('Delete','UIMessageCenter')] = function(){
-					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType,'delete':1},function(ret){
+					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType,'delete':1},function(ret,xtra,persist){
 						if(ret && ret.progress) {
-							vboxProgress(ret.progress,function(){
+							vboxProgress({'progress':ret.progress,'persist':persist},function(){
 								var l = new vboxLoader();
 								l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
 								l.onLoad = vboxVMMFillMedia;
 								l.run();
 							},'progress_media_delete_90px.png',trans('Delete','UIMessageCenter'),
-								false, vboxBasename(m.location));
+								vboxBasename(m.location));
 						}
 					});
 					$(this).empty().remove();

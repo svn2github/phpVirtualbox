@@ -58,9 +58,8 @@ function vboxTraverse(tree,prop,val,all,children) {
 }
 
 /**
- * Performs AJAX request, alert()'s returned errors,
- * and stores any data that should persist for this
- * browser session.
+ * Performs AJAX request, alert()'s returned errors
+ * 
  * @param {String} fn - AJAX function to call
  * @param {Object} params - params to pass to AJAX call
  * @param {Function} callback - function to perform when AJAX data is returned
@@ -82,10 +81,11 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 		run = 1;
 	
 	params['fn'] = fn;
-		
+	
 	return jQuery.post('lib/ajax.php', params,
 			
 		function(d) {
+		
 
 			// Fatal error previously occurred
 			if($('#vboxPane').data('vboxFatalError')) return;
@@ -99,7 +99,7 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 					}
 				}
 				
-				callback((d.data ? d.data : d),xtra);
+				callback((d.data ? d.data : d),xtra,d.persist);
 
 				if(d.errors.length > 0) {
 					
@@ -663,11 +663,11 @@ function vboxDivOverflowHidden(p) {
 function vboxInstallGuestAdditions(vmid,mount_only) {
 
 	var l = new vboxLoader();
-	l.add('consoleGuestAdditionsInstall',function(d){
+	l.add('consoleGuestAdditionsInstall',function(d,xtra,persist){
 		
 		// Progress operation returned. Guest Additions are being updated.
 		if(d && d.progress) {
-			vboxProgress(d.progress,function(d){
+			vboxProgress({'progress':d.progress,'catcherrs':1,'persist':persist},function(d){
 				
 				// Error updating guest additions
 				if(!d.result && d.error && d.error.err) {
@@ -677,7 +677,7 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 					vboxInstallGuestAdditions(vmid,true);
 					return;
 				}
-			},'progress_install_guest_additions_90px.png',trans('Install Guest Additions...','UIActionPool').replace(/\./g,''),true);
+			},'progress_install_guest_additions_90px.png',trans('Install Guest Additions...','UIActionPool').replace(/\./g,''));
 			
 		// Media was mounted
 		} else if(d && d.result && d.result == 'mounted') {
@@ -726,20 +726,16 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 
 /**
  * Show progress dialog and periodically poll the progress' status
- * @param {String} pid - progress operation id
+ * 
+ * @param {String} prequest - request object passed to ajax
  * @param {Function} callback - function to run on progress completion
  * @param {String} icon - URL of image to display on progress operation dialog (optional)
  * @param {String} title - title of progress operation dialog (optional)
- * @param {Boolean} catcherrs - tell PHP's progressGet to catch all exceptions (optional)
  * @param {String} target - contextual target of progress operation
  * @param {Boolean} blocking - true if progress operation should block other ops
  * @see vboxconnector::progressGet()
  */
-function vboxProgress(pid,callback,icon,title,catcherrs,target,blocking) {
-	
-	// don't want undefined here
-	if(!catcherrs) catcherrs = 0;
-	else catcherrs = 1;
+function vboxProgress(prequest,callback,icon,title,target,blocking) {
 	
 	// Fix title
 	title = title.replace('\.+$','');
@@ -747,18 +743,18 @@ function vboxProgress(pid,callback,icon,title,catcherrs,target,blocking) {
 	// Blocking creates a dialog
 	if(!blocking) {
 	
-		vboxProgressCreateListElement(pid,icon,title,target,callback);
+		vboxProgressCreateListElement(prequest,icon,title,target,callback);
 		
-		vboxAjaxRequest('progressGet',{'progress':pid,'catcherrs':catcherrs},vboxProgressUpdate,{'pid':pid,'catcherrs':catcherrs});
+		vboxAjaxRequest('progressGet',prequest,vboxProgressUpdate,prequest.progress);
 
 	} else {
 		
-		vboxProgressCreateDialog(pid,icon,title,target,callback);
+		vboxProgressCreateDialog(prequest,icon,title,target,callback);
 		
 		// Don't unload while progress operation is .. in progress
 		window.onbeforeunload = vboxOpInProgress;
 		
-		vboxAjaxRequest('progressGet',{'progress':pid,'catcherrs':catcherrs},vboxProgressUpdateModal,{'pid':pid,'catcherrs':catcherrs});
+		vboxAjaxRequest('progressGet',prequest,vboxProgressUpdateModal,prequest.progress);
 	}
 	
 	
@@ -768,15 +764,18 @@ function vboxProgress(pid,callback,icon,title,catcherrs,target,blocking) {
 /**
  * Generate modal progress dialog
  * 
- * @param {String} pid - progress operation id
+ * @param {Object} prequest - progress operation request object
  * @param {String} icon - URL of image to display on progress operation dialog (optional)
  * @param {String} title - title of progress operation dialog (optional)
  * @param {String} target - contextual target of progress operation
  * @param {Function} callback - function to run on progress completion
  * @see vboxconnector::progressGet()
  */
-function vboxProgressCreateDialog(pid,icon,title,target,callback) {
+function vboxProgressCreateDialog(prequest,icon,title,target,callback) {
 
+	// Shorthand
+	var pid = prequest.progress;
+	
 	var div = $('<div />').attr({'id':'vboxProgress'+pid,'title':(title ? title : 'phpVirtualBox'),'style':'text-align: center'});
 	
 	var tbl = $('<table />').css({'width':'100%'});
@@ -807,7 +806,8 @@ function vboxProgressCreateDialog(pid,icon,title,target,callback) {
 		'vboxCallback':callback,
 		'vboxIcon' : icon,
 		'vboxTitle' : title,
-		'vboxTarget' : target
+		'vboxTarget' : target,
+		'vboxRequest' : prequest
 	}).dialog({'width':400,'height':'auto','closeOnEscape':false,'modal':true,'resizable':false,'draggable':true,'closeOnEscape':false,'buttons':{}});
 	
 
@@ -816,14 +816,17 @@ function vboxProgressCreateDialog(pid,icon,title,target,callback) {
 /**
  * Generate progress list element and append it
  * 
- * @param {String} pid - progress operation id
+ * @param {Object} prequest - progress operation request object
  * @param {String} icon - URL of image to display on progress operation dialog (optional)
  * @param {String} title - title of progress operation dialog (optional)
  * @param {String} target - contextual target of progress operation
  * @param {Function} callback - function to run on progress completion
  * @see vboxconnector::progressGet()
  */
-function vboxProgressCreateListElement(pid,icon,title,target,callback) {
+function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
+	
+	// Shorthand
+	var pid = prequest.progress;
 	
 	var div = $('<div />').attr({'id':'vboxProgress'+pid,'style':'text-align: center'});
 	
@@ -861,7 +864,7 @@ function vboxProgressCreateListElement(pid,icon,title,target,callback) {
 	
 	$(tbl).append(tr).appendTo(div);
 	
-	$(div).data({'vboxCallback':callback}).prependTo($('#vboxProgressOps'));
+	$(div).data({'vboxCallback':callback,'vboxRequest':prequest}).prependTo($('#vboxProgressOps'));
 	
 	
 }
@@ -873,61 +876,72 @@ function vboxProgressCreateListElement(pid,icon,title,target,callback) {
 function vboxOpInProgress() { return trans('Warning: A VirtualBox internal operation is in progress. Closing this window or navigating away from this web page may cause unexpected and undesirable results. Please wait for the operation to complete.','phpVirtualBox');}
 
 /**
- * Update progress dialog box
+ * Update progress dialog box. Callback run from vboxAjaxRequest
  * 
- * @param {Object} d - data returned from progressGet AJAX call
- * @param {Object} e - extra data containing progress id and catcherrs parameter passed to progressGet AJAX call
+ * @param {Object} data - data returned from progressGet AJAX call
+ * @param {Mixed} xtra - extra data that should be passed to callback
+ * @param {Object} persist - request items that should be persistent
  */
-function vboxProgressUpdateModal(d,e) {
-	vboxProgressUpdate(d,e,true);
+function vboxProgressUpdateModal(data, xtra, persist) {
+	vboxProgressUpdate(data,xtra,persist,true);
 }
 
 /**
  * Update progress dialog box or progress list row with % completed
  * 
  * @param {Object} d - data returned from progressGet AJAX call
- * @param {Object} e - extra data containing progress id and catcherrs parameter passed to progressGet AJAX call
+ * @param {String} pid - progress id
+ * @param {Object} persist - request items that should be persistent
  * @param {Boolean} modal - true if updating modal dialog
  * @see vboxconnector::progressGet()
  */
-function vboxProgressUpdate(d,e,modal) {
+function vboxProgressUpdate(d,pid,persist,modal) {
 	
 	// check for completed progress
-	if(!d || !d['progress'] || d['info']['completed'] || d['info']['canceled']) {
+	if(!d || !d['progress'] || !d['info'] || d['info']['completed'] || d['info']['canceled']) {
 		
 		if(d && d['info'] && d['info']['canceled'])
 			vboxAlert(trans('Operation Canceled','phpVirtualBox'),{'width':'100px','height':'auto'});
 		
-		var callback = $("#vboxProgress"+e.pid).data('vboxCallback');
+		var callback = $("#vboxProgress"+pid).data('vboxCallback');
 		
-		$("#vboxProgressBar"+e.pid).progressbar({ value: 100 });
+		$("#vboxProgressBar"+pid).progressbar({ value: 100 });
 		
 		if(modal) {
 			
-			var icon = $("#vboxProgress"+e.pid).data('vboxIcon');
-			var title = $("#vboxProgress"+e.pid).data('vboxTitle');
-			var target = $("#vboxProgress"+e.pid).data('vboxTarget');
+			var icon = $("#vboxProgress"+pid).data('vboxIcon');
+			var title = $("#vboxProgress"+pid).data('vboxTitle');
+			var target = $("#vboxProgress"+pid).data('vboxTarget');
 			
-			$("#vboxProgress"+e.pid).empty().remove();
+			$("#vboxProgress"+pid).empty().remove();
 
 			if(callback) callback(d);
 			
 			window.onbeforeunload = null;
 			
 			// Now append to list
-			vboxProgressCreateListElement(e.pid,icon,title,target);
-			vboxProgressUpdate(null,{'pid':e.pid});
+			vboxProgressCreateListElement(pid,icon,title,target);
+			vboxProgressUpdate({'progress':pid});
 			
 		} else {
 			
 			var sdate = new Date();
-			$("#vboxProgressText"+e.pid).html(sdate.toLocaleString());
-			$('#vboxProgressCancel'+e.pid).remove();
+			$("#vboxProgressText"+pid).html(sdate.toLocaleString());
+			$('#vboxProgressCancel'+pid).remove();
 			
 			if(callback) callback(d);
 		}
 		
-		$("#vboxProgress"+e.pid).addClass('vboxProgressComplete');
+		$("#vboxProgress"+pid).addClass('vboxProgressComplete');
+		
+		// Remove data
+		$("#vboxProgress"+pid).removeData([
+			'vboxCallback',
+			'vboxIcon',
+			'vboxTitle',
+			'vboxTarget',
+			'vboxRequest'
+		]);
 		
 		// Check for max elements
 		if($('#vboxPane').data('vboxConfig').maxProgressList) {
@@ -945,18 +959,25 @@ function vboxProgressUpdate(d,e,modal) {
 	}
 
 	// update percent
-	$("#vboxProgressBar"+e.pid).progressbar({ value: d.info.percent });
-	$("#vboxProgressText"+e.pid).html(d.info.percent+'% '+d.info.operationDescription);
+	$("#vboxProgressBar"+pid).progressbar({ value: d.info.percent });
+	$("#vboxProgressText"+pid).html(d.info.percent+'%'+(modal ? '<br />' : ' ') + d.info.operationDescription);
 	
 	// Cancelable?
 	if(d.info.cancelable) {
-		$('#vboxProgressCancel'+e.pid).show();
+		$('#vboxProgressCancel'+pid).show();
 	}
 	
-	if(modal)
-		window.setTimeout("vboxAjaxRequest('progressGet',{'progress':'"+e.pid+"',pct:'"+d.info.percent+"'},vboxProgressUpdateModal,{'pid':'"+e.pid+"','catcherrs':'"+e.catcherrs+"'})", 3000);
-	else
-		window.setTimeout("vboxAjaxRequest('progressGet',{'progress':'"+e.pid+"',pct:'"+d.info.percent+"'},vboxProgressUpdate,{'pid':'"+e.pid+"','catcherrs':'"+e.catcherrs+"'})", 3000);
+	// Get request
+	var def = $.Deferred();
+	def.done(function(){
+		
+		vboxAjaxRequest('progressGet',
+				$.extend({},$("#vboxProgress"+pid).data('vboxRequest'),{'persist':persist}),
+				(modal ? vboxProgressUpdateModal : vboxProgressUpdate),
+				pid);
+		
+	});
+	window.setTimeout(def.resolve, 2000);
 	
 }
 

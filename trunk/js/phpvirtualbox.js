@@ -1253,17 +1253,17 @@ var vboxVMActions = {
 			// Start a single vm
 			var startVM = function (vm) {
 				
-				vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'},function(d,vmname){
+				vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'},function(d,evm,persist){
 					// check for progress operation
 					if(d && d.progress) {
 						var icon = null;
-						if(vboxVMStates.isSaved(d)) icon = 'progress_state_restore_90px.png';
+						if(vboxVMStates.isSaved(evm)) icon = 'progress_state_restore_90px.png';
 						else icon = 'progress_start_90px.png';
-						vboxProgress(d.progress,function(){return;},icon,
-								trans('Start the selected virtual machines','UIActionPool'),false, vmname);
+						vboxProgress({'progress':d.progress,'persist':persist},function(){return;},icon,
+								trans('Start the selected virtual machines','UIActionPool'),evm.name);
 						return;
 					}
-				},vm.name);
+				},vm);
 			};
 			
 			// Start each eligable selected vm
@@ -1398,11 +1398,11 @@ var vboxVMActions = {
 
 						// Remove each selected vm
 						vboxAjaxRequest('machineRemove',{'vm':vms[i].id,'delete':(keepFiles ? '0' : '1'),'keep':(keepFiles ? '1' : '0')},
-							function(d,vmname){
+							function(d,vmname,persist){
 								// check for progress operation
 								if(d && d.progress) {
-									vboxProgress(d.progress,function(){return;},'progress_delete_90px.png',
-											trans('Remove the selected virtual machines', 'UIActionPool'), false, vmname);
+									vboxProgress({'progress':d.progress,'persist':persist},function(){return;},'progress_delete_90px.png',
+											trans('Remove the selected virtual machines', 'UIActionPool'), vmname);
 								}
 						}, vms[i].name);
 						
@@ -1694,12 +1694,12 @@ var vboxVMActions = {
 			case 'reset': fn = 'reset'; break;
 			default: return;
 		}
-		vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':fn},function(d){
+		vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':fn},function(d,xtra,persist){
 			// check for progress operation
 			if(d && d.progress) {
-				vboxProgress(d.progress,function(){
+				vboxProgress({'progress':d.progress,'persist':persist},function(){
 					return;
-				},icon,trans(pt,'UIActionPool'), false, vm.name);
+				},icon,trans(pt,'UIActionPool'), vm.name);
 				return;
 			}
 		});		

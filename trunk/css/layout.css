@@ -644,6 +644,15 @@ ul.vboxMenuBar li {
 	display: none;
 }
 
+/* Dragging disabled */
+#vboxPane div.vboxDragDisabled {
+	opacity: .5;
+	filter:alpha(opacity=50);
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+	background-color: #f00;
+}	
+
+
 /* Toolbar above vm list */
 #vboxPaneToolbar { float: left; }
 #vboxPaneToolbar table td { margin-right: 10px; }

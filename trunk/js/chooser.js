@@ -154,7 +154,6 @@ var vboxChooser = {
 	selectionListChanged : function(selectionList) {
 		
 		if(!selectionList) selectionList = [];
-		vboxChooser._selectedList = selectionList;
 		
 		selectionMode = vboxSelectionModeNone;
 		
@@ -206,7 +205,10 @@ var vboxChooser = {
 
 		vboxChooser.selectionMode = selectionMode;
 		
-		$('#vboxPane').trigger('vmSelectionListChanged',[vboxChooser]);		
+		vboxChooser._selectedList = selectionList;
+
+		$('#vboxPane').trigger('vmSelectionListChanged',[vboxChooser]);	
+		
 		
 	},
 	
@@ -291,14 +293,15 @@ var vboxChooser = {
 	 * Get group element by path
 	 */
 	getGroupElement : function(gpath, noCreate) {
-		
+
+		if(!gpath) gpath = '/';
 		var gnames = gpath.split('/');
-		var groot = vboxChooser._anchor.children('div.vboxChooserGroup');
+		var groot = vboxChooser._anchor.children('div.vboxChooserGroup:not(.ui-draggable-dragging)');
 		for(var i = 1; i < gnames.length; i++) {
 			
 			if(!gnames[i]) continue;
 			
-			var group = groot.children('div.vboxChooserGroup').children('div.vboxChooserGroupHeader[title="'+gnames[i]+'"]').parent();
+			var group = groot.children('div.vboxChooserGroup:not(.ui-draggable-dragging)').children('div.vboxChooserGroupHeader[title="'+gnames[i]+'"]').parent();
 			
 			// If it does not exist, create it
 			if(!group[0]) {
@@ -315,7 +318,7 @@ var vboxChooser = {
 				
 				vboxChooser.sortGroup(groot);
 				
-				groot = groot.children('div.vboxChooserGroup').children('div.vboxChooserGroupHeader[title="'+gnames[i]+'"]').parent();
+				groot = groot.children('div.vboxChooserGroup:not(.ui-draggable-dragging)').children('div.vboxChooserGroupHeader[title="'+gnames[i]+'"]').parent();
 				
 			} else {
 				groot = group;
@@ -650,8 +653,16 @@ var vboxChooser = {
 
 			// Dropped onto main vm list
 			} else if($(vboxChooser._anchor).hasClass('vboxChooserDropTargetHoverRoot')) {
+
+				dropTarget = null;
 				
-				dropTarget = vboxChooser._anchor.children('div.vboxChooserGroup');
+				// Only showing one group?
+				if(vboxChooser._showOnlyGroupHistory.length > 0) {
+					dropTarget = $(vboxChooser._showOnlyGroupHistory[vboxChooser._showOnlyGroupHistory.length-1]);
+				}
+
+				if(!$(dropTarget)[0])
+					dropTarget = vboxChooser._anchor.children('div.vboxChooserGroup');					
 				
 			} else {
 				return;
@@ -717,11 +728,23 @@ var vboxChooser = {
 			
 			// Get VM from target's parent table
 			if(dropTarget.hasClass('vboxDropTargetTop')) {
-				if(!e.ctrlKey && !e.metaKey) $(droppedVM).detach().insertBefore($(dropTarget).closest('table'));
-				else vboxChooser.vmHTML(vmData).insertBefore($(dropTarget).closest('table'));
+				if(!e.ctrlKey && !e.metaKey) {
+					$(droppedVM).detach().insertBefore($(dropTarget).closest('table'));
+				} else {
+					// Copy
+					if($(dropTarget).closest('table').parent().children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+vmData.id)[0])
+							return;
+					vboxChooser.vmHTML(vmData).insertBefore($(dropTarget).closest('table'));
+				}
 			} else {
-				if(!e.ctrlKey && !e.metaKey) $(droppedVM).detach().insertAfter($(dropTarget).closest('table'));
-				else vboxChooser.vmHTML(vmData).insertAfter($(dropTarget).closest('table'));
+				if(!e.ctrlKey && !e.metaKey) {
+					$(droppedVM).detach().insertAfter($(dropTarget).closest('table'));
+				} else {
+					// Copy - Don't allow if it already exists
+					if($(dropTarget).closest('table').parent().children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+vmData.id)[0])
+						return;
+					vboxChooser.vmHTML(vmData).insertAfter($(dropTarget).closest('table'));
+				}
 			}
 		
 		// Not dropped above / below vm
@@ -778,10 +801,10 @@ var vboxChooser = {
 				if(dropTarget[0] && dropTarget.hasClass('vboxChooserGroupHeader')) {
 					
 					// Group already has this dragging VM?
-					if(dropTarget.siblings('div.vboxChooserGroupVMs').children('table.ui-draggable-dragging')[0]) {
+					if(dropTarget.siblings('div.vboxChooserGroupVMs').children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+$(droppedVM).data('vmid'))[0]) {
 						return;
 					}
-					
+										
 					if(!e.ctrlKey && !e.metaKey)
 						$(droppedVM).detach().appendTo(dropTarget.siblings('div.vboxChooserGroupVMs').first());
 					else
@@ -790,16 +813,26 @@ var vboxChooser = {
 				// Main VM list
 				} else if($(vboxChooser._anchor).hasClass('vboxChooserDropTargetHoverRoot')) {
 				
+					dropTarget = null;
+					
+					// Only showing one group?
+					if(vboxChooser._showOnlyGroupHistory.length > 0) {
+						dropTarget = $(vboxChooser._showOnlyGroupHistory[vboxChooser._showOnlyGroupHistory.length-1]);
+					}
+
+					if(!$(dropTarget)[0])
+						dropTarget = vboxChooser._anchor.children('div.vboxChooserGroup');					
+
 				
 					// Already in this list?
-					if(vboxChooser._anchor.children('div.vboxChooserGroup').children('div.vboxChooserGroupVMs').children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+$(droppedVM).data('vmid'))[0]) {
+					if(dropTarget.children('div.vboxChooserGroupVMs').children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+$(droppedVM).data('vmid'))[0]) {
 						return true;
 					}
 					
 					if(!e.ctrlKey && !e.metaKey) {
-						$(droppedVM).detach().appendTo(vboxChooser._anchor.children('div.vboxChooserGroup').children('div.vboxChooserGroupVMs').first());
+						$(droppedVM).detach().appendTo(dropTarget.children('div.vboxChooserGroupVMs').first());
 					} else {
-						vboxChooser.vmHTML(vmData).appendTo(vboxChooser._anchor.children('div.vboxChooserGroup').children('div.vboxChooserGroupVMs').first());
+						vboxChooser.vmHTML(vmData).appendTo(dropTarget.children('div.vboxChooserGroup').children('div.vboxChooserGroupVMs').first());
 					}
 
 				}
@@ -818,12 +851,20 @@ var vboxChooser = {
 	 */
 	groupSelectedItems : function() {
 		
+		// Determine new group target
+		var target = vboxChooser._anchor.children('div.vboxChooserGroup');
+		if(vboxChooser._showOnlyGroupHistory.length > 0) {
+			target = vboxChooser._showOnlyGroupHistory[vboxChooser._showOnlyGroupHistory.length-1];
+		}
+		
+		if(!$(target)[0]) return;
+		
 		// Determine group name
 		var gname = trans('New group','UIGChooserModel');
 		var tgname = gname;
 
 		var i = 2;
-		while(vboxChooser.groupNameConflicts(vboxChooser._anchor.children('div.vboxChooserGroup'), tgname)) {
+		while(vboxChooser.groupNameConflicts($(target), tgname)) {
 			tgname = gname + ' ' + (i++);
 		}
 		
@@ -833,7 +874,7 @@ var vboxChooser = {
 		vboxChooser._anchor.find('div.vboxGroupSelected').detach().insertAfter(gHTML.children('div.vboxChooserGroupHeader'));
 		vboxChooser._anchor.find('table.vboxListItemSelected').detach().appendTo(gHTML.children('div.vboxChooserGroupVMs'));
 
-		gHTML.insertBefore(vboxChooser._anchor.children('div.vboxChooserGroup').children('div.vboxChooserGroupVMs'));
+		gHTML.insertBefore($(target).children('div.vboxChooserGroupVMs'));
 		
 		vboxChooser.composeGroupDef();
 		
@@ -854,7 +895,7 @@ var vboxChooser = {
 			allGroups = [];
 			groupsResolved = true;
 			
-			vboxChooser._anchor.find('div.vboxChooserGroup').each(function(idx,elm) {
+			vboxChooser._anchor.find('div.vboxChooserGroup:not(.ui-draggable-dragging)').each(function(idx,elm) {
 				
 				// Group element was removed
 				if(!elm) return;
@@ -951,10 +992,18 @@ var vboxChooser = {
 		var vms = [];
 		for(var i in vboxVMDataMediator.vmData) {
 			if(typeof i != 'string' || i == 'host') continue;
-			vms[vms.length] = {
-				'id' : i,
-				'groups' : vboxChooser.getGroupsForVM(i)
-			};
+			
+			/* If a VM's groups have changed, add it to the list */
+			var eGroups = vboxVMDataMediator.vmData[i].groups;
+			var nGroups = vboxChooser.getGroupsForVM(i);
+			
+			if($(nGroups).not(eGroups).length || $(eGroups).not(nGroups).length) {
+			
+				vms[vms.length] = {
+						'id' : i,
+						'groups' : nGroups
+				};				
+			}
 		}
 		
 		// Save machines groups
@@ -996,8 +1045,10 @@ var vboxChooser = {
 	 */ 
 	getGroupsForVM : function(vmid) {
 		var gPathList = [];
-		vboxChooser._anchor.find('div.vboxChooserGroup:not(.ui-draggable-dragging)').find('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+vmid+':not(.ui-draggable-dragging)').each(function(idx,elm){
-			gPathList[gPathList.length] = $(elm).closest('div.vboxChooserGroup').data('vmGroupPath');
+		vboxChooser._anchor.find('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+vmid+':not(.ui-draggable-dragging)').each(function(idx,elm){
+			var gParent = $(elm).closest('div.vboxChooserGroup');
+			if(!gParent.hasClass('ui-draggable-dragging'))
+				gPathList[gPathList.length] = gParent.data('vmGroupPath');
 		});
 		return gPathList;
 	},
@@ -1240,7 +1291,12 @@ var vboxChooser = {
 			// No control key. Exclusive selection
 			if(!e.ctrlKey && !e.metaKey) {
 				
-				vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
+				// already selected
+				if(vboxChooser._selectedList.length == 1 && vboxChooser._selectedList[0].type == 'group' &&
+						vboxChooser._selectedList[0].groupPath == $(item).parent().data('vmGroupPath'))
+					return;
+
+					vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
 				vboxChooser._anchor.find('div.vboxGroupSelected').removeClass('vboxGroupSelected');
 				
 				// select current group
@@ -1282,6 +1338,12 @@ var vboxChooser = {
 			// No ctrl key or selection is host. Exclusive selection
 			if((!e.ctrlKey && !e.metaKey) || $(item).data('vmid') == 'host') {
 				
+				
+				// already selected
+				if(vboxChooser._selectedList.length == 1 && vboxChooser._selectedList[0].type == 'vm' &&
+						vboxChooser._selectedList[0].id == $(item).data('vmid'))
+					return;
+
 				vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
 				vboxChooser._anchor.find('div.vboxGroupSelected').removeClass('vboxGroupSelected');
 				
@@ -1693,6 +1755,9 @@ $(document).ready(function(){
 			
 			for(var a = 0; a < vboxVMGroups.length; a++) {
 				if(vboxVMGroups[a].path == path) {
+					// Don't do anything if its the same
+					if(vboxVMGroups[a].order == value)
+						return;					
 					found = true;
 					vboxVMGroups[a] = {'path':path,'name':name,'order':value};
 					break;

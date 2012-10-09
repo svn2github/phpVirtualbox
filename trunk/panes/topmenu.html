@@ -115,8 +115,8 @@ if($('#vboxPane').data('vboxSession').user) {
 				'click': function() {
 					
 					// Show loading screen
-					var l = new vboxLoader();
-					l.showLoading();
+					var lm = new vboxLoader();
+					lm.showLoading();
 					
 					// Expire data mediator data
 					vboxVMDataMediator.expireAll();
@@ -125,7 +125,7 @@ if($('#vboxPane').data('vboxSession').user) {
 					$.when(vboxEventListener.stop()).then(function() {
 						
 						// remove loading screen
-						l.removeLoading();
+						lm.removeLoading();
 
 						var l = new vboxLoader();
 						l.noLoadingScreen = true;

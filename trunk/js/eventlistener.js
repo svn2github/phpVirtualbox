@@ -53,7 +53,7 @@ var vboxEventListener = {
 		// Don't do anything if we aren't running anymore
 		if(!vboxEventListener._running) return;
 		
-		vboxAjaxRequest('getEvents',{}, function(d) {
+		vboxAjaxRequest('getEvents',{}, function(d,lastTime) {
 			
 			// Don't do anything if this is not running
 			if(!vboxEventListener._running || !vboxEventListener._started) return;
@@ -238,10 +238,19 @@ var vboxEventListener = {
 				for(var i = 0; i < eventList.length; i++) {
 					$('#vboxPane').trigger('vbox'+eventList[i][0],eventList[i][1]);
 				}
-				
+			
+			// </ check for d and d.events >
+			} else {
+				vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox'));
+				return;
 			}
-			vboxEventListener._running = window.setTimeout(vboxEventListener._getEvents, 1000);
-		});
+			
+			// Wait at most 3 seconds
+			var wait = 3000 - ((new Date().getTime()) - lastTime);
+			if(wait <= 0) vboxEventListener._getEvents();
+			else vboxEventListener._running = window.setTimeout(vboxEventListener._getEvents, wait);
+			
+		}, new Date().getTime());
 
 	}
 };

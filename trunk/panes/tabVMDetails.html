@@ -78,7 +78,8 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 		if(vboxChooser.getSingleSelectedId() == 'host') {
 
 			$.when(vboxVMDataMediator.getVMDetails('host')).then(function(d) {
-				
+
+				// Hide loading screen
 				targetDiv.siblings().hide();
 				targetDiv.show();
 				
@@ -103,13 +104,15 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 		
 		
 		// Get data and draw
+		var oneLoaded = false;
 		for(var i = 0; i < vboxChooser.selectedVMs.length; i++) {
 			
 			$.when(vboxVMDataMediator.getVMDataCombined(vboxChooser.selectedVMs[i])).then(function(d) {
 				
 				
 				// Clear target div if we only have one vm
-				if(vboxChooser.selectedVMs.length == 1) {
+				if(!oneLoaded) {
+					oneLoaded = true;
 					targetDiv.siblings().hide();
 					targetDiv.show();		
 				}

@@ -27,7 +27,6 @@
 	
 <script type='text/javascript'>
 
-
 // Translate loading div
 $('#vboxDetailsLoading').find('span.translate').html(trans('Loading ...','UIVMDesktop')).removeClass('translate');
 
@@ -307,11 +306,11 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 
 	var ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'>"+
 	"<a href=\"javascript:vboxVMsettingsInit('"+data.id+"',null,'%2');\">%3</a>"+
-	"</span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
+	"</span>";
 	
 	// No link if VM is not in valid state
 	if(!((vboxVMStates.isRunning(data) || vboxVMStates.isEditable(data)) && !vboxVMStates.isSaved(data))) {
-		ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'>%3</span><span class='vboxDetailsUpDnImgSpan' style='float:right' onClick='$(this).parent().trigger(\"dblclick\");' />";
+		ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'>%3</span>";
 	}
 
 	var vboxDetailsTable = $('<table />')
@@ -322,6 +321,28 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 					.append($('<div />')
 						.addClass(!((vboxVMStates.isEditable(data) || vboxVMStates.isRunning(data)) && !vboxVMStates.isSaved(data)) ? 'vboxNoLinks' : '')
 						.html(ttemplate.replace('%1',section.icon).replace('%2', section.settingsLink).replace('%3', section.title))
+						.append(
+							(isCanvasSupported() ?
+									$('<canvas />').addClass('vboxDetailsUpDnImgCanvas')
+									.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
+									.each(function(idx, canvas) {
+										var ctx = canvas.getContext('2d');
+										if($('#vboxPane').data('vboxCookies')["vboxSectionCollapse"+sectionName]) {
+											ctx.save();
+											ctx.translate(9,9);
+											ctx.rotate(90 * Math.PI / 180.0);
+											ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
+											ctx.restore();
+										} else {
+											ctx.drawImage(vboxImageDownGrey,0,0,18,18);
+										}
+											
+									}).click(function(){
+										$(this).parent().trigger("dblclick");
+									})
+								: "<span class='vboxDetailsUpDnImgSpan' onClick='$(this).parent().trigger(\"dblclick\");' />"
+							)
+						)
 					)
 				).disableSelection()
 			)
@@ -346,12 +367,61 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 		.attr({'class':'vboxDetailsBorder vboxVMDetailsBox'+sectionName+ ' vboxVMDetailsBox-vm-'+data.id,'id':'vboxDetailsSectionId-'+sectionName+'-'+data.id})
 		.dblclick(function(e){
 
-			vboxSetCookie('vboxSectionCollapse'+$(this).data('sectionName'),
-					($(this).hasClass('vboxDetailsSectionCollapsed') ? '' : '1')
+			// Save section name
+			var sectionName = $(this).data('sectionName');
+			
+			vboxSetCookie('vboxSectionCollapse'+sectionName,
+				($(this).hasClass('vboxDetailsSectionCollapsed') ? '' : '1')
 			);
 			
-			$('#vboxVMDetails').find('div.vboxVMDetailsBox'+$(this).data('sectionName'))
-				.toggleClass('vboxDetailsSectionCollapsed', 500);
+			// Animate if canvas is supported
+			if(isCanvasSupported()) {
+				
+				var collapsed = $(this).hasClass('vboxDetailsSectionCollapsed');
+				
+				// Get canvas of current section only
+				var canvas = $(this).find('canvas.vboxDetailsUpDnImgCanvas')[0];
+				var ctx = canvas.getContext('2d');
+				
+				// Only animate the canvas that is part of this section header
+				// All others just get switched
+				$.when($('<div />').animate({left:90},
+					{
+						duration: 500,
+						step: function(currentStep ) {
+							ctx.save();
+							ctx.clearRect(0,0,18,18);
+							ctx.translate(9,9);
+							ctx.rotate((collapsed ? (90 - currentStep) : currentStep) * Math.PI / 180.0);
+							ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
+							ctx.restore();
+						},
+						queue: true
+					}),
+					$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
+						.toggleClass('vboxDetailsSectionCollapsed', 500)
+				).then(function() {
+					$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
+						.find('canvas.vboxDetailsUpDnImgCanvas').each(function(idx, can) {
+							var ctx = can.getContext('2d');
+							ctx.clearRect(0,0,18,18);
+							if(!collapsed) {
+								ctx.save();
+								ctx.translate(9,9);
+								ctx.rotate(90 * Math.PI / 180.0);
+								ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
+								ctx.restore();
+							} else {
+								ctx.drawImage(vboxImageDownGrey,0,0);
+							}
+							
+						});
+				});
+
+			} else {
+				$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
+					.toggleClass('vboxDetailsSectionCollapsed', 500);
+			}
 
 			return false;
 		}).hover(function(){$(this).addClass('hover');},

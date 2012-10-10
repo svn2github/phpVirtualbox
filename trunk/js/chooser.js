@@ -1271,12 +1271,12 @@ var vboxChooser = {
 			// Right click on group header and group is selected
 			// just return and show context menu
 			if($(this).hasClass('vboxChooserGroupHeader') && $(this).parent().hasClass('vboxVMGroupSelected')) {
-				return;
+				return true;
 			
 			// Right click on VM and VM is already selected
 			// just return and show context menu
 			} else if($(this).hasClass('vboxListItemSelected')) {
-				return;
+				return true;
 			}
 		}
 		
@@ -1294,9 +1294,9 @@ var vboxChooser = {
 				// already selected
 				if(vboxChooser._selectedList.length == 1 && vboxChooser._selectedList[0].type == 'group' &&
 						vboxChooser._selectedList[0].groupPath == $(item).parent().data('vmGroupPath'))
-					return;
+					return true;
 
-					vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
+				vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
 				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected');
 				
 				// select current group
@@ -1342,7 +1342,7 @@ var vboxChooser = {
 				// already selected
 				if(vboxChooser._selectedList.length == 1 && vboxChooser._selectedList[0].type == 'vm' &&
 						vboxChooser._selectedList[0].id == $(item).data('vmid'))
-					return;
+					return true;
 
 				vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
 				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected');
@@ -1394,7 +1394,10 @@ var vboxChooser = {
 			vboxChooser._anchor.children('table.vboxChooserItem-'+vboxChooser._anchorid+'-host').removeClass('vboxListItemSelected');
 			
 		}
+		
 		vboxChooser.selectionListChanged(selectedList);
+		
+		return true;
 
 		
 	},
@@ -1472,7 +1475,7 @@ var vboxChooser = {
 			$('<div />').addClass('vboxChooserGroupHeader').css({'display':(first ? 'none' : '')})
 				.attr({'title':gname})
 				.dblclick(function() {
-					$(this).children('span.vboxChooserGroupNameArrowCollapse').click();
+					$(this).children('.vboxChooserGroupNameArrowCollapse').click();
 				})
 				.append(
 						$('<div />').addClass('vboxChooserDropTarget')
@@ -1484,16 +1487,75 @@ var vboxChooser = {
 						})
 				)
 				.append(
+						(isCanvasSupported() ? [
+								$('<canvas />').addClass('vboxChooserGroupNameArrowCollapse')
+								.addClass('vboxChooserGroupNameArrowCollapseWhite')
+								.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
+								.each(function(idx, canvas) {
+									canvas.getContext('2d').drawImage(vboxImageDownWhite,0,0,18,18);
+								}).click(function(){
+									
+									// Already collapsed?
+									var collapsed = $(this).closest('div.vboxChooserGroup').hasClass('vboxVMGroupCollapsed');
+									
+									// Rotate grey arrow
+									var ctx = $(this).siblings('canvas.vboxChooserGroupNameArrowCollapseGrey')[0].getContext('2d');										
+									ctx.clearRect(0,0,18,18);
+									if(!collapsed) {
+										ctx.save();
+										ctx.translate(9,9);
+										ctx.rotate(-90 * Math.PI / 180.0);										
+										ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
+										ctx.restore();
+									} else {
+										ctx.drawImage(vboxImageDownGrey,0,0,18,18);
+									}
+
+									// Rotate this arrow
+									var ctx = $(this)[0].getContext('2d');
+									$('<div />').animate({left:90},
+											{
+												duration: 300,
+												step: function(currentStep ) {
+													ctx.save();
+													ctx.clearRect(0,0,18,18);
+													ctx.translate(9,9);
+													ctx.rotate((collapsed ? -90 + currentStep : (currentStep*-1)) * Math.PI / 180.0);
+													ctx.drawImage(vboxImageDownWhite,-9,-9,18,18);
+													ctx.restore();
+												},
+												queue: true
+											});
+									
+									// Toggle class
+									$(this).closest('div.vboxChooserGroup').toggleClass('vboxVMGroupCollapsed', 300);
+									
+								}),
+								$('<canvas />').addClass('vboxChooserGroupNameArrowCollapse')
+									.addClass('vboxChooserGroupNameArrowCollapseGrey')
+									.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
+									.each(function(idx, canvas) {
+										canvas.getContext('2d').drawImage(vboxImageDownGrey,0,0,18,18);
+									}).mousedown(function(e){
+										
+										/* When mousedown happens, the group is selected and the mouse up action
+										 * occurs on the white canvas. This makes it so a full "click" is never
+										 * registered on the white arrow canvas.
+										 * 
+										 * The below code should get around this.
+										 */
+										$(document).one('mouseup',function(e) {
+											if($(e.target).hasClass('vboxChooserGroupNameArrowCollapseWhite')) {
+												$(e.target).trigger('click');
+											}
+										});
+									})
+								] : // Else
 						$('<span />').addClass('vboxChooserGroupNameArrowCollapse')
 							.click(function(e) {
 								$(this).closest('div.vboxChooserGroup').toggleClass('vboxVMGroupCollapsed', 300);
-								if(e) {
-									e.stopPropagation();
-									e.preventDefault();
-								}
-
-								return false;
 							})
+						)
 				).append(
 						$('<span />').addClass('vboxChooserGroupShowOnlyBack')
 							.click(function(e) {
@@ -1536,8 +1598,8 @@ var vboxChooser = {
 			.draggable({'cursorAt':{left: -10, top: -10},'helper':function(){
 				
 				return $(this).clone().addClass('vboxVMGroupCollapsed').addClass('vboxVMGroupSelected')
-					.children('div.vboxChooserGroupHeader').removeClass('vboxHover').children('span.vboxChooserGroupNameArrowCollapse').hide()
-					.parent().parent().css({'width':$(this).width()+'px'});
+					.children('div.vboxChooserGroupHeader').removeClass('vboxHover').children('.vboxChooserGroupNameArrowCollapse')
+					.hide().closest('div.vboxChooserGroup').css({'width':$(this).width()+'px'});
 									
 				
 				},'start':function() {
@@ -1806,6 +1868,7 @@ $(document).ready(function(){
 		if(vboxChooser._vmGroupContextMenuObj)
 			vboxChooser._vmGroupContextMenuObj.update(vboxChooser);
 	
+		
 		if(vboxChooser._vmContextMenuObj)
 			vboxChooser._vmContextMenuObj.update(vboxChooser);
 		

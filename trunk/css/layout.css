@@ -1,5 +1,8 @@
-/*
+/**
  * $Id$
+ *
+ * Thanks to SVG gradient generator at:
+ * http://ie.microsoft.com/testdrive/graphics/svggradientbackgroundmaker/default.html
  */
 
 html,body,#vboxPane {
@@ -60,7 +63,7 @@ div.ui-dialog div.ui-dialog-buttonpane button {
 	border: 1px solid #f9f9f9;
 	background-color: #f9f9f9;
 	border-radius: 4px;
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#e9e9e9', endColorstr='#c9c9c9');
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#e9e9e9', endColorstr='#d0d0d0');
 	box-shadow: inset 0 1px 3px #fff, inset 0 -15px #e9e9e9, 0 0 3px #a9a9a9;
 	-o-box-shadow: inset 0 1px 3px #fff, inset 0 -15px #e9e9e9, 0 0 3px #a9a9a9;
 	-webkit-box-shadow: inset 0 1px 3px #fff, inset 0 -15px #e9e9e9, 0 0 3px #a9a9a9;
@@ -124,15 +127,13 @@ ul.vboxList li table tr { vertical-align: middle; }
 ul.vboxList li img { vertical-align: middle; }
 
 .vboxListItem, a.vboxListItem, .vboxListItem a { cursor: pointer; color: #000; background: #fff; }
-.vboxListItemSelected, .vboxListItemSelected a, a.vboxListItemSelected {
+.vboxListItemSelected.vboxHover, .vboxListItemSelected, .vboxListItemSelected a, a.vboxListItemSelected {
 	border-color: #69F ! important;
 	background-color: #7aF !important;
 	cursor: default !important;
 	color: #fff !important;
-	background: -o-linear-gradient(top,  #8bF, #69f);
-	background: -webkit-gradient(linear, left top, left bottom, from(#8bF), to(#69f)); /* for webkit browsers */
-	background: -moz-linear-gradient(top,  #8bF, #69f); /* for firefox 3.6+ */
-
+	/* From #85C2FF to #6699FF */
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc1NzQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiM4NUMyRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiM2Njk5RkYiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c1NzQpIiAvPgo8L3N2Zz4=);
 }
 .vboxListItemTitle { font-weight: bold; }
 
@@ -145,11 +146,10 @@ ul.vboxHoverBorderless li {
 }
 ul.vboxHover li.vboxHover {
 	color: #000 ! important;
-	background-color: #d0d8ff;
+	background-color: #eefffF;
 	border-color: #99CcfF;
-	background: -o-linear-gradient(top,  #eeeeff, #adf);
-	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeff), to(#adf)); /* for webkit browsers */
-	background: -moz-linear-gradient(top,  #eeeeff, #adf); /* for firefox 3.6+ */
+	/* #F0FFFF to #CFDFFF */
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc3NTYiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGMEZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNDRkRGRkYiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c3NTYpIiAvPgo8L3N2Zz4=);
 }
 
 ul.vboxHover li table {
@@ -157,11 +157,10 @@ ul.vboxHover li table {
 }
 ul.vboxHover li table.vboxHover {
 	color: #000 ! important;
-	background-color: #d0d8ff;
+	background-color: #eefffF;
 	border-color: #99CcfF;
-	background: -o-linear-gradient(top,  #eeeeff, #adf);
-	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeff), to(#adf)); /* for webkit browsers */
-	background: -moz-linear-gradient(top,  #eeeeff, #adf); /* for firefox 3.6+ */
+	/* #F0FFFF to #CFDFFF */
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc3NTYiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGMEZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNDRkRGRkYiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c3NTYpIiAvPgo8L3N2Zz4=);
 }
 tbody.vboxHover td {
 	border: 1px solid transparent;
@@ -223,20 +222,15 @@ table tr td.vboxFileFolderInput input.vboxImgButton { width: 20px; margin-left: 
 }
 
 .vboxToolbarGrad .vboxToolbarButtonHover {
-	background: -o-linear-gradient(top,  #e9e9e9, #d9d9d9);
-	background: -webkit-gradient(linear, left top, left bottom, from(#e9e9e9), to(#d9d9d9)); /* for webkit browsers */
-	background: -moz-linear-gradient(top,  #e9e9e9, #d9d9d9); /* for firefox 3.6+ */
-	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled='true', src='images/monitor_glossy.png', sizingMethod='scale');
+	/* From E9E9E9 to D9D9D9 */
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc3ODYiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0U5RTlFOSIgb2Zmc2V0PSIwIi8+PHN0b3Agc3RvcC1jb2xvcj0iI0Q5RDlEOSIgb2Zmc2V0PSIxIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InVybCgjZzc4NikiIC8+Cjwvc3ZnPg==);
 }
 
 .vboxToolbarGrad .vboxToolbarButtonDown {
+	/* from a9a9a9 to e9e9e9 */
 	padding: 5px 3px 3px 5px;
 	border-color: #777;
-	background: -webkit-gradient(linear, left top, left bottom, from(#a9a9a9), to(#e9e9e9)); /* for webkit browsers */
-	background: -moz-linear-gradient(top,  #a9a9a9, #e9e9e9); /* for firefox 3.6+ */
-	background: -o-linear-gradient(top,  #a9a9a9, #e9e9e9);
-	
-	
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcxMDEiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0E5QTlBOSIgb2Zmc2V0PSIwIi8+PHN0b3Agc3RvcC1jb2xvcj0iI0U5RTlFOSIgb2Zmc2V0PSIxIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InVybCgjZzEwMSkiIC8+Cjwvc3ZnPg==);
 }
 
 /* Small Toolbar buttons */
@@ -289,10 +283,8 @@ div.vboxAlert form textarea { height: 100%; }
 
 /* main toolbar */
 .vboxToolbarGrad {
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#d9d9d9', endColorstr='#e9e9e9'); /* for IE */
-	background: -o-linear-gradient(top, #d9d9d9, #e9e9e9);
-	background: -moz-linear-gradient(top, #d9d9d9, #e9e9e9); /* for firefox 3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, from(#d9d9d9), to(#e9e9e9)); /* for webkit browsers */
+	/* #d9d9d9 to #e9e9e9 */
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNEOUQ5RDkiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFOUU5RTkiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzApIiAvPgo8L3N2Zz4=);
 }
 
 /* Required textboxes */
@@ -407,18 +399,13 @@ div.vboxWizard table td.vboxApplianceHeader { border-style: solid; border-color:
 
 /* Menu bars */
 div.vboxMenuBar { 
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#d9d9d9'); /* for IE */
-	background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#d9d9d9)); /* for webkit browsers */
-	background: -moz-linear-gradient(top, #ffffff, #d9d9d9); /* for firefox 3.6+ */
-	background: -o-linear-gradient(top, #ffffff, #d9d9d9);
-		
+	/* From #ffffff to #d9d9d9 */
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc1MDYiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNEOUQ5RDkiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c1MDYpIiAvPgo8L3N2Zz4=);	
 }
 
 ul.vboxMenuBar li {
-	background: -webkit-gradient(linear, left top, right top, from(#ffffff), to(#d9d9d9)); /* for webkit browsers */
-	background: -moz-linear-gradient(left,  #ffffff, #d9d9d9); /* for firefox 3.6+ */
-	background: -o-linear-gradient(left,  #ffffff, #d9d9d9);
-	filter: progid:DXImageTransform.Microsoft.gradient(GradientType=1, startColorstr='#ffffff', endColorstr='#d9d9d9'); /* for IE */	
+	/* From #ffffff to #d9d9d9 */
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc2OTMiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNEOUQ5RDkiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c2OTMpIiAvPgo8L3N2Zz4=);
 }
 
 #vboxPane div.vboxMenuBar, div.vboxDialogContent div.vboxMenuBar { border-bottom: 1px solid #aaa; padding-top: 2px; padding-bottom: 2px; margin-top: 0px; height: 100%; }
@@ -469,13 +456,14 @@ ul.vboxMenuBar li {
 #vboxChooserDiv table.vboxChooserVM { border: 2px solid transparent; }
 #vboxChooserDiv table.vboxHover {
 	color: #000 ! important;
-	background-color: #d0d8ff;
 	border-color: #99CcfF;
-	background: -o-linear-gradient(top,  #eeeeff, #adf);
-	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeff), to(#adf));
-	background: -moz-linear-gradient(top,  #eeeeff, #adf);
+	background-color: #eefffF;
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcxMDkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFRUVFRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNBQURERkYiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cxMDkpIiAvPgo8L3N2Zz4=);	
 }
 #vboxPaneVMList div.vboxChooserDropTarget { height: 4px; padding: 0px; margin: 0px; }
+#vboxPaneVMList div.vboxChooserGroupHeader div.vboxChooserDropTarget {
+	position: relative; left: -4px;
+}
 #vboxPaneVMList div.vboxChooserDropTargetHover { background: #999; }
 #vboxPaneVMList td.vboxChooserDropTarget { height: 4px; padding: 0px; margin: 0px; }
 #vboxPaneVMList td.vboxChooserDropTargetHover
@@ -502,7 +490,15 @@ ul.vboxMenuBar li {
 }
 
 #vboxPaneVMList div.vboxChooserGroupHeader {
-	-moz-border-radius-topleft: 8px/*{cornerRadius}*/; -webkit-border-top-left-radius: 8px/*{cornerRadius}*/; border-top-left-radius: 8px/*{cornerRadius}*/; -moz-border-radius-topright: 8px/*{cornerRadius}*/; -webkit-border-top-right-radius: 8px/*{cornerRadius}*/; border-top-right-radius: 8px/*{cornerRadius}*/;
+	
+	-moz-border-radius-topleft: 8px/*{cornerRadius}*/;
+	-webkit-border-top-left-radius: 8px/*{cornerRadius}*/;
+	border-top-left-radius: 8px/*{cornerRadius}*/;
+	
+	-moz-border-radius-topright: 8px/*{cornerRadius}*/;
+	-webkit-border-top-right-radius: 8px/*{cornerRadius}*/;
+	border-top-right-radius: 8px/*{cornerRadius}*/;
+
 	background-image: url(../images/header_grad.png);
 	background-color: #cccccc;
 	padding: 0px 0px 8px 8px;
@@ -514,21 +510,33 @@ ul.vboxMenuBar li {
 	vertical-align: top;
 }
 #vboxPaneVMList div.vboxVMGroupSelected {
-	border-color: #69F;
+	border-color: #2992F7;
 }
 #vboxPaneVMList div.vboxVMGroupSelected > div.vboxChooserGroupHeader {
-	background: #7aF !important;
+	background: #2992F7 !important;
 	color: #fff !important;
-	background: -o-linear-gradient(top,  #8bF, #69f);
-	background: -webkit-gradient(linear, left top, left bottom, from(#8bF), to(#69f)); /* for webkit browsers */
-	background: -moz-linear-gradient(top,  #8bF, #69f); /* for firefox 3.6+ */
+}
+/* Canvas arrows */
+#vboxPaneVMList div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseWhite,
+#vboxPaneVMList div.vboxChooserGroupShowOnly.vboxVMGroupSelected > div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseWhite,
+#vboxPaneVMList div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseWhite {
+	display: none;
+}
+#vboxPaneVMList div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseGrey {
+	display: inline;
+}
+#vboxPaneVMList div.vboxVMGroupSelected > div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseWhite {
+	display: inline;
+}
+#vboxPaneVMList div.vboxVMGroupSelected > div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseGrey {
+	display: none;
 }
 
-#vboxPaneVMList div.vboxChooserGroupHeader span.vboxChooserGroupNameArrowCollapse {
+#vboxPaneVMList div.vboxChooserGroupHeader .vboxChooserGroupNameArrowCollapse {
 	display: inline-block;
 	position: relative;
 	left: -5px;
-	top: -1px;
+	top: -2px;
 	vertical-align: top;
 	margin: 0px;
 	padding: 0px;
@@ -536,6 +544,8 @@ ul.vboxMenuBar li {
 	width: 18px;
 	height: 18px;
 	background-repeat: no-repeat;
+}
+#vboxPaneVMList div.vboxChooserGroupHeader span.vboxChooserGroupNameArrowCollapse {
 	background-image: url(../images/arrow_grad_up.png);
 }
 
@@ -576,6 +586,7 @@ ul.vboxMenuBar li {
 	border-radius: 8px;
 	-moz-border-radius: 8px;
 }
+
 
 /* Hide / show only 1 group */
 #vboxPaneVMList div.vboxChooserGroupHide {
@@ -620,13 +631,15 @@ ul.vboxMenuBar li {
 	-moz-border-radius-bottomleft: 8px/*{cornerRadius}*/; -webkit-border-bottom-left-radius: 8px/*{cornerRadius}*/; border-bottom-left-radius: 8px/*{cornerRadius}*/; -moz-border-radius-bottomright: 8px/*{cornerRadius}*/; -webkit-border-bottom-right-radius: 8px/*{cornerRadius}*/; border-bottom-right-radius: 8px/*{cornerRadius}*/;	
 	-moz-border-radius-topleft: 0px/*{cornerRadius}*/; -webkit-border-top-left-radius: 0px/*{cornerRadius}*/; border-top-left-radius: 0px/*{cornerRadius}*/; -moz-border-radius-topright: 0px/*{cornerRadius}*/; -webkit-border-top-right-radius: 0px/*{cornerRadius}*/; border-top-right-radius: 0px/*{cornerRadius}*/;
 	display: block;
+	margin-left: 2px;
+	margin-right: 2px;
 }
 
 #vboxPaneVMList div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader > span.vboxChooserGroupInfo {
 	margin-right: 2px;
 }
 #vboxPaneVMList div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader span.vboxChooserGroupShowOnly,
-#vboxPaneVMList div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader span.vboxChooserGroupNameArrowCollapse {
+#vboxPaneVMList div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader .vboxChooserGroupNameArrowCollapse {
 	display: none;
 }
 #vboxPaneVMList div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader span.vboxChooserGroupShowOnlyBack {
@@ -758,7 +771,10 @@ table.vboxDetailsTableBox tr.vboxDetailsHead th.vboxDetailsSection div {
 }
 
 /* Images */
-#vboxTabVMDetails div.vboxDetailsBorder tr.vboxDetailsHead span.vboxDetailsUpDnImgSpan {
+#vboxTabVMDetails div.vboxDetailsBorder tr.vboxDetailsHead span.vboxDetailsUpDnImgSpan,
+#vboxTabVMDetails div.vboxDetailsBorder tr.vboxDetailsHead canvas.vboxDetailsUpDnImgCanvas
+ {
+ 	float:right;
 	position: relative;
 	top: -1px;
 	width: 18px;
@@ -793,8 +809,13 @@ table.vboxDetailsTableBox tr.vboxDetailsHead a, #vboxTabVMDetails div.hover tabl
 	cursor: pointer;
 }
 
-#vboxTabVMDetails table.vboxDetailsTableBox tr.vboxDetailsHead th span.vboxDetailsUpDnImgSpan { display: none; }
-#vboxTabVMDetails div.hover table.vboxDetailsTableBox tr.vboxDetailsHead th span.vboxDetailsUpDnImgSpan { display: inline; cursor: pointer; }
+#vboxTabVMDetails table.vboxDetailsTableBox tr.vboxDetailsHead th canvas.vboxDetailsUpDnImgCanvas,
+#vboxTabVMDetails table.vboxDetailsTableBox tr.vboxDetailsHead th span.vboxDetailsUpDnImgSpan
+{ display: none; }
+
+#vboxTabVMDetails div.hover table.vboxDetailsTableBox tr.vboxDetailsHead th canvas.vboxDetailsUpDnImgCanvas,
+#vboxTabVMDetails div.hover table.vboxDetailsTableBox tr.vboxDetailsHead th span.vboxDetailsUpDnImgSpan
+{ display: inline; cursor: pointer; }
 
 table.vboxDetailsTableBox tr.vboxDetailsHead th { padding: 6px; padding-left: 8px; }
 table.vboxDetailsTableBox tr.vboxDetailsHead img { padding-right: 4px; }

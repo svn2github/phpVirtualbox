@@ -542,6 +542,9 @@ var vboxVMDetailsSections = {
 			
 		onRender : function(d) {
 
+			// Resize name
+			$('#vboxDetailsGeneralTable-'+d.id+ ' div.vboxDetailsPreviewVMName span.textFill').textFill({maxFontPixels:20});
+			
 			if(!vboxVMStates.isRunning(d) && !vboxVMStates.isSaved(d)) {
 				var timer = $('#vboxPane').data('vboxPreviewTimer-'+d.id);
 				if(timer) {
@@ -680,7 +683,7 @@ var vboxVMDetailsSections = {
 				"<div style='position:relative;left:0px;display:table-cell;vertical-align:middle;padding:4px;color:#fff;font-weight:bold;text-align:center;height:"+height+"px;width:"+width+"px;" +
 				($.browser.msie ? "filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=\"true\", src=\"images/monitor_glossy.png\", sizingMethod=\"scale\")" : "" +
 					"background:url(images/monitor_glossy.png) top left no-repeat;-moz-background-size:100% 100%;background-size:"+(width+1) +"px " + (height+1)+"px;-webkit-background-size:100% 100%") +
-				"'>"+$('<div />').html(d.name).text()+"</div>"+
+				"'><span class='textFill' style='font-size: 12px'>"+$('<div />').html(d.name).text()+"</span></div>"+
 				"</div>";
 
 			return [

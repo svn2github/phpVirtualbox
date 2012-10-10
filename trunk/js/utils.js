@@ -1143,6 +1143,7 @@ function vboxBasename(p) {
 	return p;
 }
 
+	
 /**
  * Returns the result of case-insensitive string comparison using 'natural' algorithm comparing str1 to str2
  * @param {String} str1 - 1st string

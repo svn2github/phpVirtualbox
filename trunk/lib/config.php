@@ -27,6 +27,12 @@ class phpVBoxConfigClass {
 	var $language = 'en';
 
 	/**
+	 * Exclusively use phpVirtualBox groups rather than
+	 * VirtualBox groups
+	 */
+	var $phpVboxGroups = false;
+	
+	/**
 	 * Preview screen width
 	 * @var integer
 	 */	

@@ -468,6 +468,7 @@ ul.vboxMenuBar li {
 	margin-bottom: 1px;
 	vertical-align: top;
 	border-collapse: collapse;
+	cursor: default;
 }
 #vboxChooserDiv table.vboxChooserVM.vboxHover {
 	color: #000 ! important;

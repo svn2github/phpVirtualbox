@@ -64,6 +64,9 @@ var vboxChooser = {
 	/* Holds history of showing only single groups */
 	_showOnlyGroupHistory : [],
 	
+	/* Group definition extra value key */
+	_groupDefinitionKey : '',
+	
 	/**
 	 * Set anchor id to draw to
 	 */
@@ -290,6 +293,8 @@ var vboxChooser = {
 		// compose / save group definitions
 		vboxChooser.composeGroupDef(true);
 		
+		// Set initial resize
+		vboxChooser._initialResize = true;
 		vboxChooser._resizeTitles(true);
 
 	},
@@ -441,8 +446,7 @@ var vboxChooser = {
 		var tbl = $('<table />').attr({'class':'vboxChooserItem-'+vboxChooser._anchorid+'-'+vmn.id + " vboxChooserVM"})
 			.bind('mousedown',vboxChooser.selectItem)
 			.hover(function(){
-				if(!$(this).hasClass('vboxListItemSelected'))
-					$(this).addClass('vboxHover');
+				$(this).addClass('vboxHover');
 				},function(){$(this).removeClass('vboxHover');
 			}).data('vmid',vmn.id);
 		
@@ -664,7 +668,7 @@ var vboxChooser = {
 
 				// Do not allow to be dragged into another group
 				// if there is a Vm with a locked session in this one
-				if(sessionLocked) return;
+				if(sessionLocked && !$('#vboxPane').data('vboxConfig')['phpVboxGroups']) return;
 				
 				// Make sure there are no conflicts
 				var groupName = $(droppedGroup).children('div.vboxChooserGroupHeader').attr('title');
@@ -694,7 +698,7 @@ var vboxChooser = {
 			
 			// Will not do this if this group contains
 			// a VM with a locked session
-			if(sessionLocked) return;
+			if(sessionLocked && !$('#vboxPane').data('vboxConfig')['phpVboxGroups']) return;
 			
 			var dropTarget = vboxChooser._anchor.find('div.vboxHover').first();
 			
@@ -772,6 +776,7 @@ var vboxChooser = {
 			thisSessionLocked = true;
 
 		
+		
 		// Where was this dropped?
 		var dropTarget = $('#'+vboxChooser._anchorid).find('td.vboxChooserDropTargetHover');
 		
@@ -787,7 +792,7 @@ var vboxChooser = {
 			
 			// If session of this VM is locked, don't allow it to be
 			// dragged out of current group
-			if(thisSessionLocked && ($(droppedVM).closest('div.vboxChooserGroup').data('vmGroupPath') != dropTarget.closest('div.vboxChooserGroup').data('vmGroupPath'))) {
+			if(thisSessionLocked && !$('#vboxPane').data('vboxConfig')['phpVboxGroups'] && ($(droppedVM).closest('div.vboxChooserGroup').data('vmGroupPath') != dropTarget.closest('div.vboxChooserGroup').data('vmGroupPath'))) {
 				return
 			}
 			
@@ -816,7 +821,7 @@ var vboxChooser = {
 		} else {
 			
 			// Don't allow this if sessoin is locked
-			if(thisSessionLocked) return;
+			if(thisSessionLocked && !$('#vboxPane').data('vboxConfig')['phpVboxGroups']) return;
 			
 			// Dropped ON a vm?
 			dropTarget = $('#'+vboxChooser._anchorid).find('table.vboxHover:not(.ui-draggable-dragging)').first();
@@ -1414,18 +1419,17 @@ var vboxChooser = {
 			// No ctrl key or selection is host. Exclusive selection
 			if((!e.ctrlKey && !e.metaKey) || $(item).data('vmid') == 'host') {
 				
-				
-				// already selected
-				if(vboxChooser._selectedList.length == 1 && vboxChooser._selectedList[0].type == 'vm' &&
-						vboxChooser._selectedList[0].id == $(item).data('vmid'))
-					return true;
-
 				vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
 				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected');
 				
 				// Select current VM
 				$(item).addClass('vboxListItemSelected').removeClass('vboxHover');
 				
+				// already selected
+				if(vboxChooser._selectedList.length == 1 && vboxChooser._selectedList[0].type == 'vm' &&
+						vboxChooser._selectedList[0].id == $(item).data('vmid'))
+					return true;
+
 				selectedList = [{
 					type: 'vm',
 					id: $(item).data('vmid'),
@@ -1825,6 +1829,9 @@ var vboxChooser = {
 			vboxChooser._anchorid = anchorid;
 			vboxChooser._anchor = $('#'+anchorid);			
 		}
+		
+		// Set group definition key
+		vboxChooser._groupDefinitionKey = $('#vboxPane').data('vboxConfig')['groupDefinitionKey'];
 
 		// Get groups, machine list and start listener
 		$.when(vboxAjaxRequest('vboxGroupDefinitionsGet')).then(function(g) {
@@ -1972,9 +1979,9 @@ $(document).ready(function(){
 	// Watch for group order changes
 	}).bind('vboxExtraDataChanged', function(e, machineId, key, value) {
 						
-		if(!machineId && key.indexOf('GUI/GroupDefinitions') === 0) {
+		if(!machineId && key.indexOf(vboxChooser._groupDefinitionKey) === 0) {
 			
-			var path = key.substring(20);
+			var path = key.substring(vboxChooser._groupDefinitionKey.length);
 			if(!path) path = "/";
 			var name = path.substring(path.lastIndexOf('/')+1);
 			var vboxVMGroups = vboxChooser._groupDefs;

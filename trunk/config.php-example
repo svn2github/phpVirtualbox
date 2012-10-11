@@ -80,6 +80,18 @@ var $maxProgressList = 5;
 #var $enableCustomIcons = true;
 
 /*
+Exclusively use phpVirtualBox groups rather than VirtualBox groups. This has the following
+effects:
+
+*) Group changes made in phpVirtualBox will not be reflected in VirtualBox programs such as
+	VirtualBox and VBoxManage
+*) Group changes will not affect which folder a VM is placed in
+*) You can rename groups that contain running VMs and move / copy running VMs to groups
+*/
+#var $phpVboxGroups = true;
+
+
+/*
 Allow to prompt deletion hard disk files on removal from Virtual Media Manager.
 If this is not set, files are always kept. If this is set, you will be PROMPTED
 to decide whether or not you would like to delete the hard disk file(s) when you

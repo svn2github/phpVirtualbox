@@ -395,6 +395,7 @@ var vboxVMDetailsSections = {
 	 */
 	preview : {
 		icon:'fullscreen_16px.png',
+		_resolutionCache : {},
 		title:trans('Preview'),
 		settingsLink: 'Display',
 		rerenderOnStateChange: true,
@@ -609,6 +610,13 @@ var vboxVMDetailsSections = {
 					factor = width / this.width;
 					if(!factor) factor = 1;
 					height = this.height * factor;
+
+					// Check for cached resolution
+					vboxVMDetailsSections.preview._resolutionCache[vmid] = {
+						'width' : width,
+						'height' : height
+					};
+				
 					
 					$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','none');
 					$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'','height':height+'px','width':width+'px'});
@@ -676,8 +684,13 @@ var vboxVMDetailsSections = {
 
 			var width = $('#vboxPane').data('vboxConfig')['previewWidth'];
 			if(!width) width = $('#vboxPane').data('vboxConfig')['previewWidth'] = 180;
-
 			var height = (width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
+
+			// Check for cached resolution
+			if(vboxVMDetailsSections.preview._resolutionCache[d.id]) {
+				width = vboxVMDetailsSections.preview._resolutionCache[d.id].width;
+				height = vboxVMDetailsSections.preview._resolutionCache[d.id].height;
+			}
 
 			var divOut1 = "<div class='vboxDetailsPreviewVMName' style='overflow:hidden;position:relative;height:"+height+"px;width:"+width+"px' >" +
 				"<div style='position:relative;left:0px;display:table-cell;vertical-align:middle;padding:4px;color:#fff;font-weight:bold;text-align:center;height:"+height+"px;width:"+width+"px;" +
@@ -1169,6 +1182,7 @@ var vboxVMGroupActions = {
 			if(!$('#vboxPane').data('vboxSession').admin) return false;
 			var gElm = vboxChooser.getSelectedGroupElements()[0];
 			if(!gElm) return false;
+			if($('#vboxPane').data('vboxConfig')['phpVboxGroups']) return true;
 			if($(gElm).find('td.vboxVMSessionOpen')[0]) return false;
 			return true;
 		},
@@ -1184,6 +1198,7 @@ var vboxVMGroupActions = {
 			if(!$('#vboxPane').data('vboxSession').admin) return false;
 			var gElm = vboxChooser.getSelectedGroupElements()[0];
 			if(!gElm) return false;
+			if($('#vboxPane').data('vboxConfig')['phpVboxGroups']) return true;
 			if($(gElm).find('td.vboxVMSessionOpen')[0]) return false;
 			return true;
 		},

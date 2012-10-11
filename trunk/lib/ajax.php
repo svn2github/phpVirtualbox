@@ -93,6 +93,7 @@ try {
 			$response['data']['version'] = $vbox->getVersion();
 			$response['data']['hostOS'] = $vbox->vbox->host->operatingSystem;
 			$response['data']['DSEP'] = $vbox->getDsep();
+			$response['data']['groupDefinitionKey'] = ($settings->phpVboxGroups ? vboxconnector::phpVboxGroupKey : 'GUI/GroupDefinitions');
 			
 			break;
 	

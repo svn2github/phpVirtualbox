@@ -25,6 +25,12 @@ class vboxconnector {
 	const PHPVB_ERRNO_CONNECT = 64;
 
 	/**
+	 * phpVirtualBox groups extra value key
+	 * @var string
+	 */
+	const phpVboxGroupKey = 'phpvb/Groups';
+	
+	/**
 	 * Holds any errors that occur during processing. Errors are placed in here
 	 * when we want calling functions to be aware of the error, but do not want to
 	 * halt processing
@@ -559,7 +565,13 @@ class vboxconnector {
 		
 						$machine = $this->vbox->findMachine($event['machineId']);
 		
-						$groups = $machine->groups;
+						if($this->settings->phpVboxGroups) {
+							$groups = explode(',',$machine->getExtraData(vboxconnector::phpVboxGroupKey));
+							if(!is_array($groups)) $groups = array("/");
+						} else {
+							$groups = $machine->groups;
+						}
+						
 						usort($groups, 'strnatcasecmp');
 							
 						$eventlist[$k]['enrichmentData'] = array(
@@ -1190,12 +1202,21 @@ class vboxconnector {
 				continue;
 			}
 			
-			$oldGroups = $machine->groups;
 			$newGroups = $vm['groups'];
-			
-			if((string)$machine->sessionState != 'Unlocked' || (!count(array_diff($oldGroups,$newGroups)) && !count(array_diff($newGroups,$oldGroups)))) {
-				$machine->releaseRemote();
-				continue;
+
+			if($this->settings->phpVboxGroups) {
+				$oldGroups = explode(',',$machine->getExtraData(vboxconnector::phpVboxGroupKey));
+				if(!is_array($oldGroups)) $oldGroups = array("/");
+				if(!count(array_diff($oldGroups,$newGroups)) && !count(array_diff($newGroups,$oldGroups)))
+					continue;
+			} else {
+				$oldGroups = $machine->groups;
+				
+				if((string)$machine->sessionState != 'Unlocked' || (!count(array_diff($oldGroups,$newGroups)) && !count(array_diff($newGroups,$oldGroups)))) {
+					$machine->releaseRemote();
+					continue;
+				}
+
 			}
 			
 			// Add to saved list
@@ -1209,7 +1230,12 @@ class vboxconnector {
 				
 				usort($newGroups,'strnatcasecmp');
 				
-				$this->session->machine->groups = $newGroups;
+				if($this->settings->phpVboxGroups) {
+					$machine->setExtraData(vboxconnector::phpVboxGroupKey, implode(',',$newGroups));
+				} else {
+					$this->session->machine->groups = $newGroups;
+				}
+				
 				$this->session->machine->saveSettings();
 				
 				$this->session->unlockMachine();
@@ -3765,7 +3791,13 @@ class vboxconnector {
 
 			try {
 				
-				$groups = $machine->groups;
+				if($this->settings->phpVboxGroups) {
+					$groups = explode(',',$machine->getExtraData(vboxconnector::phpVboxGroupKey));
+					if(!is_array($groups)) $groups = array("/");
+				} else {
+					$groups = $machine->groups;
+				}
+				
 				usort($groups, 'strnatcasecmp');
 				
 				$response['data']['vmlist'][] = array(
@@ -3891,7 +3923,13 @@ class vboxconnector {
 	 */
 	private function _machineGetDetails(&$m) {
 
-		$groups = $m->groups;
+		if($this->settings->phpVboxGroups) {
+			$groups = explode(',',$m->getExtraData(vboxconnector::phpVboxGroupKey));
+			if(!is_array($groups)) $groups = array("/");
+		} else {
+			$groups = $m->groups;
+		}
+		
 		usort($groups, 'strnatcasecmp');
 		
 		return array(
@@ -5327,11 +5365,12 @@ class vboxconnector {
 		// Save a list of valid paths
 		$validGroupPaths = array();
 		
+		$groupKey = ($this->settings->phpVboxGroups ? vboxconnector::phpVboxGroupKey : 'GUI/GroupDefinitions');
 		
 		// Write out each group definition
 		foreach($args['groupDefinitions'] as $groupDef) {
 			
-			$this->vbox->setExtraData('GUI/GroupDefinitions'.$groupDef['path'], $groupDef['order']);
+			$this->vbox->setExtraData($groupKey.$groupDef['path'], $groupDef['order']);
 			$validGroupPaths[] = $groupDef['path'];
 			
 		}
@@ -5339,8 +5378,8 @@ class vboxconnector {
 		// Remove any unused group definitions
 		$keys = $this->vbox->getExtraDataKeys();
 		foreach($keys as $k) {
-			if(strpos($k,'GUI/GroupDefinitions') !== 0) continue;
-			if(array_search(substr($k,20), $validGroupPaths) === false)
+			if(strpos($k,$groupKey) !== 0) continue;
+			if(array_search(substr($k,strlen($groupKey)), $validGroupPaths) === false)
 				$this->vbox->setExtraData($k,'');
 		}
 		
@@ -5361,16 +5400,18 @@ class vboxconnector {
 		$response['data'] = array();
 		
 		$keys = $this->vbox->getExtraDataKeys();
+		
+		$groupKey = ($this->settings->phpVboxGroups ? vboxconnector::phpVboxGroupKey : 'GUI/GroupDefinitions');
 		foreach($keys as $grouppath) {
 			
-			if(strpos($grouppath,'GUI/GroupDefinitions') !== 0) continue;
+			if(strpos($grouppath,$groupKey) !== 0) continue;
 			
 			$subgroups = array();
 			$machines = array();
 			
 			$response['data'][] = array(
 				'name' => substr($grouppath,strrpos($grouppath,'/')+1),
-				'path' => substr($grouppath,20),
+				'path' => substr($grouppath,strlen($groupKey)),
 				'order' => $this->vbox->getExtraData($grouppath)
 			);
 		}

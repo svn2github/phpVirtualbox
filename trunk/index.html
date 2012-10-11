@@ -61,6 +61,10 @@
 	
 		$(document).ready(function(){
 
+			/*
+			 * Parse cookies
+			 */
+			 vboxParseCookies();
 			
 			/*
 			 *
@@ -160,7 +164,9 @@
 				
 				vboxSetCookie("vboxPaneX",($('#vboxChooserDiv').width()));
 				
-				$('#vboxPaneVMList').css('width',$('#vboxChooserDiv').css('width'));
+				$('#vboxChooserPane').css('width',$('#vboxChooserDiv').css('width'));
+				
+				$(window).trigger('resize');
 				
 			}}).css('cursor',(jQuery.browser.opera ? 'e-resize' : 'col-resize')).bind('mouseenter',function(){
 				$(this).css('background',"#cccccc");
@@ -213,11 +219,13 @@
 				$('#vboxChooserResizePane').children().children().css({'display':'none'});
 				
 				var h = $('#vboxResize').innerHeight();
-				$('#vboxChooserResizePane').children().children().css({'height':h+'px','overflow':'auto','display':''});
+				$('#vboxChooserResizePane').children().children().css({'height':h+'px','overflow-y':'auto','overflow-x':'hidden','display':''});
+				
 				// special for resize bar
 				$('#vboxResizeBar').css({'height':(h-10)+'px'});
+				
 				// special for bordered vm list
-				$('#vboxPaneVMList').children().css({'height':(h-4)+'px'});
+				$('#vboxChooserPane').children().css({'height':(h-4)+'px'});
 
 			});
 			
@@ -264,7 +272,7 @@
 				l.add('vboxGetEnumerationMap',function(d){$('#vboxPane').data('vboxMediumVariants',d);},{'class':'MediumVariant','ValueMap':1});
 	
 				// Load HTML panes and append them to their respective locations
-				l.addFileToDOM('panes/vmlist.html',$('#vboxPaneVMList'));
+				l.addFileToDOM('panes/vmlist.html',$('#vboxChooserPane'));
 				l.addFileToDOM('panes/topmenu.html');
 				l.addFileToDOM('panes/vmlistToolbar.html');
 				l.addFileToDOM('panes/tabs.html',$('#vboxPaneTabContent'));
@@ -273,7 +281,6 @@
 	
 					
 					// Resize to last setting
-					vboxParseCookies();
 					if($('#vboxPane').data('vboxCookies')['vboxPaneX']) {
 						$('#vboxChooserDiv').css('width',($('#vboxPane').data('vboxCookies')['vboxPaneX'])+'px');
 					}
@@ -299,7 +306,7 @@
 			 * Check for valid session and display login box if one does not exist
 			 * @param {Boolean} tried - set to true if login was attempted before this call
 			 */
-			function vboxCheckSession(tried) {
+			var vboxCheckSession = function(tried) {
 				
 				// check session info
 				if($('#vboxPane').data('vboxSession') && $('#vboxPane').data('vboxSession').valid) {
@@ -330,7 +337,7 @@
 			var login = new vboxLoader();
 			login.add('getSession',function(d){$('#vboxPane').data('vboxSession',d);});
 			login.addFileToDOM('panes/login.html');
-			login.onLoad = function() {
+			login.onLoad = function(loader) {
 
 				var buttons = {};
 				buttons[trans('Log in','UIUsers')] = function() {
@@ -355,7 +362,8 @@
 				$('#vboxLogin').find('input[name=username]').first().focus();
 				
 				// Trick loader into not showing root pane again
-				this.hideRoot = false;
+				loader.hideRoot = false;
+				
 				
 				// Login form is loaded, run check for valid session
 				vboxCheckSession();
@@ -404,7 +412,7 @@
 		<td style='border:0px;padding:0px;margin:0px;border-spacing:0px;' id='vboxResize'>
 			<table style='width:100%;border:0px;padding:0px;border-spacing:0px;'>
 				<tr id='vboxChooserResizePane' style='vertical-align: top;'>
-					<td id="vboxPaneVMList" style='padding:0px;border-spacing:0px;margin:0px'>
+					<td id="vboxChooserPane" style='padding:0px;border-spacing:0px;margin:0px'>
 						<!--
 						
 						VM List
@@ -412,7 +420,7 @@
 						-->
 					</td>
 					<td id='vboxResizeTD' style='border: 0px; width: 2px; margin: 0px; padding: 0px; text-align: center;'>
-						<div style='z-index: 99; position: absolute; margin:0px; margin-top: 2px; padding:2px; width: 0px; height: 90%;' id='vboxResizeBar' ></div>
+						<div style='position: absolute; margin:auto; padding:2px; width: 0px; height: 90%;' id='vboxResizeBar' ></div>
 					</td>
 					<td id="vboxPaneTabContent" style='width:100%;border:0px;padding:0px;border-spacing:0px;margin:0px'>
 						<!--
@@ -428,9 +436,9 @@
 	<!--
 		Progress operation list resize bar
 	-->
-	<tr style='padding: 0px; margin: 0px'>
-		<td id='vboxResizeTDProgress' style='border: 0px; margin: 0px; padding: 0px; text-align: center; height: 5px'>
-			<div style='z-index: 99; position: absolute; width:99%; margin:0px; padding:2px;' id='vboxResizeBarProgress' ></div>
+	<tr style='padding: 0px; margin: 0px; vertical-align: middle;'>
+		<td id='vboxResizeTDProgress' style='border: 0px; margin: 0px; padding: 0px; text-align: center; height: 5px; vertical-align: middle'>
+			<div style='width:99%; margin:0 auto; padding:2px;' id='vboxResizeBarProgress' ></div>
 		</td>
 	</tr>
 	<tr style='vertical-align: top; padding: 0px;'>

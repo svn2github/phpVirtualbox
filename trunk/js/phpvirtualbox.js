@@ -3723,14 +3723,14 @@ function vboxLoader() {
 		}
 		
 		// Data first
-		$.when.apply($, self._data).then(function() {
+		$.when.apply(null, self._data).then(function() {
 			
 			// files
 			for(var i = 0; i < self._files.length; i++) {
 				self._files[i] = jQuery.get(self._files[i]['file'],self._files[i]['callback']);
 			}
 			
-			$.when.apply($, self._files).then(function() {
+			$.when.apply(null, self._files).then(function() {
 				self._stop();
 			});
 				
@@ -3745,7 +3745,7 @@ function vboxLoader() {
 	 */
 	self._stop = function() {
 
-		if(self.onLoad) self.onLoad();
+		if(self.onLoad) self.onLoad(self);
 
 		if(!self.noLoadingScreen) self.removeLoading();
 		

@@ -1,7 +1,10 @@
 -------------------------------------
 	4.2-2
 -------------------------------------
-Minor look-and-feel changes using HTML5
+Look-and-feel changes using more modern HTML5 and CSS standards
+
+Fixed bug causing phpVirtualBox to not load in IE unless the
+JavaScript console was open
 
 -------------------------------------
 	4.2-1	2012-10-09

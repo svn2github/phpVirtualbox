@@ -139,8 +139,8 @@ if($('#vboxPane').data('vboxSession').user) {
 								location.reload(true);
 							}
 						});
-						l.onLoad = function(){
-							this.hideRoot = false;
+						l.onLoad = function(loader){
+							loader.hideRoot = false;
 						};
 						l.hideRoot = true;
 						l.run();	

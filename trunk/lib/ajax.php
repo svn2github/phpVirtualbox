@@ -39,7 +39,6 @@ $vboxRequest = clean_request();
 global $response;
 $response = array('data'=>array(),'errors'=>array(),'persist'=>array(),'messages'=>array());
 
-
 /*
  * Built-in requests
  */
@@ -134,12 +133,13 @@ try {
 			if(!function_exists('session_start')) {
 				throw new Exception("PHP session support is required by phpVirtualBox but is not enabled or available in your PHP installation.", vboxconnector::PHPVB_ERRNO_FATAL);
 			}
-			
+
+			session_init(true);
+
 			$settings = new phpVBoxConfigClass();
 			if(method_exists($settings->auth,'autoLoginHook'))
 			{
 				// Session
-				session_init(true);
 				
 				$settings->auth->autoLoginHook();
 				
@@ -147,14 +147,10 @@ try {
 				if(function_exists('session_write_close'))
 					@session_write_close();
 			
-			} else {
-				
-				// Session
-				session_init(true);
-				
 			}
 
-				
+			session_write_close();
+			
 			$response['data'] = $_SESSION;
 			$response['data']['result'] = 1;
 			break;
@@ -361,7 +357,7 @@ try {
 /*
  * Send back persistent request in response
 */
-if(is_array($vbox->persistentRequest)) {
+if($vbox && is_array($vbox->persistentRequest)) {
 
 	foreach($vbox->persistentRequest as $k => $v)
 		if($v) $response['persist'][$k] = $v;

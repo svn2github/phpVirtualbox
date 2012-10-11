@@ -93,9 +93,9 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 			if(d) {
 				
 				// Append debug output to console
-				if(d.messages && console && console.log) {
+				if(d.messages && window.console && window.console.log) {
 					for(var i = 0; i < d.messages.length; i++) {
-						console.log(d.messages[i]);
+						window.console.log(d.messages[i]);
 					}
 				}
 				
@@ -170,8 +170,8 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 					$('#vboxPane').data('vboxFatalError',1);
 				}
 				
-				if(console && console.log)
-					console.log(etext + ': '+ d.responseText);
+				if(window.console && window.console.log)
+					window.console.log(etext + ': '+ d.responseText);
 				
 				vboxAlert({'error':'Ajax error: ' + etext,'details':d.responseText},{'width':'400px'});
 				//alert('ajax error: ' + + " " + d.responseText);
@@ -842,7 +842,7 @@ function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
 	
 	// Title
 	if(!title) title = '';
-	$('<td />').css({'padding':'0px','text-align':'left','width':'620px'}).html(title + (target ? ' (' + target + ')' : '')).appendTo(tr);
+	$('<td />').css({'padding':'0px','text-align':'left','width':'580px'}).html(title + (target ? ' (' + target + ')' : '')).appendTo(tr);
 	
 	// Progress bar
 	$('<td />').css({'text-align':'center','padding':'2px','width':'220px'}).append(
@@ -1093,7 +1093,7 @@ function vboxValidateCtrl(k) {
 	return false;
 }
 
-/** Parse Cookies and populate $('#vboxPane').data('vboxCoolies') */
+/** Parse Cookies and populate $('#vboxPane').data('vboxCookies') */
 function vboxParseCookies() {
 	if($('#vboxPane').data('vboxCookiesParsed')) return;
 	var cookies = {};
@@ -1112,7 +1112,7 @@ function vboxParseCookies() {
  * @param {any} v - cookie value
  */
 function vboxSetCookie(k,v) {
-	var exp = new Date(2020,12,24);
+	var exp = (v ? new Date(2020,12,24) : new Date());
 	document.cookie = k+"="+v+"; expires="+exp.toGMTString()+"; path=/";
 	if($('#vboxPane').data('vboxCookiesParsed'))
 			$('#vboxPane').data('vboxCookies')[k] = v;
@@ -1143,7 +1143,53 @@ function vboxBasename(p) {
 	return p;
 }
 
+/**
+ * Calculate scrollbar width
+ * @return {Integer} width of scrollbar
+ * 
+ * http://www.alexandre-gomes.com/?p=115
+ * 
+ */
+var getScrollbarWidth = function() {
 	
+	//if($.browser.webkit) {
+		
+		var inner = document.createElement('p');  
+	    inner.style.width = "100%"; 
+	    inner.style.height = "200px";  
+	  
+	    var outer = document.createElement('div');  
+	    outer.style.position = "absolute";  
+	    outer.style.top = "0px";  
+	    outer.style.left = "0px";  
+	    outer.style.visibility = "hidden";  
+	    outer.style.width = "200px";  
+	    outer.style.height = "150px";  
+	    outer.style.overflow = "hidden";  
+	    outer.appendChild (inner);  
+	  
+	    document.body.appendChild (outer);  
+	    var w1 = inner.offsetWidth;  
+	    outer.style.overflow = 'scroll';  
+	    var w2 = inner.offsetWidth;  
+	    if (w1 == w2) w2 = outer.clientWidth;  
+	  
+	    document.body.removeChild (outer);  
+	  
+	    return (w1 - w2);  
+	    
+	//}		
+
+	var div = $('<div style="width:50px;height:50px;overflow:hidden;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div>'); 
+    // Append our div, do our calculation and then remove it 
+    $('body').append(div); 
+    var w1 = $('div', div).innerWidth(); 
+    div.css('overflow-y', 'scroll'); 
+    var w2 = $('div', div).innerWidth(); 
+    $(div).remove();
+    return (w1 - w2);
+
+}
 /**
  * Returns the result of case-insensitive string comparison using 'natural' algorithm comparing str1 to str2
  * @param {String} str1 - 1st string

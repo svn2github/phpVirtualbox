@@ -2,7 +2,7 @@
 .contextMenu {
 	position: absolute;
 	z-index: 9999999;
-	border: solid 1px #CCC;
+	border: 1px solid #CCC;
 	padding: 0px;
 	margin: 0px;
 	display: none;
@@ -13,10 +13,13 @@
 ul.contextMenu {
 	/* From #ffffff to #d9d9d9 */
 	background-color: #e9e9e9;
-	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc2OTMiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNEOUQ5RDkiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c2OTMpIiAvPgo8L3N2Zz4=);
+	background: -webkit-gradient(linear, left top, right top, from(#ffffff), to(#d9d9d9)); /* for webkit browsers */
+	background: -moz-linear-gradient(left,  #ffffff, #d9d9d9); /* for firefox 3.6+ */
+	background: -o-linear-gradient(left,  #ffffff, #d9d9d9);
+	filter: progid:DXImageTransform.Microsoft.gradient(GradientType=1, startColorstr='#ffffff', endColorstr='#d9d9d9'); /* for IE */
 }
 
-.contextMenu LI {
+ul.contextMenu li {
 	list-style: none;
 	padding: 0px;
 	margin: 0px;

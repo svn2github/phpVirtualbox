@@ -127,7 +127,7 @@ ul.vboxList li table tr { vertical-align: middle; }
 ul.vboxList li img { vertical-align: middle; }
 
 .vboxListItem, a.vboxListItem, .vboxListItem a { cursor: pointer; color: #000; background: #fff; }
-.vboxListItemSelected.vboxHover, .vboxListItemSelected, .vboxListItemSelected a, a.vboxListItemSelected {
+table.vboxChooserVM.vboxListItemSelected.vboxHover, .vboxListItemSelected.vboxHover, .vboxListItemSelected, .vboxListItemSelected a, a.vboxListItemSelected {
 	border-color: #69F ! important;
 	background-color: #7aF !important;
 	cursor: default !important;
@@ -463,14 +463,14 @@ ul.vboxMenuBar li {
 #vboxChooserPane td.vboxChooserDropTarget { height: 4px; }
 #vboxChooserPane td.vboxChooserDropTargetHover
 	{ background: #999; }
-#vboxChooserDiv table.vboxChooserVM {
+table.vboxChooserVM {
 	border: 2px solid transparent;
 	margin-bottom: 1px;
 	vertical-align: top;
 	border-collapse: collapse;
 	cursor: default;
 }
-#vboxChooserDiv table.vboxChooserVM.vboxHover {
+table.vboxChooserVM.vboxHover {
 	color: #000 ! important;
 	border-color: #99CcfF;
 	background-color: #eefffF;

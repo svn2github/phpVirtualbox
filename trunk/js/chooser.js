@@ -1316,11 +1316,11 @@ var vboxChooser = {
 			}
 			
 			
-			$(textbox).parent().parent().children(':not(.vboxChooserGroupNameArrowCollapseGrey)').show();
+			$(textbox).parent().parent().children().css({'display':''});
 			$(textbox).parent().empty().remove();
 		};
 		
-		$(el).children('div.vboxChooserGroupHeader').children().hide();
+		$(el).children('div.vboxChooserGroupHeader').children().css({'display':'none'});
 		$(el).children('div.vboxChooserGroupHeader').append(
 			
 			$('<form />').append(

@@ -48,7 +48,10 @@ var vboxVMDataMediator = {
 	},
 	
 	/**
-	 * Get VM data.
+	 * Get basic vm data
+	 * 
+	 * @param vmid {String} ID of VM
+	 * @returns {Object} vm data
 	 */
 	getVMData: function(vmid) {
 		
@@ -63,9 +66,12 @@ var vboxVMDataMediator = {
 	},
 	
 	/**
-	 * Return VM list
+	 * Return list of machines, subscribe to running VM events
+	 * and start the event listener
+	 * 
+	 * @returns {Object} promise
 	 */
-	getVMList: function(callback) {
+	getVMList: function() {
 	
 		if(vboxVMDataMediator.vmData) {
 			if(callback) callback(vboxVMDataMediator.vmData);
@@ -90,11 +96,18 @@ var vboxVMDataMediator = {
 				
 			}
 			
-			vboxAjaxRequest('subscribeEvents',{vms:subscribeList}, function() {
+			// Subscribe to machine events of running machines
+			if(subscribeList.length > 0) {
+				vboxAjaxRequest('subscribeEvents',{vms:subscribeList}, function() {
+					vboxVMDataMediator.vmData = vmData;
+					mList.resolve(d);		
+					vboxEventListener.start();
+				});				
+			} else {
 				vboxVMDataMediator.vmData = vmData;
-				mList.resolve(d);				
-				vboxEventListener.start();
-			});
+				mList.resolve(d);			
+				vboxEventListener.start();				
+			}
 		});
 		
 		return mList.promise();
@@ -104,6 +117,7 @@ var vboxVMDataMediator = {
 	 * Get VM details data
 	 * 
 	 * @param vmid {String} ID of VM to get data for
+	 * @returns {Object} vm data or promise
 	 */
 	getVMDetails: function(vmid) {
 		
@@ -131,8 +145,9 @@ var vboxVMDataMediator = {
 	 * Get VM's runtime data
 	 * 
 	 * @param vmid {String} ID of VM to get data for
+	 * @returns {Object} VM runtime data or promise
 	 */
-	getVMRuntimeData: function(vmid, callback) {
+	getVMRuntimeData: function(vmid) {
 
 		// Data exists
 		if(vboxVMDataMediator.vmRuntimeData[vmid]) {
@@ -154,7 +169,11 @@ var vboxVMDataMediator = {
 		return vboxVMDataMediator.promises.getVMRuntimeData[vmid];
 	},
 	
-	// Get all data
+	/**
+	 * Return all data for a VM
+	 * @param vmid {String} ID of VM to get data for
+	 * @returns promise
+	 */
 	getVMDataCombined : function(vmid) {
 		
 		if(!vboxVMDataMediator.vmData[vmid]) return;
@@ -172,7 +191,11 @@ var vboxVMDataMediator = {
 		
 	},
 	
-	// Refresh VM data
+	/**
+	 * Get new VM data
+	 * @param vmid {String} ID of VM to get data for
+	 * @returns {Object} promise
+	 */
 	refreshVMData : function(vmid) {
 		
 		if(!vboxVMDataMediator.vmData[vmid]) return;
@@ -210,12 +233,13 @@ $(document).ready(function(){
 			vboxVMDataMediator.vmData[vmid] = vmdef;
 	
 	// Machine state change
-	}).bind('vboxPreMachineStateChanged', function(e, vmid, state) {
+	}).bind('vboxPreMachineStateChanged', function(e, vmid, state, lastStateChange) {
 
 		// Only care about it if its in our list
 		if(vboxVMDataMediator.vmData[vmid]) {
 			
 			vboxVMDataMediator.vmData[vmid].state = state;
+			vboxVMDataMediator.vmData[vmid].lastStateChange = lastStateChange;
 			
 			// If it's running, subscribe to its events
 			if(vboxVMStates.isRunning({'state':state}) || vboxVMStates.isPaused({'state':state})) {

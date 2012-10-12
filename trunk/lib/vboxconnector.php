@@ -567,7 +567,7 @@ class vboxconnector {
 		
 						if($this->settings->phpVboxGroups) {
 							$groups = explode(',',$machine->getExtraData(vboxconnector::phpVboxGroupKey));
-							if(!is_array($groups)) $groups = array("/");
+							if(!is_array($groups) || (count($groups) == 1 && !$groups[0])) $groups = array("/");
 						} else {
 							$groups = $machine->groups;
 						}
@@ -592,7 +592,20 @@ class vboxconnector {
 					}
 					break;
 		
-					
+				/* Update lastStateChange on OnMachineStateChange events */
+				case 'OnMachineStateChanged':
+					try {
+						
+						$machine = $this->vbox->findMachine($event['machineId']);
+						$eventlist[$k]['enrichmentData'] = array(
+							'lastStateChange' => (string)($machine->lastStateChange/1000)
+						);
+						$machine->releaseRemote();
+						
+					} catch (Exception $e) {
+						$eventlist[$k]['enrichmentData'] = array('lastStateChange' => 0);
+					}
+					break;
 					
 				/* enrich with snapshot name and new snapshot count*/
 				case 'OnSnapshotTaken':
@@ -3555,7 +3568,7 @@ class vboxconnector {
 			$args['name'] = $_SESSION['user'] . '_' . $args['name'];
 
 		/* Check if file exists */
-		$filename = $this->vbox->composeMachineFilename($args['name'],$args['group'],$this->vbox->systemProperties->defaultMachineFolder);
+		$filename = $this->vbox->composeMachineFilename($args['name'],($this->settings->phpVboxGroups ? '' : $args['group']),$this->vbox->systemProperties->defaultMachineFolder);
 		$exists = array();
 		$this->remote_fileExists(array('file'=>$filename), $exists);
 		if($exists['data']['exists']) {
@@ -3564,8 +3577,14 @@ class vboxconnector {
 			return;
 		}
 		
+		
 		/* @var $m IMachine */
-		$m = $this->vbox->createMachine(null,$args['name'],$args['group'],$args['ostype'],null,null);
+		$m = $this->vbox->createMachine(null,$args['name'],($this->settings->phpVboxGroups ? '' : $args['group']),$args['ostype'],null,null);
+
+		/* Check for phpVirtualBox groups */
+		if($this->settings->phpVboxGroups && $args['group']) {
+			$m->setExtraData(vboxconnector::phpVboxGroupKey, $args['group']);
+		}
 
 		// Set memory
 		$m->memorySize = intval($args['memory']);
@@ -3793,7 +3812,7 @@ class vboxconnector {
 				
 				if($this->settings->phpVboxGroups) {
 					$groups = explode(',',$machine->getExtraData(vboxconnector::phpVboxGroupKey));
-					if(!is_array($groups)) $groups = array("/");
+					if(!is_array($groups) || (count($groups) == 1 && !$groups[0])) $groups = array("/");
 				} else {
 					$groups = $machine->groups;
 				}
@@ -3806,6 +3825,7 @@ class vboxconnector {
 					'OSTypeId' => $machine->getOSTypeId(),
 					'owner' => (@$this->settings->enforceVMOwnership ? $machine->getExtraData("phpvb/sso/owner") : ''),
 					'groups' => $groups,
+					'lastStateChange' => (string)($machine->lastStateChange/1000),
 					'id' => $machine->id,
 					'sessionState' => (string)$machine->sessionState,
 					'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
@@ -3925,7 +3945,7 @@ class vboxconnector {
 
 		if($this->settings->phpVboxGroups) {
 			$groups = explode(',',$m->getExtraData(vboxconnector::phpVboxGroupKey));
-			if(!is_array($groups)) $groups = array("/");
+			if(!is_array($groups) || (count($groups) == 1 && !$groups[0])) $groups = array("/");
 		} else {
 			$groups = $m->groups;
 		}
@@ -4734,7 +4754,7 @@ class vboxconnector {
 		// Connect to vboxwebsrv
 		$this->connect();
 
-		$response['data']['file'] = $this->vbox->composeMachineFilename($args['name'],$args['group'],$this->vbox->systemProperties->defaultMachineFolder);
+		$response['data']['file'] = $this->vbox->composeMachineFilename($args['name'],($this->settings->phpVboxGroups ? '' : $args['group']),$this->vbox->systemProperties->defaultMachineFolder);
 
 		return true;
 

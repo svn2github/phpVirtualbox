@@ -12,8 +12,12 @@
 var __vboxIsCanvasSupported = null; // cached
 var isCanvasSupported = function(){
 	if(__vboxIsCanvasSupported === null) {
-	  var elem = document.createElement('canvas');
-	  __vboxIsCanvasSupported = !!(elem.getContext && elem.getContext('2d'));
+		try {
+			var elem = document.createElement('canvas');			
+			__vboxIsCanvasSupported = !!(elem && elem.getContext && elem.getContext('2d'));
+		} catch (err) {
+			__vboxIsCanvasSupported = false;
+		}
 	}
 	return __vboxIsCanvasSupported;
 };

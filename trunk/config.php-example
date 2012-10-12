@@ -80,8 +80,8 @@ var $maxProgressList = 5;
 #var $enableCustomIcons = true;
 
 /*
-Exclusively use phpVirtualBox groups rather than VirtualBox groups. This has the following
-effects:
+Exclusively use phpVirtualBox's groups configuration rather than VirtualBox groups.
+This has the following effects:
 
 *) Group changes made in phpVirtualBox will not be reflected in VirtualBox programs such as
 	VirtualBox and VBoxManage

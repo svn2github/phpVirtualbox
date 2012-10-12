@@ -542,9 +542,6 @@ var vboxVMDetailsSections = {
 		
 			
 		onRender : function(d) {
-
-			// Resize name
-			$('#vboxDetailsGeneralTable-'+d.id+ ' div.vboxDetailsPreviewVMName span.textFill').textFill({maxFontPixels:20});
 			
 			if(!vboxVMStates.isRunning(d) && !vboxVMStates.isSaved(d)) {
 				var timer = $('#vboxPane').data('vboxPreviewTimer-'+d.id);
@@ -570,10 +567,10 @@ var vboxVMDetailsSections = {
 			}
 		},
 		
-		_drawPreview: function(vmid, vmstate, lastStateChange) {
+		_drawPreview: function(vmid, vmstate, lastStateChange,skipexistcheck) {
 			
 			// Does the target still exist?
-			if(!$('#vboxDetailsGeneralTable-'+vmid)[0]) {
+			if(!skipexistcheck && !$('#vboxDetailsGeneralTable-'+vmid)[0]) {
 				var timer = $('#vboxPane').data('vboxPreviewTimer-'+vmid);
 				if(timer) window.clearInterval(timer);
 				$('#vboxPane').data('vboxPreviewTimer-'+vmid, null);
@@ -587,7 +584,15 @@ var vboxVMDetailsSections = {
 
 				var height = 0;
 				var baseStr = 'vboxDetailsGeneralTable-'+vmid;
-				
+
+				// Does the target still exist?
+				if(!skipexistcheck && !$('#vboxDetailsGeneralTable-'+vmid)[0]) {
+					var timer = $('#vboxPane').data('vboxPreviewTimer-'+vmid);
+					if(timer) window.clearInterval(timer);
+					$('#vboxPane').data('vboxPreviewTimer-'+vmid, null);
+					return;
+				}
+
 				// Error or machine not running
 				if(this.height <= 1) {
 
@@ -595,7 +600,7 @@ var vboxVMDetailsSections = {
 					$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','');
 					
 					width = $('#vboxPane').data('vboxConfig')['previewWidth'];
-					height = width / $('#vboxPane').data('vboxConfig')['previewAspectRatio'];
+					height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
 					
 					// Clear interval if set
 					var timer = $('#vboxPane').data('vboxPreviewTimer-'+vmid);
@@ -609,14 +614,14 @@ var vboxVMDetailsSections = {
 					width = $('#vboxPane').data('vboxConfig')['previewWidth'];
 					factor = width / this.width;
 					if(!factor) factor = 1;
-					height = this.height * factor;
+					height = parseInt(this.height * factor);
 
-					// Check for cached resolution
+					// Set cached resolution
 					vboxVMDetailsSections.preview._resolutionCache[vmid] = {
 						'width' : width,
 						'height' : height
 					};
-				
+									
 					
 					$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','none');
 					$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'','height':height+'px','width':width+'px'});
@@ -655,6 +660,10 @@ var vboxVMDetailsSections = {
 					}
 					
 				}
+
+				// Resize name?
+				$('#vboxDetailsGeneralTable-'+vmid+ ' div.vboxDetailsPreviewVMName span.textFill').textFill({maxFontPixels:20,'height':(height),'width':(width)});
+
 				$('#'+baseStr+' div.vboxDetailsPreviewWrap').css({'height':height+'px','width':width+'px'});
 				$('#'+baseStr+' img.vboxPreviewMonitor').css('width',width+'px');
 				$('#'+baseStr+' img.vboxPreviewMonitorSide').css('height',height+'px');
@@ -684,7 +693,8 @@ var vboxVMDetailsSections = {
 
 			var width = $('#vboxPane').data('vboxConfig')['previewWidth'];
 			if(!width) width = $('#vboxPane').data('vboxConfig')['previewWidth'] = 180;
-			var height = (width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
+			width = parseInt(width);
+			var height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
 
 			// Check for cached resolution
 			if(vboxVMDetailsSections.preview._resolutionCache[d.id]) {
@@ -692,11 +702,12 @@ var vboxVMDetailsSections = {
 				height = vboxVMDetailsSections.preview._resolutionCache[d.id].height;
 			}
 
-			var divOut1 = "<div class='vboxDetailsPreviewVMName' style='overflow:hidden;position:relative;height:"+height+"px;width:"+width+"px' >" +
-				"<div style='position:relative;left:0px;display:table-cell;vertical-align:middle;padding:4px;color:#fff;font-weight:bold;text-align:center;height:"+height+"px;width:"+width+"px;" +
+			var divOut1 = "<div class='vboxDetailsPreviewVMName' style='position:absolute;overflow:hidden;padding:0px;height:"+height+"px;width:"+width+"px;"+
+				"display:"+(vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d) ? 'none' : '')+"' >" +
+				"<div style='position:relative;display:table-cell;padding:0px;vertical-align:middle;color:#fff;font-weight:bold;overflow:hidden;text-align:center;height:"+height+"px;width:"+width+"px;" +
 				($.browser.msie ? "filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=\"true\", src=\"images/monitor_glossy.png\", sizingMethod=\"scale\")" : "" +
 					"background:url(images/monitor_glossy.png) top left no-repeat;-moz-background-size:100% 100%;background-size:"+(width+1) +"px " + (height+1)+"px;-webkit-background-size:100% 100%") +
-				"'><span class='textFill' style='font-size: 12px'>"+$('<div />').html(d.name).text()+"</span></div>"+
+				"'><span class='textFill' style='font-size: 12px;position:relative;display:inline-block;'>"+$('<div />').html(d.name).text()+"</span></div>"+
 				"</div>";
 
 			return [
@@ -704,27 +715,27 @@ var vboxVMDetailsSections = {
 			        	data : "<tr style='vertical-align: middle'>"+
 							"<td style='text-align: center' colspan='2'>"+
 								"<table class='vboxInvisible vboxPreviewTable' style='margin-left:auto;margin-right:auto;'>"+
-									"<tr style='vertical-align:bottom; padding:0px; margin:0px;'>"+
-										"<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_tl.png' style='width:15px;height:17px;'/></td>"+
+									"<tr style='vertical-align:bottom; padding:0px; margin:0px;height:17px'>"+
+										"<td class='vboxInvisible' style='text-align:right;width:15px;height:17px'><img src='images/monitor_tl.png' style='width:15px;height:17px;'/></td>"+
 										"<td class='vboxInvisible'><img src='images/monitor_top.png' class='vboxPreviewMonitor' style='height:17px;width:"+width+"px'/></td>"+
-										"<td class='vboxInvisible' style='text-align:left'><img src='images/monitor_tr.png' style='width:15px;height:17px;'/></td>"+
+										"<td class='vboxInvisible' style='text-align:left;width:15px;height:17px'><img src='images/monitor_tr.png' style='width:15px;height:17px;'/></td>"+
 									"</tr>"+
 									"<tr style='vertical-align:top;'>"+
-										"<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_left.png' style='width:15px;height:"+height+"px' class='vboxPreviewMonitorSide' /></td>"+
-										"<td class='vboxInvisible'><div class='vboxDetailsPreviewWrap "+ (vboxVMStates.isSaved(d) ? 'vboxPreviewSaved' : '') +"' style='width: "+width+"px; height:"+height+"px; text-align:center;background-color:#000;border:0px;display:table;#position:relative;background-repeat: no-repeat;padding:0px;margin:0px;'>"+
+										"<td class='vboxInvisible' style='text-align:right;'><img src='images/monitor_left.png' style='width:15px;height:"+height+"px' class='vboxPreviewMonitorSide' /></td>"+
+										"<td class='vboxInvisible' style='position:relative;'><div class='vboxDetailsPreviewWrap "+ (vboxVMStates.isSaved(d) ? 'vboxPreviewSaved' : '') +"' style='width: "+width+"px; height:"+height+"px; position:relative;overflow:hidden;text-align:center;background-color:#000;border:0px;display:table;#position:relative;background-repeat:no-repeat;padding:0px;margin:0px;'>"+
 											"<img class='vboxDetailsPreviewImg' src='images/monitor_glossy.png' vspace='0px' hspace='0px' "+
-											"style='display:none;top:0px;margin:0px;border:0px;padding;0px;"+
+											"style='display:"+(vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d) ? '' : 'none')+";top:0px;margin:0px;border:0px;padding;0px;"+
 											"background-position:top left;background-repeat:no-repeat;"+
 											"-moz-background-size:100% 100%;background-size:100% 100%;-webkit-background-size:100% 100%;background-spacing:0px 0px;"+
-											"position:relative;height:"+height+"px;width:"+width+"px;float:left' />"+
+											"height:"+height+"px;width:"+width+"px;' />"+
 											divOut1+
 										"</div></td>"+
-										"<td class='vboxInvisible' style='text-align:left' ><img src='images/monitor_right.png' style='width:14px;height:"+height+"px' class='vboxPreviewMonitorSide' /></td>"+
+										"<td class='vboxInvisible' style='text-align:left;' ><img src='images/monitor_right.png' style='width:14px;height:"+height+"px' class='vboxPreviewMonitorSide' /></td>"+
 									"</tr>"+
-									"<tr style='vertical-align:top;'>"+
-										"<td class='vboxInvisible' style='text-align:right'><img src='images/monitor_bl.png' style='width:15px;height:17px;'/></td>"+
-										"<td class='vboxInvisible'><img src='images/monitor_bottom.png' class='vboxPreviewMonitor' style='height:17px;width:"+width+"px'/></td>"+
-										"<td class='vboxInvisible' style='text-align:left'><img src='images/monitor_br.png' style='width:15px;height:17px;'/></td>"+
+									"<tr style='vertical-align:top;height:17px'>"+
+										"<td class='vboxInvisible' style='text-align:right;width:15px;height:17px'><img src='images/monitor_bl.png' style='width:15px;height:17px;float:right;'/></td>"+
+										"<td class='vboxInvisible' style='vertical-align:top'><img src='images/monitor_bottom.png' class='vboxPreviewMonitor' style='height:17px;width:"+width+"px'/></td>"+
+										"<td class='vboxInvisible' style='text-align:left;width:15px;height:17px'><img src='images/monitor_br.png' style='width:15px;height:17px;'/></td>"+
 									"</tr>"+
 								"</table>"+													
 							"</td>"+

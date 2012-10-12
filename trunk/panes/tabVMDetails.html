@@ -30,6 +30,8 @@
 // Translate loading div
 $('#vboxDetailsLoading').find('span.translate').html(trans('Loading ...','UIVMDesktop')).removeClass('translate');
 
+// Last selection list was none
+$('#vboxTabVMDetails').data('vboxLastSelectionList',[]);
 
 // Listen for events
 /////////////////////////////
@@ -45,6 +47,8 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 		$('#vboxDetailsWelcome').show().css('display','table-cell');
 		
 		$('#vboxTabVMDetails').data('showingWelcome', true);
+		
+		$('#vboxTabVMDetails').data('vboxLastSelectionList',[]);
 		
 		return;
 
@@ -62,8 +66,6 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 
 		var targetDiv = $('#vboxVMDetails');
 		
-		targetDiv.children().empty().remove();
-
 		// Loading scren
 		if(vboxChooser.selectedVMs.length == 1 && $('#vboxTabVMDetails').css('display') != 'none') {
 				
@@ -76,17 +78,17 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 		
 		if(vboxChooser.getSingleSelectedId() == 'host') {
 
+			$('#vboxTabVMDetails').data('vboxLastSelectionList',['host']);
+			
+			targetDiv.children().empty().remove();					
+
 			$.when(vboxVMDataMediator.getVMDetails('host')).then(function(d) {
 
 				// Hide loading screen
 				targetDiv.siblings().hide();
 				targetDiv.show();
 				
-				// Clear target div if we only have one vm
-				if(vboxChooser.selectedVMs.length == 1) {
-					targetDiv.children().empty().remove();					
-				}
-
+		
 				__vboxDisplayHostDetailsData(d, targetDiv);
 
 			});
@@ -94,17 +96,41 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 			return;
 		}
 		
-
+		// Remove anything that is not a details table
+		targetDiv.children(':not(table)').remove();
+		
+		// Last list of selected vms
+		var lastSelectionList = $('#vboxTabVMDetails').data('vboxLastSelectionList');
+		$('#vboxTabVMDetails').data('vboxLastSelectionList', vboxChooser.selectedVMs);
+		
+		// Remove any that aren't in list
+		$(lastSelectionList).not(vboxChooser.selectedVMs).each(function(idx,vmid){
+			$('#vboxDetailsGeneralTable-'+vmid).empty().remove();
+		});
+		
 		// Placeholders so vms are listed in order			
 		for(var i = 0; i < vboxChooser.selectedVMs.length; i++) {
-			$('<table />').attr({'id':'vboxDetailsGeneralTable-'+vboxChooser.selectedVMs[i],'class':'vboxInvisible vboxVMDetailsBox-vm-'+vboxChooser.selectedVMs[i],'style':'display:none'})
-				.appendTo(targetDiv);
+			
+			if(jQuery.inArray(vboxChooser.selectedVMs[i], lastSelectionList) > -1) {
+				$('#vboxDetailsGeneralTable-'+vboxChooser.selectedVMs[i]).detach().appendTo(targetDiv);
+			} else {
+				$('<table />').attr({'id':'vboxDetailsGeneralTable-'+vboxChooser.selectedVMs[i],'class':'vboxInvisible vboxVMDetailsBox-vm-'+vboxChooser.selectedVMs[i],'style':'display:none'})
+					.appendTo(targetDiv);
+			}
+			
+			
 		}
 		
-		
-		// Get data and draw
 		var oneLoaded = false;
 		for(var i = 0; i < vboxChooser.selectedVMs.length; i++) {
+			
+			// Already drawn and we are showing more than one vm
+			if(jQuery.inArray(vboxChooser.selectedVMs[i], lastSelectionList) > -1 && vboxChooser.selectedVMs.length > 1) {
+				oneLoaded = true;
+				targetDiv.siblings().hide();
+				targetDiv.show();				
+				continue;
+			}
 			
 			$.when(vboxVMDataMediator.getVMDataCombined(vboxChooser.selectedVMs[i])).then(function(d) {
 				

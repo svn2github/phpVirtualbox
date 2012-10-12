@@ -828,6 +828,8 @@ table.vboxDetailsTable td.vboxDetailDescriptionCell { padding-left: 20px; }
 #vboxVMDetails table div.vboxVMDetailsBoxpreview { margin-left: 2px; }
 #vboxTabVMDetails table.vboxPreviewTable td { padding: 0px; margin: 0px; border: 0px; }
 #vboxTabVMDetails .vboxDetailsTableBoxPreview { text-align: center; }
+#vboxTabVMDetails .vboxDetailsTableBoxPreview div,
+#vboxTabVMDetails .vboxDetailsTableBoxPreview span { padding: 0px; margin: 0px; border: 0px; }
 #vboxTabVMDetails .vboxDetailsTableBoxPreview table, #vboxTabVMDetails .vboxDetailsTableBoxPreview td, #vboxTabVMDetails .vboxDetailsTableBoxPreview img { padding: 0px; margin: 0px; border: 0px; }
 div.vboxPreviewSaved {
 	background-color:#000;

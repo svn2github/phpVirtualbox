@@ -6,13 +6,13 @@
     $.fn.textFill = function(options) {
         
     	var maxFontSize = options.maxFontPixels;
+    	var maxHeight = parseInt(options.height);
+    	var maxWidth = parseInt(options.width);
         
     	var ourText = $(this);
-        var fillTo = $(this).parent();
         
-        var fontSize = parseInt(ourText.css('font-size'));        
-        var maxHeight = $(fillTo).height()-($.browser.msie ? 2 : 0);
-        var maxWidth = $(fillTo).width()-($.browser.msie ? 2 : 0);
+        var fontSize = parseInt(ourText.css('font-size'));   
+        var fontSizeOrig = fontSize;
         var textHeight = $(ourText).outerHeight(true);
         var textWidth = $(ourText).outerWidth(true);
         
@@ -21,8 +21,9 @@
         	textHeight = $(ourText).outerHeight(true);
         	textWidth = $(ourText).outerWidth(true);
         	
-        } while(textHeight < maxHeight && textWidth < maxWidth && fontSize <= maxFontSize);
+        } while(textHeight <= maxHeight && textWidth <= maxWidth && fontSize <= maxFontSize);
 
-        return ourText.css({'font-size':(fontSize-1)+'px'});
+        fontSize--;
+        return ourText.css({'font-size':(fontSize)+'px','top':(fontSize > fontSizeOrig ? '-1' : '0') + 'px'});
     };
 })(jQuery);

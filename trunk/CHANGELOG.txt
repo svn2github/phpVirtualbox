@@ -3,11 +3,14 @@
 -------------------------------------
 Look-and-feel changes to more closely match the VirtualBox GUI
 
+Better UI handling of long group and VM names
+
 Fixed bug causing phpVirtualBox to not load in IE unless the
 JavaScript console was open
 
-Added config option to exclusively use phpVirtualBox groups rather
-than VirtualBox groups - see config.php-example for more info
+Added config option to exclusively use phpVirtualBox's own groups
+configuration rather than VirtualBox groups - see
+config.php-example for more info
 
 Fixed bug that would leave group information (vm / group counts
 and icons) always visible after renaming a group

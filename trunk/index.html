@@ -142,8 +142,7 @@
 			$('#vboxResizeBar').draggable({cursor:(jQuery.browser.opera ? 'e-resize' : 'col-resize'),axis:'x',zIndex:99,helper:function(){
 				
 				$('#vboxResizeBarTmp').remove();
-				var r = $('#vboxResizeBar').clone(false);
-				return $(r).attr({'id':'vboxResizeBarTmp'}).unbind('mouseleave').css({'background':'#cccccc'});
+				return $('#vboxResizeBar').clone(false).attr({'id':'vboxResizeBarTmp'}).unbind('mouseleave').css({'background':'#cccccc'});
 				
 			},scroll:false,'start':function(e,ui){
 				
@@ -420,7 +419,7 @@
 						-->
 					</td>
 					<td id='vboxResizeTD' style='border: 0px; width: 2px; margin: 0px; padding: 0px; text-align: center;'>
-						<div style='position: absolute; margin:auto; padding:2px; width: 0px; height: 90%;' id='vboxResizeBar' ></div>
+						<div style='position: absolute; margin: 0px; padding:2px; width: 0px; height: 90%;' id='vboxResizeBar' ></div>
 					</td>
 					<td id="vboxPaneTabContent" style='width:100%;border:0px;padding:0px;border-spacing:0px;margin:0px'>
 						<!--

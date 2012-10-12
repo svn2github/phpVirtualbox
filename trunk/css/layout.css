@@ -127,7 +127,7 @@ ul.vboxList li table tr { vertical-align: middle; }
 ul.vboxList li img { vertical-align: middle; }
 
 .vboxListItem, a.vboxListItem, .vboxListItem a { cursor: pointer; color: #000; background: #fff; }
-table.vboxChooserVM.vboxListItemSelected.vboxHover, .vboxListItemSelected.vboxHover, .vboxListItemSelected, .vboxListItemSelected a, a.vboxListItemSelected {
+#vboxChooserPane table.vboxChooserVM.vboxListItemSelected.vboxHover, .vboxListItemSelected.vboxHover, .vboxListItemSelected, .vboxListItemSelected a, a.vboxListItemSelected {
 	border-color: #69F ! important;
 	background-color: #7aF !important;
 	cursor: default !important;
@@ -463,14 +463,14 @@ ul.vboxMenuBar li {
 #vboxChooserPane td.vboxChooserDropTarget { height: 4px; }
 #vboxChooserPane td.vboxChooserDropTargetHover
 	{ background: #999; }
-table.vboxChooserVM {
+#vboxChooserPane table.vboxChooserVM {
 	border: 2px solid transparent;
-	margin-bottom: 1px;
+	margin-bottom: 2px;
 	vertical-align: top;
 	border-collapse: collapse;
 	cursor: default;
 }
-table.vboxChooserVM.vboxHover {
+#vboxChooserPane table.vboxChooserVM.vboxHover {
 	color: #000 ! important;
 	border-color: #99CcfF;
 	background-color: #eefffF;
@@ -547,8 +547,8 @@ table.vboxChooserVM.vboxHover {
 #vboxChooserPane div.vboxVMGroupSelected > div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseGrey {
 	display: none;
 }
-
-#vboxChooserPane div.vboxChooserGroupHeader .vboxChooserGroupNameArrowCollapse {
+/* Arrows on left side of header */
+#vboxChooserPane div.vboxChooserGroupHeader .vboxChooserGroupNameArrowLeft {
 	display: inline-block;
 	position: relative;
 	left: -5px;
@@ -682,31 +682,12 @@ table.vboxChooserVM.vboxHover {
 }
 
 #vboxChooserPane div.vboxChooserGroupHeader span.vboxChooserGroupShowOnlyBack {
-	position: relative;
-	top: -1px;
-	left: -6px;
-	display: inline-block;
-	margin: 0px;
-	margin-left: 2px;
-	margin-right: 2px;
-	padding: 0px;
-	cursor: pointer;
-	width: 18px;
-	height: 18px;
-	background-repeat: no-repeat;
 	background-image: url(../images/arrow_grad_left.png);
 	display: none;
 }
 #vboxChooserPane div.vboxVMGroupSelected > div.vboxChooserGroupHeader span.vboxChooserGroupShowOnlyBack {
 	background-image: url(../images/arrow_white_left.png);
 }
-/* Dragging disabled */
-#vboxPane div.vboxDragDisabled {
-	opacity: .5;
-	filter:alpha(opacity=50);
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-	background-color: #f00;
-}	
 
 
 /* Toolbar above vm list */

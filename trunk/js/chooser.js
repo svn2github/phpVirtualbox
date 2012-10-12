@@ -321,8 +321,8 @@ var vboxChooser = {
 		
 		vboxChooser._scrollbarWasVisible = sbVisible;
 		
-		var groupTitleWidth = vboxChooser._anchor.width() - 34 - (sbVisible ? vboxChooser._scrollbarWidth : 0);
-		var vmTitleWidth = groupTitleWidth - 16; // (2px padding on .vboxChooserGroupVMs + 
+		var groupTitleWidth = vboxChooser._anchor.width() - 32 - (sbVisible ? vboxChooser._scrollbarWidth : 0);
+		var vmTitleWidth = groupTitleWidth - 18; // (2px padding on .vboxChooserGroupVMs + 
 			// 2px border on table + 4px margin on icon) * 2 
 		var groupLevelOffset = 8; // (2px margin + 2px border) * 2
 		
@@ -334,7 +334,9 @@ var vboxChooser = {
 		var path = ['div.vboxChooserGroupRootLevel'];
 		
 		// Special case for root level VM list
-		styleRules[styleRules.length] = 'div.vboxChooserGroupRootLevel > div.vboxChooserGroupVMs td.vboxVMTitle > div { width: ' + (vmTitleWidth - ((groupLevelOffset))) + 'px; }';
+		styleRules[styleRules.length] = 'div.vboxChooserGroupRootLevel > div.vboxChooserGroupVMs td.vboxVMTitle > div { width: ' + vmTitleWidth + 'px; }';
+		// Special case for group header when only showing one group
+		styleRules[styleRules.length] = 'div.vboxChooserGroupShowOnly.vboxChooserGroupRootLevel > div.vboxChooserGroupHeader span.vboxChooserGroupName { width: ' + (groupTitleWidth - 4) + 'px; }';
 		for(var i = 1; i < 11; i++) {
 			
 			// Group titles at this level
@@ -753,6 +755,9 @@ var vboxChooser = {
 
 		vboxChooser.composeGroupDef();
 		
+		// Hide group info
+		vboxChooser._anchor.find('div.vboxChooserGroupHeader').trigger('mouseout');
+
 		// Resize titles
 		vboxChooser._resizeTitles();
 		
@@ -1533,7 +1538,7 @@ var vboxChooser = {
 				$(gelm).parents('div.vboxChooserGroup').addClass('vboxChooserGroupHide vboxChooserGroupHideShowContainer').siblings().addClass('vboxChooserGroupHide');
 				
 				vboxChooser._anchor.find('div.vboxChooserGroupRootLevel').removeClass('vboxChooserGroupRootLevel');
-				$(gelm).addClass('vboxChooserGroupShowOnly').siblings().addClass('vboxChooserGroupHide').parent().addClass('vboxChooserGroupRootLevel');
+				$(gelm).addClass('vboxChooserGroupShowOnly vboxChooserGroupRootLevel').siblings().addClass('vboxChooserGroupHide');
 
 				$.when(vboxChooser._anchor.show('slide', {direction: (back ? 'left' : 'right'), distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200))
 					.then(function(){
@@ -1541,11 +1546,11 @@ var vboxChooser = {
 						// Restore scrolling
 						vboxChooser._anchor.css({'overflow-y':'auto'});
 						
-						// Reset title sizes
-						vboxChooser._resizeTitles();
-						
 						// Hide group info
 						$(gelm).find('div.vboxChooserGroupHeader').trigger('mouseout');
+						
+						// Reset title sizes
+						vboxChooser._resizeTitles();
 						
 						// force redraw of these
 						$(gelm).find('.vboxFitToContainer').css({'display':'none'}).css({'width':'','display':'inline-block'});
@@ -1577,12 +1582,12 @@ var vboxChooser = {
 						// Restore scrolling
 						vboxChooser._anchor.css({'overflow-y':'auto'});
 
-						// Reset title sizes
-						vboxChooser._resizeTitles();
-
 						// Hide group info
 						vboxChooser._anchor.find('div.vboxChooserGroupHeader').trigger('mouseout');
 						
+						// Reset title sizes
+						vboxChooser._resizeTitles();
+
 						// force redraw of these
 						vboxChooser._anchor.find('.vboxFitToContainer').css({'display':'none','width':''}).css({'display':'inline-block'});
 					});
@@ -1616,8 +1621,7 @@ var vboxChooser = {
 				)
 				.append(
 						(isCanvasSupported() ? [
-								$('<canvas />').addClass('vboxChooserGroupNameArrowCollapse')
-								.addClass('vboxChooserGroupNameArrowCollapseWhite')
+								$('<canvas />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse vboxChooserGroupNameArrowCollapseWhite')
 								.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
 								.each(function(idx, canvas) {
 									canvas.getContext('2d').drawImage(vboxImageDownWhite,0,0,18,18);
@@ -1657,13 +1661,13 @@ var vboxChooser = {
 									
 									// Toggle class
 									$.when($(this).closest('div.vboxChooserGroup').toggleClass('vboxVMGroupCollapsed', 300)).then(function(){
+
 										// Reset title sizes
 										vboxChooser._resizeTitles();
 									});
 									
 								}),
-								$('<canvas />').addClass('vboxChooserGroupNameArrowCollapse')
-									.addClass('vboxChooserGroupNameArrowCollapseGrey')
+								$('<canvas />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse vboxChooserGroupNameArrowCollapseGrey')
 									.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
 									.each(function(idx, canvas) {
 										canvas.getContext('2d').drawImage(vboxImageDownGrey,0,0,18,18);
@@ -1682,7 +1686,7 @@ var vboxChooser = {
 										});
 									})
 								] : // Else
-						$('<span />').addClass('vboxChooserGroupNameArrowCollapse')
+						$('<span />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse')
 							.click(function(e) {
 								$.when($(this).closest('div.vboxChooserGroup').toggleClass('vboxVMGroupCollapsed', 300)).then(function(){
 									// Reset title sizes
@@ -1691,7 +1695,7 @@ var vboxChooser = {
 							})
 						)
 				).append(
-						$('<span />').addClass('vboxChooserGroupShowOnlyBack')
+						$('<span />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupShowOnlyBack')
 							.click(function(e) {
 								e.stopPropagation();
 								e.preventDefault();

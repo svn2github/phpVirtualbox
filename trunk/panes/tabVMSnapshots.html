@@ -642,7 +642,7 @@ function __vboxTabSnapshotCurrent() {
 	var vm = vboxChooser.getSingleSelected();
 	
 	return $('<li />').data('vboxSnapshot',{'state':'current','name':trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')}).html(' ')
-		.addClass('last').addClass('vboxSnapshotCurrent')
+		.addClass('last vboxSnapshotCurrent')
 		.append(
 				$('<div />').attr({'class':'vboxListItem'}).html('<img src="images/vbox/'+vboxMachineStateIcon(vm.state)+'" /> ' + $('<div />').text(trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')).html())
 					.contextMenu({

@@ -222,7 +222,7 @@ function vboxWizardExportApplianceUpdateList() {
 		}
 			
 		// VM header row
-		var trparent = $('<tr />').attr({'id':'vboxAppliance-'+vmid}).addClass('vboxAppliance-'+vmid).addClass('vboxTableParent');
+		var trparent = $('<tr />').attr({'id':'vboxAppliance-'+vmid}).addClass('vboxAppliance-'+vmid + ' vboxTableParent');
 		var td = $('<td />').attr({'colspan':'2','class':'vboxApplianceHeader'}).append(
 			$('<div />').css({'font-weight':'bold','padding-left':'6px'}).append(
 					$('<input />').attr({'type':'button','class':'vboxImgButton','style':'background-image: url(images/downArrow.png); margin:0px;margin-right:4px;padding:0px;vspace:0px;hspace:0px;width: 12px; height: 12px;'}).toggle(function(){

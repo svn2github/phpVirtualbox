@@ -1704,7 +1704,7 @@ var vboxChooser = {
 
 							})
 				)
-				.append($('<span />').html(gname).addClass('vboxChooserGroupName').addClass('vboxFitToContainer'))
+				.append($('<span />').html(gname).addClass('vboxChooserGroupName vboxFitToContainer'))
 				.append($('<span />').addClass('vboxChooserGroupInfo').html(
 						"<span class='vboxChooserGroupCounts' />"
 						).append(
@@ -1716,7 +1716,7 @@ var vboxChooser = {
 							})
 						))
 				.append(
-					$('<div />').addClass('vboxChooserDropTarget').addClass('vboxChooserDropTargetBottom')
+					$('<div />').addClass('vboxChooserDropTarget vboxChooserDropTargetBottom')
 						.hover(function(){
 							if(vboxChooser._draggingGroup)
 								$(this).addClass('vboxChooserDropTargetHover' + (first ? 'ignore' : ''));
@@ -1751,11 +1751,11 @@ var vboxChooser = {
 					
 				}).bind('mousedown',vboxChooser.selectItem)				
 
-			).addClass((first ? 'vboxChooserGroupRoot vboxChooserGroupRootLevel' : '')).addClass('vboxChooserGroup')
+			).addClass((first ? 'vboxChooserGroupRoot vboxChooserGroupRootLevel ' : '') + 'vboxChooserGroup')
 			.data({'vmGroupPath':gpath})
 			.draggable({'cursorAt':{left: -10, top: -10},'helper':function(){
 				
-				return $(this).clone().addClass('vboxVMGroupCollapsed').addClass('vboxVMGroupSelected')
+				return $(this).clone().addClass('vboxVMGroupCollapsed vboxVMGroupSelected')
 					.children('div.vboxChooserGroupHeader').removeClass('vboxHover').children('.vboxChooserGroupNameArrowCollapse')
 					.hide().closest('div.vboxChooserGroup').css({'width':$(this).width()+'px'});
 									
@@ -1776,7 +1776,7 @@ var vboxChooser = {
 		// Bottom drop target
 		if(!first) {
 			gHTML.append(
-				$('<div />').addClass('vboxChooserDropTarget').addClass('vboxChooserDropTargetBottom')
+				$('<div />').addClass('vboxChooserDropTarget vboxChooserDropTargetBottom')
 					.hover(function(){
 						if(vboxChooser._draggingGroup)
 							$(this).addClass('vboxChooserDropTargetHover');

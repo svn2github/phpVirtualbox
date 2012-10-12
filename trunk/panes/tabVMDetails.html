@@ -122,14 +122,19 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 		}
 		
 		var oneLoaded = false;
+		var skipTable = false; // skip drawing multi-section details table
 		for(var i = 0; i < vboxChooser.selectedVMs.length; i++) {
 			
 			// Already drawn and we are showing more than one vm
-			if(jQuery.inArray(vboxChooser.selectedVMs[i], lastSelectionList) > -1 && vboxChooser.selectedVMs.length > 1) {
-				oneLoaded = true;
-				targetDiv.siblings().hide();
-				targetDiv.show();				
-				continue;
+			if(jQuery.inArray(vboxChooser.selectedVMs[i], lastSelectionList) > -1) {
+				
+			    if(vboxChooser.selectedVMs.length > 1) {
+					oneLoaded = true;
+					targetDiv.siblings().hide();
+					targetDiv.show();				
+					continue;
+			    }
+			    skipTable = true;
 			}
 			
 			$.when(vboxVMDataMediator.getVMDataCombined(vboxChooser.selectedVMs[i])).then(function(d) {
@@ -142,7 +147,7 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 					targetDiv.show();		
 				}
 
-				__vboxDisplayDetailsData(d, (vboxChooser.selectedVMs.length > 1), targetDiv);
+				__vboxDisplayDetailsData(d, (vboxChooser.selectedVMs.length > 1), targetDiv, skipTable);
 			
 			});
 		}
@@ -316,7 +321,7 @@ function __vboxDetailAddRows(data, rows, table) {
 		if(rows[i].rawRow) {
 			$(table).append(rowData);
 		} else {
-			$(table).append(__vboxDetailRow(rows[i].title, rowData, 'vboxDetailName' + (rows[i].indented ? 'Indent' : ''), rows[i].html));
+			$(table).append(__vboxDetailRow(rows[i].title, rowData, 'vboxDetailName' + (rows[i].indented ? ' vboxDetailNameIndent' : ''), rows[i].html));
 		}
 		
 	}
@@ -349,7 +354,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 						.html(ttemplate.replace('%1',section.icon).replace('%2', section.settingsLink).replace('%3', section.title))
 						.append(
 							(isCanvasSupported() ?
-									$('<canvas />').addClass('vboxDetailsUpDnImgCanvas')
+									$('<canvas />').addClass('vboxDetailsUpDnImg')
 									.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
 									.each(function(idx, canvas) {
 										var ctx = canvas.getContext('2d');
@@ -366,7 +371,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 									}).click(function(){
 										$(this).parent().trigger("dblclick");
 									})
-								: "<span class='vboxDetailsUpDnImgSpan' onClick='$(this).parent().trigger(\"dblclick\");' />"
+								: "<span class='vboxDetailsUpDnImg' onClick='$(this).parent().trigger(\"dblclick\");' />"
 							)
 						)
 					)
@@ -406,7 +411,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 				var collapsed = $(this).hasClass('vboxDetailsSectionCollapsed');
 				
 				// Get canvas of current section only
-				var canvas = $(this).find('canvas.vboxDetailsUpDnImgCanvas')[0];
+				var canvas = $(this).find('canvas.vboxDetailsUpDnImg')[0];
 				var ctx = canvas.getContext('2d');
 				
 				// Only animate the canvas that is part of this section header
@@ -428,7 +433,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 						.toggleClass('vboxDetailsSectionCollapsed', 500)
 				).then(function() {
 					$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
-						.find('canvas.vboxDetailsUpDnImgCanvas').each(function(idx, can) {
+						.find('canvas.vboxDetailsUpDnImg').each(function(idx, can) {
 							var ctx = can.getContext('2d');
 							ctx.clearRect(0,0,18,18);
 							if(!collapsed) {
@@ -499,7 +504,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 
 //Display details data table for VM
 //////////////////////////////////
-function __vboxDisplayDetailsData(data, multiSelect, targetDiv) {
+function __vboxDisplayDetailsData(data, multiSelect, targetDiv, skipTable) {
 	
 	// No data? Should never happen
 	if(typeof data == 'undefined') return;
@@ -538,34 +543,37 @@ function __vboxDisplayDetailsData(data, multiSelect, targetDiv) {
 
 	// Multi-select details table sections
 	////////////////////////////////////////
-	var tbl = $('<table />').attr({'id':'vboxDetailsGeneralTable-'+data.id,'class':'vboxInvisible vboxVMDetailsBox-vm-'+data.id,'style':'width: 100%;'}).append(
-
-		$('<tr />').attr({'style':'vertical-align: top'}).append(
-
-			$('<td />').css({'width':'100%'})
-				.append(__vboxCreateDetailsSection(data,'general'))
-				.append(__vboxCreateDetailsSection(data,'system'))
+	if(!skipTable) {
 		
-		).append(
-				
-			$('<td />')
-				.append(__vboxCreateDetailsSection(data,'preview'))
-		)
+		var tbl = $('<table />').attr({'id':'vboxDetailsGeneralTable-'+data.id,'class':'vboxInvisible vboxVMDetailsBox-vm-'+data.id,'style':'width: 100%;'}).append(
+	
+			$('<tr />').attr({'style':'vertical-align: top'}).append(
+	
+				$('<td />').css({'width':'100%'})
+					.append(__vboxCreateDetailsSection(data,'general'))
+					.append(__vboxCreateDetailsSection(data,'system'))
+			
+			).append(
+					
+				$('<td />')
+					.append(__vboxCreateDetailsSection(data,'preview'))
+			)
+			
+		).data({'vmid':data.id});
 		
-	).data({'vmid':data.id});
+		// If already exists, replace the table, else append to div
+		if($('#vboxDetailsGeneralTable-'+data.id)[0]) {
+			$('#vboxDetailsGeneralTable-'+data.id).replaceWith(tbl);
+		} else {
+			tbl.appendTo(targetDiv);
+		}
+		
+		for(var s in {'general':1,'system':1,'preview':1}) {
+			if(vboxVMDetailsSections[s].onRender)
+				vboxVMDetailsSections[s].onRender(data);
+		}
 	
-	// If already exists, replace the table, else append to div
-	if($('#vboxDetailsGeneralTable-'+data.id)[0]) {
-		$('#vboxDetailsGeneralTable-'+data.id).replaceWith(tbl);
-	} else {
-		tbl.appendTo(targetDiv);
 	}
-	
-	for(var s in {'general':1,'system':1,'preview':1}) {
-		if(vboxVMDetailsSections[s].onRender)
-			vboxVMDetailsSections[s].onRender(data);
-	}
-
 	
 	// Other sections
 	///////////////////////////

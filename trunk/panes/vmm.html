@@ -833,8 +833,8 @@ function vboxVMMAddMedium(d,depth,hideDiff,topLevelParent) {
 
 		
 	}).children().click(function(){
-		$(this).parent().siblings().removeClass('vboxListItemSelected').addClass('vboxListItem');
-		$(this).parent().removeClass('vboxListItem').removeClass('vboxHover').addClass('vboxListItemSelected');
+		$(this).parent().removeClass('vboxListItem vboxHover').addClass('vboxListItemSelected')
+			.siblings().removeClass('vboxListItemSelected').addClass('vboxListItem');
 		$('#vboxVirtualMediaManager').trigger('mediumselect',[$(this).parent()]);
 	});
 

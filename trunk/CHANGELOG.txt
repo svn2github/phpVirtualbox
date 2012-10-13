@@ -15,6 +15,10 @@ config.php-example for more info
 Fixed bug that would leave group information (vm / group counts
 and icons) always visible after renaming a group
 
+Improved redraw logic for VM data in the Details section / tab
+
+Improved chooser grouping logic when grouping multiple items
+
 -------------------------------------
 	4.2-1	2012-10-09
 -------------------------------------

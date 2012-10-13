@@ -176,6 +176,15 @@ var vboxVMDataMediator = {
 	 */
 	getVMDataCombined : function(vmid) {
 		
+		// Special case for 'host'
+		if(vmid == 'host') {
+			var def = $.Deferred();
+			$.when(vboxVMDataMediator.getVMDetails(vmid)).then(function(d){
+				def.resolve(d);
+			});
+			return def.promise();
+		}
+		
 		if(!vboxVMDataMediator.vmData[vmid]) return;
 		
 		var runtime = function() { return {};};
@@ -197,6 +206,13 @@ var vboxVMDataMediator = {
 	 * @returns {Object} promise
 	 */
 	refreshVMData : function(vmid) {
+		
+		// Special case for host
+		if(vmid == 'host') {
+			vboxVMDataMediator.expireVMDetails(vmid);
+			$('#vboxPane').trigger('vboxMachineDataChanged', ['host']);
+			return;
+		}
 		
 		if(!vboxVMDataMediator.vmData[vmid]) return;
 		

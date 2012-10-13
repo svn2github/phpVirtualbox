@@ -55,14 +55,14 @@ var vboxEventListener = {
 		
 		vboxAjaxRequest('getEvents',{}, function(d,lastTime) {
 			
+			// Don't do anything if this is not running
+			if(!vboxEventListener._running || !vboxEventListener._started) return;
+			
 			// Check for valid result
 			if(!d.result) {
 				vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox'));
 				return;
 			}
-			
-			// Don't do anything if this is not running
-			if(!vboxEventListener._running || !vboxEventListener._started) return;
 			
 			// Resolve started object?
 			if(vboxEventListener._started.state() != 'resolved') {

@@ -929,11 +929,47 @@ var vboxChooser = {
 	 */
 	groupSelectedItems : function() {
 		
-		// Determine new group target
-		var target = vboxChooser._anchor.children('div.vboxChooserGroup');
-		if(vboxChooser._showOnlyGroupHistory.length > 0) {
-			target = vboxChooser._showOnlyGroupHistory[vboxChooser._showOnlyGroupHistory.length-1];
+		// Get all group paths to determine new group target
+		var groupPaths = {};
+		vboxChooser._anchor.find('div.vboxVMGroupSelected').each(function(idx,elm) {
+			groupPaths[$(elm).data('vmGroupPath')] = 1;
+		});
+		vboxChooser._anchor.find('table.vboxListItemSelected').closest('div.vboxChooserGroup').each(function(idx,elm) {
+			groupPaths[$(elm).data('vmGroupPath')] = 1;
+		});
+		
+		// The group clsest to the root group will be the target
+		var groupPathTarget = null;
+		for(var i in groupPaths) {
+			
+			if(typeof(i) != 'string') continue;
+			
+			// Already at root group. Nothing to do
+			if(groupPathTarget == '/') break;
+			
+			// No target set yet or equal targets, or this group is the root
+			if(!groupPathTarget || groupPathTarget == i || i == '/') {
+				groupPathTarget = i;
+				continue;
+			}
+			
+			var t1 = groupPathTarget;
+			var t2 = i;
+			for(var i = 0; i < Math.min(t1.length,t2.length); i++) {
+				if(t1[i] != t2[i]) {
+					groupPathTarget = '';
+					for(var a = 0; a < i; a++) {
+						groupPathTarget += "/" + t1[a];
+					}
+					groupPathTarget = groupPathTarget.replace('//','/');
+					break;
+				}
+			}
+			
+			
 		}
+		
+		var target = vboxChooser.getGroupElement(groupPathTarget, true);
 		
 		if(!$(target)[0]) return;
 		
@@ -1074,6 +1110,7 @@ var vboxChooser = {
 		// Save machine groups and trigger change
 		var vms = [];
 		for(var i in vboxVMDataMediator.vmData) {
+			
 			if(typeof i != 'string' || i == 'host') continue;
 			
 			/* If a VM's groups have changed, add it to the list */

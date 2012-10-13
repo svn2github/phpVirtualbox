@@ -943,14 +943,14 @@ function vboxPrefsInit() {
 		if($('#vboxSettingsDialog').data('language') && $('#vboxSettingsDialog').data('language') != __vboxLangName) {
 			vboxSetCookie('vboxLanguage',$('#vboxSettingsDialog').data('language'));
 			l.onLoad = function(){location.reload(true);};
-			
+		
 		}
 		l.add('hostOnlyInterfacesSave',function(){},{'networkInterfaces':$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces});
 		l.add('vboxSystemPropertiesSave',function(){},{'SystemProperties':$('#vboxSettingsDialog').data('vboxSystemProperties')});
 		l.run();
 		
-		// Update default machine folder
-		$('#vboxPane').data('vboxSystemProperties').defaultMachineFolder = $('#vboxSettingsDialog').data('vboxSystemProperties').defaultMachineFolder;
+		// Update system properties
+		$('#vboxPane').data('vboxSystemProperties',$('#vboxSettingsDialog').data('vboxSystemProperties'));
 		
 	},null,'global_settings','UISettingsDialogGlobal');
 }

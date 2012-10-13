@@ -116,6 +116,7 @@ var sButtons = new Array(
 				l.add('hostOnlyInterfacesGet',function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d);});
 				l.onLoad = function(){
 					vboxSettingsGlobalNetworkAddAdpaters();
+					vboxVMDataMediator.refreshVMData('host');
 				};
 				l.run();				
 			};
@@ -126,7 +127,6 @@ var sButtons = new Array(
 				if(d && d.progress) {
 					vboxProgress({'progress':d.progress,'persist':persist},function(){
 						$('#vboxSettingsGlobalNetList').html('<li><img src="images/spinner.gif" /></li>');
-						
 						setTimeout(refreshInterfaces,2000);
 					},null,trans('Add host-only network','UIGlobalSettingsNetwork'),'',true);
 				}
@@ -162,6 +162,7 @@ var sButtons = new Array(
 							l2.add('hostOnlyInterfacesGet',function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d);});
 							l2.onLoad = function(){
 								vboxSettingsGlobalNetworkAddAdpaters();
+								vboxVMDataMediator.refreshVMData('host');
 							};
 							l2.run();
 						},null,trans('Remove host-only network','UIGlobalSettingsNetwork'),'',true);

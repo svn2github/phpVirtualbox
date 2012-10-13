@@ -1405,9 +1405,7 @@ var vboxVMActions = {
 			});
 			
     	},
-		enabled: function(){
-			return (vboxChooser && vboxChooser.selectionMode == vboxSelectionModeSingleVM && vboxChooser.getSingleSelectedId() != 'host');
-		}
+    	enabled: function () {return(vboxChooser.selectedVMs.length ==1);}
     },
     
     /** Delete / Remove a VM */

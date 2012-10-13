@@ -167,11 +167,14 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 
 	// Get and show details and runtime data again	
 	$.when(vboxVMDataMediator.getVMDataCombined(vmid)).then(function(d) {
+		
 		// if there's only one, we'll have to remove existing data
 		if(vboxChooser.selectedVMs.length == 1) {
 			targetDiv.children().empty().remove();
 		}
-		__vboxDisplayDetailsData(d, (vboxChooser.selectedVMs.length > 1), targetDiv);
+		// Special case for host
+		if(vmid == 'host') __vboxDisplayHostDetailsData(d, targetDiv);
+		else __vboxDisplayDetailsData(d, (vboxChooser.selectedVMs.length > 1), targetDiv);
 	});
 	
 
@@ -237,8 +240,8 @@ for(var i in vboxVMDetailsSections) {
 			// Assume that the first argument for machine related events is the VM id
 			$('#vboxPane').on(vboxVMDetailsSections[i].redrawMachineEvents[a], {'sectionName':i}, function(e, vmid, xtra) {
 	
-				// VM is not selected. Ignore.
-				if(!vboxChooser.isVMSelected(vmid)) return;
+				// VM is not selected or is host. Ignore.
+				if(vmid == 'host' || !vboxChooser.isVMSelected(vmid)) return;
 				
 				var sectionName = e.data.sectionName;
 

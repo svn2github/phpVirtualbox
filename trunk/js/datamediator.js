@@ -96,18 +96,13 @@ var vboxVMDataMediator = {
 				
 			}
 			
-			// Subscribe to machine events of running machines
-			if(subscribeList.length > 0) {
-				vboxAjaxRequest('subscribeEvents',{vms:subscribeList}, function() {
-					vboxVMDataMediator.vmData = vmData;
-					mList.resolve(d);		
-					vboxEventListener.start();
-				});				
-			} else {
+			// Subscribe to vbox and machine events of running machines
+			vboxAjaxRequest('subscribeEvents',{vms:subscribeList}, function() {
 				vboxVMDataMediator.vmData = vmData;
-				mList.resolve(d);			
-				vboxEventListener.start();				
-			}
+				mList.resolve(d);		
+				vboxEventListener.start();
+			});				
+			
 		});
 		
 		return mList.promise();

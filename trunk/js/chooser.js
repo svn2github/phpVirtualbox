@@ -81,7 +81,7 @@ var vboxChooser = {
 		});
 		
 		$(window).resize(function(){
-			vboxChooser._resizeTitles(true);
+			vboxChooser._resizeElements(true);
 		});
 	},
 	
@@ -295,7 +295,7 @@ var vboxChooser = {
 		
 		// Set initial resize
 		vboxChooser._initialResize = true;
-		vboxChooser._resizeTitles(true);
+		vboxChooser._resizeElements(true);
 
 	},
 
@@ -305,7 +305,7 @@ var vboxChooser = {
 	_scrollbarWidth : 0,
 	_scrollbarWasVisible: false,
 	_initialResize: false,
-	_resizeTitles : function(forceResize) {
+	_resizeElements : function(forceResize) {
 
 		// Haven't completed our initial resizing yet
 		if(!vboxChooser._initialResize) {
@@ -337,6 +337,9 @@ var vboxChooser = {
 		styleRules[styleRules.length] = 'div.vboxChooserGroupRootLevel > div.vboxChooserGroupVMs td.vboxVMTitle > div { width: ' + vmTitleWidth + 'px; }';
 		// Special case for group header when only showing one group
 		styleRules[styleRules.length] = 'div.vboxChooserGroupShowOnly.vboxChooserGroupRootLevel > div.vboxChooserGroupHeader span.vboxChooserGroupName { width: ' + (groupTitleWidth - 4) + 'px; }';
+		// Bottom group resize bars
+		styleRules[styleRules.length] = 'div.vboxChooserGroupRootLevel > div.vboxChooserDropTargetBottom { width: ' + (groupTitleWidth) + 30 + 'px; }';
+
 		for(var i = 1; i < 11; i++) {
 			
 			// Group titles at this level
@@ -344,6 +347,9 @@ var vboxChooser = {
 			
 			// VM titles at this level
 			styleRules[styleRules.length] = path.join(' > ') + ' > div.vboxChooserGroup > div.vboxChooserGroupVMs td.vboxVMTitle > div { width: ' + (vmTitleWidth - (i*(groupLevelOffset))) + 'px; }';
+
+			// Bottom group resize bars
+			styleRules[styleRules.length] = path.join(' > ') +' > div.vboxChooserGroup > div.vboxChooserDropTargetBottom { width: ' + (groupTitleWidth + 30 - (i*groupLevelOffset)) + 'px; }';
 
 			path[path.length] = 'div.vboxChooserGroup';
 		}
@@ -380,9 +386,9 @@ var vboxChooser = {
 				
 				vboxChooser.sortGroup(groot);
 				
-				// Resize titles
+				// Resize chooser elements
 				vboxChooser._initialResize = true;
-				vboxChooser._resizeTitles();
+				vboxChooser._resizeElements();
 				
 				groot = groot.children('div.vboxChooserGroup:not(.ui-draggable-dragging)').children('div.vboxChooserGroupHeader[title="'+gnames[i]+'"]').parent();
 				
@@ -419,8 +425,8 @@ var vboxChooser = {
 				vboxChooser.sortGroup(gElm);
 			}
 			
-			// Resize titles
-			vboxChooser._resizeTitles();
+			// Resize chooser elements
+			vboxChooser._resizeElements();
 
 		// Existing VM. Replace existing elements
 		} else {
@@ -653,8 +659,10 @@ var vboxChooser = {
 		var dropTarget = vboxChooser._anchor.find('div.vboxChooserDropTargetHover').first();
 		if(dropTarget[0]) {
 
-			// Make sure that this wasn't dropped onto a sub-group or itvboxChooser
+			// Make sure that this wasn't dropped onto a sub-group or itself
 			if(
+					!dropTarget.closest('div.vboxChooserGroup')[0]
+							||
 					vmGroupPath == dropTarget.closest('div.vboxChooserGroup').data('vmGroupPath')
 							||
 					dropTarget.closest('div.vboxChooserGroup').data('vmGroupPath').indexOf(vmGroupPath + '/') == 0 
@@ -758,8 +766,8 @@ var vboxChooser = {
 		// Hide group info
 		vboxChooser._anchor.find('div.vboxChooserGroupHeader').trigger('mouseout');
 
-		// Resize titles
-		vboxChooser._resizeTitles();
+		// Resize chooser elements
+		vboxChooser._resizeElements();
 		
 		vboxChooser.selectionListChanged(vboxChooser._selectedList);
 		
@@ -917,8 +925,8 @@ var vboxChooser = {
 
 		vboxChooser.composeGroupDef();
 		
-		// Resize titles
-		vboxChooser._resizeTitles();
+		// Resize chooser elements
+		vboxChooser._resizeElements();
 		
 		vboxChooser.selectionListChanged(vboxChooser._selectedList);
 		
@@ -931,7 +939,7 @@ var vboxChooser = {
 		
 		// Get all group paths to determine new group target
 		var groupPaths = {};
-		vboxChooser._anchor.find('div.vboxVMGroupSelected').each(function(idx,elm) {
+		vboxChooser._anchor.find('div.vboxVMGroupSelected').closest('div.vboxChooserGroup').each(function(idx,elm) {
 			groupPaths[$(elm).data('vmGroupPath')] = 1;
 		});
 		vboxChooser._anchor.find('table.vboxListItemSelected').closest('div.vboxChooserGroup').each(function(idx,elm) {
@@ -953,8 +961,8 @@ var vboxChooser = {
 				continue;
 			}
 			
-			var t1 = groupPathTarget;
-			var t2 = i;
+			var t1 = groupPathTarget.split("/");
+			var t2 = i.split("/");
 			for(var i = 0; i < Math.min(t1.length,t2.length); i++) {
 				if(t1[i] != t2[i]) {
 					groupPathTarget = '';
@@ -992,8 +1000,8 @@ var vboxChooser = {
 		
 		vboxChooser.composeGroupDef();
 		
-		// Resize titles
-		vboxChooser._resizeTitles();
+		// Resize chooser elements
+		vboxChooser._resizeElements();
 
 
 		
@@ -1228,8 +1236,8 @@ var vboxChooser = {
 		
 		vboxChooser.composeGroupDef();
 		
-		// Resize titles
-		vboxChooser._resizeTitles();
+		// Resize chooser elements
+		vboxChooser._resizeElements();
 
 		vboxChooser.selectionListChanged();
 		
@@ -1587,7 +1595,7 @@ var vboxChooser = {
 						$(gelm).find('div.vboxChooserGroupHeader').trigger('mouseout');
 						
 						// Reset title sizes
-						vboxChooser._resizeTitles();
+						vboxChooser._resizeElements();
 						
 						// force redraw of these
 						$(gelm).find('.vboxFitToContainer').css({'display':'none'}).css({'width':'','display':'inline-block'});
@@ -1623,7 +1631,7 @@ var vboxChooser = {
 						vboxChooser._anchor.find('div.vboxChooserGroupHeader').trigger('mouseout');
 						
 						// Reset title sizes
-						vboxChooser._resizeTitles();
+						vboxChooser._resizeElements();
 
 						// force redraw of these
 						vboxChooser._anchor.find('.vboxFitToContainer').css({'display':'none','width':''}).css({'display':'inline-block'});
@@ -1700,7 +1708,7 @@ var vboxChooser = {
 									$.when($(this).closest('div.vboxChooserGroup').toggleClass('vboxVMGroupCollapsed', 300)).then(function(){
 
 										// Reset title sizes
-										vboxChooser._resizeTitles();
+										vboxChooser._resizeElements();
 									});
 									
 								}),
@@ -1727,7 +1735,7 @@ var vboxChooser = {
 							.click(function(e) {
 								$.when($(this).closest('div.vboxChooserGroup').toggleClass('vboxVMGroupCollapsed', 300)).then(function(){
 									// Reset title sizes
-									vboxChooser._resizeTitles();
+									vboxChooser._resizeElements();
 								});
 							})
 						)
@@ -1966,8 +1974,8 @@ $(document).ready(function(){
 				
 				vboxChooser.composeGroupDef(true);
 
-				// Resize titles
-				vboxChooser._resizeTitles();
+				// Resize chooser elements
+				vboxChooser._resizeElements();
 
 
 			}
@@ -2002,8 +2010,8 @@ $(document).ready(function(){
 			
 			vboxChooser.composeGroupDef(true);
 
-			// Resize titles
-			vboxChooser._resizeTitles();
+			// Resize chooser elements
+			vboxChooser._resizeElements();
 
 			
 			return;

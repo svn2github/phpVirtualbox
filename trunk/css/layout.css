@@ -466,11 +466,16 @@ ul.vboxMenuBar li {
 /* So that resizing is consistent */
 #vboxChooserPane * { margin: 0px; padding: 0px; }
 #vboxChooserPane span.vboxServerLink { text-decoration: underline; cursor: pointer; }
-#vboxChooserDiv { width: 300px; } /* Initial Width */
+#vboxChooserPane > div { width: 300px; } /* Initial Width */
 #vboxChooserPane div.vboxChooserDropTarget { height: 4px; padding: 0px; margin: 0px; }
 #vboxChooserPane div.vboxChooserGroupHeader div.vboxChooserDropTarget {
 	position: relative; left: -4px;
 }
+div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
+	position: absolute;
+	height: 4px;
+}
+
 #vboxChooserPane div.vboxChooserDropTargetHover { background: #999; }
 #vboxChooserPane td.vboxChooserDropTarget { height: 4px; }
 #vboxChooserPane td.vboxChooserDropTargetHover

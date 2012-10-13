@@ -222,6 +222,7 @@ class vboxconnector {
 				if($this->vbox->handle)
 					return ($this->connected = true);
 				
+				
 			} catch (Exception $e) {
 				// nothing. Fall through to new login.
 				
@@ -232,6 +233,7 @@ class vboxconnector {
 		try {
 			$this->websessionManager = new IWebsessionManager($this->client);
 			$this->vbox = $this->websessionManager->logon($this->settings->username,$this->settings->password);
+			
 			
 		} catch (Exception $e) {
 			
@@ -629,6 +631,7 @@ class vboxconnector {
 		
 		$response['data']['events'] = array_values($eventlist);
 		
+
 		
 		// Append key so that we aren't getting stale events after
 		// a phpvirtualbox server change

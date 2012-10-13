@@ -76,7 +76,7 @@ var vboxEventListener = {
 			// Loop through each event recording or
 			// triggering changes
 			if(d && d.events) {
-				
+								
 				var eventList = [];
 				
 				var vmChanges = {};

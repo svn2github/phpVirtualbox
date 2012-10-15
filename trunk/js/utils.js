@@ -1110,14 +1110,50 @@ function vboxParseCookies() {
  * Set a cookie and update $('#vboxPane').data('vboxCookies') 
  * @param {String} k - cookie key
  * @param {any} v - cookie value
+ * @param {Date} expire - when cookie should expire
  */
-function vboxSetCookie(k,v) {
-	var exp = (v ? new Date(2020,12,24) : new Date());
+function vboxSetCookie(k,v,expire) {
+	var exp = (v ? (expire ? expire : new Date(2020,12,24)) : new Date().setDate(new Date().getDate() - 1));
 	document.cookie = k+"="+v+"; expires="+exp.toGMTString()+"; path=/";
-	if($('#vboxPane').data('vboxCookiesParsed'))
-			$('#vboxPane').data('vboxCookies')[k] = v;
+	$('#vboxPane').data('vboxCookies')[k] = v;
 }
 
+/**
+ * Set a local data item using the local storage mechanism
+ * and upate $('#vboxPane').data('vboxCookies');
+ * @param {String} k - data item key
+ * @param {any} v - data item value
+ * @param {Boolean} nocookies - do not fall back to cookies
+ */
+function vboxSetLocalDataItem(k,v,nocookies) {
+
+	// fall back to normal cookie
+	if(typeof(Storage)==="undefined") {
+		if(!nocookies) vboxSetCookie(k,v);
+		return;
+	}
+	// Remove item?
+	if(v) {
+		localStorage.setItem(k,v.toString());		
+	} else {
+		localStorage.removeItem(k);
+	}
+}
+
+/**
+ * Get a local data item using the local storage mechanism
+ * @param {String} k - data item key
+ * @return {mixed} data item value
+ */
+function vboxGetLocalDataItem(k) {
+
+	// fall back to normal cookie
+	if(typeof(Storage)==="undefined") {
+		return $('#vboxPane').data('vboxCookies')[k];
+	}
+	return localStorage.getItem(k);
+
+}
 /**
  * Strip file name from path
  * @param {String} p - path
@@ -1189,7 +1225,8 @@ var getScrollbarWidth = function() {
     $(div).remove();
     return (w1 - w2);
 
-}
+};
+
 /**
  * Returns the result of case-insensitive string comparison using 'natural' algorithm comparing str1 to str2
  * @param {String} str1 - 1st string

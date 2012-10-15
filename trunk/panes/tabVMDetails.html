@@ -361,7 +361,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 									.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
 									.each(function(idx, canvas) {
 										var ctx = canvas.getContext('2d');
-										if($('#vboxPane').data('vboxCookies')["vboxSectionCollapse"+sectionName]) {
+										if(vboxGetLocalDataItem("vboxSectionCollapse"+sectionName)) {
 											ctx.save();
 											ctx.translate(9,9);
 											ctx.rotate(90 * Math.PI / 180.0);
@@ -404,7 +404,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 			// Save section name
 			var sectionName = $(this).data('sectionName');
 			
-			vboxSetCookie('vboxSectionCollapse'+sectionName,
+			vboxSetLocalDataItem('vboxSectionCollapse'+sectionName,
 				($(this).hasClass('vboxDetailsSectionCollapsed') ? '' : '1')
 			);
 			
@@ -462,14 +462,14 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 			function(){$(this).removeClass('hover');}
 		).disableSelection().data({'sectionName':sectionName});
 
-	if($('#vboxPane').data('vboxCookies')["vboxSectionCollapse"+sectionName]) {
+	if(vboxGetLocalDataItem("vboxSectionCollapse"+sectionName)) {
 		vboxDetailsSection.addClass('vboxDetailsSectionCollapsed');
 	}
 	
-	if($('#vboxPane').data('vboxCookies')["vboxSectionShow"+sectionName] == 0) {
-		$(vboxDetailsSection).hide();
-	} else {
+	if(!vboxGetLocalDataItem("vboxSectionHide"+sectionName)) {
 		$(vboxDetailsSection).show();
+	} else {
+		$(vboxDetailsSection).hide();
 	}
 
 	/* Context menu for section ? */
@@ -643,10 +643,10 @@ for(var i in vboxVMDetailsSections) {
 			
 			$('<input />')
 				.attr({'type':'checkbox','class':'vboxCheckbox','name':i})
-				.prop('checked',$('#vboxPane').data('vboxCookies')["vboxSectionShow"+i] != 0)
+				.prop('checked',!vboxGetLocalDataItem("vboxSectionHide"+i))
 				.on('click',{'sectionName':i},function(e){
 
-					vboxSetCookie("vboxSectionShow"+$(this).attr('name'),(this.checked ? 1 : 0));
+					vboxSetLocalDataItem("vboxSectionHide"+$(this).attr('name'),(this.checked ? '' : '1'));
 					$('#vboxTabVMDetails .vboxVMDetailsBox'+$(this).attr('name')).css('display',(this.checked ? '' : 'none'));
 
 					var sectionName = e.data.sectionName;

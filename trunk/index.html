@@ -161,7 +161,7 @@
 				var nx = $('#vboxChooserDiv').width() + (e.pageX - $('#vboxResizeBar').data('vboxX'));
 				$('#vboxChooserDiv').css('width',(nx)+'px');
 				
-				vboxSetCookie("vboxPaneX",($('#vboxChooserDiv').width()));
+				vboxSetLocalDataItem("vboxPaneX",($('#vboxChooserDiv').width()));
 				
 				$('#vboxChooserPane').css('width',$('#vboxChooserDiv').css('width'));
 				
@@ -199,7 +199,7 @@
 				var nx = $('#vboxProgressOps').height() + ($('#vboxResizeBarProgress').data('vboxY') - e.pageY);
 				$('#vboxProgressOps').css({'height':(nx)+'px','overflow':'auto'}).parent().css({'height':(nx)+'px'});
 				
-				vboxSetCookie("vboxPaneY",($('#vboxProgressOps').height()));
+				vboxSetLocalDataItem("vboxPaneY",($('#vboxProgressOps').height()));
 				
 				$(window).trigger('resize');
 				
@@ -280,11 +280,11 @@
 	
 					
 					// Resize to last setting
-					if($('#vboxPane').data('vboxCookies')['vboxPaneX']) {
-						$('#vboxChooserDiv').css('width',($('#vboxPane').data('vboxCookies')['vboxPaneX'])+'px');
+					if(vboxGetLocalDataItem('vboxPaneX')) {
+						$('#vboxChooserDiv').css('width',(vboxGetLocalDataItem('vboxPaneX'))+'px');
 					}
-					if($('#vboxPane').data('vboxCookies')['vboxPaneY']) {
-						var nx = $('#vboxPane').data('vboxCookies')['vboxPaneY'];
+					if(vboxGetLocalDataItem('vboxPaneY')) {
+						var nx = vboxGetLocalDataItem('vboxPaneY');
 						$('#vboxProgressOps').css({'height':(nx)+'px'}).parent().css({'height':(nx)+'px'});
 					}
 					

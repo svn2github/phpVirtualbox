@@ -44,6 +44,7 @@ $(document).ready(function(){
 				
 				ctx.strokeStyle = color;
 				ctx.lineWidth = 2;
+				ctx.lineCap = 'round';
 				
 				// Circle
 				ctx.arc(9,9,8,(Math.PI/180)*0,(Math.PI/180)*360,true);

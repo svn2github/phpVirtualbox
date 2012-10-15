@@ -467,7 +467,7 @@ ul.vboxMenuBar li {
 #vboxChooserPane * { margin: 0px; padding: 0px; }
 #vboxChooserPane span.vboxServerLink { text-decoration: underline; cursor: pointer; }
 #vboxChooserPane > div { width: 300px; } /* Initial Width */
-#vboxChooserPane div.vboxChooserDropTarget { height: 4px; padding: 0px; margin: 0px; }
+#vboxChooserPane .vboxChooserDropTarget { height: 4px !important; padding: 0px; margin: 0px; background: transparent; }
 #vboxChooserPane div.vboxChooserGroupHeader div.vboxChooserDropTarget {
 	position: relative; left: -4px;
 }
@@ -476,10 +476,11 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 	height: 4px;
 }
 
-#vboxChooserPane div.vboxChooserDropTargetHover { background: #999; }
+#vboxChooserPane .vboxChooserDropTargetHover { background: #999; }
 #vboxChooserPane td.vboxChooserDropTarget { height: 4px; }
-#vboxChooserPane td.vboxChooserDropTargetHover
+#vboxChooserPane .vboxChooserDropTargetHover
 	{ background: #999; }
+#vboxChooserPane table.vboxChooserVM img { float: left; }
 #vboxChooserPane table.vboxChooserVM {
 	border: 2px solid #fff;
 	margin-bottom: 2px;
@@ -497,7 +498,7 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 #vboxChooserDiv table.vboxChooserVM td,
 #vboxChooserDiv table.vboxChooserVM span { white-space: nowrap; border: 0px; text-align: left;}
 #vboxChooserDiv table.vboxChooserVM span.vboxVMName { font-weight: bold; }
-#vboxChooserDiv table.vboxChooserVM span.vboxVMState { font-size: 0.9em; }
+#vboxChooserDiv table.vboxChooserVM span.vboxVMState { font-size: 0.9em; margin-left: 2px; }
 #vboxChooserDiv table.vboxChooserVM td.vboxVMSessionOpen { font-style: italic; }
 #vboxChooserDiv table.vboxChooserVM td.vboxVMTitle { width: 100%; }
 #vboxChooserPane img.vboxHostIcon { border: 1px solid #999; }
@@ -529,6 +530,7 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 	padding: 0px 0px 8px 8px;
 	margin: 0px;
 	height: 16px;
+	overflow: hidden;
 }
 #vboxChooserPane div.vboxChooserGroupHeader span {
 	cursor: default;

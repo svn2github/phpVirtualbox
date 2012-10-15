@@ -157,6 +157,14 @@ $('#vboxPane').bind('vmSelectionListChanged', function(){
 		});
 
 	}
+
+// Clean up local data storage when a machine is unregistered
+}).bind('vboxMachineRegistered', function(e, vmid, registered) {
+
+	if(!registered) {
+		vboxSetLocalDataItem('vbox'+vmid+'ConsoleSize','',true);
+    	vboxSetLocalDataItem('vbox'+vmid+'ConsoleConnected','',true);	
+	}
 });
 
 /*
@@ -208,11 +216,10 @@ $('#vboxTabVMConsole').bind('show',function(){
 		$(document.vboxRDPForm.serverAddress).val(chost);
 	
 		// Set default console size for this VM?
-		if($('#vboxPane').data('vboxCookiesParsed')) {
-			var cs = $('#vboxPane').data('vboxCookies')['vbox'+detailsData.id+'ConsoleSize'];
-			if(cs) {
-				$(document.vboxRDPForm.vboxRDPSizeSelect).children('[value='+cs+']').first().prop('selected',true);	
-			}
+		
+		var cs = vboxGetLocalDataItem('vbox'+detailsData.id+'ConsoleSize');
+		if(cs) {
+			$(document.vboxRDPForm.vboxRDPSizeSelect).children('[value='+cs+']').first().prop('selected',true);	
 		}
 		
 		// for detached console <title>
@@ -313,7 +320,7 @@ function RDPWebEventLoaded(flashid) {
 		$('#vboxRDPFormContainer').css('display','');
 		
 		// Did not explicitly disconnect from this VM and has no auth settings so reconnect
-    	if($('#vboxPane').data('vboxCookies')['vbox'+vboxChooser.getSingleSelectedId()+'ConsoleConnected'] == 'true' && $('#vboxConsoleLoginInfo').data('vboxVRDPauthType') == 'Null') {
+    	if(vboxGetLocalDataItem('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleConnected') == 'true' && $('#vboxConsoleLoginInfo').data('vboxVRDPauthType') == 'Null') {
     		document.vboxRDPForm.connectionButton.click();    		
     	}
 	}
@@ -347,8 +354,8 @@ function RDPWebEventDisconnected(flashId) {
     }
     document.vboxRDPForm.connectionButton.value = trans("Connect",'VBoxConsoleWgt');
     document.vboxRDPForm.connectionButton.onclick=function() {
-    	vboxSetCookie('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleSize',$('#vboxRDPSize').val());
-    	vboxSetCookie('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleConnected','true');
+    	vboxSetLocalDataItem('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleSize',$('#vboxRDPSize').val(),true);
+    	vboxSetLocalDataItem('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleConnected','true',true);
     	return vboxRDPConnect();
     };
     $('#vboxConsoleAddr').css('display','');
@@ -360,7 +367,7 @@ function RDPWebEventDisconnected(flashId) {
    
 function vboxRDPConnect() {
 
-	vboxSetCookie('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleSize',$('#vboxRDPSize').val()); 
+	vboxSetLocalDataItem('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleSize',$('#vboxRDPSize').val(), true); 
 	
     if (!fFlashLoaded) return false;
 
@@ -371,7 +378,7 @@ function vboxRDPConnect() {
 
     document.vboxRDPForm.connectionButton.value = trans("Disconnect",'VBoxConsoleWgt');
     document.vboxRDPForm.connectionButton.onclick=function(){
-    	vboxSetCookie('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleConnected','false');
+    	vboxSetLocalDataItem('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleConnected');
     	return vboxRDPDisconnect();
     };
     
@@ -409,8 +416,8 @@ function vboxRDPDisconnect() {
 	/* Restore the "Connect" form.  And resize flash*/
 	document.vboxRDPForm.connectionButton.value = trans("Connect",'VBoxConsoleWgt');
 	document.vboxRDPForm.connectionButton.onclick=function() {
-		vboxSetCookie('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleConnected','true');
-		vboxSetCookie('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleSize',$('#vboxRDPSize').val());
+		vboxSetLocalDataItem('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleConnected','true',true);
+		vboxSetLocalDataItem('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleSize',$('#vboxRDPSize').val(),true);
 		vboxRDPConnect();this.blur();
 	};
 	$('#vboxConsoleCADButton').hide();

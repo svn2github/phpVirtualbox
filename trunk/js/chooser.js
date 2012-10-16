@@ -1949,6 +1949,8 @@ var vboxChooser = {
 		// Get groups, machine list and start listener
 		$.when(vboxAjaxRequest('vboxGroupDefinitionsGet')).then(function(g) {
 			
+			if(!g) return;
+			
 			vboxChooser._groupDefs = g.data;
 			
 			$.when(vboxVMDataMediator.getVMList()).then(function(d) {
@@ -2045,6 +2047,18 @@ $(document).ready(function(){
 			}
 		}
 		
+		// Update menus if the VM is selected
+		if(vboxChooser.isVMSelected(vmid)) {
+			
+			if(vboxChooser._vmGroupContextMenuObj)
+				vboxChooser._vmGroupContextMenuObj.update(vboxChooser);
+	
+			if(vboxChooser._vmContextMenuObj)
+				vboxChooser._vmContextMenuObj.update(vboxChooser);
+	
+		}
+
+		
 	
 	// Snapshot taken
 	}).bind('vboxSnapshotTaken',function(e,vmid) {
@@ -2077,17 +2091,29 @@ $(document).ready(function(){
 			// Resize chooser elements
 			vboxChooser._resizeElements();
 
+		} else {
 			
-			return;
+			// Enforce VM ownership
+			if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin && data.owner != $('#vboxPane').data('vboxSession').user) {
+				return;
+			}
+			
+			// Add to list			
+			vboxChooser.updateVMElement(data, true);
+			
 		}
 		
-		// Enforce VM ownership
-	    if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin && data.owner != $('#vboxPane').data('vboxSession').user) {
-	    	return;
-	    }
+		// Update menus if the VM is selected
+		if(vboxChooser.isVMSelected(vmid)) {
+			
+			if(vboxChooser._vmGroupContextMenuObj)
+				vboxChooser._vmGroupContextMenuObj.update(vboxChooser);
 	
-		// Add to list			
-		vboxChooser.updateVMElement(data, true);
+			if(vboxChooser._vmContextMenuObj)
+				vboxChooser._vmContextMenuObj.update(vboxChooser);
+	
+		}
+
 	
 	// Watch for group order changes
 	}).bind('vboxExtraDataChanged', function(e, machineId, key, value) {
@@ -2133,8 +2159,9 @@ $(document).ready(function(){
 	
 	// Machine or session state updates element
 	}).bind('vboxMachineOrSessionStateChanged', function(e, vmid) {
-		
+
 		vboxChooser.updateVMElement(vboxVMDataMediator.getVMData(vmid));
+		
 		
 		// Update menus if the VM is selected
 		if(vboxChooser.isVMSelected(vmid)) {

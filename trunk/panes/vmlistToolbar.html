@@ -125,7 +125,8 @@ vboxChooserToolbarTop.getButtonElement('settings').contextMenu({
 				break;
 				
 			case 'RemoteDisplay':
-				vboxAjaxRequest('consoleVRDEServerSave',{'vm':vm.id,'enabled':-1});
+				var port = vboxVMDataMediator.getVMRuntimeData(vm.id).VRDEServerInfo.port;
+				vboxAjaxRequest('consoleVRDEServerSave',{'vm':vm.id,'enabled':(port == -1 ? 1 : 0)});
 				break;
 
 			case 'settings':
@@ -377,8 +378,8 @@ function vboxUpdateSettingsMenu(vm) {
 	}
 	
 	// Enable remote display?
-	if(vm && vm.VRDEServer) {
-		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp' + (vm.VRDEServer.enabled > 0 ? '_on' : '') + '_16px.png)'}).parent().removeClass('disabled');
+	if(vm && vm.VRDEServerInfo) {
+		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp' + (vm.VRDEServerInfo.port > -1 ? '_on' : '') + '_16px.png)'}).parent().removeClass('disabled');
 	} else {
 		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp_disabled_16px.png)'}).parent().addClass('disabled');
 	}	
@@ -429,6 +430,18 @@ $('#vboxPane').bind('vmSelectionListChanged',function(e,chooser) {
 		});
 	}
 
+// Update menu?
+}).bind('vboxMachineRegistered', function(e, vmid) {
+	// Update menus if the VM is selected
+	if(vboxChooser.isVMSelected(vmid)) {
+		vboxChooserToolbarTop.update(vboxChooser);
+	}	
+}).bind('vboxMachineDataChanged', function(e, vmid) {
+
+	// Update menus if the VM is selected
+	if(vboxChooser.isVMSelected(vmid)) {
+		vboxChooserToolbarTop.update(vboxChooser);
+	}
 
 // Update menu on session state change
 // Update VRDE icon
@@ -437,7 +450,14 @@ $('#vboxPane').bind('vmSelectionListChanged',function(e,chooser) {
 	if(vboxChooser.getSingleSelectedId() == vm) {
 		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp' + (data && data.enabled ? '_on' : '') + '_16px.png)'}).parent().removeClass('disabled');
 	}
+
+// This only fires when it is enabled
+}).bind('vboxVRDEServerInfoChanged',function(e, vm, data) {
 	
+	if(vboxChooser.getSingleSelectedId() == vm) {
+		$('#vboxVMSettingsMenu').find('a[href=#RemoteDisplay]').css({'background-image':'url(images/vbox/vrdp' + (data && data.port > -1 ? '_on' : '') + '_16px.png)'}).parent().removeClass('disabled');
+	}
+
 });
 
 $('#vboxVMSettingsMenu').disableContextMenu();

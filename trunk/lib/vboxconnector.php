@@ -508,6 +508,7 @@ class vboxconnector {
 								'netAddress' => $vrde->getVRDEProperty('TCP/Address'),
 								'authType' => (string)$vrde->authType,
 								'authTimeout' => $vrde->authTimeout,
+								'VRDEExtPack' => (string)$vrde->VRDEExtPack,												
 								'allowMultiConnection' => intval($vrde->allowMultiConnection)
 								)
 							);
@@ -1352,6 +1353,7 @@ class vboxconnector {
 			$args['enabled'] = intval(!$this->session->machine->VRDEServer->enabled);
 		}
 		
+		$this->messages[] = $args['enabled'];
 		$this->session->machine->VRDEServer->enabled = intval($args['enabled']);
 
 		$this->session->unlockMachine();
@@ -3444,6 +3446,7 @@ class vboxconnector {
 					'netAddress' => $vrde->getVRDEProperty('TCP/Address'),
 					'authType' => (string)$vrde->authType,
 					'authTimeout' => $vrde->authTimeout,
+					'VRDEExtPack' => (string)$vrde->VRDEExtPack,
 					'allowMultiConnection' => intval($vrde->allowMultiConnection)
 			));
 		

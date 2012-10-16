@@ -1,4 +1,16 @@
 -------------------------------------
+	4.2-3
+-------------------------------------
+Fixed line endings in vboxinit
+http://code.google.com/p/phpvirtualbox/issues/detail?id=606
+
+Fixed VM state change updates that did not update menus and
+toolbars
+
+Fixed bug that would hide the Remote Display tab in VM settings
+while a VM is running
+
+-------------------------------------
 	4.2-2	2012-10-15
 -------------------------------------
 Look-and-feel changes to more closely match the VirtualBox GUI

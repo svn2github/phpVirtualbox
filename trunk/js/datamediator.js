@@ -355,11 +355,13 @@ $(document).ready(function(){
 			$.extend(vboxVMDataMediator.vmRuntimeData[vmid].VRDEServer, data);
 		}
 
-		
+	
+	// This only fires when it is enabled
 	}).bind('vboxPreVRDEServerInfoChanged', function(e, vmid, data) {
 
 		if(vboxVMDataMediator.vmRuntimeData[vmid]) {
 			vboxVMDataMediator.vmRuntimeData[vmid].VRDEServerInfo.port = data.port;
+			vboxVMDataMediator.vmRuntimeData[vmid].VRDEServer.enabled = 1;
 		}
 
 		

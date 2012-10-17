@@ -106,10 +106,10 @@ $(document).ready(function(){
 	}
 });
 
+var __vboxPreviewCanvasCache = [];
 function vboxDrawPreview(can, imageObj, text, width, height, resizeToImage) {
 	
 	var ctx = can.getContext('2d');
-
 
     var screenMargin = 7;
 	var margin = 10;
@@ -131,95 +131,138 @@ function vboxDrawPreview(can, imageObj, text, width, height, resizeToImage) {
 	height += ((margin+screenMargin)*2);
 	width += ((margin+screenMargin)*2);
 	
-	//console.log('old: ' + can.width + ' x ' + can.height);
-	
 	// Set canvas values
 	can.height = height;
 	can.width = width;
-	
-	//console.log('new: ' + can.width + ' x ' + can.height);
 	
 	// Clear the canvas
 	ctx.clearRect(0,0,width,height);
 	
 	ctx.save();
 	
-	ctx.beginPath();
-	ctx.strokeStyle = "#000000";
-	ctx.lineWidth = 0.3;
-	ctx.lineCap = 'butt';
-	
-	ctx.moveTo(margin*2,margin);
-
-	// Opera's arcTo always seems to go counter clockwise
-	// and does not follow control specs
-    if($.browser.opera) {
-
-		// Left line and top left
-		ctx.arcTo(margin *2, margin, margin, margin*2, margin);
-		ctx.lineTo(margin, height-(margin*2));
-
-		// bottom and bottom left
-		ctx.arcTo(margin, height-(margin*2), (margin*2), height-(margin), margin);
-		ctx.lineTo(width-(margin*2), height-margin);
-
-        // Side and bottom right
-        ctx.arcTo(width-(margin*2), height-margin, width-margin, height-(margin*2), margin);
-        ctx.lineTo(width-margin, margin*2);
-
-        // top and top right
-    	ctx.arcTo(width-margin, margin*2, width-(margin*2),margin, margin);
-        ctx.lineTo(margin*2, margin);
-        
-
-    } else {
-    	
-        // top and top right
-        ctx.lineTo(width-(margin*2), margin);
-    	ctx.arcTo(width-margin, margin, width-margin,margin*2, margin);
-        
-        // Side and bottom right
-        ctx.lineTo(width-margin, height-(margin*2));
-        ctx.arcTo(width-margin, height-margin, width-(margin*2), height-margin, margin);
-        
-		// bottom and bottom left
-		ctx.lineTo(margin*2, height-margin);
-		ctx.arcTo(margin, height-margin, margin, height-(margin*2), margin);
+	// Draw and cache monitor image if it is not present
+	if(!__vboxPreviewCanvasCache[width+'x'+height]) {
 		
-		// Left line and top left
-		ctx.lineTo(margin, margin*2);
-		ctx.arcTo(margin, margin, margin * 2, margin, margin);
-    	
-    }
-	
-	ctx.closePath();
-    ctx.save();
-    ctx.shadowOffsetX = 5;
-    ctx.shadowOffsetY = 5;
-	ctx.shadowBlur = 4;
-	ctx.shadowColor = "rgba(30, 30, 30, 0.2";            
-    
-    
-    var grad = ctx.createLinearGradient(0, margin, 0, height);
-    grad.addColorStop(0, "rgb(200,200,200)");
-    grad.addColorStop(0.4, "rgb(100,100,100)");
-    grad.addColorStop(0.5, "rgb(66,66,66)");
-    grad.addColorStop(0.7, "rgb(100,100,100)");
-    grad.addColorStop(1, "rgb(200,200,200)");
+		var cachedCanvas = document.createElement('canvas');
+		
+		cachedCanvas.width = width;
+		cachedCanvas.height = height;
+		
+		var cachedCtx = cachedCanvas.getContext('2d');
+		
+		cachedCtx.beginPath();
+		cachedCtx.strokeStyle = "#000000";
+		cachedCtx.lineWidth = 0.3;
+		cachedCtx.lineCap = 'butt';
+		
+		cachedCtx.moveTo(margin*2,margin);
+		
+		// Opera's arcTo always seems to go counter clockwise
+		// and does not follow control specs
+		if($.browser.opera) {
+			
+			// Left line and top left
+			cachedCtx.arcTo(margin *2, margin, margin, margin*2, margin);
+			cachedCtx.lineTo(margin, height-(margin*2));
+			
+			// bottom and bottom left
+			cachedCtx.arcTo(margin, height-(margin*2), (margin*2), height-(margin), margin);
+			cachedCtx.lineTo(width-(margin*2), height-margin);
+			
+			// Side and bottom right
+			cachedCtx.arcTo(width-(margin*2), height-margin, width-margin, height-(margin*2), margin);
+			cachedCtx.lineTo(width-margin, margin*2);
+			
+			// top and top right
+			cachedCtx.arcTo(width-margin, margin*2, width-(margin*2),margin, margin);
+			cachedCtx.lineTo(margin*2, margin);
+			
+			
+		} else {
+			
+			// top and top right
+			cachedCtx.lineTo(width-(margin*2), margin);
+			cachedCtx.arcTo(width-margin, margin, width-margin,margin*2, margin);
+			
+			// Side and bottom right
+			cachedCtx.lineTo(width-margin, height-(margin*2));
+			cachedCtx.arcTo(width-margin, height-margin, width-(margin*2), height-margin, margin);
+			
+			// bottom and bottom left
+			cachedCtx.lineTo(margin*2, height-margin);
+			cachedCtx.arcTo(margin, height-margin, margin, height-(margin*2), margin);
+			
+			// Left line and top left
+			cachedCtx.lineTo(margin, margin*2);
+			cachedCtx.arcTo(margin, margin, margin * 2, margin, margin);
+			
+		}
+		
+		cachedCtx.closePath();
+		cachedCtx.save();
+		cachedCtx.shadowOffsetX = 5;
+		cachedCtx.shadowOffsetY = 5;
+		cachedCtx.shadowBlur = 4;
+		cachedCtx.shadowColor = "rgba(30, 30, 30, 0.2";            
+		
+		
+		var grad = cachedCtx.createLinearGradient(0, margin, 0, height);
+		grad.addColorStop(0, "rgb(200,200,200)");
+		grad.addColorStop(0.4, "rgb(100,100,100)");
+		grad.addColorStop(0.5, "rgb(66,66,66)");
+		grad.addColorStop(0.7, "rgb(100,100,100)");
+		grad.addColorStop(1, "rgb(200,200,200)");
+		
+		cachedCtx.fillStyle = grad;
+		
+		cachedCtx.fill();
+		
+		// Redraw so that shadow is seen on all sides
+		cachedCtx.shadowOffsetX = -5;
+		cachedCtx.shadowOffsetY = -5;
+		cachedCtx.fill();
+		cachedCtx.restore();
+		cachedCtx.fillRect(margin+screenMargin,margin+screenMargin,width-(margin*2)-(screenMargin*2),height-(margin*2)-(screenMargin*2));             
+		cachedCtx.stroke();
+		cachedCtx.restore();
+		
+	    /* Gloss */
+		var rectX = 0;
+		var rectY = 0;
+		var rectWidth = width-(margin+screenMargin)*2;
+		var rectHeight = height-(margin+screenMargin)*2;
+		
+		var cvs = document.createElement('canvas');
+		cvs.width = rectWidth;
+		cvs.height = rectHeight;
+		
+		var ctxBlur = cvs.getContext('2d');
+		ctxBlur.beginPath();
+		ctxBlur.lineWidth = 1;
+		ctxBlur.strokeStyle = "#000000";
+		ctxBlur.moveTo(rectX,rectY);
+		ctxBlur.lineTo(rectWidth, rectY);
+		ctxBlur.lineTo(rectWidth,rectHeight*1.0/3.0);
+		ctxBlur.bezierCurveTo(rectX+rectWidth / 2.0, rectY + rectHeight * 1.0/3.0,
+						  rectX+rectWidth / 2.0, rectY + rectHeight * 2.0/3.0,
+						  rectX, rectY + rectHeight * 2.0/3.0);
+		ctxBlur.closePath();
+		ctxBlur.fillStyle="rgba(255,255,255,0.3)";
+		ctxBlur.fill();
+		
+		stackBlurCanvasRGBA( cvs, 0, 0, rectWidth, rectHeight, 17 );
+		
+		ctx.drawImage(cvs, margin+screenMargin, margin+screenMargin, rectWidth, rectHeight);
 
-    ctx.fillStyle = grad;
-    
-    ctx.fill();
+		__vboxPreviewCanvasCache[width+'x'+height] = {
+				'monitor' : cachedCanvas,
+				'gloss' : cvs
+		};
+		
+	}
 
-    // Redraw so that shadow is seen on all sides
-    ctx.shadowOffsetX = -5;
-    ctx.shadowOffsetY = -5;
-    ctx.fill();
-    ctx.restore();
-    ctx.fillRect(margin+screenMargin,margin+screenMargin,width-(margin*2)-(screenMargin*2),height-(margin*2)-(screenMargin*2));             
-    ctx.stroke();
-	ctx.restore();
-	
+	// Draw cached monitor canvas
+	ctx.drawImage(__vboxPreviewCanvasCache[width+'x'+height]['monitor'], 0, 0, width, height);
 
 	/* Screenshot */
 	if(imageObj) {
@@ -235,34 +278,9 @@ function vboxDrawPreview(can, imageObj, text, width, height, resizeToImage) {
 		}
 	}
 
-    /* Gloss */
-	var rectX = 0;
-	var rectY = 0;
-	var rectWidth = width-(margin+screenMargin)*2;
-	var rectHeight = height-(margin+screenMargin)*2;
-	
-	var cvs = document.createElement('canvas');
-	cvs.width = rectWidth;
-	cvs.height = rectHeight;
-	
-	var ctxBlur = cvs.getContext('2d');
-	ctxBlur.beginPath();
-	ctxBlur.lineWidth = 1;
-	ctxBlur.strokeStyle = "#000000";
-	ctxBlur.moveTo(rectX,rectY);
-	ctxBlur.lineTo(rectWidth, rectY);
-	ctxBlur.lineTo(rectWidth,rectHeight*1.0/3.0);
-	ctxBlur.bezierCurveTo(rectX+rectWidth / 2.0, rectY + rectHeight * 1.0/3.0,
-					  rectX+rectWidth / 2.0, rectY + rectHeight * 2.0/3.0,
-					  rectX, rectY + rectHeight * 2.0/3.0);
-	ctxBlur.closePath();
-	ctxBlur.fillStyle="rgba(255,255,255,0.3)";
-	ctxBlur.fill();
-	
-	stackBlurCanvasRGBA( cvs, 0, 0, rectWidth, rectHeight, 17 );
-	
-	ctx.drawImage(cvs, margin+screenMargin, margin+screenMargin, rectWidth, rectHeight);
-	
+	// Draw cached gloss canvas
+	ctx.drawImage(__vboxPreviewCanvasCache[width+'x'+height]['gloss'], 0, 0, width, height);
+
 	/* Text */
 	if(!imageObj) {
 

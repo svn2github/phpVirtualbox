@@ -55,6 +55,16 @@ try {
 		throw new Exception('recovery.php exists in phpVirtualBox\'s folder. This is a security hazard. phpVirtualBox will not run until recovery.php has been renamed to a file name that does not end in .php such as <b>recovery.php-disabled</b>.',vboxconnector::PHPVB_ERRNO_FATAL);	
 	}
 	
+	/* Check for PHP version */
+	if (!version_compare(PHP_VERSION, '5.2.0', '>=')) {
+		throw new Exception('phpVirtualBox requires PHP >= 5.2.0, but this server is running version '. PHP_VERSION .'. Please upgrade PHP.');
+	}
+	
+	/* Check for session support */
+	if(!function_exists('session_start')) {
+		throw new Exception("PHP session support is required by phpVirtualBox but is not enabled or available in your PHP installation.", vboxconnector::PHPVB_ERRNO_FATAL);
+	}
+	
 	switch($vboxRequest['fn']) {
 	
 		/*
@@ -130,11 +140,6 @@ try {
 		 */
 		case 'getSession':
 			
-			
-			if(!function_exists('session_start')) {
-				throw new Exception("PHP session support is required by phpVirtualBox but is not enabled or available in your PHP installation.", vboxconnector::PHPVB_ERRNO_FATAL);
-			}
-
 			session_init(true);
 
 			$settings = new phpVBoxConfigClass();

@@ -301,6 +301,10 @@ class vboxconnector {
 				try {$this->session->unlockMachine();}
 				catch (Exception $e) { }
 			}
+			
+			// Logoff
+			if($this->vbox->handle)
+				$this->websessionManager->logoff($this->vbox->handle);
 
 		}
 
@@ -412,14 +416,14 @@ class vboxconnector {
 				try {
 
 					while($event->handle) {
-							
+						
 						$eventData = $this->_getEventData($event, $k);
+						$source->eventProcessed($listener, $event);						
+						$event->releaseRemote();
 
 						// Only keep the last event of one particular type
 						$eventlist[$eventData['dedupId']] = $eventData;
-							
-						$source->eventProcessed($listener, $event);
-						$event->releaseRemote();
+
 						$event = $source->getEvent($listener,100);
 					}
 
@@ -427,24 +431,35 @@ class vboxconnector {
 					// pass - Exceptions in event processing are ok
 					// as machines can be powered off and their event
 					// listeners can go away
+					
+					if($k == 'vbox')
+						$this->errors[] = $e;
 				}
 				
 			} catch (Exception $e) {
 				
+				// vbox event listener
+				if($k == 'vbox') {
+					
+					$this->errors[] = $e;
+					
 				// Probably a machine that was powered off
-				
-				// Release remote references
-				if($listener)
-					try { $listener->releaseRemote(); } catch (Exceptoin $e) {
-						/// pass
-					}
-				if($source)
-					try { $source->releaseRemote(); } catch (Exceptoin $e) { 
-						// pass
-					}
-				
-				// Remove listener from list
-				unset($this->persistentRequest['vboxEventListeners'][$k]);
+				} else {
+					
+					// Release remote references
+					if($listener)
+						try { $listener->releaseRemote(); } catch (Exceptoin $e) {
+							/// pass
+						}
+					if($source)
+						try { $source->releaseRemote(); } catch (Exceptoin $e) { 
+							// pass
+						}
+					
+					// Remove listener from list
+					unset($this->persistentRequest['vboxEventListeners'][$k]);
+					
+				}
 				
 			}
 			
@@ -695,6 +710,7 @@ class vboxconnector {
 		}
 		
 		$this->websessionManager->logoff($this->vbox->handle);
+		unset($this->vbox);
 		
 		return ($response['data']['result'] = 1);
 	}
@@ -763,7 +779,7 @@ class vboxconnector {
 		$eventDataObject = new $parentClass($this->client, $event->handle);
 		
 		// Dedup ID is at least listener key ('vbox' or machine id) and event type
-		$data['dedupId'] = $listenerKey .'-' . $data['eventType'];
+		$data['dedupId'] = $listenerKey.'-'.$data['eventType'];
 		
 		switch($data['eventType']) {
 			
@@ -778,6 +794,7 @@ class vboxconnector {
 		        $data['dedupId'] .= '-'. $data['machineId'];
 		        break;
 
+	        case 'OnExtraDataCanChange':
 			case 'OnExtraDataChanged':
 		        $data['machineId'] = $eventDataObject->machineId;
 		        $data['key'] = $eventDataObject->key;
@@ -1209,6 +1226,7 @@ class vboxconnector {
 		$response['data']['saved'] = array();
 		$response['data']['errored'] = false;
 		
+		
 		foreach($args['vms'] as $vm) {
 			
 			// create session and lock machine
@@ -1222,11 +1240,15 @@ class vboxconnector {
 			$newGroups = $vm['groups'];
 
 			if($this->settings->phpVboxGroups) {
+				
 				$oldGroups = explode(',',$machine->getExtraData(vboxconnector::phpVboxGroupKey));
 				if(!is_array($oldGroups)) $oldGroups = array("/");
-				if(!count(array_diff($oldGroups,$newGroups)) && !count(array_diff($newGroups,$oldGroups)))
+				if(!count(array_diff($oldGroups,$newGroups)) && !count(array_diff($newGroups,$oldGroups))) {
 					continue;
+				}
+				
 			} else {
+				
 				$oldGroups = $machine->groups;
 				
 				if((string)$machine->sessionState != 'Unlocked' || (!count(array_diff($oldGroups,$newGroups)) && !count(array_diff($newGroups,$oldGroups)))) {
@@ -1236,10 +1258,8 @@ class vboxconnector {
 
 			}
 			
-			// Add to saved list
-			$response['data']['saved'][] = $vm['id'];
-			
 			try {
+				
 				$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 				
 				$vmLocked = ((string)$machine->sessionState == 'Locked');
@@ -1254,9 +1274,8 @@ class vboxconnector {
 				}
 				
 				$this->session->machine->saveSettings();
-				
 				$this->session->unlockMachine();
-				$machine->releaseRemote();
+				
 				unset($this->session);
 				
 			} catch (Exception $e) {
@@ -1264,7 +1283,13 @@ class vboxconnector {
 				$this->errors[] = $e;
 				$response['data']['errored'] = true;
 				
+				continue;
+				
 			}
+
+			// Add to saved list
+			$response['data']['saved'][] = $vm['id'];
+			
 		}
 		
 		
@@ -1353,7 +1378,6 @@ class vboxconnector {
 			$args['enabled'] = intval(!$this->session->machine->VRDEServer->enabled);
 		}
 		
-		$this->messages[] = $args['enabled'];
 		$this->session->machine->VRDEServer->enabled = intval($args['enabled']);
 
 		$this->session->unlockMachine();
@@ -2373,6 +2397,7 @@ class vboxconnector {
 
 			// Logoff session associated with progress operation
 			$this->websessionManager->logoff($this->vbox->handle);
+			unset($this->vbox);
 
 		} catch (Exception $e) {
 			$this->errors[] = $e;

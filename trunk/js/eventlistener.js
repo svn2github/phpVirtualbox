@@ -60,6 +60,7 @@ var vboxEventListener = {
 			
 			// Check for valid result
 			if(!d.result) {
+				$('#vboxPane').css({'display':'none'});
 				vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox'));
 				return;
 			}

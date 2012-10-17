@@ -438,29 +438,19 @@ class vboxconnector {
 				
 			} catch (Exception $e) {
 				
-				// vbox event listener
-				if($k == 'vbox') {
-					
-					$this->errors[] = $e;
-					
-				// Probably a machine that was powered off
-				} else {
-					
-					// Release remote references
-					if($listener)
-						try { $listener->releaseRemote(); } catch (Exceptoin $e) {
-							/// pass
-						}
-					if($source)
-						try { $source->releaseRemote(); } catch (Exceptoin $e) { 
-							// pass
-						}
-					
-					// Remove listener from list
-					unset($this->persistentRequest['vboxEventListeners'][$k]);
-					
-				}
+				// Machine powered off or client has stale MO reference
+				if($listener)
+					try { $listener->releaseRemote(); } catch (Exceptoin $e) {
+						/// pass
+					}
+				if($source)
+					try { $source->releaseRemote(); } catch (Exceptoin $e) { 
+						// pass
+					}
 				
+				// Remove listener from list
+				unset($this->persistentRequest['vboxEventListeners'][$k]);
+					
 			}
 			
 		}
@@ -653,7 +643,7 @@ class vboxconnector {
 		// a phpvirtualbox server change
 		$response['data']['key'] = $this->settings->key;
 		
-		return ($response['data']['result'] = 1);
+		return ($response['data']['result'] = isset($this->persistentRequest['vboxEventListeners']['vbox']));
 		
 	}
 

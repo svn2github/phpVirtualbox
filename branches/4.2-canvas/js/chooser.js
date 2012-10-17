@@ -1474,6 +1474,8 @@ var vboxChooser = {
 				ctx.clearRect(0,0,18,18);
 				ctx.drawImage(vboxImageRightWhite,0,0,18,18);
 			});
+		
+		$(gelm).addClass('vboxVMGroupSelected');
 	},
 	
 	/*
@@ -1516,6 +1518,7 @@ var vboxChooser = {
 				ctx.drawImage(vboxImageRightGrey,0,0,18,18);
 			});
 	
+		$(gelm).removeClass('vboxVMGroupSelected');
 	},
 	
 	/*
@@ -1555,7 +1558,7 @@ var vboxChooser = {
 					return true;
 
 				vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
-				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected')
+				vboxChooser._anchor.find('div.vboxVMGroupSelected')
 					.each(function(idx,gelm) {
 						vboxChooser._deselectGroup(gelm);
 					});
@@ -1563,7 +1566,7 @@ var vboxChooser = {
 				
 					
 				// select current group
-				vboxChooser._selectGroup($(item).parent().addClass('vboxVMGroupSelected'));
+				vboxChooser._selectGroup($(item).parent());
 
 				selectedList = [{
 					type: 'group',
@@ -1578,12 +1581,12 @@ var vboxChooser = {
 					return (v.type != 'group' || (v.groupPath != $(item).parent().data('vmGroupPath')));
 				});
 				
-				vboxChooser._deselectGroup($(item).parent().removeClass('vboxVMGroupSelected'));
+				vboxChooser._deselectGroup($(item).parent());
 			
 			// Not already selected, and ctrl key
 			} else {
 	
-				vboxChooser._selectGroup($(item).parent().addClass('vboxVMGroupSelected'));
+				vboxChooser._selectGroup($(item).parent());
 				
 				selectedList = vboxChooser._selectedList;
 				

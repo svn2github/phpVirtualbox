@@ -248,7 +248,7 @@ function vboxDrawPreview(can, imageObj, text, width, height, resizeToImage) {
 	var ctxBlur = cvs.getContext('2d');
 	ctxBlur.beginPath();
 	ctxBlur.lineWidth = 1;
-	ctxBlur.strokeStyle = "#ff0000";
+	ctxBlur.strokeStyle = "#000000";
 	ctxBlur.moveTo(rectX,rectY);
 	ctxBlur.lineTo(rectWidth, rectY);
 	ctxBlur.lineTo(rectWidth,rectHeight*1.0/3.0);
@@ -259,7 +259,7 @@ function vboxDrawPreview(can, imageObj, text, width, height, resizeToImage) {
 	ctxBlur.fillStyle="rgba(255,255,255,0.3)";
 	ctxBlur.fill();
 	
-	stackBlurCanvasRGBA( cvs, 0, 0, rectWidth, rectHeight, 15 );
+	stackBlurCanvasRGBA( cvs, 0, 0, rectWidth, rectHeight, 17 );
 	
 	ctx.drawImage(cvs, margin+screenMargin, margin+screenMargin, rectWidth, rectHeight);
 	

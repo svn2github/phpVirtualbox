@@ -683,6 +683,7 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 	cursor: pointer;
 	width: 18px;
 	height: 18px;
+	vertical-align: top;
 }
 
 /* Toolbar above vm list */

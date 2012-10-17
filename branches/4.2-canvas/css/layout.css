@@ -552,21 +552,7 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 	display: inline-block;
 }
 
-/* Canvas arrows */
-#vboxChooserPane div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseWhite,
-#vboxChooserPane div.vboxChooserGroupShowOnly.vboxVMGroupSelected > div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseWhite,
-#vboxChooserPane div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseWhite {
-	display: none;
-}
-#vboxChooserPane div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseGrey {
-	display: inline;
-}
-#vboxChooserPane div.vboxVMGroupSelected > div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseWhite {
-	display: inline;
-}
-#vboxChooserPane div.vboxVMGroupSelected > div.vboxChooserGroupHeader > canvas.vboxChooserGroupNameArrowCollapseGrey {
-	display: none;
-}
+
 /* Arrows on left side of header */
 #vboxChooserPane div.vboxChooserGroupHeader .vboxChooserGroupNameArrowLeft {
 	display: inline-block;
@@ -675,15 +661,18 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 #vboxChooserPane div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader > span.vboxChooserGroupInfo {
 	margin-right: 2px;
 }
-#vboxChooserPane div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader span.vboxChooserGroupShowOnly,
+#vboxChooserPane div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader canvas.vboxChooserGroupShowOnly,
 #vboxChooserPane div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader .vboxChooserGroupNameArrowCollapse {
 	display: none;
 }
-#vboxChooserPane div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader span.vboxChooserGroupShowOnlyBack {
+#vboxChooserPane div.vboxChooserGroupShowOnly > div.vboxChooserGroupHeader canvas.vboxChooserGroupShowOnlyBack {
 	display: inline-block;
 }
+#vboxChooserPane div.vboxChooserGroupHeader canvas.vboxChooserGroupShowOnlyBack {
+	display: none;
+}
 
-#vboxChooserPane div.vboxChooserGroupHeader span.vboxChooserGroupShowOnly {
+#vboxChooserPane div.vboxChooserGroupHeader canvas.vboxChooserGroupShowOnly {
 	position: relative;
 	top: -1px;
 	display: inline-block;
@@ -694,21 +683,7 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 	cursor: pointer;
 	width: 18px;
 	height: 18px;
-	background-repeat: no-repeat;
-	background-image: url(../images/arrow_grad_right.png);
 }
-#vboxChooserPane div.vboxVMGroupSelected > div.vboxChooserGroupHeader span.vboxChooserGroupShowOnly {
-	background-image: url(../images/arrow_white_right.png);
-}
-
-#vboxChooserPane div.vboxChooserGroupHeader span.vboxChooserGroupShowOnlyBack {
-	background-image: url(../images/arrow_grad_left.png);
-	display: none;
-}
-#vboxChooserPane div.vboxVMGroupSelected > div.vboxChooserGroupHeader span.vboxChooserGroupShowOnlyBack {
-	background-image: url(../images/arrow_white_left.png);
-}
-
 
 /* Toolbar above vm list */
 #vboxPaneToolbar { float: left; }

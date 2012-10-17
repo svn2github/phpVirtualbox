@@ -77,6 +77,7 @@ var vboxEventListener = {
 			// triggering changes
 			if(d && d.events) {
 								
+				
 				var eventList = [];
 				
 				var vmChanges = {};
@@ -97,9 +98,12 @@ var vboxEventListener = {
 						
 						// machine session state change
 						case 'OnSessionStateChanged':
+							
 							if(!vmChanges[d.events[i].machineId])
 								vmChanges[d.events[i].machineId] = {};
+							
 							vmChanges[d.events[i].machineId]['sessionState'] = d.events[i].state;
+							
 							break;
 							
 						// machine data changed
@@ -264,3 +268,10 @@ var vboxEventListener = {
 
 	}
 };
+
+// Stop event listener on window unload
+$(document).ready(function() {
+	$(window).bind('unload',function() {
+		vboxEventListener.stop();
+	});	
+});

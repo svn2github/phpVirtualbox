@@ -211,9 +211,6 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 					if(vboxVMDetailsSections[i].onRender)
 						vboxVMDetailsSections[i].onRender(vmData);
 					
-				// Just run onRender?
-				} else if(vboxVMDetailsSections[i].rerenderOnStateChange) {
-					vboxVMDetailsSections[i].onRender(vmData);
 				}
 				
 				
@@ -356,26 +353,23 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 						.addClass(!((vboxVMStates.isEditable(data) || vboxVMStates.isRunning(data)) && !vboxVMStates.isSaved(data)) ? 'vboxNoLinks' : '')
 						.html(ttemplate.replace('%1',section.icon).replace('%2', section.settingsLink).replace('%3', section.title))
 						.append(
-							(isCanvasSupported() ?
-									$('<canvas />').addClass('vboxDetailsUpDnImg')
-									.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
-									.each(function(idx, canvas) {
-										var ctx = canvas.getContext('2d');
-										if(vboxGetLocalDataItem("vboxSectionCollapse"+sectionName)) {
-											ctx.save();
-											ctx.translate(9,9);
-											ctx.rotate(90 * Math.PI / 180.0);
-											ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
-											ctx.restore();
-										} else {
-											ctx.drawImage(vboxImageDownGrey,0,0,18,18);
-										}
-											
-									}).click(function(){
-										$(this).parent().trigger("dblclick");
-									})
-								: "<span class='vboxDetailsUpDnImg' onClick='$(this).parent().trigger(\"dblclick\");' />"
-							)
+							$('<canvas />').addClass('vboxDetailsUpDnImg')
+								.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
+								.each(function(idx, canvas) {
+									var ctx = canvas.getContext('2d');
+									if(vboxGetLocalDataItem("vboxSectionCollapse"+sectionName)) {
+										ctx.save();
+										ctx.translate(9,9);
+										ctx.rotate(90 * Math.PI / 180.0);
+										ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
+										ctx.restore();
+									} else {
+										ctx.drawImage(vboxImageDownGrey,0,0,18,18);
+									}
+										
+								}).click(function(){
+									$(this).parent().trigger("dblclick");
+								})							
 						)
 					)
 				).disableSelection()

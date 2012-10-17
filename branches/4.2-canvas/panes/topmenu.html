@@ -269,6 +269,18 @@ $('#vboxPane').bind('vmSelectionListChanged',function(e, chooser){
 	if(vboxChooser.isVMSelected(vmid))
 		vboxTopMenuBar.update(self);
 
+}).bind('vboxMachineRegistered', function(e, vmid) {
+
+	// Update menus if the VM is selected
+	if(vboxChooser.isVMSelected(vmid))
+		vboxTopMenuBar.update(self);
+
+}).bind('vboxMachineDataChanged', function(e, vmid) {
+
+	// Update menus if the VM is selected
+	if(vboxChooser.isVMSelected(vmid))
+		vboxTopMenuBar.update(self);
+
 });
 
 

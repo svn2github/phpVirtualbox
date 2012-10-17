@@ -1422,7 +1422,88 @@ var vboxChooser = {
 	},
 
 	/*
-	 * Select a single item in our list
+	 * Select a single group and modify canvas elements
+	 */
+	_selectGroup : function(gelm) {
+		
+		$(gelm).children('div.vboxChooserGroupHeader')
+		
+			// Collapse arrow
+			.find('canvas.vboxChooserGroupNameArrowCollapse').each(function(idx,can) {
+				var ctx = $(can)[0].getContext('2d');
+				ctx.clearRect(0,0,18,18);
+				if($(gelm).hasClass('vboxVMGroupCollapsed')) {
+					ctx.save();
+					ctx.translate(9,9);
+					ctx.rotate(-90 * Math.PI / 180.0);										
+					ctx.drawImage(vboxImageDownWhite,-9,-9,18,18);
+					ctx.restore();
+				} else {
+					ctx.drawImage(vboxImageDownWhite,0,0,18,18);
+				}
+			
+			// Back arrow
+			}).siblings('canvas.vboxChooserGroupShowOnlyBack').each(function(idx,can){
+				var ctx = $(can)[0].getContext('2d');
+				ctx.clearRect(0,0,18,18);
+				ctx.save();
+				ctx.translate(9,9);
+				ctx.rotate(180 * Math.PI / 180.0);										
+				ctx.drawImage(vboxImageRightWhite,-9,-9,18,18);
+				ctx.restore();
+				
+			// "Show only this group" arrow
+			}).siblings('span.vboxChooserGroupInfo').children('canvas.vboxChooserGroupShowOnly').each(function(idx,can){
+				var ctx = $(can)[0].getContext('2d');
+				ctx.clearRect(0,0,18,18);
+				ctx.drawImage(vboxImageRightWhite,0,0,18,18);
+			});
+	},
+	
+	/*
+	 * Deselect a single group and modify canvas elements
+	 */
+	_deselectGroup : function(gelm) {
+		
+		$(gelm).children('div.vboxChooserGroupHeader')
+			
+			// Collapse arrow
+			.find('canvas.vboxChooserGroupNameArrowCollapse').each(function(idx,can) {
+	
+				var ctx = $(can)[0].getContext('2d');
+				ctx.clearRect(0,0,18,18);
+				if($(can).closest('vboxChooserGroup').hasClass('vboxVMGroupCollapsed')) {
+					ctx.save();
+					ctx.translate(9,9);
+					ctx.rotate(-90 * Math.PI / 180.0);										
+					ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
+					ctx.restore();
+				} else {
+					ctx.drawImage(vboxImageDownGrey,0,0,18,18);
+				}
+			
+			// Back arrow
+			}).siblings('canvas.vboxChooserGroupShowOnlyBack').each(function(idx,can){
+				
+				var ctx = $(can)[0].getContext('2d');
+				ctx.clearRect(0,0,18,18);
+				ctx.save();
+				ctx.translate(9,9);
+				ctx.rotate(180 * Math.PI / 180.0);										
+				ctx.drawImage(vboxImageRightGrey,-9,-9,18,18);
+				ctx.restore();
+			
+			// "Show only this group" arrow
+			}).siblings('span.vboxChooserGroupInfo').children('canvas.vboxChooserGroupShowOnly').each(function(idx,can){
+				var ctx = $(can)[0].getContext('2d');
+				ctx.clearRect(0,0,18,18);
+				ctx.drawImage(vboxImageRightGrey,0,0,18,18);
+			});
+	
+	},
+	
+	/*
+	 * Select (or unselect) an item in our list. Called onmousedown or onCLick
 	 */
 	selectItem : function(e) {
 		
@@ -1458,10 +1539,15 @@ var vboxChooser = {
 					return true;
 
 				vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
-				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected');
+				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected')
+					.each(function(idx,gelm) {
+						vboxChooser._deselectGroup(gelm);
+					});
 				
+				
+					
 				// select current group
-				$(item).parent().addClass('vboxVMGroupSelected');
+				vboxChooser._selectGroup($(item).parent().addClass('vboxVMGroupSelected'));
 
 				selectedList = [{
 					type: 'group',
@@ -1476,12 +1562,12 @@ var vboxChooser = {
 					return (v.type != 'group' || (v.groupPath != $(item).parent().data('vmGroupPath')));
 				});
 				
-				$(item).parent().removeClass('vboxVMGroupSelected');
+				vboxChooser._deselectGroup($(item).parent().removeClass('vboxVMGroupSelected'));
 			
 			// Not already selected, and ctrl key
 			} else {
 	
-				$(item).parent().addClass('vboxVMGroupSelected');
+				vboxChooser._selectGroup($(item).parent().addClass('vboxVMGroupSelected'));
 				
 				selectedList = vboxChooser._selectedList;
 				
@@ -1500,7 +1586,10 @@ var vboxChooser = {
 			if((!e.ctrlKey && !e.metaKey) || $(item).data('vmid') == 'host') {
 				
 				vboxChooser._anchor.find('.vboxListItemSelected').removeClass('vboxListItemSelected');
-				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected');
+				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected')
+					.each(function(idx,gelm){
+						vboxChooser._deselectGroup(gelm);
+					})
 				
 				// Select current VM
 				$(item).addClass('vboxListItemSelected').removeClass('vboxHover');
@@ -1697,29 +1786,11 @@ var vboxChooser = {
 						})
 				)
 				.append(
-						(isCanvasSupported() ? [
-								$('<canvas />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse vboxChooserGroupNameArrowCollapseWhite')
+						$('<canvas />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse')
 								.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
 								.each(function(idx, canvas) {
 									var ctx = canvas.getContext('2d');
 									if(collapsed) {
-										ctx.save();
-										ctx.translate(9,9);
-										ctx.rotate(-90 * Math.PI / 180.0);										
-										ctx.drawImage(vboxImageDownWhite,-9,-9,18,18);
-										ctx.restore();
-									} else {
-										ctx.drawImage(vboxImageDownWhite,0,0,18,18);
-									}
-								}).click(function(){
-									
-									// Already collapsed?
-									var collapsed = $(this).closest('div.vboxChooserGroup').hasClass('vboxVMGroupCollapsed');
-									
-									// Rotate grey arrow
-									var ctx = $(this).siblings('canvas.vboxChooserGroupNameArrowCollapseGrey')[0].getContext('2d');										
-									ctx.clearRect(0,0,18,18);
-									if(!collapsed) {
 										ctx.save();
 										ctx.translate(9,9);
 										ctx.rotate(-90 * Math.PI / 180.0);										
@@ -1728,7 +1799,11 @@ var vboxChooser = {
 									} else {
 										ctx.drawImage(vboxImageDownGrey,0,0,18,18);
 									}
-
+								}).click(function(){
+									
+									// Already collapsed?
+									var collapsed = $(this).closest('div.vboxChooserGroup').hasClass('vboxVMGroupCollapsed');
+									
 									// Rotate this arrow
 									var ctx = $(this)[0].getContext('2d');
 									$('<div />').animate({left:90},
@@ -1755,51 +1830,13 @@ var vboxChooser = {
 										vboxChooser._resizeElements();
 									});
 									
-								}),
-								$('<canvas />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse vboxChooserGroupNameArrowCollapseGrey')
-									.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
-									.each(function(idx, canvas) {
-										var ctx = canvas.getContext('2d');
-										if(collapsed) {
-											ctx.save();
-											ctx.translate(9,9);
-											ctx.rotate(-90 * Math.PI / 180.0);										
-											ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
-											ctx.restore();
-										} else {
-											ctx.drawImage(vboxImageDownGrey,0,0,18,18);
-										}
-
-									}).mousedown(function(e){
-										
-										/* When mousedown happens, the group is selected and the mouse up action
-										 * occurs on the white canvas. This makes it so a full "click" is never
-										 * registered on the white arrow canvas.
-										 * 
-										 * The below code should get around this.
-										 */
-										$(document).one('mouseup',function(e) {
-											if($(e.target).hasClass('vboxChooserGroupNameArrowCollapseWhite')) {
-												$(e.target).trigger('click');
-											}
-										});
-									})
-								] : // Else
-						$('<span />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse')
-							.click(function(e) {
-								$.when($(this).closest('div.vboxChooserGroup').toggleClass('vboxVMGroupCollapsed', 300)).then(function(){
-									
-									// Write out collapsed group list
-									vboxChooser._saveCollapsedGroups();
-
-									// Reset title sizes
-									vboxChooser._resizeElements();
-								});
-							})
-						)
+								})
 				).append(
-						$('<span />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupShowOnlyBack')
-							.click(function(e) {
+						$('<canvas />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupShowOnlyBack')
+							.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
+							.each(function(idx,can){
+								can.getContext('2d').drawImage(vboxImageRightGrey, 0, 0);
+							}).click(function(e) {
 								e.stopPropagation();
 								e.preventDefault();
 								vboxChooser.showOnlyGroupElm();
@@ -1810,12 +1847,16 @@ var vboxChooser = {
 				.append($('<span />').addClass('vboxChooserGroupInfo').html(
 						"<span class='vboxChooserGroupCounts' />"
 						).append(
-							$('<span />').addClass('vboxChooserGroupShowOnly').click(function(e){
-								e.stopPropagation();
-								e.preventDefault();
-								vboxChooser.showOnlyGroupElm($(this).closest('div.vboxChooserGroup'));
-								return false;
-							})
+							$('<canvas />').addClass('vboxChooserGroupShowOnly')
+								.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
+								.each(function(idx,can){
+									can.getContext('2d').drawImage(vboxImageRightGrey, 0, 0);
+								}).click(function(e){
+									e.stopPropagation();
+									e.preventDefault();
+									vboxChooser.showOnlyGroupElm($(this).closest('div.vboxChooserGroup'));
+									return false;
+								})
 						))
 				.append($('<span />').html(gname).addClass('vboxChooserGroupName vboxFitToContainer'))
 				.append(
@@ -1949,6 +1990,8 @@ var vboxChooser = {
 		// Get groups, machine list and start listener
 		$.when(vboxAjaxRequest('vboxGroupDefinitionsGet')).then(function(g) {
 			
+			if(!g) return;
+			
 			vboxChooser._groupDefs = g.data;
 			
 			$.when(vboxVMDataMediator.getVMList()).then(function(d) {
@@ -2045,6 +2088,17 @@ $(document).ready(function(){
 			}
 		}
 		
+		// Update menus if the VM is selected
+		if(vboxChooser.isVMSelected(vmid)) {
+			
+			if(vboxChooser._vmGroupContextMenuObj)
+				vboxChooser._vmGroupContextMenuObj.update(vboxChooser);
+	
+			if(vboxChooser._vmContextMenuObj)
+				vboxChooser._vmContextMenuObj.update(vboxChooser);
+	
+		}
+
 	
 	// Snapshot taken
 	}).bind('vboxSnapshotTaken',function(e,vmid) {
@@ -2078,16 +2132,30 @@ $(document).ready(function(){
 			vboxChooser._resizeElements();
 
 			
-			return;
+		} else {
+			
+			// Enforce VM ownership
+			if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin && data.owner != $('#vboxPane').data('vboxSession').user) {
+				return;
+			}
+			
+			// Add to list			
+			vboxChooser.updateVMElement(data, true);
+
 		}
 		
-		// Enforce VM ownership
-	    if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin && data.owner != $('#vboxPane').data('vboxSession').user) {
-	    	return;
-	    }
+		// Update menus if the VM is selected
+		if(vboxChooser.isVMSelected(vmid)) {
+			
+			if(vboxChooser._vmGroupContextMenuObj)
+				vboxChooser._vmGroupContextMenuObj.update(vboxChooser);
 	
-		// Add to list			
-		vboxChooser.updateVMElement(data, true);
+			if(vboxChooser._vmContextMenuObj)
+				vboxChooser._vmContextMenuObj.update(vboxChooser);
+	
+		}
+
+		
 	
 	// Watch for group order changes
 	}).bind('vboxExtraDataChanged', function(e, machineId, key, value) {

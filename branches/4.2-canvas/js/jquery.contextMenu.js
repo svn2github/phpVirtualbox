@@ -89,7 +89,21 @@ if(jQuery)( function() {
 					
 					// When items are selected
 					$(menu).find('A').unbind('click');
-					$(menu).find('li').unbind('mouseenter').unbind('mouseleave');
+					$(menu).find('li').unbind('mouseenter').unbind('mouseleave').unbind('click').bind('click', function(e) {
+						
+						$(document).unbind('click');
+						
+						$("ul.contextMenu").hide();
+						
+						// Callback
+						if( callback )
+							callback( $(this).children('a').attr('href').substr(1), $(srcElement), null, $(this).children('a'));
+						
+						e.stopPropagation();
+						return false;
+
+					});
+					
 					$(menu).find('LI:not(.disabled)').hover( function(e) {
 						
 						$(menu).find('LI.hover').removeClass('hover');
@@ -102,12 +116,6 @@ if(jQuery)( function() {
 						
 					},function() {
 						$(menu).find('LI.hover').removeClass('hover');
-					}).children('A').click( function() {
-						$(document).unbind('click');
-						$("ul.contextMenu").hide();
-						// Callback
-						if( callback ) callback( $(this).attr('href').substr(1), $(srcElement), null, this); //{x: x - offset.left, y: y - offset.top, docX: x, docY: y} , this);
-						return false;
 					});
 				};
 				

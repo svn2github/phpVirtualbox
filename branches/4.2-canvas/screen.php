@@ -176,7 +176,7 @@ try {
       		exit;
     	}
 		
-
+	
     	if($_REQUEST['full']) $imageraw = $machine->readSavedScreenshotPNGToArray(0);
     	else $imageraw = $machine->readSavedThumbnailPNGToArray(0);
 			

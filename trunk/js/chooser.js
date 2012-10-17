@@ -443,16 +443,27 @@ var vboxChooser = {
 			if(!vmUpdate.groups || vmUpdate.groups.length == 0)
 				vmUpdate.groups = ['/'];
 			
+			var groupSelected = false;
+			
 			for(var i = 0; i < vmUpdate.groups.length; i++) {
 				var gElm = $(vboxChooser.getGroupElement(vmUpdate.groups[i]));
 				vboxChooser.vmHTML(vmUpdate).appendTo(
 					gElm.children('div.vboxChooserGroupVMs')
 				);
 				vboxChooser.sortGroup(gElm);
+				
+				if(!groupSelected)
+					groupSelected = $(gElm).children('div.vboxChooserGroupVMs').parents('div.vboxVMGroupSelected').length;
 			}
 			
 			// Resize chooser elements
 			vboxChooser._resizeElements();
+			
+			// Update selection list if a group the VM
+			// was added to is selected
+			if(groupSelected) {
+				vboxChooser.selectionListChanged(vboxChooser._selectedList);
+			}
 
 		// Existing VM. Replace existing elements
 		} else {
@@ -2072,8 +2083,12 @@ $(document).ready(function(){
 		// removed
 		if(!registered) {
 	
+			$('#'+vboxChooser._anchorid +' table.vboxChooserItem-'+vboxChooser._anchorid+'-'+vmid).remove();
+			
+			vboxChooser.composeGroupDef(true);
+
 			// See if VM is selected
-			if(jQuery.inArray(vmid, vboxChooser.selectedVMs) > -1) {
+			if(vboxChooser.isVMSelected(vmid)) {
 				
 				var selectedList = vboxChooser._selectedList.filter(function(v){
 					return (v.type == 'group' || (v.id != vmid));
@@ -2081,39 +2096,25 @@ $(document).ready(function(){
 				
 				vboxChooser.selectionListChanged(selectedList);
 				
-				
 			}
 			
-			$('#'+vboxChooser._anchorid +' table.vboxChooserItem-'+vboxChooser._anchorid+'-'+vmid).remove();
-			
-			vboxChooser.composeGroupDef(true);
 
 			// Resize chooser elements
 			vboxChooser._resizeElements();
+			
+			return;
 
-		} else {
-			
-			// Enforce VM ownership
-			if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin && data.owner != $('#vboxPane').data('vboxSession').user) {
-				return;
-			}
-			
-			// Add to list			
-			vboxChooser.updateVMElement(data, true);
-			
 		}
+			
+		// Enforce VM ownership
+		if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin && data.owner != $('#vboxPane').data('vboxSession').user) {
+			return;
+		}
+			
+		// Add to list			
+		vboxChooser.updateVMElement(data, true);
+			
 		
-		// Update menus if the VM is selected
-		if(vboxChooser.isVMSelected(vmid)) {
-			
-			if(vboxChooser._vmGroupContextMenuObj)
-				vboxChooser._vmGroupContextMenuObj.update(vboxChooser);
-	
-			if(vboxChooser._vmContextMenuObj)
-				vboxChooser._vmContextMenuObj.update(vboxChooser);
-	
-		}
-
 	
 	// Watch for group order changes
 	}).bind('vboxExtraDataChanged', function(e, machineId, key, value) {

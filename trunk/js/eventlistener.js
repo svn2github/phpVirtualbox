@@ -83,8 +83,6 @@ var vboxEventListener = {
 				
 				for(var i = 0; i < d.events.length; i++) {
 					
-					console.log(d.events[i]);
-
 					switch(d.events[i].eventType) {
 					
 						// machine state change

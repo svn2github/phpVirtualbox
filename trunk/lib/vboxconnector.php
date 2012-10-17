@@ -3636,7 +3636,7 @@ class vboxconnector {
 				if($this->session->machine->VRDEServer && $this->vbox->systemProperties->defaultVRDEExtPack) {
 					$this->session->machine->VRDEServer->enabled = 1;
 					$this->session->machine->VRDEServer->authTimeout = 5000;
-					$this->session->machine->VRDEServer->setVRDEProperty('TCP/Ports',$this->settings->vrdeports);
+					$this->session->machine->VRDEServer->setVRDEProperty('TCP/Ports',($this->settings->vrdeports ? $this->settings->vrdeports : '3390-5000'));
 				}
 			} catch (Exception $e) {
 				//Ignore

@@ -463,8 +463,11 @@ var vboxVMDetailsSections = {
 
 						$('<input />')
 							.attr({'class':'vboxRadio','type':'radio','name':'vboxPreviewRadio','value':0})
-							.click(function(){vboxSetLocalDataItem('previewUpdateInterval','0');})
-							.prop('checked', parseInt(vboxGetLocalDataItem('previewUpdateInterval')) == 0)
+							.click(function(){
+								vboxSetLocalDataItem('previewUpdateInterval','0');
+								vboxVMDetailsSections.preview._updateInterval = 0;
+							})
+							.prop('checked', parseInt(vboxVMDetailsSections.preview._updateInterval) == 0)
 						
 					).append(
 							
@@ -479,7 +482,7 @@ var vboxVMDetailsSections = {
 			var ints = [3,5,10,20,30,60];
 			
 			// check for update interval
-			if(jQuery.inArray(vboxVMDetailsSections.preview._updateInterval, ints) < 0) {
+			if(vboxVMDetailsSections.preview._updateInterval > 0 && jQuery.inArray(vboxVMDetailsSections.preview._updateInterval, ints) < 0) {
 				ints[ints.length] = vboxVMDetailsSections.preview._updateInterval;
 			}
 			ints.sort(function(a,b){
@@ -495,8 +498,22 @@ var vboxVMDetailsSections = {
 				if(i==0) $(li).attr('class','separator');
 
 				var radio = $('<input />').attr({'class':'vboxRadio','type':'radio','name':'vboxPreviewRadio','value':ints[i]}).click(function(){
-					vboxSetLocalDataItem('previewUpdateInterval',$(this).val());		
-				}).prop('checked', vboxVMDetailsSections.preview._updateInterval == ints[i]);
+					
+					var lastIntervalNone = (parseInt(vboxVMDetailsSections.preview._updateInterval) == 0);
+					
+					vboxSetLocalDataItem('previewUpdateInterval',$(this).val());
+					vboxVMDetailsSections.preview._updateInterval = $(this).val();
+					
+					// Kick off preview updates if the last interval was 0
+					if(lastIntervalNone) {
+						var selVMData = vboxChooser.getSelectedVMsData();
+						for(var i = 0; i < selVMData.length; i++) {
+							vboxVMDetailsSections.preview.onRender(selVMData[0]);
+						}
+					}
+					
+					
+				}).prop('checked', parseInt(vboxVMDetailsSections.preview._updateInterval) == ints[i]);
 				
 				$('<label />')
 					.append(radio)
@@ -548,7 +565,7 @@ var vboxVMDetailsSections = {
 			
 		onRender : function(d) {
 			
-			if(!vboxVMStates.isRunning(d) && !vboxVMStates.isSaved(d)) {
+			if(!vboxVMDetailsSections.preview._updateInterval || (!vboxVMStates.isRunning(d) && !vboxVMStates.isSaved(d))) {
 				var timer = $('#vboxPane').data('vboxPreviewTimer-'+d.id);
 				if(timer) {
 					$('#vboxPane').data('vboxPreviewTimer-'+d.id, null);

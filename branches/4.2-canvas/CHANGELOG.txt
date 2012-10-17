@@ -18,6 +18,8 @@ Removed obsolete configuration items from config.php-example
 Fixed UI updating of UI components when a VM is added or removed
 from a selected group or its subgroups 
 
+Added PHP version check
+
 -------------------------------------
 	4.2-2	2012-10-15
 -------------------------------------

@@ -453,7 +453,7 @@ var vboxChooser = {
 				vboxChooser.sortGroup(gElm);
 				
 				if(!groupSelected)
-					groupSelected = $(gElm).children('div.vboxChooserGroupVMs').parents('div.vboxVMGroupSelected').length;
+					groupSelected = $(gElm).children('div.vboxChooserGroupVMs').closest('div.vboxVMGroupSelected').length;
 			}
 			
 			// Resize chooser elements
@@ -1154,12 +1154,13 @@ var vboxChooser = {
 		
 		// Save machine groups and trigger change
 		var vms = [];
-		for(var i in vboxVMDataMediator.vmData) {
+		var vmList = vboxVMDataMediator.getVMList();
+		for(var i in vmList) {
 			
 			if(typeof i != 'string' || i == 'host') continue;
 			
 			/* If a VM's groups have changed, add it to the list */
-			var eGroups = vboxVMDataMediator.vmData[i].groups;
+			var eGroups = vmList[i].groups;
 			var nGroups = vboxChooser.getGroupsForVM(i);
 			
 			if($(nGroups).not(eGroups).length || $(eGroups).not(nGroups).length) {
@@ -1171,33 +1172,37 @@ var vboxChooser = {
 			}
 		}
 		
-		// Save machines groups
-		vboxAjaxRequest('machinesSaveGroups',{'vms':vms},function(res){
+		// Save machines groups?
+		if(vms.length) {
 
-			if(!res || res.errored) {
-
-				var ml = new vboxLoader();
-				ml.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
-				ml.add('vboxGroupDefinitionsGet',function(d){vboxChooser._groupDefs = d.data;});
+			vboxAjaxRequest('machinesSaveGroups',{'vms':vms},function(res){
 				
-				// Reload VM list and group definitions, something went wrong
-				ml.onLoad = function() {
-
-					// Stop vmlist from refreshing..
-					vboxChooser.stop();
+				if(!res || res.errored) {
 					
-					// reset selections
-					$('#vboxPane').trigger('vmSelectionListChanged',[vboxChooser]);
-
-					// ask for new one
-					vboxChooser.start();
-				};
-				ml.run();
-				return;
-
-			}
+					var ml = new vboxLoader();
+					ml.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
+					ml.add('vboxGroupDefinitionsGet',function(d){vboxChooser._groupDefs = d.data;});
+					
+					// Reload VM list and group definitions, something went wrong
+					ml.onLoad = function() {
 						
-		});
+						// Stop vmlist from refreshing..
+						vboxChooser.stop();
+						
+						// reset selections
+						$('#vboxPane').trigger('vmSelectionListChanged',[vboxChooser]);
+						
+						// ask for new one
+						vboxChooser.start();
+					};
+					ml.run();
+					return;
+					
+				}
+				
+			});
+			
+		}
 		
 			
 		
@@ -1308,7 +1313,6 @@ var vboxChooser = {
 			}
 		}
 		
-				
 		// sort groups
 		var groups = $(gElm).children('div.vboxChooserGroup').get();
 		groups.sort(function(a,b){
@@ -1316,7 +1320,7 @@ var vboxChooser = {
 			var Pos1 = jQuery.inArray($(a).children('div.vboxChooserGroupHeader').attr('title'), groupOrder);
 			var Pos2 = jQuery.inArray($(b).children('div.vboxChooserGroupHeader').attr('title'), groupOrder);
 			
-			return (Pos1 > Pos2 ? -1 : (Pos2 > Pos1 ? 1 : 0));
+			return (Pos1 > Pos2 || Pos1 == -1 ? -1 : (Pos2 == Pos1 ? 0 : 1));
 			
 		});
 		$.each(groups, function(idx,itm) {
@@ -1326,10 +1330,11 @@ var vboxChooser = {
 		// sort VMs
 		var vms = $(gElm).children('div.vboxChooserGroupVMs').children('table.vboxChooserVM').get();
 		vms.sort(function(a,b) {
+			
 			var Pos1 = jQuery.inArray($(a).data('vmid'), machineOrder);
 			var Pos2 = jQuery.inArray($(b).data('vmid'), machineOrder);
 			
-			return (Pos1 > Pos2 ? 1 : (Pos2 > Pos1 ? -1 : 0));
+			return (Pos1 > Pos2 ? 1 : (Pos2 == Pos1 ? 0 : -1));
 		});
 		$.each(vms, function(idx,itm) {
 			$(gElm).children('div.vboxChooserGroupVMs').append(itm);
@@ -2054,12 +2059,14 @@ $(document).ready(function(){
 	
 		// Update VM in list
 		if(data) {
-	
+			
 			// Enforce VM ownership
 		    if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin && data.owner != $('#vboxPane').data('vboxSession').user) {
 		    	return;
 		    }
 		    
+		    // Keep track of whether or not a selected group has changed
+		    var groupSelectedChanged = false;
 	
 			// Remove from groups if they have changed
 			var currGroups  = vboxChooser.getGroupsForVM(vmid);
@@ -2067,7 +2074,12 @@ $(document).ready(function(){
 			var groupsChanged = groupDiff.length;
 			for(var i = 0; i < groupDiff.length; i++) {
 				
-				$(vboxChooser.getGroupElement(groupDiff[i], false)).children('div.vboxChooserGroupVMs')
+				var gElm = vboxChooser.getGroupElement(groupDiff[i], false);
+				if(!$(gElm)[0]) return;
+				
+				groupSelectedChanged = (groupSelectedChanged || $(gElm).children('div.vboxChooserGroupVMs').closest('div.vboxVMGroupSelected').length);
+				
+				$(gElm).children('div.vboxChooserGroupVMs')
 					.children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+data.id).empty().remove();
 			}
 			
@@ -2076,24 +2088,34 @@ $(document).ready(function(){
 			groupsChanged = (groupsChanged || groupDiff.length);
 			for(var i = 0; i < groupDiff.length; i++) {
 				
+				var gElm = vboxChooser.getGroupElement(groupDiff[i]);
+				
 				// Skip it if it is already there
-				if($(vboxChooser.getGroupElement(groupDiff[i])).children('div.vboxChooserGroupVMs').children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+data.id)[0])
+				if($(gElm).children('div.vboxChooserGroupVMs').children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+data.id)[0])
 					continue;
 				
-				$(vboxChooser.getGroupElement(groupDiff[i])).children('div.vboxChooserGroupVMs')
+				$(gElm).children('div.vboxChooserGroupVMs')
 					.append(								
 						vboxChooser.vmHTML(data)
 					);
+				
+				groupSelectedChanged = (groupSelectedChanged || $(gElm).children('div.vboxChooserGroupVMs').closest('div.vboxVMGroupSelected').length);
+
 			}
 	
 			vboxChooser.updateVMElement(data);
 	
 			if(groupsChanged) {
 				
-				vboxChooser.composeGroupDef(true);
+				vboxChooser.composeGroupDef();
 
 				// Resize chooser elements
 				vboxChooser._resizeElements();
+				
+				// update selection list
+				if(groupSelectedChanged) {
+					vboxChooser.selectionListChanged(vboxChooser._selectedList);
+				}
 
 
 			}
@@ -2123,12 +2145,14 @@ $(document).ready(function(){
 		// removed
 		if(!registered) {
 	
+			var wasSelected = vboxChooser.isVMSelected(vmid);
+			
 			$('#'+vboxChooser._anchorid +' table.vboxChooserItem-'+vboxChooser._anchorid+'-'+vmid).remove();
 			
 			vboxChooser.composeGroupDef(true);
 
-			// See if VM is selected
-			if(vboxChooser.isVMSelected(vmid)) {
+			// See if VM was selected
+			if(wasSelected) {
 				
 				var selectedList = vboxChooser._selectedList.filter(function(v){
 					return (v.type == 'group' || (v.id != vmid));
@@ -2160,7 +2184,7 @@ $(document).ready(function(){
 	
 	// Watch for group order changes
 	}).bind('vboxExtraDataChanged', function(e, machineId, key, value) {
-						
+		
 		if(!machineId && key.indexOf(vboxChooser._groupDefinitionKey) === 0) {
 			
 			var path = key.substring(vboxChooser._groupDefinitionKey.length);

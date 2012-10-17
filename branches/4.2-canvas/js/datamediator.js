@@ -74,8 +74,7 @@ var vboxVMDataMediator = {
 	getVMList: function() {
 	
 		if(vboxVMDataMediator.vmData) {
-			if(callback) callback(vboxVMDataMediator.vmData);
-			else return vboxVMDataMediator.vmData;
+			return vboxVMDataMediator.vmData;
 		}
 		
 		var mList = $.Deferred();

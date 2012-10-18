@@ -1140,7 +1140,7 @@ var vboxChooser = {
 					.siblings('div.vboxChooserGroupHeader').children('span.vboxChooserGroupInfo')
 					.children('span.vboxChooserGroupCounts').html(
 						(gList.length ? ('<img src="images/vbox/nw_16px.png" />'+gList.length) : '') +
-						(vmList.length ? (' <img src="images/vbox/fullscreen_16px.png" />'+vmList.length) : '')
+						(vmList.length ? ('<img src="images/vbox/fullscreen_16px.png" />'+vmList.length) : '')
 				);
 			});
 			

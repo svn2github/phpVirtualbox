@@ -3,6 +3,8 @@
  * $Id$
  * Experimental!
  */
+
+
 class phpvbAuthLDAP implements phpvbAuth {
 	
 	var $capabilities = array(
@@ -23,6 +25,30 @@ class phpvbAuthLDAP implements phpvbAuth {
 	{
 		global $_SESSION;
 		
+		// Check for LDAP functions
+		if(!function_exists('ldap_connect')) {
+			
+			$ex = 'LDAP support is not enabled in your PHP configuration.';
+			
+			if(strtolower(substr(PHP_OS, 0, 3)) == 'win') {
+				
+				ob_start();
+				phpinfo(INFO_GENERAL);
+				$phpinfo = ob_get_contents();
+				ob_end_clean();
+				preg_match('/Loaded Configuration File <\/td><td.*?>(.*?)\s*</', $phpinfo, $phpinfo);
+				
+				$ex .= ' You probably just need to uncomment the line ;extension=php_ldap.dll in php.ini'. 
+					(count($phpinfo) > 1 ? ' (' .trim($phpinfo[1]).')' : '') . ' by removing the ";" and restart your web server.';
+				
+			} else if(strtolower(substr(PHP_OS, 0, 5)) == 'Linux') {
+				
+				$ex .= ' You probably need to install the php5-ldap (or similar depending on your distribution) package.';	
+			
+			}
+			throw new Exception($ex);
+		}
+
 		$auth = ldap_connect($this->config['host']);
 		
 		if(!$auth) return false;

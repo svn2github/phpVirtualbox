@@ -118,6 +118,7 @@ try {
 		 */
 		case 'login':
 			
+			
 			// NOTE: Do not break. Fall through to 'getSession
 			if(!$vboxRequest['u'] || !$vboxRequest['p']) {
 				break;	

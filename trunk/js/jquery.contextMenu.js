@@ -122,7 +122,10 @@ if(jQuery)( function() {
 						
 						$(menu).find('LI.hover').removeClass('hover');
 						
-					}).children('a').unbind('click');
+					}).children('a').unbind('click').bind('click',function(e){
+						e.preventDefault();
+						return false;
+					});
 					
 					// Sub menu initialization
 					$(menu).children('li').children('ul').each(function() {

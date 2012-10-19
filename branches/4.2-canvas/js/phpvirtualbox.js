@@ -404,7 +404,6 @@ var vboxVMDetailsSections = {
 		noFooter: true,
 		_updateInterval : undefined,
 		_screenPadding : 17, // padding around actual screenshot in px 
-		
 		condition: function() {
 			
 			// Update our default updateInterval here
@@ -624,16 +623,15 @@ var vboxVMDetailsSections = {
 				if(this.height > 0) {
 					
 					// If width != requested width, it is scaled
-					if(this.width != width) {
-						height = parseInt(width / (this.width/this.height));
+					if(this.width != $('#vboxPane').data('vboxConfig')['previewWidth']) {
+						height = this.height * (width / this.width);
+						
 					// Not scaled
-					} else {						
-						width = this.width;
+					} else {					
 						height = this.height;							
 					}
 
 					vboxVMDetailsSections.preview._resolutionCache[vmid] = {
-						'width' : width,
 						'height' : height
 					};
 
@@ -642,10 +640,8 @@ var vboxVMDetailsSections = {
 					
 					// Check for cached resolution
 					if(vboxVMDetailsSections.preview._resolutionCache[vmid]) {				
-						width = vboxVMDetailsSections.preview._resolutionCache[vmid].width;
 						height = vboxVMDetailsSections.preview._resolutionCache[vmid].height;
 					} else {
-						width = $('#vboxPane').data('vboxConfig')['previewWidth'];
 						height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
 					}
 					
@@ -665,7 +661,7 @@ var vboxVMDetailsSections = {
 					$('#vboxPreviewCanvas-'+vmid).attr({'width':(width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(height+(vboxVMDetailsSections.preview._screenPadding*2))});
 					
 					// Redraw preview
-					vboxDrawPreviewCanvas($('#vboxPreviewCanvas-'+vmid)[0], (this.height <= 1 ? null : this), vm.name, width, height, vboxVMStates.isRunning(vm));
+					vboxDrawPreviewCanvas($('#vboxPreviewCanvas-'+vmid)[0], (this.height <= 1 ? null : this), vm.name, width, height);
 			
 				// HTML update
 				} else {
@@ -747,6 +743,11 @@ var vboxVMDetailsSections = {
 		 * Rows wrapper
 		 */
 		rows : function(d) {
+
+			var timer = $('#vboxPane').data('vboxPreviewTimer-'+d.id);
+			if(timer) window.clearInterval(timer);
+			$('#vboxPane').data('vboxPreviewTimer-'+d.id, null);
+			
 			return (isCanvasSupported() ? vboxVMDetailsSections.preview._rows_canvas(d) : vboxVMDetailsSections.preview._rows_html(d));
 		},
 		
@@ -820,9 +821,8 @@ var vboxVMDetailsSections = {
 			width = parseInt(width);
 			var height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
 
-						// Check for cached resolution
+			// Check for cached resolution
 			if(vboxVMDetailsSections.preview._resolutionCache[d.id]) {
-				width = vboxVMDetailsSections.preview._resolutionCache[d.id].width;
 				height = vboxVMDetailsSections.preview._resolutionCache[d.id].height;
 			}
 			
@@ -842,27 +842,29 @@ var vboxVMDetailsSections = {
 					if(this.height > 0) {
 						
 						// If width != requested width, it is scaled
-						if(this.width != width) {
-							height = parseInt(width / (this.width/this.height));							
-						} else {							
-							width = this.width;
+						if(this.width != $('#vboxPane').data('vboxConfig')['previewWidth']) {
+							
+							height = this.height * (width/this.width);
+							
+						// Not scaled
+						} else {					
 							height = this.height;							
 						}
 						
-						$('#vboxPreviewCanvas-'+d.id).attr({'width':(this.width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(this.height+(vboxVMDetailsSections.preview._screenPadding*2))});
+						$('#vboxPreviewCanvas-'+d.id).attr({'width':(width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(height+(vboxVMDetailsSections.preview._screenPadding*2))});
 						
-						vboxVMDetailsSections.preview._resolutionCache[d.id] = {'width':width,'height':height};
 						
 					// Check for cached resolution
 					} else if(vboxVMDetailsSections.preview._resolutionCache[d.id]) {
-						
-						width = vboxVMDetailsSections.preview._resolutionCache[d.id].width;
 						height = vboxVMDetailsSections.preview._resolutionCache[d.id].height;
-						
+					} else {
+						height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
 					}
 					
+					vboxVMDetailsSections.preview._resolutionCache[d.id] = {'width':width,'height':height};
+
 					// Draw this screen shot
-					vboxDrawPreviewCanvas($('#vboxPreviewCanvas-'+d.id)[0], preview, d.name, width, height, (this.width == width));
+					vboxDrawPreviewCanvas($('#vboxPreviewCanvas-'+d.id)[0], preview, d.name, width, height);
 					
 					// Kick off timer if VM is running
 					if(vboxVMStates.isRunning(d)) {

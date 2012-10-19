@@ -85,7 +85,7 @@ $(document).ready(function(){
             ctx.beginPath();
             ctx.moveTo(iMargin,iMargin);
             ctx.lineTo(iMargin + (width / 2), iMargin);
-            ctx.arc(iMargin + (width/2), iMargin + (height / 2), iconSize / 2, 1.5 * Math.PI, 0.5 * Math.PI);
+            ctx.arc(iMargin + (width/2), iMargin + (height / 2), iconSize / 2, 1.5 * Math.PI, 0.5 * Math.PI, false);
             ctx.lineTo(iMargin, iMargin + height);
 			ctx.closePath();
 			ctx.stroke();
@@ -107,10 +107,12 @@ $(document).ready(function(){
 });
 
 var __vboxPreviewCanvasCache = [];
-function vboxDrawPreviewCanvas(can, imageObj, text, width, height, resizeToImage) {
+function vboxDrawPreviewCanvas(can, imageObj, text, width, height) {
 	
 	var screenMargin = 7;
 	var margin = 10;
+	
+	var resizeToImage = (imageObj && (imageObj.width == width));
 	
 	// Height / width comes from direct image values
 	if(imageObj && resizeToImage) {
@@ -118,11 +120,10 @@ function vboxDrawPreviewCanvas(can, imageObj, text, width, height, resizeToImage
 		height = imageObj.height;
 		width = imageObj.width;
 		
-		// Set height while maintaining aspect ratio
+	// Set height while maintaining aspect ratio
 	} else if (imageObj) {
 		
-		height = width / (imageObj.width/imageObj.height);
-		
+		height = imageObj.height * (width/imageObj.width);
 	}
 	
 	// Margins are added to width
@@ -228,32 +229,43 @@ function vboxDrawPreviewCanvas(can, imageObj, text, width, height, resizeToImage
 		cachedCtx.restore();
 		
 	    /* Gloss */
-		var rectX = 0;
-		var rectY = 0;
-		var rectWidth = width-(margin+screenMargin)*2;
-		var rectHeight = height-(margin+screenMargin)*2;
-		
-		var cvs = document.createElement('canvas');
-		cvs.width = rectWidth;
-		cvs.height = rectHeight;
-		
-		var ctxBlur = cvs.getContext('2d');
-		ctxBlur.beginPath();
-		ctxBlur.lineWidth = 1;
-		ctxBlur.strokeStyle = "#000000";
-		ctxBlur.moveTo(rectX,rectY);
-		ctxBlur.lineTo(rectWidth, rectY);
-		ctxBlur.lineTo(rectWidth,rectHeight*1.0/3.0);
-		ctxBlur.bezierCurveTo(rectX+rectWidth / 2.0, rectY + rectHeight * 1.0/3.0,
-						  rectX+rectWidth / 2.0, rectY + rectHeight * 2.0/3.0,
-						  rectX, rectY + rectHeight * 2.0/3.0);
-		ctxBlur.closePath();
-		ctxBlur.fillStyle="rgba(255,255,255,0.3)";
-		ctxBlur.fill();
-		
-		stackBlurCanvasRGBA( cvs, 0, 0, rectWidth, rectHeight, 17 );
-		
-		ctx.drawImage(cvs, margin+screenMargin, margin+screenMargin, rectWidth, rectHeight);
+		if($.browser.opera && $.browser.version.substring(0,2) < 12) {
+
+			// Opera before 12 does not get this right. Just
+			// create a blank canvas
+			var cvs = document.createElement('canvas');
+			cvs.width = rectWidth;
+			cvs.height = rectHeight;
+
+		} else {
+			
+			var rectX = 0;
+			var rectY = 0;
+			var rectWidth = width-(margin+screenMargin)*2;
+			var rectHeight = height-(margin+screenMargin)*2;
+			
+			var cvs = document.createElement('canvas');
+			cvs.width = rectWidth;
+			cvs.height = rectHeight;
+			
+			var ctxBlur = cvs.getContext('2d');
+			ctxBlur.beginPath();
+			ctxBlur.lineWidth = 1;
+			ctxBlur.strokeStyle = "#000000";
+			ctxBlur.moveTo(rectX,rectY);
+			ctxBlur.lineTo(rectWidth, rectY);
+			ctxBlur.lineTo(rectWidth,rectHeight*1.0/3.0);
+			ctxBlur.bezierCurveTo(rectX+rectWidth / 2.0, rectY + rectHeight * 1.0/3.0,
+					rectX+rectWidth / 2.0, rectY + rectHeight * 2.0/3.0,
+					rectX, rectY + rectHeight * 2.0/3.0);
+			ctxBlur.closePath();
+			ctxBlur.fillStyle="rgba(255,255,255,0.3)";
+			ctxBlur.fill();
+			
+			stackBlurCanvasRGBA( cvs, 0, 0, rectWidth, rectHeight, 17 );
+			
+			ctx.drawImage(cvs, margin+screenMargin, margin+screenMargin, rectWidth, rectHeight);
+		}
 
 		__vboxPreviewCanvasCache[width+'x'+height] = {
 				'monitor' : cachedCanvas,
@@ -268,15 +280,7 @@ function vboxDrawPreviewCanvas(can, imageObj, text, width, height, resizeToImage
 	/* Screenshot */
 	if(imageObj) {
 		
-		// Canvas is resized to image
-		if(resizeToImage) {
-			ctx.drawImage(imageObj, (margin+screenMargin), (margin+screenMargin));
-		}
-		// Image is resized to canvas
-		else {
-			
-			ctx.drawImage(imageObj, 0, 0, imageObj.width, imageObj.height, (margin+screenMargin), (margin+screenMargin), width-(margin*2)-(screenMargin*2),height-(margin*2)-(screenMargin*2));
-		}
+		ctx.drawImage(imageObj, 0, 0, imageObj.width, imageObj.height, (margin+screenMargin), (margin+screenMargin), width-(margin*2)-(screenMargin*2),height-(margin*2)-(screenMargin*2));
 	}
 
 	// Draw cached gloss canvas

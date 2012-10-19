@@ -1747,15 +1747,16 @@ class vboxconnector {
 		$m = $this->session->machine;
 
 		// General machine settings
-		if (@$this->settings->enforceVMOwnership )
-		{
+		if (@$this->settings->enforceVMOwnership ) {
+			
 			$args['name'] = "{$_SESSION['user']}_" . preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $args['name']);
-		}
 
-		if ( ($owner = $machine->getExtraData("phpvb/sso/owner")) && $owner !== $_SESSION['user'] && !$_SESSION['admin'] )
-		{
-			// skip this VM as it is not owned by the user we're logged in as
-			throw new Exception("Not authorized to modify this VM");
+			if ( ($owner = $machine->getExtraData("phpvb/sso/owner")) && $owner !== $_SESSION['user'] && !$_SESSION['admin'] )
+			{
+				// skip this VM as it is not owned by the user we're logged in as
+				throw new Exception("Not authorized to modify this VM");
+			}
+			
 		}
 
 		$m->OSTypeId = $args['OSTypeId'];
@@ -3018,7 +3019,7 @@ class vboxconnector {
 		$machine = $this->vbox->findMachine($vm);
 		$mstate = (string)$machine->state;
 
-		if ( !$this->skipSessionCheck && ($owner = $machine->getExtraData("phpvb/sso/owner")) && $owner !== $_SESSION['user'] && !$_SESSION['admin'] )
+		if (@$this->settings->enforceVMOwnership && !$this->skipSessionCheck && ($owner = $machine->getExtraData("phpvb/sso/owner")) && $owner !== $_SESSION['user'] && !$_SESSION['admin'] )
 		{
 			// skip this VM as it is not owned by the user we're logged in as
 			throw new Exception("Not authorized to change state of this VM");

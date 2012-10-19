@@ -932,7 +932,7 @@ function vboxProgressUpdate(d,pid,persist,modal) {
 			if(callback) callback(d);
 		}
 		
-		$("#vboxProgress"+pid).addClass('vboxProgressComplete');
+		$("#vboxProgress"+pid).addClass('vboxProgressComplete').removeClass('vboxProgressRunning');
 		
 		// Remove data
 		$("#vboxProgress"+pid).removeData([

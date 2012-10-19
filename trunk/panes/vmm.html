@@ -525,7 +525,7 @@ var vmmButtons = new Array(
 							vboxProgress({'progress':ret.progress,'persist':persist},function(){
 								var l = new vboxLoader();
 								l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
-								l.onLoad = vboxVMMFillMedia;
+								l.onLoad = function() {vboxVMMFillMedia(); };
 								l.run();
 							},'progress_media_delete_90px.png',trans('Delete','UIMessageCenter'),
 								vboxBasename(m.location));
@@ -538,7 +538,7 @@ var vmmButtons = new Array(
 					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType},function(ret){
 						var l = new vboxLoader();
 						l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
-						l.onLoad = vboxVMMFillMedia;
+						l.onLoad = function() {vboxVMMFillMedia(); };
 						l.run();
 					});
 					$(this).empty().remove();
@@ -554,7 +554,7 @@ var vmmButtons = new Array(
 					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType},function(ret){
 						var l = new vboxLoader();
 						l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
-						l.onLoad = vboxVMMFillMedia;
+						l.onLoad = function() {vboxVMMFillMedia(); };
 						$(b).empty().remove();
 						l.run();
 					});
@@ -636,7 +636,7 @@ var vmmButtons = new Array(
 			// Force a refresh of media
 			var l = new vboxLoader();
 			l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
-			l.onLoad = vboxVMMFillMedia;
+			l.onLoad = function() {vboxVMMFillMedia(); };
 			l.run();
 			
 		}

@@ -457,6 +457,9 @@ ul.vboxMenuBar li {
 #vboxProgressOps table {
 	border-bottom: 1px solid #000;
 }
+#vboxProgressOps div.vboxProgressRunning {
+	border: 1px dashed #f00;
+}
 #vboxProgressOps div.vboxProgressComplete {
 	background: #f9f9f9;	
 }

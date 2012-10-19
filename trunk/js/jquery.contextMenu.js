@@ -105,15 +105,14 @@ if(jQuery)( function() {
 
 					}).hover( function(e, li) {
 						
-						// Skip disabled
-						if($(li).hasClass('disabled')) return;
-						
-						$(menu).find('LI.hover').removeClass('hover');
-						$(this).addClass('hover');
-						
 						$('#vboxPane').trigger('contextMenuShowLevel',
 								{'level':$(this).parent().data('level'), 'id':$(this).parent().attr('id')}
 						);
+
+						$(menu).find('LI.hover').removeClass('hover');
+						if($(this).hasClass('disabled')) return;
+							
+						$(this).addClass('hover');
 						
 						var subMenuId = $(this).data('subId');
 						if(subMenuId) showMenu($(this),$('#'+subMenuId),'submenu',e);

@@ -855,11 +855,13 @@ function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
 	).appendTo(tr);
 	
 	// Cancel button
-	$('<td />').css({'width':'20px','text-align':'right'}).append(
-			$('<input />').attr({'id':'vboxProgressCancel'+pid,'type':'button'}).val(trans('Cancel','UIProgressDialog')).data({'pid':pid}).click(function(){
-				this.disabled = 'disabled';
-				vboxAjaxRequest('progressCancel',{'progress':$(this).data('pid')},function(d){return;});
-			})
+	$('<td />').css({'width':'20px','text-align':'right','padding':'0px'}).append(
+			$('<input />').attr({'id':'vboxProgressCancel'+pid,'type':'button'}).val(trans('Cancel','UIProgressDialog')).data({'pid':pid})
+				.click(function(){
+					this.disabled = 'disabled';
+					vboxAjaxRequest('progressCancel',{'progress':$(this).data('pid')},function(d){return;});
+				})
+				.css({'margin':'0px'})
 	).appendTo(tr);
 	
 	$(tbl).append(tr).appendTo(div);

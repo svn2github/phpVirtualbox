@@ -67,6 +67,7 @@ Collapsed state of groups is now remembered if the browser
 supports localStorage
 
 -------------------------------------
+>>>>>>> .merge-right.r449
 	4.2-1	2012-10-09
 -------------------------------------
 VirtualBox 4.2.x compatibility release

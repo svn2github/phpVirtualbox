@@ -78,12 +78,13 @@ var vboxEventListener = {
 			// triggering changes
 			if(d && d.events) {
 								
+				
 				var eventList = [];
 				
 				var vmChanges = {};
 				
 				for(var i = 0; i < d.events.length; i++) {
-					
+
 					switch(d.events[i].eventType) {
 					
 						// machine state change

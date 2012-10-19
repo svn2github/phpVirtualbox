@@ -398,11 +398,12 @@ var vboxVMDetailsSections = {
 		_resolutionCache : {},
 		title:trans('Preview'),
 		settingsLink: 'Display',
-		rerenderOnStateChange: true,
+		redrawOnStateChange: true,
 		multiSelectDetailsTable: true,
 		noSnapshot: true,
 		noFooter: true,
 		_updateInterval : undefined,
+		_screenPadding : 17, // padding around actual screenshot in px 
 		condition: function() {
 			
 			// Update our default updateInterval here
@@ -508,7 +509,8 @@ var vboxVMDetailsSections = {
 					if(lastIntervalNone) {
 						var selVMData = vboxChooser.getSelectedVMsData();
 						for(var i = 0; i < selVMData.length; i++) {
-							vboxVMDetailsSections.preview.onRender(selVMData[0]);
+							if(vboxVMStates.isRunning(selVMData[i]) || vboxVMStates.isSaved(selVMData[i]))
+								vboxVMDetailsSections.preview._drawPreview(selVMData[i].id);
 						}
 					}
 					
@@ -552,18 +554,13 @@ var vboxVMDetailsSections = {
 
 		},
 		
-		/* For preview window fix for webkit based browsers */
-		__getBase64Image: function(img) {
-		    var canvas = document.createElement("canvas");
-		    canvas.width = img.width;
-		    canvas.height = img.height;
-		    var ctx = canvas.getContext("2d");
-		    ctx.drawImage(img, 0, 0);
-		    return canvas.toDataURL("image/png");
-		},
-		
-			
+		/**
+		 * This is run when the preview screen is drawn
+		 */
 		onRender : function(d) {
+
+			// Not needed in canvas logic
+			if(isCanvasSupported()) return;
 			
 			if(!vboxVMDetailsSections.preview._updateInterval || (!vboxVMStates.isRunning(d) && !vboxVMStates.isSaved(d))) {
 				var timer = $('#vboxPane').data('vboxPreviewTimer-'+d.id);
@@ -571,11 +568,11 @@ var vboxVMDetailsSections = {
 					$('#vboxPane').data('vboxPreviewTimer-'+d.id, null);
 					window.clearInterval(timer);
 				}
-				vboxVMDetailsSections.preview._drawPreview(d.id, d.state, d.lastStateChange);
+				vboxVMDetailsSections.preview._drawPreview(d.id);
 				return;
 			}
 		
-			vboxVMDetailsSections.preview._drawPreview(d.id,d.state,d.lastStateChange);
+			vboxVMDetailsSections.preview._drawPreview(d.id);
 			
 			if(vboxVMStates.isRunning(d)) {
 				
@@ -583,16 +580,20 @@ var vboxVMDetailsSections = {
 				if(timer) window.clearInterval(timer);
 				
 				$('#vboxPane').data('vboxPreviewTimer-'+d.id,
-					window.setInterval('vboxVMDetailsSections.preview._drawPreview("'+d.id+'","'+d.state+'",'+d.lastStateChange+')',
+					window.setInterval('vboxVMDetailsSections.preview._drawPreview("'+d.id+'")',
 							vboxVMDetailsSections.preview._updateInterval * 1000));
 
 			}
 		},
-		
-		_drawPreview: function(vmid, vmstate, lastStateChange,skipexistcheck) {
+
+		/**
+		 * Draw the preview window from VM screenshot
+		 * 
+		 */
+		_drawPreview: function(vmid) {
 			
 			// Does the target still exist?
-			if(!skipexistcheck && !$('#vboxDetailsGeneralTable-'+vmid)[0]) {
+			if(!$('#vboxDetailsGeneralTable-'+vmid)[0]) {
 				var timer = $('#vboxPane').data('vboxPreviewTimer-'+vmid);
 				if(timer) window.clearInterval(timer);
 				$('#vboxPane').data('vboxPreviewTimer-'+vmid, null);
@@ -601,106 +602,132 @@ var vboxVMDetailsSections = {
 
 			var width = $('#vboxPane').data('vboxConfig')['previewWidth'];
 			
+			// Get fresh VM data
+			var vm = vboxVMDataMediator.getVMData(vmid);
+			
 			var __vboxDrawPreviewImg = new Image();			
 			__vboxDrawPreviewImg.onload = function() {
 
-				var height = 0;
-				var baseStr = 'vboxDetailsGeneralTable-'+vmid;
-
 				// Does the target still exist?
-				if(!skipexistcheck && !$('#vboxDetailsGeneralTable-'+vmid)[0]) {
+				if(!$('#vboxDetailsGeneralTable-'+vmid)[0]) {
 					var timer = $('#vboxPane').data('vboxPreviewTimer-'+vmid);
 					if(timer) window.clearInterval(timer);
 					$('#vboxPane').data('vboxPreviewTimer-'+vmid, null);
 					return;
 				}
+				
+				// Get fresh VM data
+				var vm = vboxVMDataMediator.getVMData(vmid);
 
-				// Error or machine not running
-				if(this.height <= 1) {
-
-					$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'none'}).attr('src','images/vbox/blank.gif');
-					$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','');
+				// Set and cache dimensions
+				if(this.height > 0) {
 					
-					width = $('#vboxPane').data('vboxConfig')['previewWidth'];
-					height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
+					// If width != requested width, it is scaled
+					if(this.width != $('#vboxPane').data('vboxConfig')['previewWidth']) {
+						height = this.height * (width / this.width);
+						
+					// Not scaled
+					} else {					
+						height = this.height;							
+					}
+
+					vboxVMDetailsSections.preview._resolutionCache[vmid] = {
+						'height' : height
+					};
+
+				// Height of image is 0
+				} else {
+					
+					// Check for cached resolution
+					if(vboxVMDetailsSections.preview._resolutionCache[vmid]) {				
+						height = vboxVMDetailsSections.preview._resolutionCache[vmid].height;
+					} else {
+						height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
+					}
 					
 					// Clear interval if set
 					var timer = $('#vboxPane').data('vboxPreviewTimer-'+vmid);
 					if(timer) window.clearInterval(timer);
-
 					
-										
+				}
+				
+				// Get fresh VM data
+				var vm = vboxVMDataMediator.getVMData(vmid);
+				
+				// Canvas redraw
+				if(isCanvasSupported()) {
+					
+					// Reset height and width
+					$('#vboxPreviewCanvas-'+vmid).attr({'width':(width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(height+(vboxVMDetailsSections.preview._screenPadding*2))});
+					
+					// Redraw preview
+					vboxDrawPreviewCanvas($('#vboxPreviewCanvas-'+vmid)[0], (this.height <= 1 ? null : this), vm.name, width, height);
+			
+				// HTML update
 				} else {
-
-					// Calculate height based on width
-					width = $('#vboxPane').data('vboxConfig')['previewWidth'];
-					factor = width / this.width;
-					if(!factor) factor = 1;
-					height = parseInt(this.height * factor);
-
-					// Set cached resolution
-					vboxVMDetailsSections.preview._resolutionCache[vmid] = {
-						'width' : width,
-						'height' : height
-					};
-									
 					
-					$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','none');
-					$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'','height':height+'px','width':width+'px'});
-					
-					// IE uses filter
-					if($.browser.msie) {
+					var baseStr = 'vboxDetailsGeneralTable-'+vmid;
+					if(this.height <= 1) {
 						
-						if(vboxVMStates.isRunning(d)) {
+						$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'none'}).attr('src','images/vbox/blank.gif');
+						$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','');
+
+					} else {
+						
+						$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','none');
+						$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'','height':height+'px','width':width+'px'});
+
+						// IE uses filter
+						if($.browser.msie) {
 							
-							// Setting background URL keeps image from being
-							// requested again, but does not allow us to set
-							// the size of the image. This is fine, since the
-							// image is returned in the size requested.
-							$('#'+baseStr+' img.vboxDetailsPreviewImg').css({"filter":""}).parent().css({'background':'url('+this.src+')'});
-						
+							if(vboxVMStates.isRunning(vm)) {
+								
+								// Setting background URL keeps image from being
+								// requested again, but does not allow us to set
+								// the size of the image. This is fine, since the
+								// image is returned in the size requested.
+								$('#'+baseStr+' img.vboxDetailsPreviewImg').css({"filter":""}).parent().css({'background':'url('+this.src+')'});
+								
+							} else {
+								
+								// This causes the image to be requested again, but
+								// is the only way to size the background image.
+								// Saved preview images are not returned in the size
+								// requested and must be resized at runtime by
+								// the browser.
+								$('#'+baseStr+' img.vboxDetailsPreviewImg').css({"filter":"progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled='true', src='"+this.src+"', sizingMethod='scale')"}).parent().css({'background':'#000'});
+							}
+							
 						} else {
 							
-							// This causes the image to be requested again, but
-							// is the only way to size the background image.
-							// Saved preview images are not returned in the size
-							// requested and must be resized at runtime by
-							// the browser.
-							$('#'+baseStr+' img.vboxDetailsPreviewImg').css({"filter":"progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled='true', src='"+this.src+"', sizingMethod='scale')"}).parent().css({'background':'#000'});
+							$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'background-image':'url('+this.src+')','background-size':(width+1) +'px ' + (height+1)+'px'});
+							
 						}
-						
-					// Webkit based browsers will re-download the image if we
-					// just set the image source
-					} else if($.browser.webkit) {
-						
-						$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'background-image':'url('+vboxVMDetailsSections.preview.__getBase64Image(this)+')'});
-					
-					} else {
-
-						$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'background-image':'url('+this.src+')','background-size':(width+1) +'px ' + (height+1)+'px'});
-						
 					}
+					
+					
+					// Resize name?
+					//$('#vboxDetailsGeneralTable-'+vmid+ ' div.vboxDetailsPreviewVMName span.textFill').textFill({maxFontPixels:20,'height':(height),'width':(width)});
+
+					$('#'+baseStr+' div.vboxDetailsPreviewWrap').css({'height':height+'px','width':width+'px'});
+					$('#'+baseStr+' img.vboxPreviewMonitor').css('width',width+'px');
+					$('#'+baseStr+' img.vboxPreviewMonitorSide').css('height',height+'px');
+
+
 					
 				}
 
-				// Resize name?
-				$('#vboxDetailsGeneralTable-'+vmid+ ' div.vboxDetailsPreviewVMName span.textFill').textFill({maxFontPixels:20,'height':(height),'width':(width)});
-
-				$('#'+baseStr+' div.vboxDetailsPreviewWrap').css({'height':height+'px','width':width+'px'});
-				$('#'+baseStr+' img.vboxPreviewMonitor').css('width',width+'px');
-				$('#'+baseStr+' img.vboxPreviewMonitorSide').css('height',height+'px');
 			};
 
 			// Update disabled? State not Running or Saved
-			if(!vboxVMDetailsSections.preview._updateInterval || (!vboxVMStates.isRunning({'state':vmstate}) && !vboxVMStates.isSaved({'state':vmstate}))) {
+			if(!vboxVMDetailsSections.preview._updateInterval || (!vboxVMStates.isRunning(vm) && !vboxVMStates.isSaved(vm))) {
 				__vboxDrawPreviewImg.height = 0;
 				__vboxDrawPreviewImg.onload();
 			} else {
-				// Running VMs get random numbers. Saved are based on last state
-				// change.
-				// Try to let the browser cache Saved screen shots
-				var randid = lastStateChange;
-				if(vboxVMStates.isRunning({'state':vmstate})) {
+				// Running VMs get random numbers.
+				// Saved are based on last state change to try to let the browser cache Saved screen shots
+				var randid = vm.lastStateChange;
+				if(vboxVMStates.isRunning(vm)) {
 					var currentTime = new Date();
 					randid = Math.floor(currentTime.getTime() / 1000);
 				}
@@ -711,8 +738,24 @@ var vboxVMDetailsSections = {
 
 
 		},
-		rows: function(d) {
+		
+		/**
+		 * Rows wrapper
+		 */
+		rows : function(d) {
 
+			var timer = $('#vboxPane').data('vboxPreviewTimer-'+d.id);
+			if(timer) window.clearInterval(timer);
+			$('#vboxPane').data('vboxPreviewTimer-'+d.id, null);
+			
+			return (isCanvasSupported() ? vboxVMDetailsSections.preview._rows_canvas(d) : vboxVMDetailsSections.preview._rows_html(d));
+		},
+		
+		/**
+		 * Draws preview window in HTML
+		 */
+		_rows_html : function(d) {
+			
 			var width = $('#vboxPane').data('vboxConfig')['previewWidth'];
 			if(!width) width = $('#vboxPane').data('vboxConfig')['previewWidth'] = 180;
 			width = parseInt(width);
@@ -725,7 +768,7 @@ var vboxVMDetailsSections = {
 			}
 
 			var divOut1 = "<div class='vboxDetailsPreviewVMName' style='position:absolute;overflow:hidden;padding:0px;height:"+height+"px;width:"+width+"px;"+
-				"display:"+(vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d) ? 'none' : '')+"' >" +
+				"display:"+((vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d)) ? 'none' : '')+"' >" +
 				"<div style='position:relative;display:table-cell;padding:0px;vertical-align:middle;color:#fff;font-weight:bold;overflow:hidden;text-align:center;height:"+height+"px;width:"+width+"px;" +
 				($.browser.msie ? "filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=\"true\", src=\"images/monitor_glossy.png\", sizingMethod=\"scale\")" : "" +
 					"background:url(images/monitor_glossy.png) top left no-repeat;-moz-background-size:100% 100%;background-size:"+(width+1) +"px " + (height+1)+"px;-webkit-background-size:100% 100%") +
@@ -746,7 +789,7 @@ var vboxVMDetailsSections = {
 										"<td class='vboxInvisible' style='text-align:right;'><img src='images/monitor_left.png' style='width:15px;height:"+height+"px' class='vboxPreviewMonitorSide' /></td>"+
 										"<td class='vboxInvisible' style='position:relative;'><div class='vboxDetailsPreviewWrap "+ (vboxVMStates.isSaved(d) ? 'vboxPreviewSaved' : '') +"' style='width: "+width+"px; height:"+height+"px; position:relative;overflow:hidden;text-align:center;background-color:#000;border:0px;display:table;#position:relative;background-repeat:no-repeat;padding:0px;margin:0px;'>"+
 											"<img class='vboxDetailsPreviewImg' src='images/monitor_glossy.png' vspace='0px' hspace='0px' "+
-											"style='display:"+(vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d) ? '' : 'none')+";top:0px;margin:0px;border:0px;padding;0px;"+
+											"style='display:"+((vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d)) ? '' : 'none')+";top:0px;margin:0px;border:0px;padding;0px;"+
 											"background-position:top left;background-repeat:no-repeat;"+
 											"-moz-background-size:100% 100%;background-size:100% 100%;-webkit-background-size:100% 100%;background-spacing:0px 0px;"+
 											"height:"+height+"px;width:"+width+"px;' />"+
@@ -765,6 +808,90 @@ var vboxVMDetailsSections = {
 						rawRow: true
 			        }
 				];
+
+		},
+		
+		/**
+		 * Draws preview on canvas object
+		 */
+		_rows_canvas : function(d) {
+
+			var width = $('#vboxPane').data('vboxConfig')['previewWidth'];
+			if(!width) width = $('#vboxPane').data('vboxConfig')['previewWidth'] = 180;
+			width = parseInt(width);
+			var height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
+
+			// Check for cached resolution
+			if(vboxVMDetailsSections.preview._resolutionCache[d.id]) {
+				height = vboxVMDetailsSections.preview._resolutionCache[d.id].height;
+			}
+			
+			// Create canvas and initially draw VM name
+			var previewCanvas = $('<canvas />').attr({'id':'vboxPreviewCanvas-'+d.id,'width':(width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(height+(vboxVMDetailsSections.preview._screenPadding*2))});
+			
+			vboxDrawPreviewCanvas(previewCanvas[0], null, d.name, width, height);
+			
+			// Draw screenshot if it's running or saved
+			if(vboxVMDetailsSections.preview._updateInterval > 0 && (vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d))) {
+				
+				// Preview image kicks off timer when it is loaded
+				var preview = new Image();
+				preview.onload = function(){
+					
+					// Set and cache dimensions
+					if(this.height > 0) {
+						
+						// If width != requested width, it is scaled
+						if(this.width != $('#vboxPane').data('vboxConfig')['previewWidth']) {
+							
+							height = this.height * (width/this.width);
+							
+						// Not scaled
+						} else {					
+							height = this.height;							
+						}
+						
+						$('#vboxPreviewCanvas-'+d.id).attr({'width':(width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(height+(vboxVMDetailsSections.preview._screenPadding*2))});
+						
+						
+					// Check for cached resolution
+					} else if(vboxVMDetailsSections.preview._resolutionCache[d.id]) {
+						height = vboxVMDetailsSections.preview._resolutionCache[d.id].height;
+					} else {
+						height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
+					}
+					
+					vboxVMDetailsSections.preview._resolutionCache[d.id] = {'width':width,'height':height};
+
+					// Draw this screen shot
+					vboxDrawPreviewCanvas($('#vboxPreviewCanvas-'+d.id)[0], preview, d.name, width, height);
+					
+					// Kick off timer if VM is running
+					if(vboxVMStates.isRunning(d)) {
+						window.setTimeout(function(){							
+							$('#vboxPane').data('vboxPreviewTimer-'+d.id, window.setInterval('vboxVMDetailsSections.preview._drawPreview("'+d.id+'")',vboxVMDetailsSections.preview._updateInterval*1000));							
+						},vboxVMDetailsSections.preview._updateInterval*1000);
+					}
+				}
+				
+				
+				var randid = d.lastStateChange;
+				if(vboxVMStates.isRunning(d)) {
+					var currentTime = new Date();
+					randid = Math.floor(currentTime.getTime() / 1000);
+				}
+				preview.src = 'screen.php?width='+(width)+'&vm='+d.id+'&randid='+randid;
+
+			}
+			
+			/* Return row */
+			return [ {
+				data: $('<div />')
+						.attr({'class':'vboxInvisble'})
+						.append(previewCanvas),
+				rawRow: true
+			}];
+			
 		}
 	},
 	

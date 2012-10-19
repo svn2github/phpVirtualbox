@@ -31,96 +31,94 @@ var vboxImageRightWhite = null;
 var vboxImageRightGrey = null;
 $(document).ready(function(){
 	
-	
-	// Draw arrow images
-	if(isCanvasSupported()) {
-		
-		var createCanvas = function(color) {
-			
-			return $('<canvas />').attr({'width':'18','height':'18'}).each(function(idx,canvas){
-				
-				canvas.width = 18;
-				canvas.height = 18;
-				
-				var ctx = canvas.getContext('2d');
-				
-				ctx.strokeStyle = color;
-				ctx.lineWidth = 2;
-				ctx.lineCap = 'round';
-				
-				// Circle
-				ctx.arc(9,9,8,(Math.PI/180)*0,(Math.PI/180)*360,true);
-				ctx.stroke();
-				
-				// "V"
-				ctx.moveTo(6,6);
-				ctx.lineTo(9,12);
-				ctx.lineTo(12,6);
-				ctx.stroke();
-				ctx.save();
-				
-			})[0];
-			
-		};
-		vboxImageDownWhite = createCanvas('#FFFFFF');
-		vboxImageDownGrey = createCanvas('#999999');
-		
-		var createCanvas = function(color) {
-			
-			return $('<canvas />').attr({'width':'18','height':'18'}).each(function(idx,can){
-				
-				can.height = 18;
-				can.width = 18;
-				var ctx = can.getContext('2d');
-							
-				ctx.strokeStyle = color;
-				ctx.lineWidth = 2;
-				ctx.lineCap = 'round';
-				
-				iMargin = 1;
-				iconSize = 16;
-				width = 16;
-				height = 16;
-				
-	            ctx.beginPath();
-	            ctx.moveTo(iMargin,iMargin);
-	            ctx.lineTo(iMargin + (width / 2), iMargin);
-	            ctx.arc(iMargin + (width/2), iMargin + (height / 2), iconSize / 2, 1.5 * Math.PI, 0.5 * Math.PI);
-	            ctx.lineTo(iMargin, iMargin + height);
-				ctx.closePath();
-				ctx.stroke();
-				
-				ctx.moveTo(iMargin + 5, iMargin + 5);
-				ctx.lineTo(iMargin + height - 5, iMargin + width / 2);
-				ctx.lineTo(iMargin + 5, iMargin + width - 5);
-	            
-	            ctx.stroke();
-	            
-	            ctx.save();
-			})[0];
-		}
-		
-		vboxImageRightWhite = createCanvas('#FFFFFF');
-		vboxImageRightGrey = createCanvas('#999999');
+	// Draw canvas images if supported
+	if(!isCanvasSupported())
+		return;
 
+	var createCanvas = function(color) {
+		
+		return $('<canvas />').attr({'width':'18','height':'18'}).each(function(idx,canvas){
+			
+			canvas.width = 18;
+			canvas.height = 18;
+			
+			var ctx = canvas.getContext('2d');
+			
+			ctx.strokeStyle = color;
+			ctx.lineWidth = 2;
+			ctx.lineCap = 'round';
+			
+			// Circle
+			ctx.arc(9,9,8,(Math.PI/180)*0,(Math.PI/180)*360,true);
+			ctx.stroke();
+			
+			// "V"
+			ctx.moveTo(6,6);
+			ctx.lineTo(9,12);
+			ctx.lineTo(12,6);
+			ctx.stroke();
+			ctx.save();
+			
+		})[0];
+		
+	};
+	vboxImageDownWhite = createCanvas('#FFFFFF');
+	vboxImageDownGrey = createCanvas('#999999');
+	
+	var createCanvas = function(color) {
+		
+		return $('<canvas />').attr({'width':'18','height':'18'}).each(function(idx,can){
+			
+			can.height = 18;
+			can.width = 18;
+			var ctx = can.getContext('2d');
+						
+			ctx.strokeStyle = color;
+			ctx.lineWidth = 2;
+			ctx.lineCap = 'round';
+			
+			iMargin = 1;
+			iconSize = 16;
+			width = 16;
+			height = 16;
+			
+            ctx.beginPath();
+            ctx.moveTo(iMargin,iMargin);
+            ctx.lineTo(iMargin + (width / 2), iMargin);
+            ctx.arc(iMargin + (width/2), iMargin + (height / 2), iconSize / 2, 1.5 * Math.PI, 0.5 * Math.PI);
+            ctx.lineTo(iMargin, iMargin + height);
+			ctx.closePath();
+			ctx.stroke();
+			
+			ctx.moveTo(iMargin + 5, iMargin + 5);
+			ctx.lineTo(iMargin + height - 5, iMargin + width / 2);
+			ctx.lineTo(iMargin + 5, iMargin + width - 5);
+            
+            ctx.stroke();
+            
+            ctx.save();
+		})[0];
 	}
+	
+	vboxImageRightWhite = createCanvas('#FFFFFF');
+	vboxImageRightGrey = createCanvas('#999999');
+
+		
 });
 
 var __vboxPreviewCanvasCache = [];
-function vboxDrawPreview(can, imageObj, text, width, height, resizeToImage) {
+function vboxDrawPreviewCanvas(can, imageObj, text, width, height, resizeToImage) {
 	
-	var ctx = can.getContext('2d');
-
-    var screenMargin = 7;
+	var screenMargin = 7;
 	var margin = 10;
-
+	
 	// Height / width comes from direct image values
 	if(imageObj && resizeToImage) {
 		
 		height = imageObj.height;
 		width = imageObj.width;
-	
-	// Set height while maintaining aspect ratio
+		
+		// Set height while maintaining aspect ratio
 	} else if (imageObj) {
 		
 		height = width / (imageObj.width/imageObj.height);
@@ -134,6 +132,9 @@ function vboxDrawPreview(can, imageObj, text, width, height, resizeToImage) {
 	// Set canvas values
 	can.height = height;
 	can.width = width;
+
+	var ctx = can.getContext('2d');
+
 	
 	// Clear the canvas
 	ctx.clearRect(0,0,width,height);
@@ -306,12 +307,11 @@ function vboxDrawPreview(can, imageObj, text, width, height, resizeToImage) {
  * 
  * @author Ian Moore
  */
-var fitTextToCanvas = function(can, text, fontSize)
-{
+var fitTextToCanvas = function(can, text, fontSize) {
 
 	var lineHeightOffset = 1.4;
 	var lineHeight = fontSize * lineHeightOffset;
-	var minFontSize = 8;
+	var minFontSize = 10;
 	var padding = 2;
 	
     var words = text.split(" ");
@@ -322,9 +322,9 @@ var fitTextToCanvas = function(can, text, fontSize)
     context.moveTo(0,0);
     
     
-    var wrapTextLines = function(setFontSize) {
+    var wrapTextLines = function() {
     	
-    	context.font = "bold " + setFontSize + "pt Arial";
+    	context.font = "bold " + fontSize + "pt Arial";
     	
     	var line = '';
     	var lines = [];
@@ -333,29 +333,49 @@ var fitTextToCanvas = function(can, text, fontSize)
 
             var testLine = line + (line.length ? ' ' : '') + words[n];
             
-            if(n > 0 && (context.measureText(testLine).width + padding) > maxWidth) {
-            	lines[lines.length] = line;
-            	line = words[n];
+            if((context.measureText(testLine).width + padding) > maxWidth) {
+            	
+            	// Only one word is too big
+            	if(testLine.indexOf(' ') == -1) {
+            		
+            		if(fontSize > minFontSize) {
+            			fontSize *= 0.9;
+            			return wrapTextLines();
+            		}
+            		line = testLine;
+            		
+            	} else {
+            		lines[lines.length] = line;
+            		line = words[n];            		
+            	}
+            	
             } else {
+            	
                 line = testLine;
+            
             }
 
         }
-        if(line.length) lines[lines.length] = line;
+        if(line.length) {
+        	if((context.measureText(line).width + padding) > maxWidth && fontSize > minFontSize) {
+    			fontSize *= 0.9;
+    			return wrapTextLines();        		
+        	}
+        	lines[lines.length] = line;
+        }
         return lines;
 
     };
     
     // Initial wrap
-    lines = wrapTextLines(fontSize);
+    lines = wrapTextLines();
 
     // Since text will be aligned to the bottom, we subtract
     // one lineheight addition because it will be off the
     // visible canvas and should not be included in calculations
-    
-    while((lines.length * lineHeight)-(lineHeight-fontSize) > maxHeight && fontSize > minFontSize) {
+    while(((lines.length * lineHeight)-(lineHeight-fontSize) > maxHeight) &&  fontSize > minFontSize) {
     	fontSize *= 0.9;
-    	lines = wrapTextLines(fontSize);
+    	lines = wrapTextLines();
     	lineHeight = fontSize * lineHeightOffset;
     }
    

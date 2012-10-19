@@ -353,8 +353,9 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 						.addClass(!((vboxVMStates.isEditable(data) || vboxVMStates.isRunning(data)) && !vboxVMStates.isSaved(data)) ? 'vboxNoLinks' : '')
 						.html(ttemplate.replace('%1',section.icon).replace('%2', section.settingsLink).replace('%3', section.title))
 						.append(
-							$('<canvas />').addClass('vboxDetailsUpDnImg')
-								.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
+							(isCanvasSupported() ? 
+							$('<canvas />').addClass('vboxArrowImage')
+								.attr({'width':'18','height':'18'})
 								.each(function(idx, canvas) {
 									var ctx = canvas.getContext('2d');
 									if(vboxGetLocalDataItem("vboxSectionCollapse"+sectionName)) {
@@ -367,9 +368,10 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 										ctx.drawImage(vboxImageDownGrey,0,0,18,18);
 									}
 										
-								}).click(function(){
-									$(this).parent().trigger("dblclick");
-								})							
+								}).click(function(){ $(this).parent().trigger("dblclick"); })
+							: $('<span />').addClass('vboxArrowImage')
+								.click(function(){ $(this).parent().trigger("dblclick"); })
+							)
 						)
 					)
 				).disableSelection()
@@ -402,13 +404,14 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 				($(this).hasClass('vboxDetailsSectionCollapsed') ? '' : '1')
 			);
 			
+			var collapsed = $(this).hasClass('vboxDetailsSectionCollapsed');
+			
 			// Animate if canvas is supported
 			if(isCanvasSupported()) {
 				
-				var collapsed = $(this).hasClass('vboxDetailsSectionCollapsed');
 				
 				// Get canvas of current section only
-				var canvas = $(this).find('canvas.vboxDetailsUpDnImg')[0];
+				var canvas = $(this).find('canvas')[0];
 				var ctx = canvas.getContext('2d');
 				
 				// Only animate the canvas that is part of this section header
@@ -428,6 +431,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 					}),
 					$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
 						.toggleClass('vboxDetailsSectionCollapsed', 500)
+						
 				).then(function() {
 					$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
 						.find('canvas.vboxDetailsUpDnImg').each(function(idx, can) {
@@ -447,8 +451,48 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 				});
 
 			} else {
+				
+				// IE8 doesn't display this animation
+				if(!($.browser.msie && $.browser.version.substring(0,1) < 9)) {
+					
+					// Get image span of current section only
+					var vboxArrowImage = $(this).find('span.vboxArrowImage');
+						
+					// Only animate the span that is part of this section header
+					// All others just get switched
+					$.when($('<div />').animate({left:90},
+						{
+							duration: 300,
+							step: function(currentStep ) {
+								if(collapsed) {
+									currentStep = 90 + (currentStep * -1);
+								}
+								vboxArrowImage.css({
+									'transform':'rotate('+currentStep+'deg)',
+									'-moz-transform': 'rotate('+currentStep+'deg)',
+									'-webkit-transform': 'rotate('+currentStep+'deg)',
+									'-o-transform': 'rotate('+currentStep+'deg)',
+									'-ms-transform': 'rotate('+currentStep+'deg)'
+								});
+							},
+							queue: true
+						})).then(function(){
+							
+							vboxArrowImage.css({
+								'transform':'',
+								'-moz-transform': '',
+								'-webkit-transform': '',
+								'-o-transform': '',
+								'-ms-transform': ''
+							});
+							
+						});
+						
+				}
+				
 				$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
-					.toggleClass('vboxDetailsSectionCollapsed', 500);
+					.toggleClass('vboxDetailsSectionCollapsed', ($.browser.msie && $.browser.version.substring(0,1) < 9) ? undefined : 300)
+				
 			}
 
 			return false;

@@ -22,6 +22,22 @@ Added PHP version check
 
 Better error handling when the event listener fails
 
+Menu bug that would not always trigger an action when a menu item
+was clicked
+
+Added check for PHP LDAP extension in LDAP auth module
+
+Added Active Directory auth module 
+
+Fixed bug in Virtual Media Manager that would fail to properly
+refresh media
+
+Fixed permission errors that would enforce VM ownership actions
+even when $enforceVMOwnership was not enabled in config.php
+
+Changing servers while an operation is in progress is no longer
+allowed as it causes progress operations to fail
+
 -------------------------------------
 	4.2-2	2012-10-15
 -------------------------------------

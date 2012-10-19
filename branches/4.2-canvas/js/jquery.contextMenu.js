@@ -34,27 +34,101 @@ if(jQuery)( function() {
 			if( o.outSpeed == 0 ) o.outSpeed = -1;
 			if( o.button == undefined) o.button = 2;
 			if( o.clickthrough == undefined) o.clickthrough = false;
+			
 			// Loop each context menu
 			$(this).each( function() {
 				
-				var el = $(this);
-								
+				var el = $(this);								
 				var menu = $('#'+o.menu);
-				
-				// Add contextMenu class
-				$(menu).addClass('contextMenu').data('level',0);
+								
+				// Simulate a true click
+				$(this).mousedown( function(e) {
+					
+					if( $(el).hasClass('disabled') ) return true;
+					if(!( e.button == o.button || (o.button == 0 && e.button == 1 && $.browser.msie))) return;
+					if(o.clickthrough) $(el).trigger('click');
+					var evt = e;
+					evt.stopPropagation();
+					
+					$(this).mouseup( function(e) {
+						
+						e.stopPropagation();
+						
+						var srcElement = $(this);
+						$(this).unbind('mouseup');
+						
+						if( evt.button == o.button || (o.button == 0 && evt.button == 1 && $.browser.msie)) {
+						
+							// Menu setup function
+							if(o.menusetup) {
+								o.menusetup(el);
+							}
+							// Hide context menus that may be showing
+							$("ul.contextMenu").hide();
+							
+							showMenu(srcElement, menu, o.mode, e);
+																					
+							$(document).one('mouseup', function() {
+								$(menu).fadeOut(o.outSpeed);
+								$("ul.contextMenu").hide();
+							});
+						}
+					});
+				});
 
 				/*
-				 * 
-				 * Detach sub menus
+				 * Initialize menu items
 				 * 
 				 */
-				var subMenus = function(root,level) {
-				
-					if(!level) level = 1;
+				var menuItems = function(menu, srcElement, level) {
 					
-					$(root).children('li').children('ul').each(function(){
+					// When items are selected
+					$(menu).addClass('contextMenu').data({'level':level}).disableSelection().children('li').unbind('mouseup').bind('mouseup', function(e) {
 						
+						if($(this).hasClass('disabled')) {
+							e.stopPropagation();
+							return false;							
+						} 
+						
+						$("ul.contextMenu").hide();
+						
+						// Callback
+						if( callback ) {
+							var aElm = $(this).children('a');
+							if($(aElm)[0]) {
+								callback( aElm.attr('href').substr(1), $(srcElement), null, aElm);
+							}
+						}
+						
+						e.stopPropagation();
+						return false;
+
+					}).hover( function(e, li) {
+						
+						// Skip disabled
+						if($(li).hasClass('disabled')) return;
+						
+						$(menu).find('LI.hover').removeClass('hover');
+						$(this).addClass('hover');
+						
+						$('#vboxPane').trigger('contextMenuShowLevel',
+								{'level':$(this).parent().data('level'), 'id':$(this).parent().attr('id')}
+						);
+						
+						var subMenuId = $(this).data('subId');
+						if(subMenuId) showMenu($(this),$('#'+subMenuId),'submenu',e);
+						
+					},function() {
+						
+						$(menu).find('LI.hover').removeClass('hover');
+						
+					}).children('a').unbind('click').bind('click',function(e){
+						e.preventDefault();
+						return false;
+					});
+					
+					// Sub menu initialization
+					$(menu).children('li').children('ul').each(function() {
 						
 						var plink = $(this).siblings('a').first();
 						var subId = $(this).attr('id');
@@ -63,61 +137,34 @@ if(jQuery)( function() {
 							subId = href + '-Submenu';
 							$(this).attr('id', subId);
 						}
-						$(this).addClass('contextMenu contextSubMenu').data({'level':level}).parent().addClass('contextMenuParent').data({'subId':subId,'level':level});
+						$(this).addClass('contextMenu contextSubMenu').data({'level':level+1}).parent().addClass('contextMenuParent').data({'subId':subId,'level':level});
 						var html = plink.html();
 						plink.html('<table class="vboxInvisible" style="width:100%"><tr><td style="text-align:left">'+html+'</td><td style="text-align:right; width: 22px;"><img src="images/rightArrow.png" /></td></tr></table>');
-
+						
 						// Hide menus trigger
 						var smenu = this;
 						$('#vboxPane').bind('contextMenuShowLevel',function(e,c){
-							if($(smenu).data('level') >= c.level && $(smenu).attr('id') != c.id) $(smenu).hide();
+							if($(smenu).data('level') >= c.level && $(smenu).attr('id') != c.id)
+								$(smenu).hide();
 						});
 						
+						// Reloop through setup
+						menuItems($(this), srcElement, ++level);
+						
 						$(this).detach().appendTo($('#vboxPane'));
-						subMenus($(this),level + 1);
+						
+
 					});
-									
+					
+					
 				};
+
 				
 				/*
 				 * 
 				 * Activate menu items
 				 * 
 				 */
-				var menuItems = function(menu, srcElement) {
-					
-					
-					// When items are selected
-					$(menu).find('A').unbind('click');
-					$(menu).find('li').unbind('mouseenter').unbind('mouseleave').unbind('click').bind('click', function(e) {
-						
-						$(document).unbind('click');
-						
-						$("ul.contextMenu").hide();
-						
-						// Callback
-						if( callback )
-							callback( $(this).children('a').attr('href').substr(1), $(srcElement), null, $(this).children('a'));
-						
-						e.stopPropagation();
-						return false;
-
-					});
-					
-					$(menu).find('LI:not(.disabled)').hover( function(e) {
-						
-						$(menu).find('LI.hover').removeClass('hover');
-						$(this).addClass('hover');
-						
-						$('#vboxPane').trigger('contextMenuShowLevel', {'level':$(this).parent().data('level'), 'id':$(this).parent().attr('id')});
-						
-						var subMenuId = $(this).data('subId');
-						if(subMenuId) showMenu($(this),$('#'+subMenuId),'submenu',e);
-						
-					},function() {
-						$(menu).find('LI.hover').removeClass('hover');
-					});
-				};
 				
 				var showMenu = function(srcElement, menu, mode, e) {
 					
@@ -125,9 +172,6 @@ if(jQuery)( function() {
 					if(!$(menu)[0]) {
 						return;
 					}
-
-					// Detach sub menus
-					subMenus(menu,$(menu).data('level')+1);
 					
 					// Hide all other menus at this level
 					$('#vboxPane').trigger('contextMenuShowLevel', {'level':$(menu).data('level'), 'id':$(menu).attr('id')});
@@ -201,11 +245,14 @@ if(jQuery)( function() {
 								if($(m).data('level') >= c.level && $(m).attr('id') != c.id) $(m).hide();
 							});
 					
+							menuItems(m, srcElement, $(menu).data('level')+1);
+							
 							showMenu(srcElement, m, 'submenu', e);
+							
 							return;
 						}
 					} else {
-						menuItems(menu, srcElement);
+						menuItems(menu, srcElement, $(menu).data('level'));
 					}
 					
 					// Menu  show
@@ -214,42 +261,9 @@ if(jQuery)( function() {
 					
 				}
 				
-				// If we have sub-menus, activate them on hover
-				// Simulate a true click
-				$(this).mousedown( function(e) {
-					if( $(el).hasClass('disabled') ) return true;
-					if(!( e.button == o.button || (o.button == 0 && e.button == 1 && $.browser.msie))) return;
-					if(o.clickthrough) $(el).trigger('click');
-					var evt = e;
-					evt.stopPropagation();
-					$(this).mouseup( function(e) {
-						e.stopPropagation();
-						
-						var srcElement = $(this);
-						$(this).unbind('mouseup');
-						
-						if( evt.button == o.button || (o.button == 0 && evt.button == 1 && $.browser.msie)) {
-						
-							// Menu setup function
-							if(o.menusetup) {
-								o.menusetup(el);
-							}
-							// Hide context menus that may be showing
-							$("ul.contextMenu").hide();
-							
-							showMenu(srcElement, menu, o.mode, e);
-																					
-							$(document).one('mouseup', function() {
-								$(menu).fadeOut(o.outSpeed);
-								$("ul.contextMenu").hide();
-								return false;
-							});
-						}
-					});
-				});
+				// Setup menu 
+				menuItems(menu, el, 0);
 				
-				// Disable text selection
-				$('#' + o.menu).disableSelection();
 				
 				// Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
 				$(el).add($('UL.contextMenu')).bind('contextmenu', function() { return false; });

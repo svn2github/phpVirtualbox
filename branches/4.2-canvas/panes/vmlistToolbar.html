@@ -403,11 +403,10 @@ $('#vboxPane').bind('vmSelectionListChanged',function(e,chooser) {
 	if(chooser.selectedVMs.length == 1 && (chooser.isSelectedInState('Running') || chooser.isSelectedInState('Paused'))) {
 		
 		// Get data
-		$.when(vboxVMDataMediator.getVMDetails(chooser.selectedVMs[0]),
-				vboxVMDataMediator.getVMRuntimeData(chooser.selectedVMs[0]))
-			.then(function(details, runtime) {
+		$.when(vboxVMDataMediator.getVMDataCombined(chooser.selectedVMs[0]))
+			.then(function(d) {
 				
-				vboxUpdateSettingsMenu($.extend({},details,vboxVMDataMediator.getVMData(details.id),runtime));
+				vboxUpdateSettingsMenu(d);
 
 			});
 		

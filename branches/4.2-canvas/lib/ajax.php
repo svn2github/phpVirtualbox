@@ -118,6 +118,7 @@ try {
 		 */
 		case 'login':
 			
+			
 			// NOTE: Do not break. Fall through to 'getSession
 			if(!$vboxRequest['u'] || !$vboxRequest['p']) {
 				break;	
@@ -127,7 +128,13 @@ try {
 			session_init(true);
 			
 			$settings = new phpVBoxConfigClass();
-			$settings->auth->login($vboxRequest['u'], $vboxRequest['p']);
+
+			// Try / catch here to hide login credentials
+			try {
+				$settings->auth->login($vboxRequest['u'], $vboxRequest['p']);
+			} catch(Exception $e) {
+				throw new Exception($e->getMessage(), $e->getCode());
+			}
 			
 			// We're done writing to session
 			if(function_exists('session_write_close'))

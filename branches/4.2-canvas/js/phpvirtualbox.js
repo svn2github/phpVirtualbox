@@ -510,7 +510,8 @@ var vboxVMDetailsSections = {
 					if(lastIntervalNone) {
 						var selVMData = vboxChooser.getSelectedVMsData();
 						for(var i = 0; i < selVMData.length; i++) {
-							vboxVMDetailsSections.preview.onRender(selVMData[0]);
+							if(vboxVMStates.isRunning(selVMData[i]) || vboxVMStates.isSaved(selVMData[i]))
+								vboxVMDetailsSections.preview._drawPreview(selVMData[i].id);
 						}
 					}
 					
@@ -555,6 +556,38 @@ var vboxVMDetailsSections = {
 		},
 		
 		/**
+		 * This is run when the preview screen is drawn
+		 */
+		onRender : function(d) {
+
+			// Not needed in canvas logic
+			if(isCanvasSupported()) return;
+			
+			if(!vboxVMDetailsSections.preview._updateInterval || (!vboxVMStates.isRunning(d) && !vboxVMStates.isSaved(d))) {
+				var timer = $('#vboxPane').data('vboxPreviewTimer-'+d.id);
+				if(timer) {
+					$('#vboxPane').data('vboxPreviewTimer-'+d.id, null);
+					window.clearInterval(timer);
+				}
+				vboxVMDetailsSections.preview._drawPreview(d.id);
+				return;
+			}
+		
+			vboxVMDetailsSections.preview._drawPreview(d.id);
+			
+			if(vboxVMStates.isRunning(d)) {
+				
+				var timer = $('#vboxPane').data('vboxPreviewTimer-'+d.id);
+				if(timer) window.clearInterval(timer);
+				
+				$('#vboxPane').data('vboxPreviewTimer-'+d.id,
+					window.setInterval('vboxVMDetailsSections.preview._drawPreview("'+d.id+'")',
+							vboxVMDetailsSections.preview._updateInterval * 1000));
+
+			}
+		},
+
+		/**
 		 * Draw the preview window from VM screenshot
 		 * 
 		 */
@@ -584,7 +617,6 @@ var vboxVMDetailsSections = {
 					return;
 				}
 				
-
 				// Get fresh VM data
 				var vm = vboxVMDataMediator.getVMData(vmid);
 
@@ -593,30 +625,29 @@ var vboxVMDetailsSections = {
 					
 					// If width != requested width, it is scaled
 					if(this.width != width) {
-						
-						var newHeight = parseInt(width / (this.width/this.height));
-						
-						vboxVMDetailsSections.preview._resolutionCache[vmid] = {
-								'width' : width,
-								'height' : newHeight
-						};
-						$('#vboxPreviewCanvas-'+vmid).attr({'width':(width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(newHeight+(vboxVMDetailsSections.preview._screenPadding*2))});
-					
+						height = parseInt(width / (this.width/this.height));
 					// Not scaled
-					} else {
-						
-						$('#vboxPreviewCanvas-'+vmid).attr({'width':(this.width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(this.height+(vboxVMDetailsSections.preview._screenPadding*2))});
-						
-						vboxVMDetailsSections.preview._resolutionCache[vmid] = {'width':this.width,'height':this.height};
+					} else {						
 						width = this.width;
 						height = this.height;							
 					}
+
+					vboxVMDetailsSections.preview._resolutionCache[vmid] = {
+						'width' : width,
+						'height' : height
+					};
+
+				// Height of image is 0
+				} else {
 					
-				// Check for cached resolution
-				} else if(vboxVMDetailsSections.preview._resolutionCache[vmid]) {
-					
-					width = vboxVMDetailsSections.preview._resolutionCache[vmid].width;
-					height = vboxVMDetailsSections.preview._resolutionCache[vmid].height;
+					// Check for cached resolution
+					if(vboxVMDetailsSections.preview._resolutionCache[vmid]) {				
+						width = vboxVMDetailsSections.preview._resolutionCache[vmid].width;
+						height = vboxVMDetailsSections.preview._resolutionCache[vmid].height;
+					} else {
+						width = $('#vboxPane').data('vboxConfig')['previewWidth'];
+						height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
+					}
 					
 					// Clear interval if set
 					var timer = $('#vboxPane').data('vboxPreviewTimer-'+vmid);
@@ -627,11 +658,68 @@ var vboxVMDetailsSections = {
 				// Get fresh VM data
 				var vm = vboxVMDataMediator.getVMData(vmid);
 				
-				// Reset height and width
-				$('#vboxPreviewCanvas-'+vmid).attr({'width':(width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(height+(vboxVMDetailsSections.preview._screenPadding*2))});
-				
-				// Redraw preview
-				vboxDrawPreview($('#vboxPreviewCanvas-'+vmid)[0], (this.height <= 1 ? null : this), vm.name, width, height, vboxVMStates.isRunning(vm));
+				// Canvas redraw
+				if(isCanvasSupported()) {
+					
+					// Reset height and width
+					$('#vboxPreviewCanvas-'+vmid).attr({'width':(width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(height+(vboxVMDetailsSections.preview._screenPadding*2))});
+					
+					// Redraw preview
+					vboxDrawPreviewCanvas($('#vboxPreviewCanvas-'+vmid)[0], (this.height <= 1 ? null : this), vm.name, width, height, vboxVMStates.isRunning(vm));
+			
+				// HTML update
+				} else {
+					
+					var baseStr = 'vboxDetailsGeneralTable-'+vmid;
+					if(this.height <= 1) {
+						
+						$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'none'}).attr('src','images/vbox/blank.gif');
+						$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','');
+
+					} else {
+						
+						$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','none');
+						$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'','height':height+'px','width':width+'px'});
+
+						// IE uses filter
+						if($.browser.msie) {
+							
+							if(vboxVMStates.isRunning(vm)) {
+								
+								// Setting background URL keeps image from being
+								// requested again, but does not allow us to set
+								// the size of the image. This is fine, since the
+								// image is returned in the size requested.
+								$('#'+baseStr+' img.vboxDetailsPreviewImg').css({"filter":""}).parent().css({'background':'url('+this.src+')'});
+								
+							} else {
+								
+								// This causes the image to be requested again, but
+								// is the only way to size the background image.
+								// Saved preview images are not returned in the size
+								// requested and must be resized at runtime by
+								// the browser.
+								$('#'+baseStr+' img.vboxDetailsPreviewImg').css({"filter":"progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled='true', src='"+this.src+"', sizingMethod='scale')"}).parent().css({'background':'#000'});
+							}
+							
+						} else {
+							
+							$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'background-image':'url('+this.src+')','background-size':(width+1) +'px ' + (height+1)+'px'});
+							
+						}
+					}
+					
+					
+					// Resize name?
+					//$('#vboxDetailsGeneralTable-'+vmid+ ' div.vboxDetailsPreviewVMName span.textFill').textFill({maxFontPixels:20,'height':(height),'width':(width)});
+
+					$('#'+baseStr+' div.vboxDetailsPreviewWrap').css({'height':height+'px','width':width+'px'});
+					$('#'+baseStr+' img.vboxPreviewMonitor').css('width',width+'px');
+					$('#'+baseStr+' img.vboxPreviewMonitorSide').css('height',height+'px');
+
+
+					
+				}
 
 			};
 
@@ -656,9 +744,76 @@ var vboxVMDetailsSections = {
 		},
 		
 		/**
-		 * Return rows to draw for this section
+		 * Rows wrapper
 		 */
 		rows : function(d) {
+			return (isCanvasSupported() ? vboxVMDetailsSections.preview._rows_canvas(d) : vboxVMDetailsSections.preview._rows_html(d));
+		},
+		
+		/**
+		 * Draws preview window in HTML
+		 */
+		_rows_html : function(d) {
+			
+			var width = $('#vboxPane').data('vboxConfig')['previewWidth'];
+			if(!width) width = $('#vboxPane').data('vboxConfig')['previewWidth'] = 180;
+			width = parseInt(width);
+			var height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
+
+			// Check for cached resolution
+			if(vboxVMDetailsSections.preview._resolutionCache[d.id]) {
+				width = vboxVMDetailsSections.preview._resolutionCache[d.id].width;
+				height = vboxVMDetailsSections.preview._resolutionCache[d.id].height;
+			}
+
+			var divOut1 = "<div class='vboxDetailsPreviewVMName' style='position:absolute;overflow:hidden;padding:0px;height:"+height+"px;width:"+width+"px;"+
+				"display:"+((vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d)) ? 'none' : '')+"' >" +
+				"<div style='position:relative;display:table-cell;padding:0px;vertical-align:middle;color:#fff;font-weight:bold;overflow:hidden;text-align:center;height:"+height+"px;width:"+width+"px;" +
+				($.browser.msie ? "filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=\"true\", src=\"images/monitor_glossy.png\", sizingMethod=\"scale\")" : "" +
+					"background:url(images/monitor_glossy.png) top left no-repeat;-moz-background-size:100% 100%;background-size:"+(width+1) +"px " + (height+1)+"px;-webkit-background-size:100% 100%") +
+				"'><span class='textFill' style='font-size: 12px;position:relative;display:inline-block;'>"+$('<div />').html(d.name).text()+"</span></div>"+
+				"</div>";
+
+			return [
+			        {
+			        	data : "<tr style='vertical-align: middle'>"+
+							"<td style='text-align: center' colspan='2'>"+
+								"<table class='vboxInvisible vboxPreviewTable' style='margin-left:auto;margin-right:auto;'>"+
+									"<tr style='vertical-align:bottom; padding:0px; margin:0px;height:17px'>"+
+										"<td class='vboxInvisible' style='text-align:right;width:15px;height:17px'><img src='images/monitor_tl.png' style='width:15px;height:17px;'/></td>"+
+										"<td class='vboxInvisible'><img src='images/monitor_top.png' class='vboxPreviewMonitor' style='height:17px;width:"+width+"px'/></td>"+
+										"<td class='vboxInvisible' style='text-align:left;width:15px;height:17px'><img src='images/monitor_tr.png' style='width:15px;height:17px;'/></td>"+
+									"</tr>"+
+									"<tr style='vertical-align:top;'>"+
+										"<td class='vboxInvisible' style='text-align:right;'><img src='images/monitor_left.png' style='width:15px;height:"+height+"px' class='vboxPreviewMonitorSide' /></td>"+
+										"<td class='vboxInvisible' style='position:relative;'><div class='vboxDetailsPreviewWrap "+ (vboxVMStates.isSaved(d) ? 'vboxPreviewSaved' : '') +"' style='width: "+width+"px; height:"+height+"px; position:relative;overflow:hidden;text-align:center;background-color:#000;border:0px;display:table;#position:relative;background-repeat:no-repeat;padding:0px;margin:0px;'>"+
+											"<img class='vboxDetailsPreviewImg' src='images/monitor_glossy.png' vspace='0px' hspace='0px' "+
+											"style='display:"+((vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d)) ? '' : 'none')+";top:0px;margin:0px;border:0px;padding;0px;"+
+											"background-position:top left;background-repeat:no-repeat;"+
+											"-moz-background-size:100% 100%;background-size:100% 100%;-webkit-background-size:100% 100%;background-spacing:0px 0px;"+
+											"height:"+height+"px;width:"+width+"px;' />"+
+											divOut1+
+										"</div></td>"+
+										"<td class='vboxInvisible' style='text-align:left;' ><img src='images/monitor_right.png' style='width:14px;height:"+height+"px' class='vboxPreviewMonitorSide' /></td>"+
+									"</tr>"+
+									"<tr style='vertical-align:top;height:17px'>"+
+										"<td class='vboxInvisible' style='text-align:right;width:15px;height:17px'><img src='images/monitor_bl.png' style='width:15px;height:17px;float:right;'/></td>"+
+										"<td class='vboxInvisible' style='vertical-align:top'><img src='images/monitor_bottom.png' class='vboxPreviewMonitor' style='height:17px;width:"+width+"px'/></td>"+
+										"<td class='vboxInvisible' style='text-align:left;width:15px;height:17px'><img src='images/monitor_br.png' style='width:15px;height:17px;'/></td>"+
+									"</tr>"+
+								"</table>"+													
+							"</td>"+
+						"</tr>",
+						rawRow: true
+			        }
+				];
+
+		},
+		
+		/**
+		 * Draws preview on canvas object
+		 */
+		_rows_canvas : function(d) {
 
 			var width = $('#vboxPane').data('vboxConfig')['previewWidth'];
 			if(!width) width = $('#vboxPane').data('vboxConfig')['previewWidth'] = 180;
@@ -673,7 +828,8 @@ var vboxVMDetailsSections = {
 			
 			// Create canvas and initially draw VM name
 			var previewCanvas = $('<canvas />').attr({'id':'vboxPreviewCanvas-'+d.id,'width':(width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(height+(vboxVMDetailsSections.preview._screenPadding*2))});
-			vboxDrawPreview(previewCanvas[0], null, d.name, width, height);
+			
+			vboxDrawPreviewCanvas(previewCanvas[0], null, d.name, width, height);
 			
 			// Draw screenshot if it's running or saved
 			if(vboxVMDetailsSections.preview._updateInterval > 0 && (vboxVMStates.isRunning(d) || vboxVMStates.isSaved(d))) {
@@ -687,23 +843,15 @@ var vboxVMDetailsSections = {
 						
 						// If width != requested width, it is scaled
 						if(this.width != width) {
-							
-							var newHeight = parseInt(width / (this.width/this.height));
-
-							vboxVMDetailsSections.preview._resolutionCache[d.id] = {
-									'width':width,
-									'height':width / newHeight
-							};
-							$('#vboxPreviewCanvas-'+d.id).attr({'width':(width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(newHeight+(vboxVMDetailsSections.preview._screenPadding*2))});
-							
-						} else {
-							
-							$('#vboxPreviewCanvas-'+d.id).attr({'width':(this.width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(this.height+(vboxVMDetailsSections.preview._screenPadding*2))});
-							
-							vboxVMDetailsSections.preview._resolutionCache[d.id] = {'width':this.width,'height':this.height};
+							height = parseInt(width / (this.width/this.height));							
+						} else {							
 							width = this.width;
 							height = this.height;							
 						}
+						
+						$('#vboxPreviewCanvas-'+d.id).attr({'width':(this.width+(vboxVMDetailsSections.preview._screenPadding*2)),'height':(this.height+(vboxVMDetailsSections.preview._screenPadding*2))});
+						
+						vboxVMDetailsSections.preview._resolutionCache[d.id] = {'width':width,'height':height};
 						
 					// Check for cached resolution
 					} else if(vboxVMDetailsSections.preview._resolutionCache[d.id]) {
@@ -714,7 +862,7 @@ var vboxVMDetailsSections = {
 					}
 					
 					// Draw this screen shot
-					vboxDrawPreview($('#vboxPreviewCanvas-'+d.id)[0], preview, d.name, width, height, (this.width == width));
+					vboxDrawPreviewCanvas($('#vboxPreviewCanvas-'+d.id)[0], preview, d.name, width, height, (this.width == width));
 					
 					// Kick off timer if VM is running
 					if(vboxVMStates.isRunning(d)) {

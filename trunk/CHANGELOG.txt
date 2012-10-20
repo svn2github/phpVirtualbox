@@ -20,14 +20,14 @@ from a selected group or its subgroups
 
 Added PHP version check
 
-Better error handling when the event listener fails
+Better error handling when the VirtualBox event listener fails
 
 Menu bug that would not always trigger an action when a menu item
 was clicked
 
-Added check for PHP LDAP extension in LDAP auth module
+Added check for PHP LDAP extension in LDAP authentication module
 
-Added Active Directory auth module 
+Added Active Directory authentication module 
 
 Fixed bug in Virtual Media Manager that would fail to properly
 refresh media
@@ -37,6 +37,11 @@ even when $enforceVMOwnership was not enabled in config.php
 
 Changing servers while an operation is in progress is no longer
 allowed as it causes progress operations to fail
+
+Preview screen is now a hardware accelerated HTML5 canvas if
+supported by the browser
+
+Improved support for older browsers (IE 8, FF 3.6, Opera 10)
 
 -------------------------------------
 	4.2-2	2012-10-15
@@ -67,7 +72,6 @@ Collapsed state of groups is now remembered if the browser
 supports localStorage
 
 -------------------------------------
->>>>>>> .merge-right.r449
 	4.2-1	2012-10-09
 -------------------------------------
 VirtualBox 4.2.x compatibility release

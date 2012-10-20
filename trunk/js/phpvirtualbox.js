@@ -398,7 +398,6 @@ var vboxVMDetailsSections = {
 		_resolutionCache : {},
 		title:trans('Preview'),
 		settingsLink: 'Display',
-		redrawOnStateChange: true,
 		multiSelectDetailsTable: true,
 		noSnapshot: true,
 		noFooter: true,
@@ -423,6 +422,29 @@ var vboxVMDetailsSections = {
 			return !($('#vboxPane').data('vboxConfig').noPreview);
 		},
 
+		/**
+		 * Function triggered on VM state change
+		 * 
+		 */
+		onStateChange : function(d) {
+		
+			var timer = $('#vboxPane').data('vboxPreviewTimer-'+d.id);
+			if(timer) {
+				$('#vboxPane').data('vboxPreviewTimer-'+d.id, null);
+				window.clearInterval(timer);
+			}
+			
+			vboxVMDetailsSections.preview._drawPreview(d.id);
+
+			// Kick off timer if VM is running
+			if(vboxVMStates.isRunning(d)) {
+				window.setTimeout(function(){							
+					$('#vboxPane').data('vboxPreviewTimer-'+d.id, window.setInterval('vboxVMDetailsSections.preview._drawPreview("'+d.id+'")',vboxVMDetailsSections.preview._updateInterval*1000));							
+				},vboxVMDetailsSections.preview._updateInterval*1000);
+			}
+
+		},
+		
 		/*
 		 * 
 		 * Preivew Update Menu
@@ -707,7 +729,7 @@ var vboxVMDetailsSections = {
 					
 					
 					// Resize name?
-					//$('#vboxDetailsGeneralTable-'+vmid+ ' div.vboxDetailsPreviewVMName span.textFill').textFill({maxFontPixels:20,'height':(height),'width':(width)});
+					$('#vboxDetailsGeneralTable-'+vmid+ ' div.vboxDetailsPreviewVMName span.textFill').textFill({maxFontPixels:20,'height':(height),'width':(width)});
 
 					$('#'+baseStr+' div.vboxDetailsPreviewWrap').css({'height':height+'px','width':width+'px'});
 					$('#'+baseStr+' img.vboxPreviewMonitor').css('width',width+'px');
@@ -820,7 +842,7 @@ var vboxVMDetailsSections = {
 			if(!width) width = $('#vboxPane').data('vboxConfig')['previewWidth'] = 180;
 			width = parseInt(width);
 			var height = parseInt(width / $('#vboxPane').data('vboxConfig')['previewAspectRatio']);
-
+			
 			// Check for cached resolution
 			if(vboxVMDetailsSections.preview._resolutionCache[d.id]) {
 				height = vboxVMDetailsSections.preview._resolutionCache[d.id].height;
@@ -874,7 +896,7 @@ var vboxVMDetailsSections = {
 					}
 				}
 				
-				
+
 				var randid = d.lastStateChange;
 				if(vboxVMStates.isRunning(d)) {
 					var currentTime = new Date();
@@ -962,6 +984,19 @@ var vboxVMDetailsSections = {
 		title: trans('Storage'),
 		settingsLink: 'Storage',
 		redrawMachineEvents: ['vboxMediumChanged'],
+		_refreshVMMedia : function(vmid, mid) {
+			
+			// See if medium is there
+			var mRefresh = function() { return; };
+			if(!vboxMedia.getMediumById(mid)) {
+				mRefresh = vboxAjaxRequest('vboxGetMedia',{},function(d){$('#vboxPane').data('vboxMedia',d);});
+			}
+			var l = new vboxLoader();
+			l.showLoading();
+			$.when(mRefresh, vboxVMDataMediator.refreshVMData(vmid)).then(function(){
+				l.removeLoading();
+			});
+		},
 		redrawOnStateChange: true,
 		rows: function(d) {
 			
@@ -990,7 +1025,14 @@ var vboxVMDetailsSections = {
 					// Do we need to reload media?
 					if(d['storageControllers'][a]['mediumAttachments'][b].medium && d['storageControllers'][a]['mediumAttachments'][b].medium.id && medium === null) {
 						
-						portDesc = trans('Refresh','UIVMLogViewer');
+						
+						if(!d._isSnapshot) {
+							portDesc = '<a href="javascript:vboxVMDetailsSections.storage._refreshVMMedia(\''+
+							d.id+"','"+d['storageControllers'][a]['mediumAttachments'][b].medium.id+"');\">"+trans('Refresh','UIVMLogViewer')+"</a>";							
+
+						} else {
+							portDesk = trans('Refresh','UIVMLogViewer');
+						}
 
 					} else {
 						

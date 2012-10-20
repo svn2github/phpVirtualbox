@@ -86,8 +86,7 @@ if(jQuery)( function() {
 					$(menu).addClass('contextMenu').data({'level':level}).disableSelection().children('li').unbind('mouseup').bind('mouseup', function(e) {
 						
 						if($(this).hasClass('disabled')) {
-							e.stopPropagation();
-							return false;							
+							return;							
 						} 
 						
 						$("ul.contextMenu").hide();
@@ -100,8 +99,6 @@ if(jQuery)( function() {
 							}
 						}
 						
-						e.stopPropagation();
-						return false;
 
 					}).hover( function(e, li) {
 						

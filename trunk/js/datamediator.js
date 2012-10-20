@@ -188,7 +188,7 @@ var vboxVMDataMediator = {
 		
 		var def = $.Deferred();
 		$.when(vboxVMDataMediator.getVMDetails(vmid), runtime, vboxVMDataMediator.getVMData(vmid)).then(function(d1,d2,d3){
-			def.resolve($.extend({},d1,d2,d3));
+			def.resolve($.extend(true,{},d1,d2,d3));
 		});
 		return def.promise();
 		
@@ -239,8 +239,9 @@ $(document).ready(function(){
 		vboxVMDataMediator.expireVMDetails(vmid);
 		vboxVMDataMediator.expireVMRuntimeData(vmid);
 		
-		if(vboxVMDataMediator.vmData[vmid])
-			vboxVMDataMediator.vmData[vmid] = vmdef;
+		if(vboxVMDataMediator.vmData[vmid] && vmdef) {
+			$.extend(true, vboxVMDataMediator.vmData[vmid], vmdef);
+		}
 	
 	// Machine state change
 	}).bind('vboxPreMachineStateChanged', function(e, vmid, state, lastStateChange) {
@@ -275,7 +276,12 @@ $(document).ready(function(){
 	}).bind('vboxPreSnapshotTaken',function(e,vmid,snapshotid,data) {
 		
 		if(vboxVMDataMediator.vmData[vmid]) {
+			
 			vboxVMDataMediator.vmData[vmid].currentSnapshotName = data.currentSnapshotName;
+			
+			// Get media again
+			vboxAjaxRequest('vboxGetMedia',{},function(d){$('#vboxPane').data('vboxMedia',d);});
+			
 		}
 		if(vboxVMDataMediator.vmDetailsData[vmid])
 			vboxVMDataMediator.vmDetailsData[vmid].snapshotCount = data.snapshotCount;
@@ -351,7 +357,7 @@ $(document).ready(function(){
 	}).bind('vboxPreVRDEServerChanged', function(e, vmid, data) {
 
 		if(vboxVMDataMediator.vmRuntimeData[vmid]) {
-			$.extend(vboxVMDataMediator.vmRuntimeData[vmid].VRDEServer, data);
+			$.extend(true,vboxVMDataMediator.vmRuntimeData[vmid].VRDEServer, data);
 		}
 
 	

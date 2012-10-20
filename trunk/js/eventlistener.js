@@ -90,16 +90,23 @@ var vboxEventListener = {
 						// machine state change
 						case 'OnMachineStateChanged':
 
+							$('#vboxPane').trigger('vboxPreMachineStateChanged',
+									[d.events[i].machineId, d.events[i].state, d.events[i].enrichmentData.lastStateChange]);
+									
 							if(!vmChanges[d.events[i].machineId])
 								vmChanges[d.events[i].machineId] = {};
-
+							
+							
 							vmChanges[d.events[i].machineId]['state'] = d.events[i].state;
 							vmChanges[d.events[i].machineId]['lastStateChange'] = d.events[i].enrichmentData.lastStateChange;
 							break;
 						
 						// machine session state change
 						case 'OnSessionStateChanged':
-							
+
+							$('#vboxPane').trigger('vboxPreSessionStateChanged',
+									[d.events[i].machineId, d.events[i].state]);
+
 							if(!vmChanges[d.events[i].machineId])
 								vmChanges[d.events[i].machineId] = {};
 							
@@ -109,12 +116,16 @@ var vboxEventListener = {
 							
 						// machine data changed
 						case 'OnMachineDataChanged':
+							
 							if(!vmChanges[d.events[i].machineId])
 								vmChanges[d.events[i].machineId] = {};
 							
 							vmChanges[d.events[i].machineId]['data'] = true;
 							eventList[eventList.length] = ['MachineDataChanged',
 							                               [d.events[i].machineId, d.events[i].enrichmentData]];
+							
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
 							
 							break;							
 						
@@ -123,21 +134,33 @@ var vboxEventListener = {
 						case 'OnMediumChanged':
 
 							eventList[eventList.length] = ['MediumChanged', [d.events[i].sourceId, d.events[i]]];
+							
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
+
 							break;
 							
 						// Snapshot events
 						case 'OnSnapshotTaken':
+							
 							eventList[eventList.length] = ['SnapshotTaken',
 							                               [d.events[i].machineId,
 							                                d.events[i].snapshotId,
 							                                d.events[i].enrichmentData]];
 
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
+
 							break;
 						case 'OnSnapshotDeleted':
+							
 							eventList[eventList.length] = ['SnapshotDeleted',
 							                               [d.events[i].machineId,
 							                                d.events[i].snapshotId,
 							                                d.events[i].enrichmentData]];
+
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
 
 							break;
 						case 'OnSnapshotChanged':
@@ -146,21 +169,39 @@ var vboxEventListener = {
 							                                d.events[i].snapshotId,
 							                                d.events[i].enrichmentData]];
 
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
+
 							break;
 						
 						// CPU plugged / removed
 						case 'OnCPUChanged':
+							
 							eventList[eventList.length] = ['CPUChanged',[d.events[i].sourceId, d.events[i].cpu, d.events[i].add]];
+
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
+
 							break;
 							
 						// Execution cap changed
 						case 'OnCPUExecutionCapChanged':
+							
 							eventList[eventList.length] = ['CPUExecutionCapChanged', [d.events[i].sourceId, d.events[i].executionCap]];
+							
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
+
 							break;
 							
 						// Network adapter changed
 						case 'OnNetworkAdapterChanged':
+
 							eventList[eventList.length] = ['NetworkAdapterChanged',[d.events[i].sourceId, d.events[i].networkAdapterSlot, d.events[i].enrichmentData]];
+							
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
+
 							break;
 							
 						// Machine was added / removed
@@ -176,6 +217,9 @@ var vboxEventListener = {
 							                               		 d.events[i].registered,
 							                               		 d.events[i].enrichmentData]];
 							
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
+
 							break;
 							
 						
@@ -185,18 +229,31 @@ var vboxEventListener = {
 
 							eventList[eventList.length] = ['VRDEServerChanged',
 							                               [d.events[i].sourceId, d.events[i].enrichmentData]];
+							
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
+
 							break;
 
 						case 'OnVRDEServerInfoChanged':
 
 							eventList[eventList.length] = ['VRDEServerInfoChanged',
 							                               [d.events[i].sourceId, d.events[i].enrichmentData]];
+							
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
+
 							break;
 							
 							
 						// Group definitions updated
 						case 'OnExtraDataChanged':
+
 							eventList[eventList.length] = ['ExtraDataChanged',[d.events[i].machineId, d.events[i].key, d.events[i].value]];
+							
+							$('#vboxPane').trigger('vboxPre'+eventList[eventList.length-1][0],
+									eventList[eventList.length-1][1]);
+
 							break;
 							
 						
@@ -218,7 +275,7 @@ var vboxEventListener = {
 					// redraw anyway
 					if(vmChanges[i]['data'] || vmChanges[i]['registered']) {
 						dataChangedTriggers[i] = (vmChanges[i]['data'] || vmChanges[i]['registered']);
-						continue;						
+						continue;			
 					}
 					
 					// Consolidate each state or machine state change
@@ -248,10 +305,6 @@ var vboxEventListener = {
 					eventList[eventList.length] = ['MachineOrSessionStateChanged',[i]];
 				}
 				
-				// Now run each 'pre' event
-				for(var i = 0; i < eventList.length; i++)
-					$('#vboxPane').trigger('vboxPre'+eventList[i][0],eventList[i][1]);
-
 				// Now run each event
 				for(var i = 0; i < eventList.length; i++) {
 					$('#vboxPane').trigger('vbox'+eventList[i][0],eventList[i][1]);

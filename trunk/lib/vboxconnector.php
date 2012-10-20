@@ -512,9 +512,7 @@ class vboxconnector {
 								'ports' => $vrde->getVRDEProperty('TCP/Ports'),
 								'netAddress' => $vrde->getVRDEProperty('TCP/Address'),
 								'authType' => (string)$vrde->authType,
-								'authTimeout' => $vrde->authTimeout,
-								'VRDEExtPack' => (string)$vrde->VRDEExtPack,												
-								'allowMultiConnection' => intval($vrde->allowMultiConnection)
+								'authTimeout' => $vrde->authTimeout
 								)
 							);
 						} catch (Exception $e) {
@@ -564,7 +562,15 @@ class vboxconnector {
 				
 				/* Machine registered */
 				case 'OnMachineRegistered':
+					
 					if(!$event['registered']) break;
+					
+					// Get same data that is in VM list data
+					$vmdata = array('data'=>array(),'errors'=>array());
+					$this->remote_vboxGetMachines(array('vm'=>$event['machineId']), $vmdata);
+					$eventlist[$k]['enrichmentData'] = $vmdata['data']['vmlist'][0];
+					
+					break;
 
 				/* enrich with basic machine data */
 				case 'OnMachineDataChanged':
@@ -585,13 +591,9 @@ class vboxconnector {
 						$eventlist[$k]['enrichmentData'] = array(
 								'id' => $event['machineId'],
 								'name' => @$this->settings->enforceVMOwnership ? preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $machine->name) : $machine->name,
-								'state' => (string)$machine->state,
-								'sessionState' => (string)$machine->sessionState,
 								'OSTypeId' => $machine->getOSTypeId(),
 								'owner' => (@$this->settings->enforceVMOwnership ? $machine->getExtraData("phpvb/sso/owner") : ''),
-								'groups' => $groups,
-								'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
-								'customIcon' => (@$this->settings->enableCustomIcons ? $machine->getExtraData('phpvb/icon') : '')
+								'groups' => $groups
 						);
 						$machine->releaseRemote();
 		
@@ -3428,6 +3430,8 @@ class vboxconnector {
 		);
 		
 		/*
+		 * TODO:
+		 * 
 		 * 5.13.13 getGuestEnteredACPIMode
 		boolean IConsole::getGuestEnteredACPIMode()
 		Checks if the guest entered the ACPI mode G0 (working) or G1 (sleeping). If this method
@@ -3448,7 +3452,6 @@ class vboxconnector {
 				$data['guestAdditionsVersion'] = $console->guest->additionsVersion;
 			}
 			
-			
 			$smachine = $this->session->machine;
 			
 			$data['CPUExecutionCap'] = $smachine->CPUExecutionCap;
@@ -3462,8 +3465,7 @@ class vboxconnector {
 					'netAddress' => $vrde->getVRDEProperty('TCP/Address'),
 					'authType' => (string)$vrde->authType,
 					'authTimeout' => $vrde->authTimeout,
-					'VRDEExtPack' => (string)$vrde->VRDEExtPack,
-					'allowMultiConnection' => intval($vrde->allowMultiConnection)
+					'VRDEExtPack' => (string)$vrde->VRDEExtPack
 			));
 		
 			// Get removable media

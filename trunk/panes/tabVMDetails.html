@@ -213,7 +213,12 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 					
 				}
 				
-				
+
+				// Other onstatechange function?
+				if(vboxVMDetailsSections[i].onStateChange) {
+					vboxVMDetailsSections[i].onStateChange(vmData);
+				}
+
 					
 			}
 		});

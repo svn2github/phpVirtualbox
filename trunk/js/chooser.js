@@ -2090,8 +2090,10 @@ $(document).ready(function(){
 		vboxChooser.start();
 		
 	// VM data changed
-	}).bind('vboxMachineDataChanged',function(e, vmid, data) {
-	
+	}).bind('vboxMachineDataChanged',function(e, vmid) {
+
+		var data = vboxVMDataMediator.getVMData(vmid);
+		
 		// Update VM in list
 		if(data) {
 			

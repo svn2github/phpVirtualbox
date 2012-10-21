@@ -38,8 +38,10 @@ var vboxEventListener = {
 	/* Stop event listener loop */
 	stop : function() {
 		
-		if(vboxEventListener._running)
-			window.clearTimeout(vboxEventListener._running);
+		if(!vboxEventListener._running)
+			return;
+		
+		window.clearTimeout(vboxEventListener._running);
 		vboxEventListener._running = false;
 		
 		// Unsubscribe from events. Returns a deferred object

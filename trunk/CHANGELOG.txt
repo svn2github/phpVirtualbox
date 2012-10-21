@@ -1,4 +1,10 @@
 -------------------------------------
+	4.2-3b	2012-10-21
+-------------------------------------
+Fixed bug when detaching a VM console window
+http://code.google.com/p/phpvirtualbox/issues/detail?id=613
+
+-------------------------------------
 	4.2-3	2012-10-21
 -------------------------------------
 Fixed line endings in vboxinit

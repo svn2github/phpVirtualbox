@@ -445,6 +445,7 @@ function vboxRDPDetach() {
 	newwin.document.open();	
 	newwin.document.write('<html><head><title>'+$('#vboxTabVMConsole').data('vmname') + ' - ' + trans('Console','UIVMDesktop')+'</title></head><body style="margin: 0px; border: 0px; padding: 0px; overflow: hidden;"><div style="margin: 0px; border: 0px; padding: 0px" id="vboxPane"><img src="images/spinner.gif" /></div></body></html>');
 	newwin.document.close();
+	newwin.trans = function(t) { return t; };
 	var newHead = newwin.document.getElementsByTagName('HEAD')[0];
 	
 	var headTags = document.getElementsByTagName('HEAD')[0].getElementsByTagName('SCRIPT');

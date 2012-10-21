@@ -3871,7 +3871,7 @@ function vboxLoader() {
 	self.addFile = function(file,callback) {
 		this._files[this._files.length] = {
 				'callback' : callback,
-				'file' : file,
+				'file' : file
 			};		
 	};
 

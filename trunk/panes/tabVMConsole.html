@@ -102,8 +102,12 @@ $('#vboxPane').bind('vmSelectionListChanged', function(){
 	
 
 // Update on console info change
-}).bind('vboxVRDEServerInfoChanged',function(e,vmid,VRDEServerInfo) {
+}).bind('vboxOnVRDEServerInfoChanged',function(e,eventData) {
 	
+	// Shorthand
+	var vmid = eventData.machineId;
+	var VRDEServerInfo = eventData.enrichmentData;
+		
 	var selVM = vboxChooser.getSingleSelected();	    		
 	var enabled = (selVM && selVM.id == vmid && vboxVMStates.isRunning(selVM) && VRDEServerInfo && VRDEServerInfo.port > 0);
 	
@@ -132,17 +136,17 @@ $('#vboxPane').bind('vmSelectionListChanged', function(){
 	}
 
 // Update tab on machine state change
-}).bind('vboxMachineStateChanged', function(e, vmid, state){
+}).bind('vboxOnMachineStateChanged', function(e, eventData){
 
 	var selVMId = vboxChooser.getSingleSelectedId();	    		
-	var enabled = (selVMId == vmid && vboxVMStates.isRunning({'state':state}));
+	var enabled = (selVMId == eventData.machineId && vboxVMStates.isRunning({'state':eventData.state}));
 	
 	$('#vboxTabVMConsole').parent().trigger('disableTab', ['vboxTabVMConsole']);
 	
 	if(enabled) {
 		
 		// VM is running, get runtime data
-		$.when(vboxVMDataMediator.getVMRuntimeData(vmid)).then(function(vm) {
+		$.when(vboxVMDataMediator.getVMRuntimeData(eventData.machineId)).then(function(vm) {
 			
 			if(vm.VRDEServerInfo && vm.VRDEServerInfo.port > 0) {
 				
@@ -159,11 +163,11 @@ $('#vboxPane').bind('vmSelectionListChanged', function(){
 	}
 
 // Clean up local data storage when a machine is unregistered
-}).bind('vboxMachineRegistered', function(e, vmid, registered) {
+}).bind('vboxMachineRegistered', function(e, eventData) {
 
-	if(!registered) {
-		vboxSetLocalDataItem('vbox'+vmid+'ConsoleSize','',true);
-    	vboxSetLocalDataItem('vbox'+vmid+'ConsoleConnected','',true);	
+	if(!eventData.registered) {
+		vboxSetLocalDataItem('vbox'+eventData.machineId+'ConsoleSize','',true);
+    	vboxSetLocalDataItem('vbox'+eventData.machineId+'ConsoleConnected','',true);	
 	}
 });
 

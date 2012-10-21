@@ -1,5 +1,5 @@
 -------------------------------------
-	4.2-3
+	4.2-3	2012-10-21
 -------------------------------------
 Fixed line endings in vboxinit
 http://code.google.com/p/phpvirtualbox/issues/detail?id=606
@@ -42,6 +42,12 @@ Preview screen is now a hardware accelerated HTML5 canvas if
 supported by the browser
 
 Improved support for older browsers (IE 8, FF 3.6, Opera 10)
+
+Added better visual indication in the Details section of when a
+VM's VRDE server fails to start - its port number is now red and
+has a line through it
+
+Improved redraw and menu update logic
 
 -------------------------------------
 	4.2-2	2012-10-15

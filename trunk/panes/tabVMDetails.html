@@ -155,118 +155,149 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 
 	}
 
-// VM data has been changed
-/////////////////////////////
-}).bind('vboxMachineDataChanged',function(e, vmid) {
 	
-	// Nothing to do if VM is not selected
-	if(!vboxChooser.isVMSelected(vmid)) return;
+/////////////////////////////////
+//
+// Redraw section logic
+//
+//////////////////////////////////
+}).bind('vboxEvents', function(e, eventList) {
+	
+	// Multiple vms selected
+	var multiSelect = (vboxChooser.selectedVMs.length > 1);
+			
+	// Keep track of details to redraw
+	var vmRedrawDetails = {};
+	var vmRedrawSections = {};
+	var vmTriggerEventSection = {};
+	
+	// Each event in list
+	for(var i = 0; i < eventList.length; i++) {
+		
+		// Nothing to do if VM is not selected
+		if(!vboxChooser.isVMSelected(eventList[i].machineId))
+			continue;
+		
+		
+		switch(eventList[i].eventType) {
+		
+			// These trigger complete redraws
+			case 'OnMachineDataChanged':
+				vmRedrawDetails[eventList[i].machineId] = true;
+				break;
+			
+			default:
+			
+				// already redrawing all vm details
+				if(vmRedrawDetails[eventList[i].machineId])
+					break;
+			
+				// Check for specific section redraws or events
+				for(var s in vboxVMDetailsSections) {
+					
+					if(typeof(s) != 'string') continue;
+					if(multiSelect && !vboxVMDetailsSections[s].multiSelectDetailsTable) continue;
+					
+					// Redraw this section?
+					if(vboxVMDetailsSections[s].redrawMachineEvents && jQuery.inArray(eventList[i].eventType, vboxVMDetailsSections[s].redrawMachineEvents) > -1) {
+						
+						if(!vmRedrawSections[eventList[i].machineId])
+							vmRedrawSections[eventList[i].machineId] = {};
+						
+						vmRedrawSections[eventList[i].machineId][s] = true;
+					
+					// Specific event handler
+					} else if(vboxVMDetailsSections[s]['vboxEvent'+eventList[i].eventType]) {
+
+						if(!vmTriggerEventSection[eventList[i].machineId])
+							vmTriggerEventSection[eventList[i].machineId] = {};
+						if(!vmTriggerEventSection[eventList[i].machineId][s])
+							vmTriggerEventSection[eventList[i].machineId][s] = [];
+						
+						vmTriggerEventSection[eventList[i].machineId][s][vmTriggerEventSection[eventList[i].machineId][s].length] = eventList[i];
+					}
+				}
+				
+		} // </ switch eventType >
+		
+		
+	} // </ foreach event >
+	
 	
 	// Target for actions
 	var targetDiv = $('#vboxVMDetails');
 
-	// Get and show details and runtime data again	
-	$.when(vboxVMDataMediator.getVMDataCombined(vmid)).then(function(d) {
-		
-		// if there's only one, we'll have to remove existing data
-		if(vboxChooser.selectedVMs.length == 1) {
-			targetDiv.children().empty().remove();
-		}
-		// Special case for host
-		if(vmid == 'host') __vboxDisplayHostDetailsData(d, targetDiv);
-		else __vboxDisplayDetailsData(d, (vboxChooser.selectedVMs.length > 1), targetDiv);
-	});
-	
 
+	// Redraw each details table
+	/////////////////////////////////
+	for(var vmid in vmRedrawDetails) {
 		
-// Machine state changes
-/////////////////////
-}).bind('vboxMachineStateChanged', function(e, vmid, state) {
-	
-	// Not a selected VM, nothing to do
-	if(!vboxChooser.isVMSelected(vmid)) return;
-	
-	// Redraw all sections that ask for a redraw on state changes
-	$.when(vboxVMDataMediator.getVMDataCombined(vmid)).then(function(vmData) {
-
+		if(typeof(vmid) != 'string') continue;
+		
+		// Get and show details and runtime data again	
+		$.when(vboxVMDataMediator.getVMDataCombined(vmid)).then(function(d) {
 			
-			var multiSelect = (vboxChooser.selectedVMs.length > 1);
+			// if there's only one, we'll have to remove existing data
+			if(vboxChooser.selectedVMs.length == 1) {
+				targetDiv.children().empty().remove();
+			}
+			// Special case for host
+			if(d.id == 'host') __vboxDisplayHostDetailsData(d, targetDiv);
+			else __vboxDisplayDetailsData(d, (vboxChooser.selectedVMs.length > 1), targetDiv);
+		});
+	
+	};
+	
+	// Redraw each section
+	////////////////////////////
+	for(var vmid in vmRedrawSections) {
+		
+		if(typeof(vmid) != 'string') continue;
+		if(vmRedrawDetails[vmid]) continue; // already redrew entire details
+		
+		// Get and show details and runtime data again	
+		$.when(vboxVMDataMediator.getVMDataCombined(vmid),vmRedrawSections[vmid]).then(function(d,sections) {
 			
-			// Each section
-			for(var i in vboxVMDetailsSections) {
+			// Redraw each section in list
+			for(var s in sections) {
 				
-				if(typeof(i) != 'string') continue;
+				if(typeof(s) != 'string') continue;
 				
-				// Skip if this section isn't shown
-				if(multiSelect && !vboxVMDetailsSections[i].multiSelectDetailsTable)
-					continue;
-				
-				// Redraw section
-				if(vboxVMDetailsSections[i].redrawOnStateChange) {
-					
-					$('#vboxDetailsSectionId-'+i+'-'+vmData.id).replaceWith(
-						__vboxCreateDetailsSection(vmData, i)
-					);
+				$('#vboxDetailsSectionId-'+s+'-'+d.id).replaceWith(
+					__vboxCreateDetailsSection(d, s)
+				);
 						
-					if(vboxVMDetailsSections[i].onRender)
-						vboxVMDetailsSections[i].onRender(vmData);
-					
-				}
-				
+				if(vboxVMDetailsSections[s].onRender)
+					vboxVMDetailsSections[s].onRender(d);
 
-				// Other onstatechange function?
-				if(vboxVMDetailsSections[i].onStateChange) {
-					vboxVMDetailsSections[i].onStateChange(vmData);
-				}
-
-					
 			}
 		});
-		
 
+	}
 	
+	// Specific event handlers for each section
+	for(var vmid in vmTriggerEventSection) {
+
+		if(typeof(vmid) != 'string') continue;
+		if(vmRedrawDetails[vmid]) continue; // already redrew entire details
+		
+		for(var s in vmTriggerEventSection[vmid]) {
+			
+			if(typeof(s) != 'string') continue;
+			if(vmRedrawSections[vmid] && vmRedrawSections[vmid][s]) continue; // already redrew this section 
+			
+			// Call each event handler
+			for(var i = 0; i < vmTriggerEventSection[vmid][s].length; i++) {
+				var event = vmTriggerEventSection[vmid][s][i];
+				vboxVMDetailsSections[s]['vboxEvent'+event.eventType](event);
+			}
+			
+			
+		}
+
+	}
 	
 });
-
-/*
- * Redraw events specified in details sections
- */
-for(var i in vboxVMDetailsSections) {
-	
-	if(typeof(i) != 'string') continue;
-	
-	if(vboxVMDetailsSections[i].redrawMachineEvents) {
-		
-		for(var a = 0; a < vboxVMDetailsSections[i].redrawMachineEvents.length; a++) {
-			
-			// Assume that the first argument for machine related events is the VM id
-			$('#vboxPane').on(vboxVMDetailsSections[i].redrawMachineEvents[a], {'sectionName':i}, function(e, vmid, xtra) {
-	
-				// VM is not selected or is host. Ignore.
-				if(vmid == 'host' || !vboxChooser.isVMSelected(vmid)) return;
-				
-				var sectionName = e.data.sectionName;
-
-				// Skip if it doesn't exist
-				if(!$('#vboxDetailsSectionId-'+sectionName+'-'+vmid)[0]) return;
-
-
-				// Load data and redraw section
-				$.when(vboxVMDataMediator.getVMDataCombined(vmid)).then(function(d) {
-					
-					$('#vboxDetailsSectionId-'+sectionName+'-'+d.id).replaceWith(
-						__vboxCreateDetailsSection(d, sectionName)
-					);
-					
-					if(vboxVMDetailsSections[sectionName].onRender)
-						vboxVMDetailsSections[sectionName].onRender(d);
-					
-				});
-				
-			});
-		}
-	}
-}
 
 // Hide context menus when hiding tab
 $('#vboxTabVMDetails').bind('hide',function(){

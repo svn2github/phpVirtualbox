@@ -331,7 +331,7 @@ var vboxVMDetailsSections = {
 		icon:'chipset_16px.png',
 		title:trans('System','VBoxGlobal'),
 		settingsLink: 'System',
-		redrawMachineEvents: ['vboxCPUExecutionCapChanged'],
+		redrawMachineEvents: ['OnCPUExecutionCapChanged'],
 		multiSelectDetailsTable: true,
 		rows : [
 		   {
@@ -426,20 +426,20 @@ var vboxVMDetailsSections = {
 		 * Function triggered on VM state change
 		 * 
 		 */
-		onStateChange : function(d) {
+		vboxEventOnMachineStateChanged : function(eventData) {
 		
-			var timer = $('#vboxPane').data('vboxPreviewTimer-'+d.id);
+			var timer = $('#vboxPane').data('vboxPreviewTimer-'+eventData.machineId);
 			if(timer) {
-				$('#vboxPane').data('vboxPreviewTimer-'+d.id, null);
+				$('#vboxPane').data('vboxPreviewTimer-'+eventData.machineId, null);
 				window.clearInterval(timer);
 			}
 			
-			vboxVMDetailsSections.preview._drawPreview(d.id);
+			vboxVMDetailsSections.preview._drawPreview(eventData.machineId);
 
 			// Kick off timer if VM is running
-			if(vboxVMStates.isRunning(d)) {
+			if(vboxVMStates.isRunning(eventData)) {
 				window.setTimeout(function(){							
-					$('#vboxPane').data('vboxPreviewTimer-'+d.id, window.setInterval('vboxVMDetailsSections.preview._drawPreview("'+d.id+'")',vboxVMDetailsSections.preview._updateInterval*1000));							
+					$('#vboxPane').data('vboxPreviewTimer-'+eventData.machineId, window.setInterval('vboxVMDetailsSections.preview._drawPreview("'+eventData.machineId+'")',vboxVMDetailsSections.preview._updateInterval*1000));							
 				},vboxVMDetailsSections.preview._updateInterval*1000);
 			}
 
@@ -924,8 +924,7 @@ var vboxVMDetailsSections = {
 		icon: 'vrdp_16px.png',
 		title:trans('Display'),
 		settingsLink: 'Display',
-		redrawMachineEvents: ['vboxVRDEServerInfoChanged','vboxVRDEServerChanged'],
-		redrawOnStateChange: true,
+		redrawMachineEvents: ['OnVRDEServerInfoChanged','OnVRDEServerChanged','OnMachineStateChanged'],
 		rows: [
 		   {
 			   title: trans("Video Memory"),
@@ -945,9 +944,16 @@ var vboxVMDetailsSections = {
 				   if(d._isSnapshot) return rowStr;
 				   
 				   // Display links?
-				   if((d['state'] == 'Running' || d['state'] == 'Paused') && d['VRDEServerInfo'] && d['VRDEServerInfo']['port'] > 0) {
-					   rowStr = " <a href='rdp.php?host=" + chost + '&port=' + d['VRDEServerInfo']['port'] + "&id=" + d['id'] + "&vm=" + encodeURIComponent(d['name']) + "'>" + d['VRDEServerInfo']['port'] + "</a>";						   
-					   rowStr += ' <img src="images/vbox/blank.gif" style="vspace:0px;hspace:0px;height2px;width:10px;" /> (' + chost + ':' + d['VRDEServerInfo']['port'] + ')';
+				   if((d['state'] == 'Running' || d['state'] == 'Paused') && d['VRDEServerInfo']) {
+
+					   if(d['VRDEServerInfo']['port'] > 0) {
+						   rowStr = " <a href='rdp.php?host=" + chost + '&port=' + d['VRDEServerInfo']['port'] + "&id=" + d['id'] + "&vm=" + encodeURIComponent(d['name']) + "'>" + d['VRDEServerInfo']['port'] + "</a>";						   
+						   rowStr += ' <img src="images/vbox/blank.gif" style="vspace:0px;hspace:0px;height2px;width:10px;" /> (' + chost + ':' + d['VRDEServerInfo']['port'] + ')';
+					   } else {
+						   
+						   rowStr = '<span style="text-decoration: line-through; color: #f00;">' + rowStr + '</span>';
+						   
+					   }
 				   } else {
 					   rowStr += ' ('+chost+')';
 				   }
@@ -983,7 +989,7 @@ var vboxVMDetailsSections = {
 		icon:'hd_16px.png',
 		title: trans('Storage'),
 		settingsLink: 'Storage',
-		redrawMachineEvents: ['vboxMediumChanged'],
+		redrawMachineEvents: ['OnMediumChanged','OnMachineStateChanged'],
 		_refreshVMMedia : function(vmid, mid) {
 			
 			// See if medium is there
@@ -997,7 +1003,6 @@ var vboxVMDetailsSections = {
 				l.removeLoading();
 			});
 		},
-		redrawOnStateChange: true,
 		rows: function(d) {
 			
 			var advancedView = $('#vboxPane').data('vboxConfig').enableAdvancedConfig;
@@ -1095,7 +1100,7 @@ var vboxVMDetailsSections = {
 	network : {
 		icon: 'nw_16px.png',
 		title: trans('Network'),
-		redrawMachineEvents: ['vboxNetworkAdapterChanged'],
+		redrawMachineEvents: ['OnNetworkAdapterChanged','OnMachineStateChanged'],
 		settingsLink: 'Network',
 		rows: function(d) {
 			
@@ -3514,7 +3519,7 @@ function vboxMenu(name, id, menuItems) {
 		
 		if(mid) {
 			ul = $('#'+mid);
-			if(ul && ul.attr('id')) {
+			if(ul && ul.length) {
 				ul.empty();
 			} else {
 				ul = $('<ul />').attr({'id':mid,'style':'display: none;'});
@@ -3538,7 +3543,7 @@ function vboxMenu(name, id, menuItems) {
 
 			// Children?
 			if(m[i].children && m[i].children.length) {
-				item.append(self.menuElement(m[i].children));
+				item.append(self.menuElement(m[i].children, self.menuId()+'-submenu-' + i));
 			}
 			
 			ul.append(item);
@@ -3674,6 +3679,7 @@ function vboxMenu(name, id, menuItems) {
 			mi.css({'background-image':'url('+self.menuIcon(self.menuItems[i],true)+')'}).parent().addClass('disabled');
 		else
 			mi.parent().addClass('disabled');		
+		
 	};
 	
 	/**

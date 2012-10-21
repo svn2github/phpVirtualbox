@@ -28,7 +28,7 @@ vboxChooser.setAnchorId('vboxChooserDiv');
 // Stop actions
 var sChildren = [];
 for(var i = 0; i < vboxVMActions.stop_actions.length; i++) {
-	sChildren[sChildren.length] = $.extend({},vboxVMActions[vboxVMActions.stop_actions[i]],{'name':vboxVMActions.stop_actions[i],'iconStringDisabled':'_disabled'});
+	sChildren[sChildren.length] = $.extend(true,{},vboxVMActions[vboxVMActions.stop_actions[i]],{'name':vboxVMActions.stop_actions[i],'iconStringDisabled':'_disabled'});
 }
 
 // VM List Group context menu

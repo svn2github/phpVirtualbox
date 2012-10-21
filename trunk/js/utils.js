@@ -740,6 +740,9 @@ function vboxProgress(prequest,callback,icon,title,target,blocking) {
 	// Fix title
 	title = title.replace('\.+$','');
 	
+	// Sanitize target
+	target = $('<div />').text(target).html();
+	
 	// Blocking creates a dialog
 	if(!blocking) {
 	

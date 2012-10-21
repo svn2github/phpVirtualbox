@@ -545,7 +545,8 @@ class vboxconnector {
 				
 						try {
 							$eventlist[$k]['enrichmentData'] = array(
-									'port' => $this->session->console->VRDEServerInfo->port
+									'port' => $this->session->console->VRDEServerInfo->port,
+									'enabled' => intval($this->session->machine->VRDEServer->enabled)
 							);
 						} catch (Exception $e) {
 							// Just unlock the machine
@@ -619,7 +620,9 @@ class vboxconnector {
 					
 				/* enrich with snapshot name and new snapshot count*/
 				case 'OnSnapshotTaken':
-						
+				case 'OnSnapshotDeleted':
+				case 'OnSnapshotChanged':
+							
 					try {
 						$machine = $this->vbox->findMachine($event['machineId']);
 						$eventlist[$k]['enrichmentData'] = array(
@@ -795,6 +798,7 @@ class vboxconnector {
 		        break;
 		        
 			case 'OnMediumRegistered':
+				$data['machineId'] = $data['sourceId'];
 		        $data['mediumId'] = $eventDataObject->mediumId;
 		        $data['registered'] = $eventDataObject->registered;
 		        $data['dedupId'] .= '-'. $data['mediumId'];
@@ -814,15 +818,7 @@ class vboxconnector {
 		        
 		    /* Snapshot events */
 			case 'OnSnapshotTaken':
-				$data['machineId'] = $eventDataObject->machineId;
-				$data['snapshotId'] = $eventDataObject->snapshotId;
-				$data['dedupId'] .= '-'. $data['machineId'] .'-' . $data['snapshotId'];
-		        break;
 			case 'OnSnapshotDeleted':
-				$data['machineId'] = $eventDataObject->machineId;
-				$data['snapshotId'] = $eventDataObject->snapshotId;
-				$data['dedupId'] .= '-'. $data['machineId'] .'-' . $data['snapshotId'];
-				break;		        
 			case 'OnSnapshotChanged':
 				$data['machineId'] = $eventDataObject->machineId;
 				$data['snapshotId'] = $eventDataObject->snapshotId;
@@ -843,6 +839,7 @@ class vboxconnector {
 		        break;
 
 			case 'OnCPUChanged':
+				$data['machineId'] = $data['sourceId'];
 				$data['cpu'] = $eventDataObject->cpu;
 				$data['add'] = $eventDataObject->add;
 				$data['dedupId'] .= '-' . $data['cpu'];
@@ -850,12 +847,14 @@ class vboxconnector {
 				
 			/* Same end-result as network adapter changed */
 			case 'OnNATRedirect':
+				$data['machineId'] = $data['sourceId'];
 				$data['eventType'] = 'OnNetworkAdapterChanged';
 				$data['networkAdapterSlot'] = $eventDataObject->slot;
 				$data['dedupId'] = $listenerKey .'-OnNetworkAdapterChanged-'. $data['networkAdapterSlot'];
 				break;
 				
 			case 'OnNetworkAdapterChanged':
+				$data['machineId'] = $data['sourceId'];
 		        $data['networkAdapterSlot'] = $eventDataObject->networkAdapter->slot;
 		        $data['dedupId'] .= '-'. $data['networkAdapterSlot'];
 		        break;
@@ -868,6 +867,7 @@ class vboxconnector {
 	        	
 	        /* Medium attachment changed */
 	        case 'OnMediumChanged':
+	        	$data['machineId'] = $data['sourceId'];
 	        	$ma = $eventDataObject->mediumAttachment;
 	        	$data['controller'] = $ma->controller;
 	        	$data['port'] = $ma->port;
@@ -882,21 +882,27 @@ class vboxconnector {
 	        	
 	        /* Generic machine changes that should query IMachine */
 	        case 'OnVRDEServerChanged':
+	        	$data['machineId'] = $data['sourceId'];
 	        	break;
 	        case 'OnUSBControllerChanged':
+	        	$data['machineId'] = $data['sourceId'];
 	        	break;
 	        case 'OnSharedFolderChanged':
+	        	$data['machineId'] = $data['sourceId'];
 	        	$data['global'] = $eventDataObject->global;
 	        	break;
 	        case 'OnVRDEServerInfoChanged':
+	        	$data['machineId'] = $data['sourceId'];
 	        	break;
 	        case 'OnCPUExecutionCapChanged':
+	        	$data['machineId'] = $data['sourceId'];
 	        	$data['executionCap'] = $eventDataObject->executionCap;
 	        	break;
 	        
 
         	/* Notification when a USB device is attached to or detached from the virtual USB controller */
 	        case 'OnUSBDeviceStateChanged':
+	        	$data['machineId'] = $data['sourceId'];
 	        	$data['deviceId'] = $eventDataObject->device->id;
 	        	$data['attached'] = $eventDataObject->attached;
 	        	$data['dedupId'] .= '-'. $data['deviceId'];

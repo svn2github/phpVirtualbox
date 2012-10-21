@@ -260,27 +260,28 @@ vboxTopMenuBar.addMenu(menu);
 
 vboxTopMenuBar.addMenuBar('vboxMenu');
 
-$('#vboxPane').bind('vmSelectionListChanged',function(e, chooser){
-		vboxTopMenuBar.update(chooser);
+$('#vboxPane').bind('vmSelectionListChanged',function(e){
+		vboxTopMenuBar.update(vboxChooser);
 
-}).bind('vboxMachineOrSessionStateChanged',function(e, vmid){
+}).bind('vboxEvents', function(e, eventList) {
+
+	var updateMenuBar = false;
+	for(var i = 0; i < eventList.length && !updateMenuBar; i++) {
+		
+		switch(eventList[i].eventType) {
+			case 'OnMachineStateChanged':
+			case 'OnSessionStateChanged':
+				if(vboxChooser.isVMSelected(eventList[i].machineId)) {
+					updateMenuBar = true;
+				}
+				break;
+		}
+	}
 	
-	// Update menus if the VM is selected
-	if(vboxChooser.isVMSelected(vmid))
-		vboxTopMenuBar.update(self);
-
-}).bind('vboxMachineRegistered', function(e, vmid) {
-
-	// Update menus if the VM is selected
-	if(vboxChooser.isVMSelected(vmid))
-		vboxTopMenuBar.update(self);
-
-}).bind('vboxMachineDataChanged', function(e, vmid) {
-
-	// Update menus if the VM is selected
-	if(vboxChooser.isVMSelected(vmid))
-		vboxTopMenuBar.update(self);
-
+	if(updateMenuBar) {
+		vboxTopMenuBar.update(vboxChooser);
+	}
+	
 });
 
 

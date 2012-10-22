@@ -251,7 +251,8 @@ $(document).ready(function(){
 		if(vboxVMDataMediator.vmData[eventData.machineId]) {
 			
 			vboxVMDataMediator.vmData[eventData.machineId].state = eventData.state;
-			vboxVMDataMediator.vmData[eventData.machineId].lastStateChange = eventData.lastStateChange;
+			vboxVMDataMediator.vmData[eventData.machineId].lastStateChange = eventData.enrichmentData.lastStateChange;
+			vboxVMDataMediator.vmData[eventData.machineId].currentStateModified = eventData.enrichmentData.currentStateModified;
 			
 			// If it's running, subscribe to its events
 			if(vboxVMStates.isRunning({'state':eventData.state}) || vboxVMStates.isPaused({'state':eventData.state})) {
@@ -279,6 +280,7 @@ $(document).ready(function(){
 		if(vboxVMDataMediator.vmData[eventData.machineId]) {
 			
 			vboxVMDataMediator.vmData[eventData.machineId].currentSnapshotName = eventData.enrichmentData.currentSnapshotName;
+			vboxVMDataMediator.vmData[eventData.machineId].currentStateModified = eventData.enrichmentData.currentStateModified;
 			
 			// Get media again
 			vboxAjaxRequest('vboxGetMedia',{},function(d){$('#vboxPane').data('vboxMedia',d);});

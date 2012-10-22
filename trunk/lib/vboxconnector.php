@@ -609,7 +609,8 @@ class vboxconnector {
 						
 						$machine = $this->vbox->findMachine($event['machineId']);
 						$eventlist[$k]['enrichmentData'] = array(
-							'lastStateChange' => (string)($machine->lastStateChange/1000)
+							'lastStateChange' => (string)($machine->lastStateChange/1000),
+							'currentStateModified' => $machine->currentStateModified
 						);
 						$machine->releaseRemote();
 						
@@ -627,7 +628,8 @@ class vboxconnector {
 						$machine = $this->vbox->findMachine($event['machineId']);
 						$eventlist[$k]['enrichmentData'] = array(
 								'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
-								'snapshotCount' => $machine->snapshotCount
+								'snapshotCount' => $machine->snapshotCount,
+								'currentStateModified' => $machine->currentStateModified
 						);
 						$machine->releaseRemote();
 		
@@ -3399,7 +3401,6 @@ class vboxconnector {
 
 			$data['currentSnapshot'] = ($machine->currentSnapshot->handle ? array('id'=>$machine->currentSnapshot->id,'name'=>$machine->currentSnapshot->name) : null);
 			$data['snapshotCount'] = $machine->snapshotCount;
-			$data['currentStateModified'] = $machine->currentStateModified;
 
 			// Start / stop config
 			if(@$this->settings->startStopConfig) {
@@ -3857,6 +3858,7 @@ class vboxconnector {
 					'groups' => $groups,
 					'lastStateChange' => (string)($machine->lastStateChange/1000),
 					'id' => $machine->id,
+					'currentStateModified' => $machine->currentStateModified,
 					'sessionState' => (string)$machine->sessionState,
 					'currentSnapshotName' => ($machine->currentSnapshot->handle ? $machine->currentSnapshot->name : ''),
 					'customIcon' => (@$this->settings->enableCustomIcons ? $machine->getExtraData('phpvb/icon') : '')

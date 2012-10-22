@@ -96,6 +96,8 @@ if(jQuery)( function() {
 							var aElm = $(this).children('a');
 							if($(aElm)[0]) {
 								callback( aElm.attr('href').substr(1), $(srcElement), null, aElm);
+							} else {
+								$(this).children('.vboxMenuAcceptClick').click();
 							}
 						}
 						

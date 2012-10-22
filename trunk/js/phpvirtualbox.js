@@ -1737,7 +1737,7 @@ var vboxVMActions = {
     		vboxShowLogsDialogInit(vboxChooser.getSingleSelected());
 		},
 		enabled:function(){
-			return (vboxChooser && vboxChooser.getSingleSelectedId() != 'host');
+			return (vboxChooser.getSingleSelectedId() && vboxChooser.getSingleSelectedId() != 'host');
 		}
     },
 
@@ -3826,17 +3826,21 @@ function vboxMenuBar(name) {
  * Loads data, scripts, and HTML files and optionally displays "Loading ..."
  * screen until all items have completed loading
  * 
+ * @param {String} name - unique name for this loader. used to generate id
+ * 		of "Loading..." div
  * @constructor
  * @class vboxLoader
  */
-function vboxLoader() {
+function vboxLoader(name) {
 
+	if(!name) name = '';
 	var self = this;
 	this._load = [];
 	this.onLoad = null;
 	this._loadStarted = {};
 	this.hideRoot = false;
 	this.noLoadingScreen = false;
+	this.name = name;
 	
 	this._data = [];
 	this._files = [];
@@ -3896,7 +3900,7 @@ function vboxLoader() {
 	 */
 	self.showLoading = function() {
 		
-		var div = $('<div />').attr({'id':'vboxLoaderDialog','title':'','style':'display: none;','class':'vboxDialogContent'});
+		var div = $('<div />').attr({'id':'vboxLoaderDialog'+self.name,'title':'','style':'display: none;','class':'vboxDialogContent'});
 		
 		var tbl = $('<table />');
 		var tr = $('<tr />');
@@ -3927,7 +3931,7 @@ function vboxLoader() {
 	 * Hide loading screen
 	 */
 	self.removeLoading = function() {
-		$('#vboxLoaderDialog').empty().remove();
+		$('#vboxLoaderDialog'+self.name).empty().remove();
 	};
 	
 	/**

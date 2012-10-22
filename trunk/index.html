@@ -179,8 +179,9 @@
 			$('#vboxResizeBarProgress').draggable({cursor:(jQuery.browser.opera ? 'n-resize' : 'row-resize'),axis:'y',zIndex:99,helper:function(){
 				
 				$('#vboxResizeBarTmp').remove();
-				var r = $('#vboxResizeBarProgress').clone(false);
-				return $(r).attr({'id':'vboxResizeBarTmp'}).unbind('mouseleave').css({'background':'#cccccc'});
+				return $('#vboxResizeBarProgress').clone(false)
+					.attr({'id':'vboxResizeBarTmp'}).unbind('mouseleave')
+					.css({'background':'#cccccc','position':'absolute','left':'0','right':'0','margin-left':'auto','margin-right':'auto'});
 				
 			},scroll:false,'start':function(e,ui){
 				
@@ -392,7 +393,7 @@
 		</td>
 	</tr>
 	<tr style='vertical-align: middle;'>
-		<td id='vboxToolbarMain' style='height: 66px; border:0px;padding:0px;margin:0px;border-spacing:0px;' class='vboxToolbarGrad'>
+		<td id='vboxToolbarMain' style='height: 66px;' class='vboxToolbarGrad'>
 			<!--
 				
 				VM list toolbar
@@ -418,8 +419,10 @@
 							
 						-->
 					</td>
-					<td id='vboxResizeTD' style='border: 0px; width: 2px; margin: 0px; padding: 0px; text-align: center;'>
-						<div style='position: absolute; margin: 0px; padding:2px; width: 0px; height: 90%;' id='vboxResizeBar' ></div>
+					<td id='vboxResizeTD' style='border: 0px; margin: 0px; padding: 0px; text-align: center;'>
+						<div style='margin:0px;padding:0px;width:4px'>
+							<div style='position: absolute; margin: 0px; padding:2px; width: 0px; height: 90%;' id='vboxResizeBar' ></div>
+						</div>
 					</td>
 					<td id="vboxPaneTabContent" style='width:100%;border:0px;padding:0px;border-spacing:0px;margin:0px'>
 						<!--

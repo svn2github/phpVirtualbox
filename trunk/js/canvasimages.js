@@ -130,6 +130,9 @@ function vboxDrawPreviewCanvas(can, imageObj, text, width, height) {
 	height += ((margin+screenMargin)*2);
 	width += ((margin+screenMargin)*2);
 	
+	// Does canvas still exist?
+	if(!can) return;
+	
 	// Set canvas values
 	can.height = height;
 	can.width = width;

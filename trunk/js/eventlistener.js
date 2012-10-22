@@ -21,6 +21,7 @@ var vboxEventListener = {
 	// Deferred state objects
 	_started: null,
 	_stopped: null, // resolved when we have unsubscribed from all events
+	_unloading: false, // set to true when page is unloading
 	
 	
 	/* Start event listener loop */
@@ -61,7 +62,7 @@ var vboxEventListener = {
 			if(!vboxEventListener._running || !vboxEventListener._started) return;
 			
 			// Check for valid result
-			if(!d.result) {
+			if(!d.result && vboxEventListener._running && !vboxEventListener._unloading) {
 				$('#vboxPane').css({'display':'none'});
 				vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox'));
 				return;
@@ -106,6 +107,7 @@ var vboxEventListener = {
 // Stop event listener on window unload
 $(document).ready(function() {
 	$(window).bind('unload',function() {
+		vboxEventListener._unloading = true;
 		vboxEventListener.stop();
 	});	
 });

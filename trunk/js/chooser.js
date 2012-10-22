@@ -135,14 +135,14 @@ var vboxChooser = {
 		 
  	},
 	 
- 	/*
+ 	/**
  	 * Return true if the passed VM is selected
  	 */
  	isVMSelected : function(vmid) {
  		return (jQuery.inArray(vmid,vboxChooser.selectedVMs) > -1);	 
  	},
  	 
- 	/*
+ 	/**
  	 * Return selected VM data in array
  	 */
  	getSelectedVMsData : function() {
@@ -154,7 +154,7 @@ var vboxChooser = {
 		return vms;
  	},
  	
-	/*
+	/**
 	 * Triggered when selection list has changed
 	 */
 	selectionListChanged : function(selectionList) {
@@ -218,7 +218,7 @@ var vboxChooser = {
 		
 	},
 	
-	/*
+	/**
 	 * Return the single selected VM's id if
 	 * only one vm is selected. Else null.
 	 */
@@ -395,7 +395,7 @@ var vboxChooser = {
 			
 			if(!gnames[i]) continue;
 			
-			var group = groot.children('div.vboxChooserGroup:not(.ui-draggable-dragging)').children('div.vboxChooserGroupHeader[title="'+gnames[i]+'"]').parent();
+			var group = groot.children('div.vboxChooserGroup:not(.ui-draggable-dragging)').children('div.vboxChooserGroupIdentifier[title="'+gnames[i]+'"]').parent();
 			
 			// If it does not exist, create it
 			if(!group[0]) {
@@ -416,7 +416,7 @@ var vboxChooser = {
 				vboxChooser._initialResize = true;
 				vboxChooser._resizeElements();
 				
-				groot = groot.children('div.vboxChooserGroup:not(.ui-draggable-dragging)').children('div.vboxChooserGroupHeader[title="'+gnames[i]+'"]').parent();
+				groot = groot.children('div.vboxChooserGroup:not(.ui-draggable-dragging)').children('div.vboxChooserGroupIdentifier[title="'+gnames[i]+'"]').parent();
 				
 			} else {
 				groot = group;
@@ -547,8 +547,10 @@ var vboxChooser = {
 		// VM Name
 		var td = $('<td />').attr({'class':'vboxVMTitle'});
 		
-		// Host will have HTML in name
+		// Host will have HTML in name and unique id
 		if(vmn.id == 'host') {
+			
+			$(tbl).attr('id', 'vboxChooserVMHost');
 			
 			// Check for multiple server config
 			if($('#vboxPane').data('vboxConfig').servers.length) {
@@ -616,8 +618,12 @@ var vboxChooser = {
 			var sdate = new Date(vmn.lastStateChange * 1000);
 
 			// Table gets tool tips
-			tip = vboxChooser._vmTooolTip.replace('%1',('<b>'+$('<span />').text(vmn.name).html()+'</b>'+(vmn.currentSnapshotName ? ' (' + $('<span />').text(vmn.currentSnapshotName).html() + ')' : ''))).replace('%2',trans(vboxVMStates.convert(vmn.state),'VBoxGlobal')).replace('%3',sdate.toLocaleString()).replace('%4',trans(vmn.sessionState,'VBoxGlobal'));
-			$(tbl).tipped({'source':tip,'position':'mouse','delay':2000});
+			tip = vboxChooser._vmTooolTip.replace('%1',('<b>'+$('<span />').text(vmn.name).html()+'</b>'+(vmn.currentSnapshotName ? ' (' + $('<span />').text(vmn.currentSnapshotName).html() + ')' : '')))
+				.replace('%2',trans(vboxVMStates.convert(vmn.state),'VBoxGlobal'))
+				.replace('%3',((new Date().getTime() - sdate.getTime())/1000 > 86400 ? sdate.toLocaleDateString() : sdate.toLocaleTimeString()))
+				.replace('%4',trans(vmn.sessionState,'VBoxGlobal').toLowerCase());
+			
+			$(tbl).tipped({'source':tip,'position':'mouse','delay':1500});
 		}
 		
 		$(tr).append(td).appendTo(tbl);
@@ -645,8 +651,8 @@ var vboxChooser = {
 		$(tr).append(td).appendTo(tbl);
 
 		// Droppable targets
+		var td = $('<td />').attr({'colspan':'2'}).addClass('vboxChooserDropTarget vboxDropTargetBottom');
 		if(vmn.id != 'host') {
-			var td = $('<td />').attr({'colspan':'2'}).addClass('vboxChooserDropTarget vboxDropTargetBottom');
 			td.hover(function(){
 				if(vboxChooser._dragging && vboxChooser._dragging != vmn.id)
 					$(this).addClass('vboxChooserDropTargetHover');
@@ -654,8 +660,8 @@ var vboxChooser = {
 					$(this).removeClass('vboxChooserDropTargetHover');
 				}
 			);
-			$('<tr />').addClass('vboxChooserDropTarget').css({'height':'4px'}).append(td).appendTo(tbl);
 		}
+		$('<tr />').addClass('vboxChooserDropTarget').css({'height':'4px'}).append(td).appendTo(tbl);
 		
 		
 		// Context menus?
@@ -728,7 +734,7 @@ var vboxChooser = {
 				if(sessionLocked && !$('#vboxPane').data('vboxConfig')['phpVboxGroups']) return;
 				
 				// Make sure there are no conflicts
-				var groupName = $(droppedGroup).children('div.vboxChooserGroupHeader').attr('title');
+				var groupName = $(droppedGroup).children('div.vboxChooserGroupIdentifier').attr('title');
 				var newGroupName = groupName;
 				
 
@@ -737,8 +743,9 @@ var vboxChooser = {
 					newGroupName = groupName + ' (' + (i++) + ')';				
 				}
 				
-				$(droppedGroup).children('div.vboxChooserGroupHeader').attr({'title':newGroupName})
-					.children('span.vboxChooserGroupName').text(newGroupName);
+				$(droppedGroup).children('div.vboxChooserGroupIdentifier').attr({'title':newGroupName})
+					.siblings('div.vboxChooserGroupHeader')
+						.children('span.vboxChooserGroupName').text(newGroupName);
 			
 			}
 
@@ -765,7 +772,7 @@ var vboxChooser = {
 				
 				dropTarget = dropTarget.parent();
 				
-				// Make sure that this wasn't dropped onto a sub-group or itvboxChooser
+				// Make sure that this wasn't dropped onto a sub-group or itself
 				if(
 						vmGroupPath == dropTarget.data('vmGroupPath')
 								||
@@ -793,7 +800,7 @@ var vboxChooser = {
 			
 			// Make sure there are no conflicts
 			var newElm = $(droppedGroup).detach();
-			var groupName = $(droppedGroup).children('div.vboxChooserGroupHeader').attr('title');
+			var groupName = $(droppedGroup).children('div.vboxChooserGroupIdentifier').attr('title');
 			var newGroupName = groupName;
 			
 			var i = 2;
@@ -802,8 +809,9 @@ var vboxChooser = {
 			}
 			
 			$(newElm)
-				.children('div.vboxChooserGroupHeader').attr({'title':newGroupName})
-				.children('span.vboxChooserGroupName').text(newGroupName);
+				.children('div.vboxChooserGroupIdentifier').attr({'title':newGroupName})
+					.siblings('div.vboxChooserGroupHeader')
+					.children('span.vboxChooserGroupName').text(newGroupName);
 			$(newElm).insertBefore(dropTarget.children('div.vboxChooserGroupVMs'));
 			
 		}
@@ -1077,10 +1085,10 @@ var vboxChooser = {
 				if(!$(elm)[0]) return;
 				
 				// Compose group path
-				var myPath = $(elm).children('div.vboxChooserGroupHeader').attr('title');
+				var myPath = $(elm).children('div.vboxChooserGroupIdentifier').attr('title');
 				if(!myPath) myPath = '/';
 				$(elm).parents('div.vboxChooserGroup:not(.ui-draggable-dragging)').each(function(idx2,elm2){
-					var pName = $(elm2).children('div.vboxChooserGroupHeader').attr('title');
+					var pName = $(elm2).children('div.vboxChooserGroupIdentifier').attr('title');
 					if(!pName) pName = '/';
 					myPath = String(pName + '/' + myPath).replace('//','/');
 				});
@@ -1093,9 +1101,9 @@ var vboxChooser = {
 					// in the selection list
 					var selected = $(elm2).hasClass('vboxVMGroupSelected');
 					var oldPath = $(elm2).data('vmGroupPath');
-					var newPath = String(myPath + '/' + $(elm2).children('div.vboxChooserGroupHeader').attr('title')).replace('//','/');
+					var newPath = String(myPath + '/' + $(elm2).children('div.vboxChooserGroupIdentifier').attr('title')).replace('//','/');
 					
-					gList[gList.length] = $(elm2).children('div.vboxChooserGroupHeader').attr('title');
+					gList[gList.length] = $(elm2).children('div.vboxChooserGroupIdentifier').attr('title');
 					
 					// set / correct group path data
 					$(elm2).data('vmGroupPath', newPath);
@@ -1104,7 +1112,7 @@ var vboxChooser = {
 					if(selected && (oldPath != newPath)) {
 						for(var i = 0; i < vboxChooser._selectedList.length; i++) {
 							if(vboxChooser._selectedList[i].type == 'group' && vboxChooser._selectedList[i].groupPath == oldPath) {
-								vboxChooser._selectedList[i].groupPath = String(myPath + '/' + $(elm2).children('div.vboxChooserGroupHeader').attr('title')).replace('//','/');
+								vboxChooser._selectedList[i].groupPath = String(myPath + '/' + $(elm2).children('div.vboxChooserGroupIdentifier').attr('title')).replace('//','/');
 								break;
 							}
 						}							
@@ -1146,11 +1154,18 @@ var vboxChooser = {
 				};
 				
 				// Update counts span
-				$(elm).children('div.vboxChooserGroupVMs').css({'display':(vmList.length ? '' : 'none')})
-					.siblings('div.vboxChooserGroupHeader').children('span.vboxChooserGroupInfo')
-					.children('span.vboxChooserGroupCounts').html(
-						(gList.length ? ('<img src="images/vbox/nw_16px.png" />'+gList.length) : '') +
-						(vmList.length ? ('<img src="images/vbox/fullscreen_16px.png" />'+vmList.length) : '')
+				$(elm).children('div.vboxChooserGroupVMs').css({'display':(vmList.length || $(elm).data('vmGroupPath') == '/' ? '' : 'none')})
+					.siblings('div.vboxChooserGroupHeader')
+					.each(function(hidx,header) {
+						$(header).tipped({'source':'<strong>'+$(header).siblings('div.vboxChooserGroupIdentifier').attr('title')+'</strong>'+
+								(gList.length ? ('<br />' + trans('%n group(s)','UIGChooserItemGroup',gList.length).replace('%n',gList.length)) : '') +
+								(vmList.length ? ('<br />' + trans('%n machine(s)','UIGChooserItemGroup',vmList.length).replace('%n',vmList.length)) : '')
+							,'position':'mouse','delay':1500});
+					})
+						.children('span.vboxChooserGroupInfo')
+						.children('span.vboxChooserGroupCounts').html(
+							(gList.length ? ('<img src="images/vbox/nw_16px.png" />'+gList.length) : '') +
+							(vmList.length ? ('<img src="images/vbox/fullscreen_16px.png" />'+vmList.length) : '')
 				);
 			});
 			
@@ -1239,7 +1254,7 @@ var vboxChooser = {
 	 */
 	groupNameConflicts : function(parentGroup, name, ignoreGroupAtPath) {
 		var found = false;
-		parentGroup.children('div.vboxChooserGroup:not(.ui-draggable-dragging)').children('div.vboxChooserGroupHeader[title="'+name+'"]').parent().each(function(i,elm){
+		parentGroup.children('div.vboxChooserGroup:not(.ui-draggable-dragging)').children('div.vboxChooserGroupIdentifier[title="'+name+'"]').parent().each(function(i,elm){
 			
 			if(ignoreGroupAtPath && (ignoreGroupAtPath == $(elm).data('vmGroupPath')))
 				return true;
@@ -1264,7 +1279,7 @@ var vboxChooser = {
 			
 			// Make sure there are no conflicts
 			var newElm = $(elm).detach();
-			var groupName = $(elm).children('div.vboxChooserGroupHeader').attr('title');
+			var groupName = $(elm).children('div.vboxChooserGroupIdentifier').attr('title');
 			var newGroupName = groupName;
 
 			var i = 2;
@@ -1272,7 +1287,9 @@ var vboxChooser = {
 				newGroupName = groupName + ' (' + (i++) + ')';				
 			}
 			
-			$(newElm).children('div.vboxChooserGroupHeader').attr({'title':newGroupName}).children('span.vboxChooserGroupName').text(newGroupName);
+			$(newElm).children('div.vboxChooserGroupIdentifier').attr({'title':newGroupName})
+				.siblings('div.vboxChooserGroupHeader')
+					.children('span.vboxChooserGroupName').text(newGroupName);
 			
 			$(newElm).insertBefore(target);
 			
@@ -1327,8 +1344,8 @@ var vboxChooser = {
 		var groups = $(gElm).children('div.vboxChooserGroup').get();
 		groups.sort(function(a,b){
 			
-			var Pos1 = jQuery.inArray($(a).children('div.vboxChooserGroupHeader').attr('title'), groupOrder);
-			var Pos2 = jQuery.inArray($(b).children('div.vboxChooserGroupHeader').attr('title'), groupOrder);
+			var Pos1 = jQuery.inArray($(a).children('div.vboxChooserGroupIdentifier').attr('title'), groupOrder);
+			var Pos2 = jQuery.inArray($(b).children('div.vboxChooserGroupIdentifier').attr('title'), groupOrder);
 			
 			return (Pos1 > Pos2 || Pos1 == -1 ? -1 : (Pos2 == Pos1 ? 0 : 1));
 			
@@ -1367,7 +1384,7 @@ var vboxChooser = {
 		// sort groups
 		var groups = $(el).children('div.vboxChooserGroup').get();
 		groups.sort(function(a,b){
-			return $(b).children('div.vboxChooserGroupHeader').attr('title').localeCompare($(a).children('div.vboxChooserGroupHeader').attr('title'));
+			return $(b).children('div.vboxChooserGroupIdentifier').attr('title').localeCompare($(a).children('div.vboxChooserGroupIdentifier').attr('title'));
 		});
 		$.each(groups, function(idx,itm) {
 			$(itm).insertAfter($(el).children('div.vboxChooserGroupHeader'));
@@ -1400,7 +1417,7 @@ var vboxChooser = {
 			
 			var newName = $(textbox).val().replace(/[\\\/:*?"<>,]/g,'_');
 			
-			if(newName && newName != $(textbox).closest('div.vboxChooserGroup').children('div.vboxChooserGroupHeader').attr('title')) {
+			if(newName && newName != $(textbox).closest('div.vboxChooserGroup').children('div.vboxChooserGroupIdentifier').attr('title')) {
 				
 				// Do not rename if it conflicts
 				var noConflict = newName;
@@ -1411,8 +1428,9 @@ var vboxChooser = {
 				newName = noConflict;
 				
 				$(textbox).closest('div.vboxChooserGroup')
-					.children('div.vboxChooserGroupHeader').attr({'title':newName})
-					.children('span.vboxChooserGroupName').html(newName);
+					.children('div.vboxChooserGroupIdentifier').attr({'title':newName})
+					.siblings('div.vboxChooserGroupHeader')
+						.children('span.vboxChooserGroupName').html(newName);
 
 				vboxChooser.composeGroupDef();
 				
@@ -1430,7 +1448,7 @@ var vboxChooser = {
 		$(el).children('div.vboxChooserGroupHeader').append(
 			
 			$('<form />').append(
-				$('<input />').attr({'type':'text','value':$(el).children('div.vboxChooserGroupHeader').attr('title')}).css({'width':'90%','padding':'0px','margin':'0px'}).bind('keypress',function(e){
+				$('<input />').attr({'type':'text','value':$(el).children('div.vboxChooserGroupIdentifier').attr('title')}).css({'width':'90%','padding':'0px','margin':'0px'}).bind('keypress',function(e){
 					if (e.which == 13) {
 						$(this).unbind('blur', renameGroup);
 						renameGroup(e,this);
@@ -1773,6 +1791,8 @@ var vboxChooser = {
 	 	var collapsed = vboxChooser._isGroupCollapsed(gpath);
 	 	
 		var gHTML = $('<div />').append(
+				$('<div />').addClass('vboxChooserGroupIdentifier').css({'display':'none'}).attr({'title':gname})
+			).append(
 			$('<div />').addClass('vboxChooserGroupHeader').css({'display':(first ? 'none' : '')})
 				.attr({'title':gname})
 				.dblclick(function() {

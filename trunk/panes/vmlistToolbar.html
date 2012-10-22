@@ -253,7 +253,10 @@ function vboxChooserToolbarUSBUpdate(menu) {
 				}
 			}).data({'usbDevice':hostUSB[i].id,'capt':capt});
 			
-			$(menu).append($('<li />').append($('<span />').click(function(){if(!$(this).parent().hasClass('disabled')){$(this).children('input').click();}return false;}).append(cbox).append(' '+dname)).attr({'class':(avail ? '' : 'disabled')}));
+			$(menu).append($('<li />').append(
+					$('<span />').addClass('vboxMenuAcceptClick')
+						.click(function(){if(!$(this).parent().hasClass('disabled')){$(this).children('input').click();}return false;})
+						.append(cbox).append(' '+dname)).attr({'class':(avail ? '' : 'disabled')}));
 		}
 		
 		// No devices?

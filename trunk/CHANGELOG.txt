@@ -1,7 +1,25 @@
 -------------------------------------
+	4.2-4
+-------------------------------------
+Fixed details pane redraws when VM selection list changes while VM
+data is still loading
+
+Added VM group tooltips
+
+Fixed bug that would not display the first VM added to VirtualBox
+when there were no other VMs until the page was refreshed
+
+Fixed bug that would not allow attachment of USB devices from the
+Settings menu
+
+Cleaned up Snapshot logic and snapshot list UI
+
+Minor look changes to more closely match the VirtualBox GUI
+ 
+-------------------------------------
 	4.2-3b	2012-10-21
 -------------------------------------
-Fixed bug when detaching a VM console window
+Fixed error when detaching a VM console window
 http://code.google.com/p/phpvirtualbox/issues/detail?id=613
 
 -------------------------------------

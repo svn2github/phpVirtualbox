@@ -78,29 +78,38 @@ var vboxVMDataMediator = {
 		}
 		
 		var mList = $.Deferred();
-		vboxAjaxRequest('vboxGetMachines',{},function(d) {
+		$.when(vboxAjaxRequest('vboxGetMachines')).done(function(d) {
+			
 			var vmData = {};
 			var subscribeList = [];
-			for(var i = 0; i < d.vmlist.length; i++) {
+
+			// No data?
+			if(!d || !d.success) {
+				mList.reject();
+				return;
+			}
+			
+			for(var i = 0; i < d.responseData.length; i++) {
 				
 				// Enforce VM ownership
 			    if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin && d.vmlist[i].owner != $('#vboxPane').data('vboxSession').user) {
 			    	continue;
 			    }
 
-				vmData[d.vmlist[i].id] = d.vmlist[i];
+				vmData[d.responseData[i].id] = d.responseData[i];
 				
-				if(vboxVMStates.isRunning({'state':d.vmlist[i].state}) || vboxVMStates.isPaused({'state':d.vmlist[i].state}))
-					subscribeList[subscribeList.length] = d.vmlist[i].id;
+				if(vboxVMStates.isRunning({'state':d.responseData[i].state}) || vboxVMStates.isPaused({'state':d.responseData[i].state}))
+					subscribeList[subscribeList.length] = d.responseData[i].id;
 				
 			}
 			
-			// Subscribe to vbox and machine events of running machines
-			vboxAjaxRequest('subscribeEvents',{vms:subscribeList}, function() {
+			// Start event listener
+			$.when(vboxEventListener.start(subscribeList)).done(function(){
 				vboxVMDataMediator.vmData = vmData;
-				mList.resolve(d);		
-				vboxEventListener.start();
-			});				
+				mList.resolve(d.responseData);		
+				
+			});
+			
 			
 		});
 		
@@ -126,9 +135,9 @@ var vboxVMDataMediator = {
 			
 			vboxVMDataMediator.promises.getVMDetails[vmid] = $.Deferred();
 
-			vboxAjaxRequest('machineGetDetails',{vm:vmid}, function(d){
-				vboxVMDataMediator.vmDetailsData[d.id] = d;
-				vboxVMDataMediator.promises.getVMDetails[vmid].resolve(d);
+			$.when(vboxAjaxRequest('machineGetDetails',{vm:vmid})).done(function(d){
+				vboxVMDataMediator.vmDetailsData[d.responseData.id] = d.responseData;
+				vboxVMDataMediator.promises.getVMDetails[vmid].resolve(d.responseData);
 			});
 
 		}		
@@ -154,9 +163,9 @@ var vboxVMDataMediator = {
 			
 			vboxVMDataMediator.promises.getVMRuntimeData[vmid] = $.Deferred();
 
-			vboxAjaxRequest('machineGetRuntimeData',{vm:vmid}, function(d){
-				vboxVMDataMediator.vmRuntimeData[d.id] = d;
-				vboxVMDataMediator.promises.getVMRuntimeData[vmid].resolve(d);
+			$.when(vboxAjaxRequest('machineGetRuntimeData',{vm:vmid})).done(function(d){
+				vboxVMDataMediator.vmRuntimeData[d.responseData.id] = d.responseData;
+				vboxVMDataMediator.promises.getVMRuntimeData[vmid].resolve(d.responseData);
 			});
 
 		}		
@@ -211,12 +220,12 @@ var vboxVMDataMediator = {
 		if(!vboxVMDataMediator.vmData[vmid]) return;
 		
 		var def = $.Deferred();
-		vboxAjaxRequest('vboxGetMachines',{'vm':vmid},function(d) {
-			vm = d.vmlist[0];
+		$.when(vboxAjaxRequest('vboxGetMachines',{'vm':vmid})).done(function(d) {
+			vm = d.responseData[0];
 			vboxVMDataMediator.vmData[vm.id] = vm;
 			def.resolve();
-			$('#vboxPane').trigger('vboxOnMachineDataChanged', [{machineId:d.id,enrichmentData:d}]);
-			$('#vboxPane').trigger('vboxEvents', [[{eventType:'OnMachineDataChanged',machineId:d.id,enrichmentData:d}]]);
+			$('#vboxPane').trigger('vboxOnMachineDataChanged', [{machineId:d.responseData.id,enrichmentData:d}]);
+			$('#vboxPane').trigger('vboxEvents', [[{eventType:'OnMachineDataChanged',machineId:d.responseData.id,enrichmentData:d}]]);
 		});
 		
 		return def.promise();
@@ -259,7 +268,9 @@ $(document).ready(function(){
 				
 				// If we already have runtime data, assume we were already subscribed
 				if(!vboxVMDataMediator.vmRuntimeData[eventData.machineId]) {
-					vboxAjaxRequest('machineSubscribeEvents', {'vm':eventData.machineId});
+					
+					// Tell event listener to subscribe to this machine's events
+					vboxEventListener.subscribeVMEvents(eventData.machineId);
 				}
 				
 			} else {
@@ -283,7 +294,7 @@ $(document).ready(function(){
 			vboxVMDataMediator.vmData[eventData.machineId].currentStateModified = eventData.enrichmentData.currentStateModified;
 			
 			// Get media again
-			vboxAjaxRequest('vboxGetMedia',{},function(d){$('#vboxPane').data('vboxMedia',d);});
+			$.when(vboxAjaxRequest('vboxGetMedia')).done(function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 			
 		}
 		if(vboxVMDataMediator.vmDetailsData[eventData.machineId])
@@ -413,6 +424,13 @@ $(document).ready(function(){
 				if(vboxVMDataMediator.vmDetailsData[eventData.machineId])
 					vboxVMDataMediator.vmDetailsData[eventData.machineId].GUI.SaveMountedAtRuntime = eventData.value;
 				break;
+				
+			// First time run
+			case 'GUI/FirstRun':
+				if(vboxVMDataMediator.vmDetailsData[eventData.machineId])
+					vboxVMDataMediator.vmDetailsData[eventData.machineId].GUI.FirstRun = eventData.value;
+				break;
+				
 		}
 		
 		

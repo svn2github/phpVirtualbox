@@ -76,7 +76,7 @@
 
 // Load list of exportable machines
 var l = new vboxLoader();
-l.add('vboxGetExportableMachines',function(d){$('#wizardExportApplianceStep1').data('vms',d);});
+l.add('vboxGetExportableMachines',function(d){$('#wizardExportApplianceStep1').data('vms',d.responseData);});
 l.onLoad = function() {
 	var vms = $('#wizardExportApplianceStep1').data('vms');
 	var vmlist = $('#vboxExportAppVMList');

@@ -142,7 +142,10 @@
 			$('#vboxResizeBar').draggable({cursor:(jQuery.browser.opera ? 'e-resize' : 'col-resize'),axis:'x',zIndex:99,helper:function(){
 				
 				$('#vboxResizeBarTmp').remove();
-				return $('#vboxResizeBar').clone(false).attr({'id':'vboxResizeBarTmp'}).unbind('mouseleave').css({'background':'#cccccc'});
+				var h = $('#vboxResizeBar').parent().height();
+				return $('#vboxResizeBar').clone(false)
+					.attr({'id':'vboxResizeBarTmp'}).unbind('mouseleave')
+					.css({'background':'#ccc','height':h+'px'});
 				
 			},scroll:false,'start':function(e,ui){
 				
@@ -167,11 +170,7 @@
 				
 				$(window).trigger('resize');
 				
-			}}).css('cursor',(jQuery.browser.opera ? 'e-resize' : 'col-resize')).bind('mouseenter',function(){
-				$(this).css('background',"#cccccc");
-			}).bind('mouseleave',function(){
-				$(this).css('background',"");
-			}).parent().disableSelection();
+			}}).css('cursor',(jQuery.browser.opera ? 'e-resize' : 'col-resize')).parent().disableSelection();
 
 			
 			
@@ -180,8 +179,8 @@
 				
 				$('#vboxResizeBarTmp').remove();
 				return $('#vboxResizeBarProgress').clone(false)
-					.attr({'id':'vboxResizeBarTmp'}).unbind('mouseleave')
-					.css({'background':'#cccccc','position':'absolute','left':'0','right':'0','margin-left':'auto','margin-right':'auto'});
+					.attr({'id':'vboxResizeBarTmp'})
+					.css({'background':'#ccc','position':'absolute','left':'0','right':'0','margin-left':'auto','margin-right':'auto'});
 				
 			},scroll:false,'start':function(e,ui){
 				
@@ -204,11 +203,7 @@
 				
 				$(window).trigger('resize');
 				
-			}}).css('cursor',(jQuery.browser.opera ? 'n-resize' : 'row-resize')).bind('mouseenter',function(){
-				$(this).css('background',"#cccccc");
-			}).bind('mouseleave',function(){
-				$(this).css('background',"");
-			}).parent().disableSelection();
+			}}).css('cursor',(jQuery.browser.opera ? 'n-resize' : 'row-resize')).parent().disableSelection();
 			
 			/*
 			 * Resize panes when the window changes sizes
@@ -236,14 +231,14 @@
 			$('#vboxPane').bind('hostChange',function(){
 				
 				var l = new vboxLoader();
-				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d);});
-				l.add('vboxGetGuestOSTypes',function(d){$('#vboxPane').data('vboxOSTypes',d);});
-				l.add('vboxSystemPropertiesGet',function(d){$('#vboxPane').data('vboxSystemProperties',d);});
-				l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
-				l.add('hostGetDetails',function(d){$('#vboxPane').data('vboxHostDetails',d);});
-				l.add('vboxRecentMediaGet',function(d){$('#vboxPane').data('vboxRecentMedia',d);});
-				l.add('vboxRecentMediaPathsGet',function(d){$('#vboxPane').data('vboxRecentMediaPaths',d);});
-				l.add('vboxGetEnumerationMap',function(d){$('#vboxPane').data('vboxMediumVariants',d);},{'class':'MediumVariant','ValueMap':1});
+				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d.responseData);});
+				l.add('vboxGetGuestOSTypes',function(d){$('#vboxPane').data('vboxOSTypes',d.responseData);});
+				l.add('vboxSystemPropertiesGet',function(d){$('#vboxPane').data('vboxSystemProperties',d.responseData);});
+				l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
+				l.add('hostGetDetails',function(d){$('#vboxPane').data('vboxHostDetails',d.responseData);});
+				l.add('vboxRecentMediaGet',function(d){$('#vboxPane').data('vboxRecentMedia',d.responseData);});
+				l.add('vboxRecentMediaPathsGet',function(d){$('#vboxPane').data('vboxRecentMediaPaths',d.responseData);});
+				l.add('vboxGetEnumerationMap',function(d){$('#vboxPane').data('vboxMediumVariants',d.responseData);},{'class':'MediumVariant','ValueMap':1});
 				
 				l.onLoad = function(){
 					$('#vboxPane').trigger('hostChanged');
@@ -262,14 +257,14 @@
 				var l = new vboxLoader();
 				
 				// Get data and store it using data()
-				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d);});
-				l.add('vboxGetGuestOSTypes',function(d){$('#vboxPane').data('vboxOSTypes',d);});
-				l.add('vboxSystemPropertiesGet',function(d){$('#vboxPane').data('vboxSystemProperties',d);});
-				l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
-				l.add('hostGetDetails',function(d){$('#vboxPane').data('vboxHostDetails',d);});
-				l.add('vboxRecentMediaGet',function(d){$('#vboxPane').data('vboxRecentMedia',d);});
-				l.add('vboxRecentMediaPathsGet',function(d){$('#vboxPane').data('vboxRecentMediaPaths',d);});
-				l.add('vboxGetEnumerationMap',function(d){$('#vboxPane').data('vboxMediumVariants',d);},{'class':'MediumVariant','ValueMap':1});
+				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d.responseData);});
+				l.add('vboxGetGuestOSTypes',function(d){$('#vboxPane').data('vboxOSTypes',d.responseData);});
+				l.add('vboxSystemPropertiesGet',function(d){$('#vboxPane').data('vboxSystemProperties',d.responseData);});
+				l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
+				l.add('hostGetDetails',function(d){$('#vboxPane').data('vboxHostDetails',d.responseData);});
+				l.add('vboxRecentMediaGet',function(d){$('#vboxPane').data('vboxRecentMedia',d.responseData);});
+				l.add('vboxRecentMediaPathsGet',function(d){$('#vboxPane').data('vboxRecentMediaPaths',d.responseData);});
+				l.add('vboxGetEnumerationMap',function(d){$('#vboxPane').data('vboxMediumVariants',d.responseData);},{'class':'MediumVariant','ValueMap':1});
 	
 				// Load HTML panes and append them to their respective locations
 				l.addFileToDOM('panes/vmlist.html',$('#vboxChooserPane'));
@@ -317,7 +312,7 @@
 				}
 				
 				// Was there an error? Assume it was displayed and just return from function
-				if($('#vboxPane').data('vboxSession') && !$('#vboxPane').data('vboxSession').result) {
+				if($('#vboxPane').data('vboxSession') && !$('#vboxPane').data('vboxSession').success) {
 					return;
 				}
 				
@@ -335,7 +330,7 @@
 
 			/** Load login form */
 			var login = new vboxLoader();
-			login.add('getSession',function(d){$('#vboxPane').data('vboxSession',d);});
+			login.add('getSession',function(d){$('#vboxPane').data('vboxSession',d.responseData);});
 			login.addFileToDOM('panes/login.html');
 			login.onLoad = function(loader) {
 
@@ -350,7 +345,7 @@
 					
 					// A valid login should create a valid session
 					var trylogin = new vboxLoader();
-					trylogin.add('login',function(d){$('#vboxPane').data('vboxSession',d);},{'u':u,'p':p});
+					trylogin.add('login',function(d){$('#vboxPane').data('vboxSession',d.responseData);},{'u':u,'p':p});
 					trylogin.onLoad = function() { vboxCheckSession(true);};
 					trylogin.run();
 				};
@@ -420,8 +415,8 @@
 						-->
 					</td>
 					<td id='vboxResizeTD' style='border: 0px; margin: 0px; padding: 0px; text-align: center;'>
-						<div style='margin:0px;padding:0px;width:4px'>
-							<div style='position: absolute; margin: 0px; padding:2px; width: 0px; height: 90%;' id='vboxResizeBar' ></div>
+						<div style='margin:0px;padding:0px;width:4px;height:100%;'>
+							<div style='position: absolute; margin: 0px; padding:2px; width: 0px; height: 100%;' id='vboxResizeBar' ></div>
 						</div>
 					</td>
 					<td id="vboxPaneTabContent" style='width:100%;border:0px;padding:0px;border-spacing:0px;margin:0px'>

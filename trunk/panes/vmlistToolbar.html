@@ -108,7 +108,7 @@ vboxChooserToolbarTop.getButtonElement('settings').contextMenu({
 		if(!vm) return;
 		
 		if(a == 'Network' || a == 'SharedFolders') {
-			vboxVMsettingsInit(vm, null, a);
+			vboxVMsettingsDialog(vm, a);
 			return;
 		}
 		
@@ -161,10 +161,10 @@ function vboxChooserToolbarMediumMount(medium) {
 	var args = {'vm':vmid,'medium':medium,'port':vboxToolbarMediaLast.port,'device':vboxToolbarMediaLast.device,'bus':vboxToolbarMediaLast.bus,'controller':vboxToolbarMediaLast.controller};
 	
 	// Ajax request to mount medium
-	var mount = new vboxLoader();
-	mount.add('mediumMount',function(ret,xtra){
-		var l = new vboxLoader();
-		l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
+	var mount = new vboxLoader('mediumMount');
+	mount.add('mediumMount',function(){
+		var l = new vboxLoader('getMedia');
+		l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 		l.run();		
 	},args);
 	mount.run();	
@@ -200,11 +200,11 @@ function vboxChooserToolbarUSBUpdate(menu) {
 	var l = new vboxLoader();
 	
 	l.add('hostGetUSBDevices',function(d){
-		$('#vboxPaneToolbar').data('hostUSB',d);
+		$('#vboxPaneToolbar').data('hostUSB',d.responseData);
 	},{});
 	
 	l.add('consoleGetUSBDevices',function(d){
-		$('#vboxPaneToolbar').data('guestUSB',d);
+		$('#vboxPaneToolbar').data('guestUSB',d.responseData);
 	},{'vm':vm.id});
 	
 	l.noLoadingScreen = true;
@@ -232,8 +232,8 @@ function vboxChooserToolbarUSBUpdate(menu) {
 				var cbox = $(this);
 				// Detach
 				if($(this).data('capt')) {
-					vboxAjaxRequest('consoleUSBDeviceDetach',{'vm':vm.id,'id':$(this).data('usbDevice')},function(d){
-						if(d.result) {
+					$.when(vboxAjaxRequest('consoleUSBDeviceDetach',{'vm':vm.id,'id':$(this).data('usbDevice')})).then(function(d){
+						if(d.success) {
 							cbox.prop('checked',false);
 							cbox.data('capt',false);
 						} else {
@@ -242,8 +242,8 @@ function vboxChooserToolbarUSBUpdate(menu) {
 					});
 				// Attach
 				} else {
-					vboxAjaxRequest('consoleUSBDeviceAttach',{'vm':vm.id,'id':$(this).data('usbDevice')},function(d){
-						if(d.result) {
+					$.when(vboxAjaxRequest('consoleUSBDeviceAttach',{'vm':vm.id,'id':$(this).data('usbDevice')})).then(function(d){
+						if(d.success) {
 							cbox.prop('checked',true);
 							cbox.data('capt',true);
 						} else {

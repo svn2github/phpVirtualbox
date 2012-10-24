@@ -26,26 +26,26 @@ var menu = {
 			'name':'fileVMM',
 			'label':trans('Virtual Media Manager...','UIActionPool'),
 			'icon':'diskimage',
-			'click':function(){vboxVMMDialogInit();}
+			'click':function(){vboxVMMDialog();}
         },
         {
 			'name':'fileImport',
 			'label':trans('Import Appliance...','UIActionPool'),
 			'icon':'import',
-			'click':function(){vboxWizardImportApplianceInit();},
+			'click':function(){vboxWizardImportApplianceDialog();},
 			'separator': true
         },
         {
 			'name':'fileExport',
 			'label':trans('Export Appliance...','UIActionPool'),
 			'icon':'export',
-			'click':function(){vboxWizardExportApplianceInit();}
+			'click':function(){vboxWizardExportApplianceDialog();}
         },
         {
 			'name':'filePrefs',
 			'label':trans('Preferences...','UIActionPool'),
 			'icon':'global_settings',
-			'click':function(){vboxPrefsInit();},
+			'click':function(){vboxGlobalPrefsDialog();},
 			'separator':true
         }
 	]
@@ -82,7 +82,7 @@ if($('#vboxPane').data('vboxSession').user) {
 						var chp = new vboxLoader();
 						chp.add('changePassword',function(d){
 							if(d) {
-								if(d.result) {
+								if(d.success) {
 									vboxAlert(trans('Password changed.','UIUsers'),{'width':'auto'});
 									$(dialog).remove();
 								} else {
@@ -130,9 +130,9 @@ if($('#vboxPane').data('vboxSession').user) {
 						var l = new vboxLoader();
 						l.noLoadingScreen = true;
 						l.add('logout',function(r){
-							if ( typeof(r.url) == 'string' )
+							if ( typeof(r.responseData.url) == 'string' )
 							{
-								window.location = r.url;
+								window.location = r.responseData.url;
 							}
 							else
 							{

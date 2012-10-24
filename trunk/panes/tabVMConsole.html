@@ -468,7 +468,7 @@ function vboxRDPDetach() {
 			}\
 			function vboxConsoleDetachedOnload(){\
 			l = new vboxLoader();\
-			l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d);});\
+			l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d.responseData);});\
 			l.addFile('panes/tabVMConsole.html',function(d){$('#vboxPane').children().remove();$('#vboxPane').append(d);$('#vboxTabVMConsole').css('display','');vboxRDPLoad();});\
 			l.run();};\
 			setTimeout(\"vboxConsoleCheckLoad()\",1000);";

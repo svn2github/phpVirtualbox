@@ -98,7 +98,7 @@ $(document).ready(function(){
             
             ctx.save();
 		})[0];
-	}
+	};
 	
 	vboxImageRightWhite = createCanvas('#FFFFFF');
 	vboxImageRightGrey = createCanvas('#999999');

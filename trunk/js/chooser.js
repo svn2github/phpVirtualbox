@@ -28,7 +28,7 @@ var vboxChooser = {
 	vms : {},
 	
 	// VM tool tip
-	_vmTooolTip : trans('<nobr>%1<br></nobr><nobr>%2 since %3</nobr><br><nobr>Session %4</nobr>','UIVMListView'),
+	_vmToolTip : trans('<nobr>%1<br></nobr><nobr>%2 since %3</nobr><br><nobr>Session %4</nobr>','UIVMListView'),
 	
 	// Anchor element
 	_anchorid : null,
@@ -244,14 +244,14 @@ var vboxChooser = {
 	 * Update list of VMs from data received
 	 * from ajax query
 	 */
-	updateList : function(d) {
+	updateList : function(vmlist) {
 
 		// We were stopped before the request returned data
 		if(!vboxChooser._running) return;
 		
 
 		// No list? Something is wrong
-		if(!d || !d.vmlist) {
+		if(!vmlist) {
 			
 			vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox'));
 			
@@ -279,15 +279,15 @@ var vboxChooser = {
 		
 		// Enforce VM ownership
         if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin) {
-        	d.vmlist = jQuery.grep(d.vmlist,function(vm,i){
+        	d.vmlist = jQuery.grep(vmlist,function(vm,i){
         		return (vm.owner == $('#vboxPane').data('vboxSession').user);
         	});
 		}
 
 		// Each item in list
-		for(var i = 0; i < d.vmlist.length; i++) {	
+		for(var i = 0; i < vmlist.length; i++) {	
 			// Update
-			vboxChooser.updateVMElement(d.vmlist[i], true);
+			vboxChooser.updateVMElement(vmlist[i], true);
 		}
 
 		// compose / save group definitions
@@ -587,14 +587,15 @@ var vboxChooser = {
 						// Empty selection list
 						vboxChooser.selectionListChanged();
 						
-						// Expire data mediator data
-						vboxVMDataMediator.expireAll();
 
 						// Unsubscribe from events
-						$.when(vboxEventListener.stop()).then(function() {
+						$.when(vboxEventListener.stop()).done(function() {
 							
 							// remove loading screen
 							l.removeLoading();
+							
+							// Expire data mediator data
+							vboxVMDataMediator.expireAll();
 							
 							// Trigger host change
 							vboxSetCookie("vboxServer",a);
@@ -615,12 +616,11 @@ var vboxChooser = {
 			
 			$(td).append('<div class="vboxFitToContainer"><span class="vboxVMName">'+$('<span />').text(vmn.name).html()+'</span>'+ (vmn.currentSnapshotName ? ' (' + $('<span />').text(vmn.currentSnapshotName).html() + ')' : '')+'</div>');
 			
-			var sdate = new Date(vmn.lastStateChange * 1000);
 
 			// Table gets tool tips
-			tip = vboxChooser._vmTooolTip.replace('%1',('<b>'+$('<span />').text(vmn.name).html()+'</b>'+(vmn.currentSnapshotName ? ' (' + $('<span />').text(vmn.currentSnapshotName).html() + ')' : '')))
+			tip = vboxChooser._vmToolTip.replace('%1',('<b>'+$('<span />').text(vmn.name).html()+'</b>'+(vmn.currentSnapshotName ? ' (' + $('<span />').text(vmn.currentSnapshotName).html() + ')' : '')))
 				.replace('%2',trans(vboxVMStates.convert(vmn.state),'VBoxGlobal'))
-				.replace('%3',((new Date().getTime() - sdate.getTime())/1000 > 86400 ? sdate.toLocaleDateString() : sdate.toLocaleTimeString()))
+				.replace('%3',vboxDateTimeString(vmn.lastStateChange))
 				.replace('%4',trans(vmn.sessionState,'VBoxGlobal').toLowerCase());
 			
 			$(tbl).tipped({'source':tip,'position':'mouse','delay':1500});
@@ -1175,14 +1175,14 @@ var vboxChooser = {
 		if(skipSave) return;
 		
 		vboxChooser._groupDefs = allGroups;
-		vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups},function(){});		
+		vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups});		
 		
 		// Save machine groups and trigger change
 		var vms = [];
 		var vmList = vboxVMDataMediator.getVMList();
 		for(var i in vmList) {
 			
-			if(typeof i != 'string' || i == 'host') continue;
+			if(typeof i != 'string' || i == 'host' || !vmList[i]) continue;
 			
 			/* If a VM's groups have changed, add it to the list */
 			var eGroups = vmList[i].groups;
@@ -1200,32 +1200,35 @@ var vboxChooser = {
 		// Save machines groups?
 		if(vms.length) {
 
-			vboxAjaxRequest('machinesSaveGroups',{'vms':vms},function(res){
+			// Reload VMs and group definitions
+			var reloadAll = function() {
 				
-				if(!res || res.errored) {
+				var ml = new vboxLoader();
+				ml.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
+				ml.add('vboxGroupDefinitionsGet',function(d){vboxChooser._groupDefs = d.responseData;});
+				
+				// Reload VM list and group definitions, something went wrong
+				ml.onLoad = function() {
 					
-					var ml = new vboxLoader();
-					ml.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
-					ml.add('vboxGroupDefinitionsGet',function(d){vboxChooser._groupDefs = d.data;});
+					// Stop vmlist from refreshing..
+					vboxChooser.stop();
 					
-					// Reload VM list and group definitions, something went wrong
-					ml.onLoad = function() {
-						
-						// Stop vmlist from refreshing..
-						vboxChooser.stop();
-						
-						// reset selections
-						$('#vboxPane').trigger('vmSelectionListChanged',[vboxChooser]);
-						
-						// ask for new one
-						vboxChooser.start();
-					};
-					ml.run();
-					return;
+					// reset selections
+					$('#vboxPane').trigger('vmSelectionListChanged',[vboxChooser]);
 					
+					// ask for new one
+					vboxChooser.start();
+				};
+				ml.run();				
+			};
+			
+			$.when(vboxAjaxRequest('machinesSaveGroups',{'vms':vms})).done(function(res){
+				
+				if(!res || !res.responseData || res.responseData.errored) {
+					reloadAll();
 				}
 				
-			});
+			}).fail(reloadAll);
 			
 		}
 		
@@ -1323,7 +1326,7 @@ var vboxChooser = {
 		var gPath = $(gElm).data('vmGroupPath');
 		var groupList = vboxChooser._groupDefs;
 		
-		if(!gPath) return;
+		if(!(gPath && groupList)) return;
 		
 		var machineOrder = [];
 		var groupOrder = [];
@@ -1342,11 +1345,15 @@ var vboxChooser = {
 		
 		// sort groups
 		var groups = $(gElm).children('div.vboxChooserGroup').get();
+		var maxPos = groups.length;
 		groups.sort(function(a,b){
 			
 			var Pos1 = jQuery.inArray($(a).children('div.vboxChooserGroupIdentifier').attr('title'), groupOrder);
 			var Pos2 = jQuery.inArray($(b).children('div.vboxChooserGroupIdentifier').attr('title'), groupOrder);
-			
+
+			if(Pos1==-1)Pos1=maxPos;
+			if(Pos2==-1)Pos2=maxPos;
+
 			return (Pos1 > Pos2 || Pos1 == -1 ? -1 : (Pos2 == Pos1 ? 0 : 1));
 			
 		});
@@ -1356,12 +1363,17 @@ var vboxChooser = {
 		
 		// sort VMs
 		var vms = $(gElm).children('div.vboxChooserGroupVMs').children('table.vboxChooserVM').get();
+		var maxPos = vms.length;
 		vms.sort(function(a,b) {
 			
 			var Pos1 = jQuery.inArray($(a).data('vmid'), machineOrder);
 			var Pos2 = jQuery.inArray($(b).data('vmid'), machineOrder);
 			
-			return (Pos1 > Pos2 ? 1 : (Pos2 == Pos1 ? 0 : -1));
+			if(Pos1==-1)Pos1=maxPos;
+			if(Pos2==-1)Pos2=maxPos;
+			
+			return (Pos1 > Pos2 ?  1 : (Pos2 == Pos1 ? 0 : -1));
+
 		});
 		$.each(vms, function(idx,itm) {
 			$(gElm).children('div.vboxChooserGroupVMs').append(itm);
@@ -2061,14 +2073,12 @@ var vboxChooser = {
 		else vboxChooser._collapsedGroups = vboxChooser._collapsedGroups.split(',');
 		
 
-		// Get groups, machine list and start listener
-		$.when(vboxAjaxRequest('vboxGroupDefinitionsGet')).then(function(g) {
+		// Get groups and machine list. datamediator will start listener
+		$.when(vboxAjaxRequest('vboxGroupDefinitionsGet')).done(function(g) {
 			
-			if(!g) return;
+			vboxChooser._groupDefs = g.responseData;
 			
-			vboxChooser._groupDefs = g.data;
-			
-			$.when(vboxVMDataMediator.getVMList()).then(function(d) {
+			$.when(vboxVMDataMediator.getVMList()).done(function(d) {
 				vboxChooser.updateList(d);
 			});			
 		});
@@ -2272,6 +2282,8 @@ $(document).ready(function(){
 						var name = path.substring(path.lastIndexOf('/')+1);
 						var vboxVMGroups = vboxChooser._groupDefs;
 						var found = false;
+						
+						if(!vboxVMGroups) break;
 						
 						for(var a = 0; a < vboxVMGroups.length; a++) {
 							if(vboxVMGroups[a].path == path) {

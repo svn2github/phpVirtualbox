@@ -113,7 +113,7 @@ var sButtons = new Array(
 
 			var refreshInterfaces = function(){
 				var l = new vboxLoader();
-				l.add('hostOnlyInterfacesGet',function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d);});
+				l.add('hostOnlyInterfacesGet',function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d.responseData);});
 				l.onLoad = function(){
 					vboxSettingsGlobalNetworkAddAdpaters();
 					vboxVMDataMediator.refreshVMData('host');
@@ -122,10 +122,10 @@ var sButtons = new Array(
 			};
 			
 			var l = new vboxLoader();
-			l.add('hostOnlyInterfaceCreate',function(d,xtra,persist){
+			l.add('hostOnlyInterfaceCreate',function(d){
 
-				if(d && d.progress) {
-					vboxProgress({'progress':d.progress,'persist':persist},function(){
+				if(d && d.responseData && d.responseData.progress) {
+					vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){
 						$('#vboxSettingsGlobalNetList').html('<li><img src="images/spinner.gif" /></li>');
 						setTimeout(refreshInterfaces,2000);
 					},null,trans('Add host-only network','UIGlobalSettingsNetwork'),'',true);
@@ -154,12 +154,12 @@ var sButtons = new Array(
 				var item = $('#vboxSettingsGlobalNetList').children('li.vboxListItemSelected').first();
 
 				var l = new vboxLoader();
-				l.add('hostOnlyInterfaceRemove',function(d,xtra,persist){
+				l.add('hostOnlyInterfaceRemove',function(d){
 
-					if(d && d.progress) {
-						vboxProgress({'progress':d.progress,'persist':persist},function(){
+					if(d && d.responseData && d.responseData.progress) {
+						vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){
 							var l2 = new vboxLoader();
-							l2.add('hostOnlyInterfacesGet',function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d);});
+							l2.add('hostOnlyInterfacesGet',function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d.responseData);});
 							l2.onLoad = function(){
 								vboxSettingsGlobalNetworkAddAdpaters();
 								vboxVMDataMediator.refreshVMData('host');
@@ -197,7 +197,7 @@ var sButtons = new Array(
 		'icon' : 'refresh',
 		click: function() {
 			var l = new vboxLoader();
-			l.add('hostOnlyInterfacesGet',function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d);});
+			l.add('hostOnlyInterfacesGet',function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d.responseData);});
 			l.onLoad = function(){
 				vboxSettingsGlobalNetworkAddAdpaters();
 			};
@@ -281,7 +281,8 @@ buttons[trans('OK','QIMessageBox')] = function(){
 	nic.networkMask = $('#vboxSettingsGlobalNetIPv4Mask').val();
 	nic.IPV6Address = $('#vboxSettingsGlobalNetIPv6').val();
 	nic.IPV6NetworkMaskPrefixLength = $('#vboxSettingsGlobalNetIPv6Mask').val();
-	
+	nic.dhcpServer = {};
+	nic.dhcpServer.networkName = nic.networkName;
 	nic.dhcpServer.enabled = ($('#vboxSettingsGlobalNetDHCPEnabled').prop('checked') ? 1 : 0);
 	nic.dhcpServer.IPAddress = $('#vboxSettingsGlobalNetServerAddress').val();
 	nic.dhcpServer.networkMask = $('#vboxSettingsGlobalNetServerMask').val();

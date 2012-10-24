@@ -983,7 +983,7 @@ function vboxSettingsStorageAddMedium(bus, type) {
 	if (type == 'HardDisk') {
 		
 		buttons[trans('Create new disk','UIMessageCenter')] = function() {
-			vboxWizardNewHDInit(function(id){
+			vboxWizardNewHDDialog(function(id){
 				if(!id) return;
 				mAttachToolbarHD.mediaMenu.menuUpdateRecent();
 				vboxSettingsAddAttachment({'controller':controller,'port':port,'device':device,'type':type,'medium':vboxMedia.getMediumById(id),'ignoreFlush':1},bus);

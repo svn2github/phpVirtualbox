@@ -62,103 +62,17 @@ function vboxTraverse(tree,prop,val,all,children) {
  * 
  * @param {String} fn - AJAX function to call
  * @param {Object} params - params to pass to AJAX call
- * @param {Function} callback - function to perform when AJAX data is returned
- * @param {Object} xtra - extra data to be passed to callback function (optional)
- * @param {Integer} run - number of requests previously attempted for this function. Do not pass this value!! Only used internally
- * @return {Object} deferred
+ * @return {Object} deferred promise
  */
-function vboxAjaxRequest(fn,params,callback,xtra,run) {
-
+function vboxAjaxRequest(fn,params) {
+	
 	// Fatal error previously occurred
 	if($('#vboxPane').data('vboxFatalError')) return;
 	
-	// Fix for args
-	if(typeof params == 'undefined') params = {};
-	if(typeof callback != 'function') callback = function() { return; };
-
-	// Keep run count for retries
-	if(!run)
-		run = 1;
+	return $.post('lib/ajax.php', $.extend(true,{},(params ? params : {}),{'fn':fn}),undefined,"json")
 	
-	params['fn'] = fn;
-	
-	return jQuery.post('lib/ajax.php', params,
-			
-		function(d) {
-		
-
-			// Fatal error previously occurred
-			if($('#vboxPane').data('vboxFatalError')) return;
-
-			if(d) {
-				
-				// Append debug output to console
-				if(d.messages && window.console && window.console.log) {
-					for(var i = 0; i < d.messages.length; i++) {
-						window.console.log(d.messages[i]);
-					}
-				}
-				
-				callback((d.data ? d.data : d),xtra,d.persist);
-
-				if(d.errors.length > 0) {
-					
-					
-					for(var i = 0; i < d.errors.length; i++) {
-						
-						// Handle fatal and connection errors
-						if(d.errors[i].fatal || d.errors[i].connection) {
-							
-							// Multiple Servers check
-							if(d.errors[i].connection && $('#vboxPane').data('vboxConfig')	) {
-								
-								$('#vboxPane').data('vboxFatalError',1);
-								$('#vboxPane').css({'display':'none'});
-								
-								s='';
-								if($('#vboxPane').data('vboxConfig').servers && $('#vboxPane').data('vboxConfig').servers.length) {
-									var servers = $('#vboxPane').data('vboxConfig').servers;
-									for(var a = 0; a < servers.length; a++) {
-										servers[a] = "<a href='?server="+servers[a].name+"'>"+$('<div />').html(servers[a].name).text()+"</a>";
-									}
-									s = '<div style="display: block">'+trans('Server List','phpVirtualBox')+': '+servers.join(', ')+'</div>';
-								}
-								if(s) vboxAlert(s);
-								vboxAlert(d.errors[i],{'width':'400px'});
-								vboxAlert('<p>'+trans('An error occurred communicating with your vboxwebsrv. No more requests will be sent by phpVirtualBox until the error is corrected and this page is refreshed. The details of this connection error should be displayed in a subsequent dialog box.','phpVirtualBox')+'</p>'+s,{'width':'50%'});
-								
-								
-							
-							// Ignore connection errors until we have config data unless this was a login attempt
-							} else if(!d.errors[i].connection || fn == 'login') {
-								
-								// If we have config data, and the error is fatal, halt processing
-								if(d.errors[i].fatal && $('#vboxPane').data('vboxConfig')) {
-									$('#vboxPane').data('vboxFatalError',1);
-									$('#vboxPane').css({'display':'none'});
-								}
-
-								vboxAlert(d.errors[i],{'width':'400px'});
-								
-							}
-							
-						} else {
-							
-							// Error from normal request
-							vboxAlert(d.errors[i],{'width':'400px'});
-						}
-						
-					} // </ foreach error >
-					
-				} // </ if errors.length >
-				
-				
-			} else {
-				// Callback with no data.
-				callback({},xtra);
-			}
-		},
-		"json").error(function(d,etext,xlr) {
+		// Run on error
+		.error(function(d,etext,xlr) {
 			
 			// Fatal error previously occurred
 			if($('#vboxPane').data('vboxFatalError')) return;
@@ -174,12 +88,75 @@ function vboxAjaxRequest(fn,params,callback,xtra,run) {
 					window.console.log(etext + ': '+ d.responseText);
 				
 				vboxAlert({'error':'Ajax error: ' + etext,'details':d.responseText},{'width':'400px'});
-				//alert('ajax error: ' + + " " + d.responseText);
 			}
-			callback({},xtra);
-		});
+			
+		// Filter out data and display error messages
+		}).pipe(function(d){
 
-	
+			// Fatal error previously occurred
+			if($('#vboxPane').data('vboxFatalError')) return;
+
+			// Append debug output to console
+			if(d.messages && window.console && window.console.log) {
+				for(var i = 0; i < d.messages.length; i++) {
+					window.console.log(d.messages[i]);
+				}
+			}
+			
+			if(d.errors.length > 0) {
+				
+				
+				for(var i = 0; i < d.errors.length; i++) {
+					
+					// Handle fatal and connection errors
+					if(d.errors[i].fatal || d.errors[i].connection) {
+						
+						// Multiple Servers check
+						if(d.errors[i].connection && $('#vboxPane').data('vboxConfig')	) {
+							
+							$('#vboxPane').data('vboxFatalError',1);
+							$('#vboxPane').css({'display':'none'});
+							
+							s='';
+							if($('#vboxPane').data('vboxConfig').servers && $('#vboxPane').data('vboxConfig').servers.length) {
+								var servers = $('#vboxPane').data('vboxConfig').servers;
+								for(var a = 0; a < servers.length; a++) {
+									servers[a] = "<a href='?server="+servers[a].name+"'>"+$('<div />').html(servers[a].name).text()+"</a>";
+								}
+								s = '<div style="display: block">'+trans('Server List','phpVirtualBox')+': '+servers.join(', ')+'</div>';
+							}
+							if(s) vboxAlert(s);
+							vboxAlert(d.errors[i],{'width':'400px'});
+							vboxAlert('<p>'+trans('An error occurred communicating with your vboxwebsrv. No more requests will be sent by phpVirtualBox until the error is corrected and this page is refreshed. The details of this connection error should be displayed in a subsequent dialog box.','phpVirtualBox')+'</p>'+s,{'width':'50%'});
+							
+							
+						
+						// Ignore connection errors until we have config data unless this was a login attempt
+						} else if(!d.errors[i].connection || fn == 'login') {
+							
+							// If we have config data, and the error is fatal, halt processing
+							if(d.errors[i].fatal && $('#vboxPane').data('vboxConfig')) {
+								$('#vboxPane').data('vboxFatalError',1);
+								$('#vboxPane').css({'display':'none'});
+							}
+
+							vboxAlert(d.errors[i],{'width':'400px'});
+							
+						}
+						
+					} else {
+						
+						// Error from normal request
+						vboxAlert(d.errors[i],{'width':'400px'});
+					}
+					
+				} // </ foreach error >
+				
+			} // </ if errors.length >
+				
+			return d.data;
+			
+		});
 }
 
 /**
@@ -663,11 +640,11 @@ function vboxDivOverflowHidden(p) {
 function vboxInstallGuestAdditions(vmid,mount_only) {
 
 	var l = new vboxLoader();
-	l.add('consoleGuestAdditionsInstall',function(d,xtra,persist){
+	l.add('consoleGuestAdditionsInstall',function(d){
 		
 		// Progress operation returned. Guest Additions are being updated.
-		if(d && d.progress) {
-			vboxProgress({'progress':d.progress,'catcherrs':1,'persist':persist},function(d){
+		if(d && d.responseData && d.responseData.progress) {
+			vboxProgress({'progress':d.responseData.progress,'persist':d.persist,'catcherrs':1},function(d){
 				
 				// Error updating guest additions
 				if(!d.result && d.error && d.error.err) {
@@ -684,7 +661,7 @@ function vboxInstallGuestAdditions(vmid,mount_only) {
 
 			// Media must be refreshed
 			var ml = new vboxLoader();
-			ml.add('vboxGetMedia',function(dat){$('#vboxPane').data('vboxMedia',dat);});
+			ml.add('vboxGetMedia',function(dat){$('#vboxPane').data('vboxMedia',dat.responseData);});
 			ml.run();
 			
 			if(d.errored)
@@ -743,12 +720,19 @@ function vboxProgress(prequest,callback,icon,title,target,blocking) {
 	// Sanitize target
 	target = $('<div />').text(target).html();
 	
+	// Sanitize progress request data
+	prequest = {
+		'progress' : prequest.progress,
+		'catcherrs' : prequest.catcherrs,
+		'_persist' : prequest.persist
+	};
+	
 	// Blocking creates a dialog
 	if(!blocking) {
 	
 		vboxProgressCreateListElement(prequest,icon,title,target,callback);
 		
-		vboxAjaxRequest('progressGet',prequest,vboxProgressUpdate,prequest.progress);
+		$.when(prequest, vboxAjaxRequest('progressGet',prequest)).then(vboxProgressUpdate);
 
 	} else {
 		
@@ -757,7 +741,7 @@ function vboxProgress(prequest,callback,icon,title,target,blocking) {
 		// Don't unload while progress operation is .. in progress
 		window.onbeforeunload = vboxOpInProgress;
 		
-		vboxAjaxRequest('progressGet',prequest,vboxProgressUpdateModal,prequest.progress);
+		$.when(prequest, vboxAjaxRequest('progressGet',prequest)).then(vboxProgressUpdateModal);
 	}
 	
 	
@@ -798,7 +782,7 @@ function vboxProgressCreateDialog(prequest,icon,title,target,callback) {
 
 		$('<input />').attr('type','button').val(trans('Cancel','QIMessageBox')).data({'pid':pid}).click(function(){
 			this.disabled = 'disabled';
-			vboxAjaxRequest('progressCancel',{'progress':$(this).data('pid')},function(d){return;});
+			vboxAjaxRequest('progressCancel',prequest);
 		})
 	).appendTo(td);
 	
@@ -809,8 +793,7 @@ function vboxProgressCreateDialog(prequest,icon,title,target,callback) {
 		'vboxCallback':callback,
 		'vboxIcon' : icon,
 		'vboxTitle' : title,
-		'vboxTarget' : target,
-		'vboxRequest' : prequest
+		'vboxTarget' : target
 	}).dialog({'width':400,'height':'auto','closeOnEscape':false,'modal':true,'resizable':false,'draggable':true,'closeOnEscape':false,'buttons':{}});
 	
 
@@ -862,14 +845,14 @@ function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
 			$('<input />').attr({'id':'vboxProgressCancel'+pid,'type':'button'}).val(trans('Cancel','UIProgressDialog')).data({'pid':pid})
 				.click(function(){
 					this.disabled = 'disabled';
-					vboxAjaxRequest('progressCancel',{'progress':$(this).data('pid')},function(d){return;});
+					vboxAjaxRequest('progressCancel',prequest);
 				})
 				.css({'margin':'0px'})
 	).appendTo(tr);
 	
 	$(tbl).append(tr).appendTo(div);
 	
-	$(div).data({'vboxCallback':callback,'vboxRequest':prequest}).prependTo($('#vboxProgressOps'));
+	$(div).data({'vboxCallback':callback}).prependTo($('#vboxProgressOps'));
 	
 	
 }
@@ -883,29 +866,30 @@ function vboxOpInProgress() { return trans('Warning: A VirtualBox internal opera
 /**
  * Update progress dialog box. Callback run from vboxAjaxRequest
  * 
+ * @param {Object} prequest - progress operation data passed to ajax call
  * @param {Object} data - data returned from progressGet AJAX call
- * @param {Mixed} xtra - extra data that should be passed to callback
- * @param {Object} persist - request items that should be persistent
  */
-function vboxProgressUpdateModal(data, xtra, persist) {
-	vboxProgressUpdate(data,xtra,persist,true);
+function vboxProgressUpdateModal(prequest, data) {
+	vboxProgressUpdate(prequest,data,true);
 }
 
 /**
  * Update progress dialog box or progress list row with % completed
  * 
+ * @param {Object} prequest - progress operation data passed to ajax call
  * @param {Object} d - data returned from progressGet AJAX call
- * @param {String} pid - progress id
- * @param {Object} persist - request items that should be persistent
  * @param {Boolean} modal - true if updating modal dialog
  * @see vboxconnector::progressGet()
  */
-function vboxProgressUpdate(d,pid,persist,modal) {
+function vboxProgressUpdate(prequest,d,modal) {
+	
+	// Shorthand
+	var pid = prequest.progress;
 	
 	// check for completed progress
-	if(!d || !d['progress'] || !d['info'] || d['info']['completed'] || d['info']['canceled']) {
+	if(!d || !d.responseData || !d.responseData['progress'] || !d.responseData['info'] || d.responseData['info']['completed'] || d.responseData['info']['canceled']) {
 		
-		if(d && d['info'] && d['info']['canceled'])
+		if(d && d.responseData['info'] && d.responseData['info']['canceled'])
 			vboxAlert(trans('Operation Canceled','phpVirtualBox'),{'width':'100px','height':'auto'});
 		
 		var callback = $("#vboxProgress"+pid).data('vboxCallback');
@@ -925,8 +909,8 @@ function vboxProgressUpdate(d,pid,persist,modal) {
 			window.onbeforeunload = null;
 			
 			// Now append to list
-			vboxProgressCreateListElement(pid,icon,title,target);
-			vboxProgressUpdate({'progress':pid});
+			vboxProgressCreateListElement(prequest,icon,title,target);
+			vboxProgressUpdate(prequest);
 			
 		} else {
 			
@@ -944,8 +928,7 @@ function vboxProgressUpdate(d,pid,persist,modal) {
 			'vboxCallback',
 			'vboxIcon',
 			'vboxTitle',
-			'vboxTarget',
-			'vboxRequest'
+			'vboxTarget'
 		]);
 		
 		// Check for max elements
@@ -964,11 +947,11 @@ function vboxProgressUpdate(d,pid,persist,modal) {
 	}
 
 	// update percent
-	$("#vboxProgressBar"+pid).progressbar({ value: d.info.percent });
-	$("#vboxProgressText"+pid).html(d.info.percent+'%'+(modal ? '<br />' : ' ') + d.info.operationDescription);
+	$("#vboxProgressBar"+pid).progressbar({ value: d.responseData.info.percent });
+	$("#vboxProgressText"+pid).html(d.responseData.info.percent+'%'+(modal ? '<br />' : ' ') + d.responseData.info.operationDescription);
 	
 	// Cancelable?
-	if(d.info.cancelable) {
+	if(d.responseData.info.cancelable) {
 		$('#vboxProgressCancel'+pid).show();
 	}
 	
@@ -976,10 +959,8 @@ function vboxProgressUpdate(d,pid,persist,modal) {
 	var def = $.Deferred();
 	def.done(function(){
 		
-		vboxAjaxRequest('progressGet',
-				$.extend({},$("#vboxProgress"+pid).data('vboxRequest'),{'persist':persist}),
-				(modal ? vboxProgressUpdateModal : vboxProgressUpdate),
-				pid);
+		$.when(prequest, vboxAjaxRequest('progressGet', prequest))
+			.then((modal ? vboxProgressUpdateModal : vboxProgressUpdate));
 		
 	});
 	window.setTimeout(def.resolve, 2000);
@@ -1182,6 +1163,24 @@ function vboxBasename(p) {
 		return p.substring((pos+1));
 	}
 	return p;
+}
+
+/**
+ * Return a time or date+time string depending on
+ * how much time has elapsed
+ * @param {Integer} t - seconds since 1/1/1970 0:0:0
+ * @param {String} replaceTime - optional string to return replacing time
+ * @param {String} replaceDateTime - optional string to return replace date_time
+ * @return {String} time or date+time string
+ */
+function vboxDateTimeString(t, replaceTime, replaceDateTime) {
+
+	var sdate = new Date(t*1000);
+	if((new Date().getTime() - sdate.getTime())/1000 > 86400
+			|| new Date().getDate() != sdate.getDate()) {
+			return (replaceDateTime ? replaceDateTime.replace('%1',sdate.toLocaleString()) : sdate.toLocaleString());
+		}
+	return (replaceTime ? replaceTime.replace('%1',sdate.toLocaleTimeString()) : sdate.toLocaleTimeString());
 }
 
 /**

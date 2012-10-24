@@ -12,10 +12,28 @@ when there were no other VMs until the page was refreshed
 Fixed bug that would not allow attachment of USB devices from the
 Settings menu
 
-Cleaned up Snapshot logic and snapshot list UI
+Cleaned up snapshot logic and snapshot list UI
 
-Minor look changes to more closely match the VirtualBox GUI
- 
+Taking a snapshot of a running VM now automatically pauses the VM
+to take the snapshot and resumes it once the snapshot has been
+taken
+
+Minor look and feel changes to more closely match the VirtualBox
+GUI
+
+Added First Run wizard
+
+Major rewrite of AJAX data <-> vboxwebsrv back-end interaction
+
+PHP session support is no longer required and AJAX requests should
+be a little more responsive
+
+Fixed bug that would not save DHCP server settings of host-only
+network interfaces
+
+Fixed bug in Clone Virtual Machine wizard that would not create a
+full clone when in 'Expert' (Hide Description) mode
+
 -------------------------------------
 	4.2-3b	2012-10-21
 -------------------------------------

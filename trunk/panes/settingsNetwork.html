@@ -176,7 +176,7 @@ $('#vboxSettingsTabNetAdapter').find('input.vboxSettingsNetMacGen').click(functi
 	
 	var l = new vboxLoader();
 	l.add('vboxGenerateMacAddress',function(d){
-		if(d && d.mac) $(t).val(d.mac);
+		if(d && d.success) $(t).val(d.responseData);
 		else $(t).val(oval);
 		$(t).prop('disabled',false);
 	});
@@ -263,13 +263,17 @@ for(var i = 0; i < parseInt($('#vboxPane').data('vboxConfig').nicMax); i++) {
 	}
 
 	$(document.forms['frmVboxSettings'].elements['vboxSettingsNetPF'+a]).click(function(){
+		
 		var nicIndex = (parseInt($(this).attr('name').substr(17))-1);
-		vboxPortForwardConfigInit($('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[nicIndex].redirects,function(rules){
-			for(var i = 0; i < rules.length; i++) {
-				rules[i] = rules[i].join(',');
-			}
-			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[nicIndex].redirects = rules;
+		
+		$.when(vboxPortForwardConfigDialog($('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[nicIndex].redirects))
+			.done(function(rules){
+				for(var i = 0; i < rules.length; i++) {
+					rules[i] = rules[i].join(',');
+				}
+				$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[nicIndex].redirects = rules;
 		});
+		
 	}).val(trans('Port Forwarding','UIMachineSettingsNetwork'));
 	
 	// Set Nat values

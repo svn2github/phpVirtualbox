@@ -98,40 +98,7 @@ class vboxconnector {
 	 * @var array
 	 */
 	var $persistentRequest = array();
-	
-	/**
-	 * Tells outsiders which items to persist
-	 * in $_SESSION for the function being called
-	 * @var array
-	 */
-	var $persistentSessionConfig = array(
-			
-		// Get event list request
-		'getEvents' => array(
-			'items' => array('vboxHandle','vboxEventListeners'),
-			'keyName' => 'eventListener'
-		),
-			
-		// Unsubscribe to events
-		'unsubscribeEvents' => array(
-			'items' => array('vboxHandle','vboxEventListeners'),
-			'keyName' => 'eventListener'
-		),
-
-		// Subscribe to events
-		'subscribeEvents' => array(
-			'items' => array('vboxHandle','vboxEventListeners'),
-			'keyName' => 'eventListener'
-		),
-
-		// Subscribe to machine events
-		'machineSubscribeEvents' => array(
-				'items' => array('vboxHandle','vboxEventListeners'),
-				'keyName' => 'eventListener'
-		)
-	);
-	
-	
+		
 	/**
 	 * Holds VirtualBox host OS specific directory separator set by getDSep()
 	 * @var string
@@ -212,6 +179,7 @@ class vboxconnector {
 		if(@$this->persistentRequest['vboxHandle']) {
 		
 			try {
+				
 				// Check for existing sessioin
 				$this->websessionManager = new IWebsessionManager($this->client);
 				$this->vbox = new IVirtualBox($this->client, $this->persistentRequest['vboxHandle']);
@@ -381,10 +349,9 @@ class vboxconnector {
 	 * Get pending vbox and machine events
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array list of events
 	 */
-	public function remote_getEvents($args, &$response) {
+	public function remote_getEvents($args) {
 		
 		$this->connect();
 		
@@ -428,12 +395,12 @@ class vboxconnector {
 					}
 
 				} catch (Exception $e) {
+					
 					// pass - Exceptions in event processing are ok
 					// as machines can be powered off and their event
 					// listeners can go away
+					if($k == 'vbox') $this->errors[] = $e;
 					
-					if($k == 'vbox')
-						$this->errors[] = $e;
 				}
 				
 			} catch (Exception $e) {
@@ -567,9 +534,9 @@ class vboxconnector {
 					if(!$event['registered']) break;
 					
 					// Get same data that is in VM list data
-					$vmdata = array('data'=>array(),'errors'=>array());
-					$this->remote_vboxGetMachines(array('vm'=>$event['machineId']), $vmdata);
-					$eventlist[$k]['enrichmentData'] = $vmdata['data']['vmlist'][0];
+					$vmdata = $this->remote_vboxGetMachines(array('vm'=>$event['machineId']));
+					$eventlist[$k]['enrichmentData'] = $vmdata[0];
+					unset($vmdata);
 					
 					break;
 
@@ -642,41 +609,32 @@ class vboxconnector {
 				
 		}
 		
-		$response['data']['events'] = array_values($eventlist);
-		
-
-		
-		// Append key so that we aren't getting stale events after
-		// a phpvirtualbox server change
-		$response['data']['key'] = $this->settings->key;
-		
-		return ($response['data']['result'] = isset($this->persistentRequest['vboxEventListeners']['vbox']));
-		
+		return array_values($eventlist);
+				
 	}
 
 	/**
 	 * Subscribe to a single machine's events
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	private function remote_machineSubscribeEvents($args, &$response) {
+	private function remote_machineSubscribeEvents($args) {
 	
 		$this->connect();
-		$this->_machineSubscribeEvents($args['vm']);
+		foreach($args['vms'] as $vm)
+			$this->_machineSubscribeEvents($vm);
 		
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 	
 	/**
 	 * Unsubscribe from vbox and machine events
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	private function remote_unsubscribeEvents($args, &$response) {
+	private function remote_unsubscribeEvents($args) {
 
 		$this->connect();
 		
@@ -709,17 +667,16 @@ class vboxconnector {
 		$this->websessionManager->logoff($this->vbox->handle);
 		unset($this->vbox);
 		
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 	
 	/**
 	 * Subscribe to vbox and machine events
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	private function remote_subscribeEvents($args, &$response) {
+	private function remote_subscribeEvents($args) {
 		
 		$this->connect();
 		
@@ -755,7 +712,9 @@ class vboxconnector {
 			$this->_machineSubscribeEvents($vm);
 		}
 		
-		return ($response['data']['result'] = 1);
+		$this->persistentRequest['vboxHandle'] = $this->vbox->handle;
+		
+		return true;
 		
 	}
 	
@@ -950,14 +909,15 @@ class vboxconnector {
 		}
 
 		$req = &$args[0];
-		$response = &$args[1][0]; # fix for allow_call_time_pass_reference = Off setting
 
 
 		# Access to undefined methods prefixed with remote_
 		if(method_exists($this,'remote_'.$fn)) {
 
 			$this->calledMethod = $fn;
-			$this->{'remote_'.$fn}($req,$response);
+			$args[1][0]['data']['responseData'] = $this->{'remote_'.$fn}($req);
+			$args[1][0]['data']['success'] = ($args[1][0]['data']['responseData'] !== false);
+			$args[1][0]['data']['key'] = $this->settings->key;
 			
 		// Not found
 		} else {
@@ -973,20 +933,19 @@ class vboxconnector {
 	 * Enumerate guest properties of a vm
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean
+	 * @return array of guest properties
 	 */
-	public function remote_machineEnumerateGuestProperties($args,&$response) {
+	public function remote_machineEnumerateGuestProperties($args) {
 
 		$this->connect();
 
 		/* @var $m IMachine */
 		$m = $this->vbox->findMachine($args['vm']);
 
-		$response['data'] = $m->enumerateGuestProperties($args['pattern']);
+		$props = $m->enumerateGuestProperties($args['pattern']);
 		$m->releaseRemote();
 
-		return true;
+		return $props;
 
 	}
 
@@ -994,15 +953,13 @@ class vboxconnector {
 	 * Uses VirtualBox's vfsexplorer to check if a file exists
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return boolean true if file exists
 	 */
-	public function remote_fileExists($args,&$response) {
+	public function remote_fileExists($args) {
 
 		/* No need to go through vfs explorer if local browser is true */
 		if($this->settings->browserLocal) {
-			$response['data']['exists'] = intval(file_exists($args['file']));
-			return true;
+			return intval(file_exists($args['file']));
 		}
 		
 		$this->connect();
@@ -1033,24 +990,21 @@ class vboxconnector {
 		$appl->releaseRemote();
 
 
-		$response['data']['exists'] = count($exists);
+		return count($exists);
 		
-		return ($response['data']['result'] = 1);
 	}
 
 	/**
 	 * Install guest additions
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array result data
 	 */
-	public function remote_consoleGuestAdditionsInstall($args,&$response) {
+	public function remote_consoleGuestAdditionsInstall($args) {
 
 		$this->connect();
 
-		$response['data'] = array();
-		$response['data']['errored'] = 0;
+		$results = array('errored' => 0);
 
 		/* @var $gem IMedium|null */
 		$gem = null;
@@ -1097,13 +1051,13 @@ class vboxconnector {
 					// Ignore
 				}
 			}
-			$response['data']['sources'] = $checks;
+			$results['sources'] = $checks;
 		}
 
 		// No guest additions found
 		if(!$gem) {
-			$response['data']['result'] = 'noadditions';
-			return;
+			$results['result'] = 'noadditions';
+			return $results;
 		}
 
 		// create session and lock machine
@@ -1122,27 +1076,27 @@ class vboxconnector {
 				// No error info. Save progress.
 				$gem->releaseRemote();
 				$this->_util_progressStore($progress);
-				$response['data']['progress'] = $progress->handle;
-				return true;
+				$results['progress'] = $progress->handle;
+				return $results;
 
 			} catch (Exception $e) {
 				
-				if(!empty($response['data']['progress']))
-					unset($response['data']['progress']);
+				if(!empty($results['progress']))
+					unset($results['progress']);
 
 				// Try to mount medium
-				$response['data']['errored'] = 1;
+				$results['errored'] = 1;
 			}
 		}
 
 		// updateGuestAdditions is not supported. Just try to mount image.
-		$response['data']['result'] = 'nocdrom';
+		$results['result'] = 'nocdrom';
 		$mounted = false;
 		foreach($machine->storageControllers as $sc) { /* @var $sc IStorageController */
 			foreach($machine->getMediumAttachmentsOfController($sc->name) as $ma) { /* @var $ma IMediumAttachment */
 				if((string)$ma->type == 'DVD') {
 					$this->session->machine->mountMedium($sc->name, $ma->port, $ma->device, $gem->handle, true);
-					$response['data']['result'] = 'mounted';
+					$results['result'] = 'mounted';
 					$mounted = true;
 					break;
 				}
@@ -1157,17 +1111,16 @@ class vboxconnector {
 		$machine->releaseRemote();
 		$gem->releaseRemote();
 
-		return true;
+		return $results;
 	}
 
 	/**
 	 * Attach USB device identified by $args['id'] to a running VM
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_consoleUSBDeviceAttach($args,&$response) {
+	public function remote_consoleUSBDeviceAttach($args) {
 
 		$this->connect();
 
@@ -1183,17 +1136,16 @@ class vboxconnector {
 		unset($this->session);
 		$machine->releaseRemote();
 
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 
 	/**
 	 * Detach USB device identified by $args['id'] from a running VM
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_consoleUSBDeviceDetach($args,&$response) {
+	public function remote_consoleUSBDeviceDetach($args) {
 
 		$this->connect();
 
@@ -1209,22 +1161,20 @@ class vboxconnector {
 		unset($this->session);
 		$machine->releaseRemote();
 
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 
 	/**
 	 * Save vms' groups if they have changed
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_machinesSaveGroups($args, &$response) {
+	public function remote_machinesSaveGroups($args) {
 		
 		$this->connect();
 		
-		$response['data']['saved'] = array();
-		$response['data']['errored'] = false;
+		$response = array('saved'=>array(),'errored'=>false);
 		
 		
 		foreach($args['vms'] as $vm) {
@@ -1281,19 +1231,19 @@ class vboxconnector {
 			} catch (Exception $e) {
 				
 				$this->errors[] = $e;
-				$response['data']['errored'] = true;
+				$response['errored'] = true;
 				
 				continue;
 				
 			}
 
 			// Add to saved list
-			$response['data']['saved'][] = $vm['id'];
+			$response['saved'][] = $vm['id'];
 			
 		}
 		
 		
-		return ($response['data']['result'] = 1);
+		return true;
 		
 		
 	}
@@ -1303,10 +1253,9 @@ class vboxconnector {
 	 * Clone a virtual machine
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data
 	 */
-	public function remote_machineClone($args,&$response) {
+	public function remote_machineClone($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -1350,10 +1299,10 @@ class vboxconnector {
 		
 		$this->_util_progressStore($progress);
 
-		$response['data'] = array('progress' => $progress->handle, 'settingsFilePath' => $sfpath);
+		return array(
+				'progress' => $progress->handle,
+				'settingsFilePath' => $sfpath);
 
-
-		return true;
 	}
 
 
@@ -1361,10 +1310,9 @@ class vboxconnector {
 	 * Turn VRDE on / off on a running VM
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_consoleVRDEServerSave($args, &$response) {
+	public function remote_consoleVRDEServerSave($args) {
 
 		$this->connect();
 
@@ -1385,7 +1333,7 @@ class vboxconnector {
 
 		$m->releaseRemote();
 
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 
 	/**
@@ -1726,7 +1674,7 @@ class vboxconnector {
 	 * Save virtual machine settings.
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
+	 * @return boolean true on success
 	 */
 	public function remote_machineSave($args,&$response) {
 
@@ -1743,8 +1691,7 @@ class vboxconnector {
 
 		// Switch to machineSaveRunning()?
 		if($vmRunning) {
-			$response['data']['result'] = $this->_machineSaveRunning($args);
-			return $response['data']['result'];
+			return $this->_machineSaveRunning($args);
 		}
 
 
@@ -1801,10 +1748,8 @@ class vboxconnector {
  			* Enables the page sharing code.
 			* @remarks This must match GMMR0Init; currently we only support page fusion on
 			 *          all 64-bit hosts except Mac OS X */
-			$hostData = array();
-			$this->hostGetDetails(array(),array(&$hostData));
 			
-			if($hostData['data']['cpuFeatures']['Long Mode (64-bit)'] && stripos($hostData['data']['operatingSystem'],"darwin")===false) {
+			if(intval($this->vbox->host->getProcessorFeature('LongMode')) && stripos($this->vbox->host->operatingSystem,"darwin")===false) {
 				try {
 					$m->pageFusionEnabled = intval($args['pageFusionEnabled']);
 				} catch (Exception $null) {
@@ -2210,19 +2155,17 @@ class vboxconnector {
 		unset($this->session);
 		$machine->releaseRemote();
 
-		$response['data']['result'] = 1;
-
 		return true;
+
 	}
 
 	/**
 	 * Add a virtual machine via its settings file.
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_machineAdd($args,&$response) {
+	public function remote_machineAdd($args) {
 
 		$this->connect();
 
@@ -2233,7 +2176,7 @@ class vboxconnector {
 
 		$m->releaseRemote();
 
-		return ($response['data']['result'] = 1);
+		return true;
 
 	}
 
@@ -2241,13 +2184,13 @@ class vboxconnector {
 	 * Get progress operation status. On completion, destory progress operation.
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 *
+	 * @return array response data
 	 */
-	public function remote_progressGet($args,&$response) {
+	public function remote_progressGet($args) {
 
 		// progress operation result
-		$result = 1;
+		$response = array();
+		$success = 1;
 		$error = 0;
 
 		// Connect to vboxwebsrv
@@ -2268,13 +2211,13 @@ class vboxconnector {
 			} catch (Exception $e) {
 				$this->errors[] = $e;
 				throw new Exception('Could not obtain progress operation: '.$args['progress']);
-				$result = 0;
+				$success = 0;
 			}
 
 
-			$response['data']['progress'] = $args['progress'];
+			$response['progress'] = $args['progress'];
 
-			$response['data']['info'] = array(
+			$response['info'] = array(
 				'completed' => $progress->completed,
 				'canceled' => $progress->canceled,
 				'description' => $progress->description,
@@ -2286,10 +2229,10 @@ class vboxconnector {
 
 
 			// Completed? Do not return. Fall to _util_progressDestroy() called later
-			if($response['data']['info']['completed'] || $response['data']['info']['canceled']) {
+			if($response['info']['completed'] || $response['info']['canceled']) {
 
 				try {
-					if(!$response['data']['info']['canceled'] && $progress->errorInfo->handle) {
+					if(!$response['info']['canceled'] && $progress->errorInfo->handle) {
 						$error = array('message'=>$progress->errorInfo->text,'err'=>$this->_util_resultCodeText($progress->resultCode));
 					}
 				} catch (Exception $null) {}
@@ -2297,16 +2240,16 @@ class vboxconnector {
 
 			} else {
 
-				$response['data']['info']['cancelable'] = $progress->cancelable;
+				$response['info']['cancelable'] = $progress->cancelable;
 
-				return true;
+				return $response;
 			}
 
 
 		} catch (Exception $e) {
 
 			// Force progress dialog closure
-			$response['data']['info'] = array('completed'=>1);
+			$response['info'] = array('completed'=>1);
 
 			// Does an exception exist?
 			try {
@@ -2318,21 +2261,21 @@ class vboxconnector {
 			// Some progress operations seem to go away after completion
 			if(!($this->session->handle && (string)$this->session->state == 'Unlocked')) {
 				$this->errors[] = $e;
-				$result = 0;
+				$success = 0;
 			}
 
 		}
 
 		if($error) {
-			$result = 0;
-			if(@$args['catcherrs']) $response['data']['error'] = $error;
+			$success = 0;
+			if(@$args['catcherrs']) $response['error'] = $error;
 			else $this->errors[] = new Exception($error['message']);
 
 		}
 
-		$response['data']['result'] = $result;
 		$this->_util_progressDestroy($pop);
 
+		return $response;
 
 	}
 
@@ -2343,7 +2286,7 @@ class vboxconnector {
 	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_progressCancel($args,&$response) {
+	public function remote_progressCancel($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -2357,7 +2300,7 @@ class vboxconnector {
 			$this->errors[] = $e;
 		}
 
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 
 	/**
@@ -2405,8 +2348,7 @@ class vboxconnector {
 		}
 
 		// Remove progress handles
-		foreach($this->persistentRequest as $k=>$v)
-			$this->persistentRequest[$k] = null;
+		$this->persistentRequest = array();
 		
 		return true;
 	}
@@ -2416,29 +2358,22 @@ class vboxconnector {
 	 * in vboxServiceWrappers.php (classes that extend VBox_Enum).
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data
 	 * @see vboxServiceWrappers.php
 	 */
-	public function remote_vboxGetEnumerationMap($args, &$response) {
+	public function remote_vboxGetEnumerationMap($args) {
 		
-		if(class_exists($args['class'])) {
-			$c = new $args['class'];
-			$response['data'] = (@isset($args['ValueMap']) ? $c->ValueMap : $c->NameMap);
-			return true;
-		}
-		
-		return false;
+		$c = new $args['class'];
+		return (@isset($args['ValueMap']) ? $c->ValueMap : $c->NameMap);
 	}
 
 	/**
 	 * Save VirtualBox system properties
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_vboxSystemPropertiesSave($args,&$response) {
+	public function remote_vboxSystemPropertiesSave($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -2446,7 +2381,7 @@ class vboxconnector {
 		$this->vbox->systemProperties->defaultMachineFolder = $args['SystemProperties']['defaultMachineFolder'];
 		$this->vbox->systemProperties->VRDEAuthLibrary = $args['SystemProperties']['VRDEAuthLibrary'];
 
-		return ($response['data']['result'] = 1);
+		return true;
 
 	}
 
@@ -2454,10 +2389,9 @@ class vboxconnector {
 	 * Import a virtual appliance
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data
 	 */
-	public function remote_applianceImport($args,&$response) {
+	public function remote_applianceImport($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -2507,9 +2441,7 @@ class vboxconnector {
 		// Save progress
 		$this->_util_progressStore($progress);
 
-		$response['data']['progress'] = $progress->handle;
-
-		return true;
+		return array('progress' => $progress->handle);
 
 	}
 
@@ -2517,16 +2449,17 @@ class vboxconnector {
 	 * Get a list of VMs that are available for export.
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array list of exportable machiens
 	 */
-	public function remote_vboxGetExportableMachines($args,&$response) {
+	public function remote_vboxGetExportableMachines($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
 		//Get a list of registered machines
 		$machines = $this->vbox->machines;
+		
+		$response = array();
 
 		foreach ($machines as $machine) { /* @var $machine IMachine */
 
@@ -2537,7 +2470,7 @@ class vboxconnector {
 			}
 
 			try {
-				$response['data'][] = array(
+				$response[] = array(
 					'name' => @$this->settings->enforceVMOwnership ? preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $machine->name) : $machine->name,
 					'state' => (string)$machine->state,
 					'OSTypeId' => $machine->getOSTypeId(),
@@ -2550,7 +2483,7 @@ class vboxconnector {
 				// Ignore. Probably inaccessible machine.
 			}
 		}
-		return true;
+		return $response;
 	}
 
 
@@ -2558,10 +2491,9 @@ class vboxconnector {
 	 * Read and interpret virtual appliance file
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array appliance file content descriptions
 	 */
-	public function remote_applianceReadInterpret($args,&$response) {
+	public function remote_applianceReadInterpret($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -2585,23 +2517,24 @@ class vboxconnector {
 
 		$app->interpret();
 
-		$response['data']['warnings'] = $app->getWarnings();
-		$response['data']['descriptions'] = array();
+		$response = array('warnings' => $app->getWarnings(),
+			'descriptions' => array());
+		
 		$i = 0;
 		foreach($app->virtualSystemDescriptions as $d) { /* @var $d IVirtualSystemDescription */
 			$desc = array();
-			$response['data']['descriptions'][$i] = $d->getDescription();
-			foreach($response['data']['descriptions'][$i][0] as $ddesc) {
+			$response['descriptions'][$i] = $d->getDescription();
+			foreach($response['descriptions'][$i][0] as $ddesc) {
 				$desc[] = (string)$ddesc;
 			}
-			$response['data']['descriptions'][$i][0] = $desc;
+			$response['descriptions'][$i][0] = $desc;
 			$i++;
 			$d->releaseRemote();
 		}
 		$app->releaseRemote();
 		$app=null;
 
-		return ($response['data']['result'] = 1);
+		return $response;
 
 	}
 
@@ -2610,10 +2543,9 @@ class vboxconnector {
 	 * Export VMs to a virtual appliance file
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data
 	 */
-	public function remote_applianceExport($args,&$response) {
+	public function remote_applianceExport($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -2702,9 +2634,8 @@ class vboxconnector {
 		// Save progress
 		$this->_util_progressStore($progress);
 
-		$response['data']['progress'] = $progress->handle;
+		return array('progress' => $progress->handle);
 
-		return true;
 	}
 
 	/**
@@ -2712,12 +2643,14 @@ class vboxconnector {
 	 *
 	 * @param unused $args
 	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array networking info data
 	 */
-	public function remote_hostGetNetworking($args,&$response) {
+	public function remote_hostGetNetworking($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
+		
+		$response = array();
 
 		/*
 		 * Existing Networks
@@ -2764,26 +2697,28 @@ class vboxconnector {
 			}
 			$machine->releaseRemote();
 		}
-		$response['data']['nics'] = $nics;
-		$response['data']['networks'] = array_keys($networks);
-		$response['data']['vdenetworks'] = array_keys($vdenetworks);
-		$response['data']['genericDrivers'] = array_keys($genericDrivers);
-
-		return true;
+		
+		return array(
+			'nics' => $nics,
+			'networks' => array_keys($networks),
+			'vdenetworks' => array_keys($vdenetworks),
+			'genericDrivers' => array_keys($genericDrivers)
+		);
 	}
 
 	/**
 	 * Get host-only interface information
 	 *
 	 * @param unused $args
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array host only interface data
 	 */
-	public function remote_hostOnlyInterfacesGet($args,&$response) {
+	public function remote_hostOnlyInterfacesGet($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
+		$response = array();
+		
 		/*
 		 * NICs
 		 */
@@ -2817,7 +2752,7 @@ class vboxconnector {
 				$dhcpserver = array();
 			}
 
-			$response['data']['networkInterfaces'][] = array(
+			$response['networkInterfaces'][] = array(
 				'id' => $d->id,
 				'IPV6Supported' => $d->IPV6Supported,
 				'name' => $d->name,
@@ -2832,7 +2767,7 @@ class vboxconnector {
 			$d->releaseRemote();
 		}
 
-		return true;
+		return $response;
 	}
 
 
@@ -2840,10 +2775,9 @@ class vboxconnector {
 	 * Save host-only interface information
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_hostOnlyInterfacesSave($args,&$response) {
+	public function remote_hostOnlyInterfacesSave($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -2882,7 +2816,7 @@ class vboxconnector {
 
 		}
 
-		return ($response['data']['result'] = 1);
+		return true;
 
 	}
 
@@ -2890,10 +2824,9 @@ class vboxconnector {
 	 * Add Host-only interface
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data
 	 */
-	public function remote_hostOnlyInterfaceCreate($args,&$response) {
+	public function remote_hostOnlyInterfaceCreate($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -2914,9 +2847,8 @@ class vboxconnector {
 		// Save progress
 		$this->_util_progressStore($progress);
 
-		$response['data']['progress'] = $progress->handle;
+		return array('progress' => $progress->handle);
 
-		return true;
 
 	}
 
@@ -2925,8 +2857,7 @@ class vboxconnector {
 	 * Remove a host-only interface
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data
 	 */
 	public function remote_hostOnlyInterfaceRemove($args,&$response) {
 
@@ -2950,23 +2881,22 @@ class vboxconnector {
 		// Save progress
 		$this->_util_progressStore($progress);
 
-		$response['data']['result'] = 1;
-		$response['data']['progress'] = $progress->handle;
+		return array('progress' => $progress->handle);
 
-		return true;
 	}
 
 	/**
 	 * Get a list of Guest OS Types supported by this VirtualBox installation
 	 *
 	 * @param unused $args
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array of os types
 	 */
 	public function remote_vboxGetGuestOSTypes($args,&$response) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
+		
+		$response = array();
 
 		$ts = $this->vbox->getGuestOSTypes();
 
@@ -2976,7 +2906,7 @@ class vboxconnector {
 
 			// Avoid multiple calls
 			$bit64 = $g->is64Bit;
-			$response['data'][] = array(
+			$response[] = array(
 				'familyId' => $g->familyId,
 				'familyDescription' => $g->familyDescription,
 				'id' => $g->id,
@@ -2988,17 +2918,16 @@ class vboxconnector {
 			);
 		}
 
-		return true;
+		return $response;
 	}
 
 	/**
 	 * Set virtual machine state. Running, power off, save state, pause, etc..
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data or boolean true on success
 	 */
-	public function remote_machineSetState($args, &$response) {
+	public function remote_machineSetState($args) {
 
 		$vm = $args['vm'];
 		$state = $args['state'];
@@ -3017,7 +2946,6 @@ class vboxconnector {
 
 		// Check for valid state
 		if(!is_array($states[$state])) {
-			$response['data']['result'] = 0;
 			throw new Exception('Invalid state: ' . $state);
 		}
 
@@ -3039,9 +2967,8 @@ class vboxconnector {
 		// that we are not already in it
 		if($states[$state]['result']) {
 			if($mstate == $states[$state]['result']) {
-				$response['data']['result'] = 0;
 				$machine->releaseRemote();
-				return;
+				return false;
 			}
 		}
 
@@ -3051,18 +2978,25 @@ class vboxconnector {
 			
 		if($state == 'powerUp') {
 			
+
 			# Try opening session for VM
 			try {
+			
 				// create session
 				$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
-			
+
+				// set first run
+				if($machine->getExtraData('GUI/FirstRun') == 'yes') {
+					$machine->setExtraData('GUI/FirstRun', 'no');					
+				}
+				
 				/* @var $progress IProgress */
 				$progress = $machine->launchVMProcess($this->session->handle, 'headless', '');
 			
 			} catch (Exception $e) {
 				// Error opening session
 				$this->errors[] = $e;
-				return ($response['data']['result'] = 0);
+				return false;
 			}
 			
 			// Does an exception exist?
@@ -3070,16 +3004,15 @@ class vboxconnector {
 				if($progress->errorInfo->handle) {
 					$this->errors[] = new Exception($progress->errorInfo->text);
 					$progress->releaseRemote();
-					return ($response['data']['result'] = 0);
+					return false;
 				}
 			} catch (Exception $null) {
 			}
 			
 			$this->_util_progressStore($progress);
 			
-			$response['data']['progress'] = $progress->handle;
+			return array('progress' => $progress->handle);
 			
-			return ($response['data']['result'] = 1);
 				
 		}
 
@@ -3104,8 +3037,8 @@ class vboxconnector {
 					$this->session = null;
 				} catch (Exception $e) {};
 
-				$response['data']['result'] = 0;
 				$machine->releaseRemote();
+
 				throw new Exception('Unknown error settings machine to requested state.');
 			}
 
@@ -3121,7 +3054,7 @@ class vboxconnector {
 			// Save progress
 			$this->_util_progressStore($progress);
 
-			$response['data']['progress'] = $progress->handle;
+			return array('progress' => $progress->handle);
 
 		// Operation does not return a progress object
 		// Just call the function
@@ -3149,7 +3082,7 @@ class vboxconnector {
 			unset($this->session);
 		}
 
-		return ($response['data']['result'] = 1);
+		return true;
 
 	}
 
@@ -3158,37 +3091,31 @@ class vboxconnector {
 	 * Get VirtualBox host memory usage information
 	 *
 	 * @param unused $args
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data
 	 */
-	public function remote_hostGetMeminfo($args,&$response) {
+	public function remote_hostGetMeminfo($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
-		$response['data'] = array(
-			'memoryAvailable' => $this->vbox->host->memoryAvailable
-		);
+		return $this->vbox->host->memoryAvailable;
 
-		return true;
 	}
 
 	/**
 	 * Get VirtualBox host details
 	 *
 	 * @param unused $args
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data
 	 */
-	public function remote_hostGetDetails($args,&$response) {
+	public function remote_hostGetDetails($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
-
 		/* @var $host IHost */
 		$host = &$this->vbox->host;
-		$response['data'] = array(
+		$response = array(
 			'id' => 'host',
 			'operatingSystem' => $host->operatingSystem,
 			'OSVersion' => $host->OSVersion,
@@ -3203,22 +3130,22 @@ class vboxconnector {
 		 * Processors
 		 */
 		for($i = 0; $i < $host->processorCount; $i++) {
-			$response['data']['cpus'][$i] = $host->getProcessorDescription($i);
+			$response['cpus'][$i] = $host->getProcessorDescription($i);
 		}
 
 		/*
 		 * Supported CPU features?
 		 */
-		$response['data']['cpuFeatures'] = array();
+		$response['cpuFeatures'] = array();
 		foreach(array('HWVirtEx'=>'HWVirtEx','PAE'=>'PAE','NestedPaging'=>'Nested Paging','LongMode'=>'Long Mode (64-bit)') as $k=>$v) {
-			$response['data']['cpuFeatures'][$v] = intval($host->getProcessorFeature($k));
+			$response['cpuFeatures'][$v] = intval($host->getProcessorFeature($k));
 		}
 
 		/*
 		 * NICs
 		 */
 		foreach($host->networkInterfaces as $d) { /* @var $d IHostNetworkInterface */
-			$response['data']['networkInterfaces'][] = array(
+			$response['networkInterfaces'][] = array(
 				'name' => $d->name,
 				'IPAddress' => $d->IPAddress,
 				'networkMask' => $d->networkMask,
@@ -3239,7 +3166,7 @@ class vboxconnector {
 		 */
 		foreach($host->DVDDrives as $d) { /* @var $d IMedium */
 
-			$response['data']['DVDDrives'][] = array(
+			$response['DVDDrives'][] = array(
 				'id' => $d->id,
 				'name' => $d->name,
 				'location' => $d->location,
@@ -3252,7 +3179,7 @@ class vboxconnector {
 
 		foreach($host->floppyDrives as $d) { /* @var $d IMedium */
 
-			$response['data']['floppyDrives'][] = array(
+			$response['floppyDrives'][] = array(
 				'id' => $d->id,
 				'name' => $d->name,
 				'location' => $d->location,
@@ -3264,24 +3191,25 @@ class vboxconnector {
 		}
 		$host->releaseRemote();
 		
-		return true;
+		return $response;
 	}
 
 	/**
 	 * Get a list of USB devices attached to the VirtualBox host
 	 *
 	 * @param unused $args
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array of USB devices
 	 */
 	public function remote_hostGetUSBDevices($args,&$response) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
+		
+		$response = array();
 
 		foreach($this->vbox->host->USBDevices as $d) { /* @var $d IUSBDevice */
 
-			$response['data'][] = array(
+			$response[] = array(
 				'id' => $d->id,
 				'vendorId' => sprintf('%04s',dechex($d->vendorId)),
 				'productId' => sprintf('%04s',dechex($d->productId)),
@@ -3299,7 +3227,7 @@ class vboxconnector {
 			$d->releaseRemote();
 		}
 
-		return true;
+		return $response;
 	}
 
 
@@ -3307,27 +3235,21 @@ class vboxconnector {
 	 * Get virtual machine or virtualbox host details
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @param ISnapshot $snapshot snapshot instance to use if obtaining snapshot details.
 	 * @see hostGetDetails()
 	 * @see hostGetNetworking()
-	 * @return boolean true on success
+	 * @return array machine details
 	 */
-	public function remote_machineGetDetails($args, &$response, $snapshot=null) {
+	public function remote_machineGetDetails($args, $snapshot=null) {
 
 		// Host instead of vm info
 		if($args['vm'] == 'host') {
 
-			$response['data'] = array();
-			$tmpstore = array('data'=>array());
+			$response = $this->remote_hostGetDetails($args);
 
-			$this->hostGetDetails($args, array(&$tmpstore));
-			$response['data'] = array_merge($response['data'],$tmpstore['data']);
+			$response['networking'] = $this->remote_hostGetNetworking($args);
 
-			$this->hostGetNetworking($args, array(&$tmpstore));
-			$response['data'] = array_merge($response['data'],$tmpstore['data']);
-
-			return true;
+			return $response;
 		}
 
 
@@ -3352,7 +3274,7 @@ class vboxconnector {
 			// Check for accessibility
 			if(!$machine->accessible) {
 
-				$response['data'] = array(
+				return array(
 					'name' => $machine->name,
 					'state' => 'Inaccessible',
 					'OSTypeId' => 'Other',
@@ -3364,8 +3286,6 @@ class vboxconnector {
 						'component' => $machine->accessError->component,
 						'text' => $machine->accessError->text)
 				);
-
-				return true;
 			}
 
 		}
@@ -3413,17 +3333,14 @@ class vboxconnector {
 		$machine->releaseRemote();
 
 		$data['accessible'] = 1;
-		$response['data'] = $data;
-
-		return true;
+		return $data;
 	}
 
 	/**
 	 * Get runtime data of machine.
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array of machine runtime data
 	 */
 	public function remote_machineGetRuntimeData($args, &$response) {
 
@@ -3490,8 +3407,7 @@ class vboxconnector {
 		}
 		
 		
-		$response['data'] = $data;
-		return ($response['data']['result'] = 1);
+		return $data;
 		
 	}
 	
@@ -3499,8 +3415,7 @@ class vboxconnector {
 	 * Remove a virtual machine
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return boolean true on success or array of response data
 	 */
 	public function remote_machineRemove($args, &$response) {
 
@@ -3513,7 +3428,7 @@ class vboxconnector {
 		// Only unregister or delete?
 		if(!$args['delete']) {
 
-			$machine->unregister('Full');
+			$machine->unregister('DetachAllReturnNone');
 			$machine->releaseRemote();
 
 		} else {
@@ -3525,8 +3440,7 @@ class vboxconnector {
 			}
 
 			/* @var $progress IProgress */
-			if(count($hds)) $progress = $machine->delete($hds);
-			else $progress = null;
+			$progress = $machine->delete($hds);
 
 			$machine->releaseRemote();
 
@@ -3542,17 +3456,14 @@ class vboxconnector {
 
 				$this->_util_progressStore($progress);
 
-				$response['data']['progress'] = $progress->handle;
-
-				// return here. we got a progress operation
-				return true;
+				return array('progress' => $progress->handle);
 
 			}
 
 
 		}
 
-		return ($response['data']['result'] = 1);
+		return true;
 
 
 	}
@@ -3562,14 +3473,15 @@ class vboxconnector {
 	 * Create a new Virtual Machine
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_machineCreate($args, &$response) {
+	public function remote_machineCreate($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
+		$response = array();
+		
 		// quota enforcement
 		if ( isset($_SESSION['user']) )
 		{
@@ -3600,12 +3512,9 @@ class vboxconnector {
 
 		/* Check if file exists */
 		$filename = $this->vbox->composeMachineFilename($args['name'],($this->settings->phpVboxGroups ? '' : $args['group']),$this->vbox->systemProperties->defaultMachineFolder);
-		$exists = array();
-		$this->remote_fileExists(array('file'=>$filename), $exists);
-		if($exists['data']['exists']) {
-			$response['data']['result'] = 0;
-			$response['data']['exists'] = $filename;
-			return;
+		
+		if($this->remote_fileExists(array('file'=>$filename))) {
+			return array('exists' => $filename);
 		}
 		
 		
@@ -3650,6 +3559,8 @@ class vboxconnector {
 
 			// Always set
 			$this->session->machine->setExtraData('GUI/SaveMountedAtRuntime', 'yes');
+			$this->session->machine->setExtraData('GUI/FirstRun', 'yes');
+
 			try {
 				$this->session->machine->USBController->enabled = true;
 				$this->session->machine->USBController->enabledEHCI = true;
@@ -3745,7 +3656,7 @@ class vboxconnector {
 			return false;
 		}
 
-		return ($response['data']['result'] = 1);
+		return true;
 
 	}
 
@@ -3812,15 +3723,14 @@ class vboxconnector {
 	 * Return a list of virtual machines along with their states and other basic info
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array list of machines
 	 */
-	public function remote_vboxGetMachines($args,&$response) {
+	public function remote_vboxGetMachines($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
-		$response['data']['vmlist'] = array();
+		$vmlist = array();
 		
 		// Look for a request for a single vm
 		if($args['vm']) {
@@ -3850,7 +3760,7 @@ class vboxconnector {
 				
 				usort($groups, 'strnatcasecmp');
 				
-				$response['data']['vmlist'][] = array(
+				$vmlist[] = array(
 					'name' => @$this->settings->enforceVMOwnership ? preg_replace('/^' . preg_quote($_SESSION['user']) . '_/', '', $machine->name) : $machine->name,
 					'state' => (string)$machine->state,
 					'OSTypeId' => $machine->getOSTypeId(),
@@ -3889,9 +3799,8 @@ class vboxconnector {
 				$machine->releaseRemote();
 			} catch (Exception $e) { }
 		}
-		$response['data']['server_key'] = $this->settings->key;
-		$response['data']['result'] = 1;
-		return true;
+		
+		return $vmlist;
 
 	}
 
@@ -3899,12 +3808,11 @@ class vboxconnector {
 	 * Creates a new exception so that input can be debugged.
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function debugInput($args,&$response) {
+	public function debugInput($args) {
 		$this->errors[] = new Exception('debug');
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 
 	/**
@@ -3912,23 +3820,23 @@ class vboxconnector {
 	 *
 	 * @param unused $args
 	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array of media
 	 */
-	public function remote_vboxGetMedia($args,&$response) {
+	public function remote_vboxGetMedia($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
-		$response['data'] = array();
+		$response = array();
 		$mds = array($this->vbox->hardDisks,$this->vbox->DVDImages,$this->vbox->floppyImages);
 		for($i=0;$i<3;$i++) {
 			foreach($mds[$i] as $m) {
 				/* @var $m IMedium */
-				$response['data'][] = $this->_mediumGetDetails($m);
+				$response[] = $this->_mediumGetDetails($m);
 				$m->releaseRemote();
 			}
 		}
-		return true;
+		return $response;
 	}
 
 	/**
@@ -4036,7 +3944,10 @@ class vboxconnector {
 				),
 			'bootOrder' => $this->_machineGetBootOrder($m),
 			'chipsetType' => (string)$m->chipsetType,
-			'GUI' => array('SaveMountedAtRuntime' => $m->getExtraData('GUI/SaveMountedAtRuntime')),
+			'GUI' => array(
+				'SaveMountedAtRuntime' => $m->getExtraData('GUI/SaveMountedAtRuntime'),
+				'FirstRun' => $m->getExtraData('GUI/FirstRun')
+			),
 			// Disabled for now 'AutoSATAPortCount' => $m->getExtraData('phpvb/AutoSATAPortCount'),
 			'customIcon' => (@$this->settings->enableCustomIcons ? $m->getExtraData('phpvb/icon') : ''),
 			'disableHostTimeSync' => intval($m->getExtraData("VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled")),
@@ -4148,14 +4059,11 @@ class vboxconnector {
 	 * Get a list of transient (temporary) shared folders
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array of shared folders
 	 */
-	public function remote_consoleGetSharedFolders($args,&$response) {
+	public function remote_consoleGetSharedFolders($args) {
 
 		$this->connect();
-
-		$response['data'] = array();
 
 		/* @var $machine IMachine */
 		$machine = $this->vbox->findMachine($args['vm']);
@@ -4171,9 +4079,11 @@ class vboxconnector {
 
 		$sfs = $this->session->console->sharedFolders;
 
+		$response = array();
+		
 		foreach($sfs as $sf) { /* @var $sf ISharedFolder */
 
-			$response['data'][] = array(
+			$response[] = array(
 				'name' => $sf->name,
 				'hostPath' => $sf->hostPath,
 				'accessible' => $sf->accessible,
@@ -4188,7 +4098,7 @@ class vboxconnector {
 		unset($this->session);
 		$machine->releaseRemote();
 
-		return true;
+		return $response;
 	}
 	
 	/**
@@ -4255,10 +4165,9 @@ class vboxconnector {
 	 * Save snapshot details ( description or name)
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_snapshotSave($args,&$response) {
+	public function remote_snapshotSave($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4275,17 +4184,16 @@ class vboxconnector {
 		$snapshot->releaseRemote();
 		$vm->releaseRemote();
 
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 
 	/**
 	 * Get snapshot details
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array containing snapshot details
 	 */
-	public function remote_snapshotGetDetails($args,&$response) {
+	public function remote_snapshotGetDetails($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4296,17 +4204,14 @@ class vboxconnector {
 		/* @var $snapshot ISnapshot */
 		$snapshot = $vm->findSnapshot($args['snapshot']);
 
-		$machine = array();
-		$this->remote_machineGetDetails(array(),$machine,$snapshot->machine);
-
-		$response['data'] = $this->_snapshotGetDetails($snapshot,false);
-		$response['data']['machine'] = $machine['data'];
+		$response = $this->_snapshotGetDetails($snapshot,false);
+		$response['machine'] = $this->remote_machineGetDetails(array(),$snapshot->machine);
 
 		// cleanup
 		$snapshot->releaseRemote();
 		$vm->releaseRemote();
 
-		return ($response['data']['result'] = 1);
+		return $response;
 
 	}
 
@@ -4314,8 +4219,7 @@ class vboxconnector {
 	 * Restore a snapshot
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data containing progress operation id
 	 */
 	public function remote_snapshotRestore($args, &$response) {
 
@@ -4360,12 +4264,10 @@ class vboxconnector {
 			if($this->session->handle) {
 				try{$this->session->unlockMachine();}catch(Exception $e){}
 			}
-			return ($response['data']['result'] = 0);
+			return false;
 		}
 
-		$response['data']['progress'] = $progress->handle;
-
-		return ($response['data']['result'] = 1);
+		return array('progress' => $progress->handle);
 
 	}
 
@@ -4373,8 +4275,7 @@ class vboxconnector {
 	 * Delete a snapshot
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data containing progress operation id
 	 */
 	public function remote_snapshotDelete($args, &$response) {
 
@@ -4417,22 +4318,20 @@ class vboxconnector {
 				try{$this->session->unlockMachine();$this->session=null;}catch(Exception $e){}
 			}
 
-			$response['data']['result'] = 0;
-			return;
+			return false;
 		}
 
-		$response['data']['progress'] = $progress->handle;
-		return ($response['data']['result'] = 1);
+		return array('progress' => $progress->handle);
+
 	}
 
 	/**
 	 * Take a snapshot
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data containing progress operation id
 	 */
-	public function remote_snapshotTake($args, &$response) {
+	public function remote_snapshotTake($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4468,29 +4367,24 @@ class vboxconnector {
 
 			$this->errors[] = $e;
 
-			$response['data']['error'][] = $e->getMessage();
-			$response['data']['result'] = 0;
-
 			if(!$progress->handle && $this->session->handle) {
 				try{$this->session->unlockMachine();$this->session=null;}catch(Exception $e){}
 			}
 
-
-			return;
+			return false;
 		}
 
-		$response['data']['progress'] = $progress->handle;
-		return ($response['data']['result'] = 1);
+		return array('progress' => $progress->handle);
+
 	}
 
 	/**
 	 * Get a list of snapshots for a machine
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array list of snapshots
 	 */
-	public function remote_machineGetSnapshots($args, &$response) {
+	public function remote_machineGetSnapshots($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4498,8 +4392,8 @@ class vboxconnector {
 		/* @var $machine IMachine */
 		$machine = $this->vbox->findMachine($args['vm']);
 
-		$response['data']['snapshot'] = array();
-		$response['data']['currentSnapshotId'] = null;
+		$response = array('snapshot' => array(),
+			'currentSnapshotId' => null);
 		
 		/* No snapshots? Empty array */
 		if($machine->snapshotCount < 1) {
@@ -4508,15 +4402,15 @@ class vboxconnector {
 
 			/* @var $s ISnapshot */
 			$s = $machine->findSnapshot(null);
-			$response['data']['snapshot'] = $this->_snapshotGetDetails($s,true);
+			$response['snapshot'] = $this->_snapshotGetDetails($s,true);
 			$s->releaseRemote();
 		}
 
-		$response['data']['currentSnapshotId'] = ($machine->currentSnapshot->handle ? $machine->currentSnapshot->id : '');
+		$response['currentSnapshotId'] = ($machine->currentSnapshot->handle ? $machine->currentSnapshot->id : '');
 		if($machine->currentSnapshot->handle) $machine->currentSnapshot->releaseRemote();
 		$machine->releaseRemote();
 
-		return true;
+		return $response;
 	}
 
 
@@ -4611,10 +4505,9 @@ class vboxconnector {
 	 * Resize a medium. Currently unimplemented in GUI.
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data containing progress id
 	 */
-	public function remote_mediumResize($args,&$response) {
+	public function remote_mediumResize($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4636,9 +4529,7 @@ class vboxconnector {
 		
 		$this->_util_progressStore($progress);
 		
-		$response['data'] = array('progress' => $progress->handle);
-		
-		return true;
+		return array('progress' => $progress->handle);
 		
 	}
 	
@@ -4646,10 +4537,9 @@ class vboxconnector {
 	 * Clone a medium
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array response data containing progress id
 	 */
-	public function remote_mediumCloneTo($args,&$response) {
+	public function remote_mediumCloneTo($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4684,19 +4574,17 @@ class vboxconnector {
 
 		$this->_util_progressStore($progress);
 
-		$response['data'] = array('progress' => $progress->handle, 'id' => $mid);
+		return array('progress' => $progress->handle, 'id' => $mid);
 
-		return true;
 	}
 
 	/**
 	 * Set medium to a specific type
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_mediumSetType($args,&$response) {
+	public function remote_mediumSetType($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4706,8 +4594,6 @@ class vboxconnector {
 		$m->type = $args['type'];
 		$m->releaseRemote();
 
-		$response['data'] = array('result' => 1);
-
 		return true;
 	}
 
@@ -4715,10 +4601,9 @@ class vboxconnector {
 	 * Add iSCSI medium
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return response data
 	 */
-	public function remote_mediumAddISCSI($args,&$response) {
+	public function remote_mediumAddISCSI($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4751,18 +4636,19 @@ class vboxconnector {
 
 		$hd->setProperties(array_keys($arrProps),array_values($arrProps));
 
-		$response['data'] = array('result' => 1, 'id' => $hd->id);
+		$hdid = $hd->id;
 		$hd->releaseRemote();
+		
+		return array('id' => $hdid);
 	}
 
 	/**
 	 * Add existing medium by file location
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return resposne data containing new medium's id
 	 */
-	public function remote_mediumAdd($args,&$response) {
+	public function remote_mediumAdd($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4770,25 +4656,24 @@ class vboxconnector {
 		/* @var $m IMedium */
 		$m = $this->vbox->openMedium($args['path'],$args['type'],'ReadWrite',false);
 
-		$response['data'] = array('result' => 1, 'id' => $m->id);
+		$mid = $m->id;
 		$m->releaseRemote();
+		
+		return array('id'=>$mid);
 	}
 
 	/**
 	 * Get VirtualBox generated machine configuration file name
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return string filename
 	 */
-	public function remote_vboxGetComposedMachineFilename($args,&$response) {
+	public function remote_vboxGetComposedMachineFilename($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
-		$response['data']['file'] = $this->vbox->composeMachineFilename($args['name'],($this->settings->phpVboxGroups ? '' : $args['group']),$this->vbox->systemProperties->defaultMachineFolder);
-
-		return true;
+		return $this->vbox->composeMachineFilename($args['name'],($this->settings->phpVboxGroups ? '' : $args['group']),$this->vbox->systemProperties->defaultMachineFolder);
 
 	}
 
@@ -4796,10 +4681,9 @@ class vboxconnector {
 	 * Create base storage medium (virtual hard disk)
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return response data containing progress id
 	 */
-	public function remote_mediumCreateBaseStorage($args,&$response) {
+	public function remote_mediumCreateBaseStorage($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4827,18 +4711,17 @@ class vboxconnector {
 
 		$this->_util_progressStore($progress);
 
-		$response['data'] = array('progress' => $progress->handle);
 		$hd->releaseRemote();
 
-		return true;
+		return array('progress' => $progress->handle);
+
 	}
 
 	/**
 	 * Release medium from all attachments
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return boolean true
 	 */
 	public function remote_mediumRelease($args,&$response) {
 
@@ -4851,7 +4734,7 @@ class vboxconnector {
 
 		// connected to...
 		$machines = $m->machineIds;
-		$response['data']['released'] = array();
+		$released = array();
 		foreach($machines as $uuid) {
 
 			// Find medium attachment
@@ -4878,7 +4761,7 @@ class vboxconnector {
 
 			if(!count($remove)) continue;
 
-			$response['data']['released'][] = $uuid;
+			$released[] = $uuid;
 
 			// create session
 			$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
@@ -4911,17 +4794,16 @@ class vboxconnector {
 		}
 		$m->releaseRemote();
 
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 
 	/**
 	 * Remove a medium
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return response data possibly containing progress operation id
 	 */
-	public function remote_mediumRemove($args,&$response) {
+	public function remote_mediumRemove($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4948,57 +4830,57 @@ class vboxconnector {
 			} catch (Exception $null) { }
 
 			$this->_util_progressStore($progress);
-			$response['data']['progress'] = $progress->handle;
+			return array('progress' => $progress->handle);
 
 		} else {
 			$m->close();
 			$m->releaseRemote();
 		}
 
-		return($reponse['data']['result'] = 1);
+		return true;
 	}
 
 	/**
 	 * Get a list of recent media
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array of recent media
 	 */
-	public function remote_vboxRecentMediaGet($args,&$response) {
+	public function remote_vboxRecentMediaGet($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
+		$mlist = array();
 		foreach(array(
 			array('type'=>'HardDisk','key'=>'GUI/RecentListHD'),
 			array('type'=>'DVD','key'=>'GUI/RecentListCD'),
 			array('type'=>'Floppy','key'=>'GUI/RecentListFD')) as $r) {
 			$list = $this->vbox->getExtraData($r['key']);
-			$response['data'][$r['type']] = array_filter(explode(';', trim($list,';')));
+			$mlist[$r['type']] = array_filter(explode(';', trim($list,';')));
 		}
-		return true;
+		return $mlist;
 	}
 
 	/**
 	 * Get a list of recent media paths
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array of recent media paths
 	 */
-	public function remote_vboxRecentMediaPathsGet($args,&$response) {
+	public function remote_vboxRecentMediaPathsGet($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
+		$mlist = array();
 		foreach(array(
 			array('type'=>'HardDisk','key'=>'GUI/RecentFolderHD'),
 			array('type'=>'DVD','key'=>'GUI/RecentFolderCD'),
 			array('type'=>'Floppy','key'=>'GUI/RecentFolderFD')) as $r) {
-			$response['data'][$r['type']] = $this->vbox->getExtraData($r['key']);
+			$mlist[$r['type']] = $this->vbox->getExtraData($r['key']);
 		}
-		return true;
+		return $mlist;
 	}
 
 
@@ -5006,10 +4888,9 @@ class vboxconnector {
 	 * Update recent medium path list
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_vboxRecentMediaPathSave($args,&$response) {
+	public function remote_vboxRecentMediaPathSave($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -5022,17 +4903,16 @@ class vboxconnector {
 
 		$this->vbox->setExtraData($types[$args['type']], $args['folder']);
 
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 
 	/**
 	 * Update recent media list
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_vboxRecentMediaSave($args,&$response) {
+	public function remote_vboxRecentMediaSave($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -5045,7 +4925,7 @@ class vboxconnector {
 
 		$this->vbox->setExtraData($types[$args['type']], implode(';',array_unique($args['list'])).';');
 
-		return ($response['data']['result'] = 1);
+		return true;
 
 	}
 
@@ -5053,7 +4933,6 @@ class vboxconnector {
 	 * Mount a medium on the VM
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
 	public function remote_mediumMount($args,&$response) {
@@ -5116,7 +4995,7 @@ class vboxconnector {
 		$machine->releaseRemote();
 		unset($this->session);
 
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 
 	/**
@@ -5207,12 +5086,6 @@ class vboxconnector {
 	private function _util_progressStore(&$progress) {
 
 		/* Store progress operation */
-
-		// If progress is unaccessible, let progressGet()
-		// handle it. Try / catch used and errors ignored.
-		try { $cancelable = $progress->cancelable; }
-		catch (Exception $null) {}
-
 		$this->persistentRequest['vboxHandle'] = $this->vbox->handle;
 		
 		
@@ -5222,8 +5095,7 @@ class vboxconnector {
 	/**
 	 * Get VirtualBox system properties
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array of system properties
 	 */
 	public function remote_vboxSystemPropertiesGet($args,&$response) {
 
@@ -5245,7 +5117,7 @@ class vboxconnector {
 			$mediumFormats[] = array('id'=>$mf->id,'name'=>$mf->name,'extensions'=>array_map('strtolower',$exts[0]),'deviceTypes'=>$dtypes,'capabilities'=>$caps);
 		}
 
-		$response['data'] = array(
+		return array(
 			'minGuestRAM' => (string)$this->vbox->systemProperties->minGuestRAM,
 			'maxGuestRAM' => (string)$this->vbox->systemProperties->maxGuestRAM,
 			'minGuestVRAM' => (string)$this->vbox->systemProperties->minGuestVRAM,
@@ -5266,16 +5138,15 @@ class vboxconnector {
 			'parallelPortCount' => $this->vbox->systemProperties->parallelPortCount,
 			'mediumFormats' => $mediumFormats
 		);
-		return true;
 	}
 
 	/**
 	 * Get a list of VM log file names
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
+	 * @return array of log file names
 	 */
-	public function remote_machineGetLogFilesInfo($args,&$response) {
+	public function remote_machineGetLogFilesInfo($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -5288,31 +5159,32 @@ class vboxconnector {
 		try { $i = 0; while($l = $m->queryLogFilename($i++)) $logs[] = $l;
 		} catch (Exception $null) {}
 
-		$response['data']['path'] = $m->logFolder;
-		$response['data']['logs'] = $logs;
+		$lf = $m->logFolder;
 		$m->releaseRemote();
+		
+		return array('path' => $lf, 'logs' => $logs);
+
 	}
 
 	/**
 	 * Get VM log file contents
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
+	 * @return string log file contents
 	 */
-	public function remote_machineGetLogFile($args,&$response) {
+	public function remote_machineGetLogFile($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
-		$response['data']['log'] = '';
-
 		/* @var $m IMachine */
 		$m = $this->vbox->findMachine($args['vm']);
+		$log = '';
 		try {
 			// Read in 8k chunks
-			while($l = $m->readLog(intval($args['log']),strlen($response['data']['log']),8192)) {
+			while($l = $m->readLog(intval($args['log']),strlen($log),8192)) {
 				if(!count($l) || !strlen($l[0])) break;
-				@$response['data']['log'] .= base64_decode($l[0]);
+				$log .= base64_decode($l[0]);
 			}
 		} catch (Exception $null) {}
 		$m->releaseRemote();
@@ -5320,17 +5192,18 @@ class vboxconnector {
 		// Attempt to UTF-8 encode string or json_encode may choke
 		// and return an empty string
 		if(function_exists('utf8_encode'))
-			$response['data']['log'] = utf8_encode($response['data']['log']);
+			return utf8_encode($log);
+		
+		return $log;
 	}
 
 	/**
 	 * Get a list of USB devices attached to a given VM
 	 *
 	 * @param array $args array of arguments. See function body for details.
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array list of devices
 	 */
-	public function remote_consoleGetUSBDevices($args,&$response) {
+	public function remote_consoleGetUSBDevices($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -5340,9 +5213,9 @@ class vboxconnector {
 		$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 		$machine->lockMachine($this->session->handle, 'Shared');
 
-		$response['data'] = array();
+		$response = array();
 		foreach($this->session->console->USBDevices as $u) { /* @var $u IUSBDevice */
-			$response['data'][$u->id] = array('id'=>$u->id,'remote'=>$u->remote);
+			$response[$u->id] = array('id'=>$u->id,'remote'=>$u->remote);
 			$u->releaseRemote();
 		}
 		
@@ -5350,6 +5223,7 @@ class vboxconnector {
 		unset($this->session);
 		$machine->releaseRemote();
 
+		return $response;
 
 	}
 
@@ -5389,28 +5263,24 @@ class vboxconnector {
 	 * Get a newly generated MAC address from VirtualBox
 	 *
 	 * @param array $args array of arguments. See function body for details
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return string mac address
 	 */
-	public function remote_vboxGenerateMacAddress($args,&$response) {
+	public function remote_vboxGenerateMacAddress($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 
-		$response['data']['mac'] = $this->vbox->host->generateMACAddress();
+		return $this->vbox->host->generateMACAddress();
 		
-		return true;
-
 	}
 
 	/**
 	 * Set group definition
 	 * 
 	 * @param array $args array of arguments. See function body for details
-	 * @param array $response response data passed byref populated by the function
 	 * @return boolean true on success
 	 */
-	public function remote_vboxGroupDefinitionsSet($args, &$response) {
+	public function remote_vboxGroupDefinitionsSet($args) {
 	
 		$this->connect();
 		
@@ -5435,21 +5305,20 @@ class vboxconnector {
 				$this->vbox->setExtraData($k,'');
 		}
 		
-		return ($response['data']['result'] = 1);
+		return true;
 	}
 	
 	/**
 	 * Return group definitions
 	 * 
 	 * @param array $args array of arguments. See function body for details
-	 * @param array $response response data passed byref populated by the function
-	 * @return boolean true on success
+	 * @return array group definitions
 	 */
-	public function remote_vboxGroupDefinitionsGet($args, &$response) {
+	public function remote_vboxGroupDefinitionsGet($args) {
 
 		$this->connect();
 		
-		$response['data'] = array();
+		$response = array();
 		
 		$keys = $this->vbox->getExtraDataKeys();
 		
@@ -5461,14 +5330,14 @@ class vboxconnector {
 			$subgroups = array();
 			$machines = array();
 			
-			$response['data'][] = array(
+			$response[] = array(
 				'name' => substr($grouppath,strrpos($grouppath,'/')+1),
 				'path' => substr($grouppath,strlen($groupKey)),
 				'order' => $this->vbox->getExtraData($grouppath)
 			);
 		}
 
-		return true;
+		return $response;
 		
 	}
 	

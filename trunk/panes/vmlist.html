@@ -77,14 +77,14 @@ vboxChooser.setContextMenu('anchor', [
 		'name':'fileImport',
 		'label':trans('Import Appliance...','UIActionPool'),
 		'icon':'import',
-		'click':function(){vboxWizardImportApplianceInit();},
+		'click':function(){vboxWizardImportApplianceDialog();},
 		'separator': true
 	},
 	{
 		'name':'fileExport',
 		'label':trans('Export Appliance...','UIActionPool'),
 		'icon':'export',
-		'click':function(){vboxWizardExportApplianceInit();}
+		'click':function(){vboxWizardExportApplianceDialog();}
 	},
 	$.extend({},vboxVMGroupActions['sort'],{'name':'sort','separator':true,click:function(){
 		vboxChooser.sortSelectedGroup(true);

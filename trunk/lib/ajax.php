@@ -37,7 +37,7 @@ global $_SESSION;
 $vboxRequest = clean_request();
 
 global $response;
-$response = array('data'=>array(),'errors'=>array(),'persist'=>array(),'messages'=>array());
+$response = array('data'=>array('responseData'=>array()),'errors'=>array(),'persist'=>array(),'messages'=>array());
 
 /*
  * Built-in requests
@@ -59,12 +59,8 @@ try {
 	if (!version_compare(PHP_VERSION, '5.2.0', '>=')) {
 		throw new Exception('phpVirtualBox requires PHP >= 5.2.0, but this server is running version '. PHP_VERSION .'. Please upgrade PHP.');
 	}
-	
-	/* Check for session support */
-	if(!function_exists('session_start')) {
-		throw new Exception("PHP session support is required by phpVirtualBox but is not enabled or available in your PHP installation.", vboxconnector::PHPVB_ERRNO_FATAL);
-	}
-	
+
+	/* Check for function called */
 	switch($vboxRequest['fn']) {
 	
 		/*
@@ -73,25 +69,25 @@ try {
 		case 'getConfig':
 			
 			$settings = new phpVBoxConfigClass();
-			$response['data'] = get_object_vars($settings);
-			$response['data']['host'] = parse_url($response['data']['location']);
-			$response['data']['host'] = $response['data']['host']['host'];
-			$response['data']['phpvboxver'] = @constant('PHPVBOX_VER');
+			$data = get_object_vars($settings);
+			$data['host'] = parse_url($data['location']);
+			$data['host'] = $data['host']['host'];
+			$data['phpvboxver'] = @constant('PHPVBOX_VER');
 			
 			// Session
 			session_init();
 			
 			// Hide credentials
-			unset($response['data']['username']);
-			unset($response['data']['password']);
-			foreach($response['data']['servers'] as $k => $v)
-				$response['data']['servers'][$k] = array('name'=>$v['name']);
+			unset($data['username']);
+			unset($data['password']);
+			foreach($data['servers'] as $k => $v)
+				$data['servers'][$k] = array('name'=>$v['name']);
 			
 	
-			if(!$response['data']['nicMax']) $response['data']['nicMax'] = 4;
+			if(!$data['nicMax']) $data['nicMax'] = 4;
 	
 			// Update interval
-			$response['data']['previewUpdateInterval'] = max(3,intval(@$response['data']['previewUpdateInterval']));
+			$data['previewUpdateInterval'] = max(3,intval(@$data['previewUpdateInterval']));
 			
 			// Are default settings being used?
 			if(@$settings->warnDefault) {
@@ -100,10 +96,14 @@ try {
 			
 			// Vbox version			
 			$vbox = new vboxconnector();
-			$response['data']['version'] = $vbox->getVersion();
-			$response['data']['hostOS'] = $vbox->vbox->host->operatingSystem;
-			$response['data']['DSEP'] = $vbox->getDsep();
-			$response['data']['groupDefinitionKey'] = ($settings->phpVboxGroups ? vboxconnector::phpVboxGroupKey : 'GUI/GroupDefinitions');
+			$data['version'] = $vbox->getVersion();
+			$data['hostOS'] = $vbox->vbox->host->operatingSystem;
+			$data['DSEP'] = $vbox->getDsep();
+			$data['groupDefinitionKey'] = ($settings->phpVboxGroups ? vboxconnector::phpVboxGroupKey : 'GUI/GroupDefinitions');
+			
+			$response['data']['responseData'] = $data;
+			
+			$response['data']['success'] = 1;
 			
 			break;
 	
@@ -156,16 +156,15 @@ try {
 				
 				$settings->auth->autoLoginHook();
 				
-				// We're done writing to session
-				if(function_exists('session_write_close'))
-					@session_write_close();
 			
 			}
 
-			session_write_close();
-			
-			$response['data'] = $_SESSION;
-			$response['data']['result'] = 1;
+			// We're done writing to session
+			if(function_exists('session_write_close'))
+				@session_write_close();
+
+			$response['data']['responseData'] = $_SESSION;
+			$response['data']['success'] = 1;
 			break;
 			
 		/*
@@ -178,10 +177,11 @@ try {
 			session_init(true);
 			
 			$settings = new phpVBoxConfigClass();
-			$settings->auth->changePassword($vboxRequest['old'], $vboxRequest['new'], $response);
+			$response['data']['success'] = $settings->auth->changePassword($vboxRequest['old'], $vboxRequest['new']);
 
 			// We're done writing to session
-			if(function_exists('session_write_close')) @session_write_close();
+			if(function_exists('session_write_close'))
+				@session_write_close();
 			
 			break;
 		
@@ -198,7 +198,8 @@ try {
 			if(!$_SESSION['admin']) break;
 			
 			$settings = new phpVBoxConfigClass();
-			$response['data'] = $settings->auth->listUsers();
+			$response['data']['responseData'] = $settings->auth->listUsers();
+			$response['date']['success'] = 1;
 			
 			break;
 			
@@ -217,7 +218,7 @@ try {
 			$settings = new phpVBoxConfigClass();
 			$settings->auth->deleteUser($vboxRequest['u']);
 			
-			$response['data']['result'] = 1;
+			$response['data']['success'] = 1;
 			break;
 			
 		/*
@@ -244,7 +245,7 @@ try {
 			$settings = new phpVBoxConfigClass();
 			$settings->auth->updateUser($vboxRequest, @$skipExistCheck);
 						
-			$response['data']['result'] = 1;
+			$response['data']['success'] = 1;
 			break;
 
 		/*
@@ -263,6 +264,8 @@ try {
 			$settings->auth->logout($response);
 				
 			session_destroy();
+			
+			$response['data']['success'] = 1;
 		
 			break;
 					
@@ -275,8 +278,6 @@ try {
 	
 			$vbox = new vboxconnector();
 
-			// init session and keep it open
-			session_init(true);
 			
 			/*
 			 * Every 1 minute we'll check that the account has not
@@ -284,39 +285,26 @@ try {
 			 */
 			if($_SESSION['user'] && ((intval($_SESSION['authCheckHeartbeat'])+60) < time())) {
 				
+				// init session and keep it open
+				session_init(true);
 				$vbox->settings->auth->heartbeat($vbox);
+			
+				// We're done writing to session
+				if(function_exists('session_write_close'))
+					@session_write_close();
+								
+			} else {
+				
+				// init session but close it
+				session_init();
+				
 			}
 			
 			/*
-			 *  Persistent session config
+			 *  Persistent request data
 			 */
-			if(@$vbox->persistentSessionConfig[$vboxRequest['fn']]) {
-
-				// Get handler held in session for each config item
-				$hc = $vbox->persistentSessionConfig[$vboxRequest['fn']];
-					
-				// Array key in cookie that we are looking for
-				$sessionKeyPrefix = $vbox->settings->key.'vboxPersistentHandle'.$hc['keyName'].
-					(($hc['keyValue'] && $vboxRequest[$hc['keyValue']]) ? $vboxRequest[$hc['keyValue']] : '');
-				
-				// Each handle
-				foreach($hc['items'] as $h) {
-					$vbox->persistentRequest[$h] = @$_SESSION[$sessionKeyPrefix.'-'.$h];
-				}
-
-			} else {
-				
-				// Persistent session config is not set, close session
-				session_write_close();
-				
-				/*
-				 * Check for presistent request in $vboxRequest
-				 */
-				if(is_array($vboxRequest['persist'])) {
-					foreach($vboxRequest['persist'] as $k => $v) {
-						$vbox->persistentRequest[$k] = $v;
-					}
-				}
+			if(is_array($vboxRequest['_persist'])) {
+				$vbox->persistentRequest = $vboxRequest['_persist'];
 			}
 			
 			
@@ -325,31 +313,14 @@ try {
 			 */
 			$vbox->$vboxRequest['fn']($vboxRequest,array(&$response));
 			
-			/*
-			 * Save persistent items in session
-			 */
-			if(@$vbox->persistentSessionConfig[$vboxRequest['fn']]) {
 			
-				// Get handler held in session for each config item
-				$hc = $vbox->persistentSessionConfig[$vboxRequest['fn']];
-					
-				// Array key in cookie that we are looking for
-				$sessionKeyPrefix = $vbox->settings->key.'vboxPersistentHandle'.$hc['keyName'].
-					(($hc['keyValue'] && $vboxRequest[$hc['keyValue']]) ? $vboxRequest[$hc['keyValue']] : '');
-				
-				// Each handle
-				foreach($hc['items'] as $h) {
-					if($vbox->persistentRequest[$h]) {
-						$_SESSION[$sessionKeyPrefix.'-'.$h] = $vbox->persistentRequest[$h];	
-					} else {
-						unset($_SESSION[$sessionKeyPrefix.'-'.$h]);
-					}
-				}
-				
-				session_write_close();
-				
-				
+			/*
+			 * Send back persistent request in response
+			*/
+			if(is_array($vbox->persistentRequest) && count($vbox->persistentRequest)) {
+				$response['data']['persist'] = $vbox->persistentRequest;
 			}
+			break;
 			
 	} // </switch()>
 
@@ -367,15 +338,6 @@ try {
 	$vbox->errors[] = $e;
 }
 
-/*
- * Send back persistent request in response
-*/
-if($vbox && is_array($vbox->persistentRequest)) {
-
-	foreach($vbox->persistentRequest as $k => $v)
-		if($v) $response['persist'][$k] = $v;
-
-}
 
 // Add any messages
 if($vbox && count($vbox->messages)) {

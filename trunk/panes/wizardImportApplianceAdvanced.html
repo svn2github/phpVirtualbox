@@ -223,7 +223,7 @@ function wizardImportApplianceBrowseLocation() {
 		/* Parse appliance file */
 		var l = new vboxLoader();
 		l.add('applianceReadInterpret',function(d){
-			if(d && d.descriptions && d.descriptions.length) { wizardImportApplianceParsed(d); }
+			if(d && d.responseData && d.responseData.descriptions && d.responseData.descriptions.length) { wizardImportApplianceParsed(d.responseData); }
 			else {
 				if(!d) { vboxAlert(trans('Unkown Error')); }
 				document.forms['frmwizardImportAppliance'].elements.wizardImportApplianceLocation.value = '';
@@ -511,7 +511,7 @@ function vboxImportAppliancePropEdit(elm,desc) {
 				if(diskRows.length) {
 					var mfd = new vboxLoader();
 					mfd.add('vboxGetComposedMachineFilename',function(d){
-						var mfolder = vboxDirname(d.file) + $("#vboxPane").data('vboxConfig').DSEP;
+						var mfolder = vboxDirname(d.responseData) + $("#vboxPane").data('vboxConfig').DSEP;
 						for(var i = 0; i < diskRows.length; i++) {
 							var tdc = $(diskRows[i]).children().eq(1);
 							var dname = vboxBasename($(tdc).data('descValue'));

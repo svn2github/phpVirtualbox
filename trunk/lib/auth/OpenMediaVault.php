@@ -108,7 +108,7 @@ class phpvbAuthOpenMediaVault implements phpvbAuth {
 
 	/* Defined for compatibility with implemented interface */
 	function heartbeat($vbox){}
-	function changePassword($old, $new, &$response){}
+	function changePassword($old, $new){}
 	function listUsers(){}
 	function updateUser($vboxRequest, $skipExistCheck){}
 	function deleteUser($user){}

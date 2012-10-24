@@ -67,7 +67,7 @@ var sButtons = new Array(
 					var chp = new vboxLoader();
 					chp.add('addUser',function(d){
 						if(d) {
-							if(d.result) {
+							if(d.success) {
 								vboxSettingsGlobalAddUserList({'username':u,'admin':a});
 								$(dialog).remove();
 							} else {
@@ -102,7 +102,7 @@ var sButtons = new Array(
 				var user = $('#vboxSettingsUserList').children('li.vboxListItemSelected').data();
 				var l = new vboxLoader();
 				l.add('delUser',function(d){
-					if(d && d.result == 1) {
+					if(d && d.success) {
 						$('#vboxSettingsUserList').children('li.vboxListItemSelected').remove();
 						$('#vboxSettingsUserList').trigger('select',null);
 					}
@@ -145,7 +145,7 @@ var sButtons = new Array(
 					var chp = new vboxLoader();
 					chp.add('changePassword',function(d){
 						if(d) {
-							if(d.result) {
+							if(d.success) {
 								vboxAlert(trans('Password changed.','UIUsers'),{'width':'auto'});
 								$(dialog).remove();
 							} else {
@@ -201,7 +201,7 @@ var sButtons = new Array(
 					var dialog = this;
 					var chp = new vboxLoader();
 					chp.add('editUser',function(d){
-						if(d && d.result) {
+						if(d && d.success) {
 							$('#vboxSettingsUserList').children('li.vboxListItemSelected').data({'admin':a}).html(user.username + (a ? ' ('+trans('Admin User','UIUsers')+')' : ''));
 							$(dialog).remove();
 						} else {

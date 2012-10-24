@@ -74,7 +74,7 @@ class phpvbAuthLDAP implements phpvbAuth {
 		$_SESSION['authCheckHeartbeat'] = time();
 	}
 	
-	function changePassword($old, $new, &$response)
+	function changePassword($old, $new)
 	{
 	}
 	

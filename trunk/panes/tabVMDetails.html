@@ -137,12 +137,12 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 			    skipTable = true;
 			}
 			
-			$.when(vboxVMDataMediator.getVMDataCombined(vboxChooser.selectedVMs[i])).then(function(d) {
+			$.when(vboxChooser.selectedVMs[i], vboxVMDataMediator.getVMDataCombined(vboxChooser.selectedVMs[i])).then(function(vmid, d) {
 				
 				// Remove placeholder and don't draw
 				// if this vm is no longer selected
-				if(!vboxChooser.isVMSelected(d.id)) {
-					$('#vboxDetailsGeneralTable-'+d.id).empty().remove();
+				if(!d || !vboxChooser.isVMSelected(vmid)) {
+					$('#vboxDetailsGeneralTable-'+vmid).empty().remove();
 					return;
 				}
 				
@@ -378,13 +378,11 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 	if(!section)
 		section = vboxVMDetailsSections[sectionName];
 
-	var ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'>"+
-	"<a href=\"javascript:vboxVMsettingsInit('"+data.id+"',null,'%2');\">%3</a>"+
-	"</span>";
+	var links = true;
 	
 	// No link if VM is not in valid state
 	if(!((vboxVMStates.isRunning(data) || vboxVMStates.isEditable(data)) && !vboxVMStates.isSaved(data))) {
-		ttemplate = "<img style='float:left;  margin-right: 3px;' src='images/vbox/%1' class='vboxDetailsSectionIcon'/><span style='float:left'>%3</span>";
+		links = false;
 	}
 
 	var vboxDetailsTable = $('<table />')
@@ -393,9 +391,14 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 			.append($('<tr />').attr({'class':'vboxDetailsHead'})
 				.append($('<th />').attr({'class':'vboxDetailsSection','colspan':'2'})
 					.append($('<div />')
-						.addClass(!((vboxVMStates.isEditable(data) || vboxVMStates.isRunning(data)) && !vboxVMStates.isSaved(data)) ? 'vboxNoLinks' : '')
-						.html(ttemplate.replace('%1',section.icon).replace('%2', section.settingsLink).replace('%3', section.title))
 						.append(
+							$('<img />').attr({'style':'float:left;margin-right:3px','src':'images/vbox/'+section.icon,'class':'vboxDetailsSectionIcon'})
+						).append(
+							$('<span />').css({'float':'left'}).addClass((links ? 'vboxDetailsSectionLink' : '')).click(function(){
+								if($(this).hasClass('vboxDetailsSectionLink'))
+									vboxVMsettingsDialog(data,section.settingsLink);
+							}).html(section.title)
+						).append(
 							(isCanvasSupported() ? 
 							$('<canvas />').addClass('vboxArrowImage')
 								.attr({'width':'18','height':'18'})

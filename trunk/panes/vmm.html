@@ -276,7 +276,7 @@ var vmmButtons = new Array(
 		'icon' : 'hd_new',
 		'enabled' : function (item) { return(!$("#vboxVMMTabs").tabs('option','selected')); },
 		'click' : function () {
-			vboxWizardNewHDInit(function(id){
+			vboxWizardNewHDDialog(function(id){
 				vboxVMMFillMedia(id);
 			},{'path':$('#vboxVirtualMediaManager').data('vmPath')}); 
 		}
@@ -331,13 +331,13 @@ var vmmButtons = new Array(
 				
 				if(server && target) {
 					if(!lun) lun = '0';
-					var l = new vboxLoader();
+					var l = new vboxLoader('addiscsi');
 					l.add('mediumAddISCSI',function(ret){
-						if(ret && ret.id) {
-							var nl = new vboxLoader();
-							nl.add('vboxGetMedia',function(dat){$('#vboxPane').data('vboxMedia',dat);});
+						if(ret && ret.responseData && ret.responseData.id) {
+							var nl = new vboxLoader('getMedia');
+							nl.add('vboxGetMedia',function(dat){$('#vboxPane').data('vboxMedia',dat.responseData);});
 							nl.onLoad = function() {
-								vboxVMMFillMedia((ret && ret.id ? ret.id : null));
+								vboxVMMFillMedia(ret.responseData.id);
 							};
 							nl.run();
 						}
@@ -389,9 +389,9 @@ var vmmButtons = new Array(
 					elm = $('#vboxVMMHDList');
 					break;
 			}
-			vboxWizardCopyHDInit(function(id){
+			$.when(vboxWizardCopyHDDialog({'medium':$(elm).find('tr.vboxListItemSelected').first().data('medium')})).done(function(id){
 				vboxVMMFillMedia(id);
-			},{'medium':$(elm).find('tr.vboxListItemSelected').first().data('medium')}); 
+			}); 
 		}
 	},	
 	{
@@ -426,11 +426,11 @@ var vmmButtons = new Array(
 					}
 				}
 
-				vboxAjaxRequest('mediumSetType',{'medium':med.location,'type':mtype},function(ret){
+				$.when(vboxAjaxRequest('mediumSetType',{'medium':med.location,'type':mtype})).then(function(ret){
 					
-					if(ret && ret.result == 1) {
+					if(ret && ret.success) {
 						var l = new vboxLoader();
-						l.add('vboxGetMedia',function(data){$('#vboxPane').data('vboxMedia',data);});
+						l.add('vboxGetMedia',function(data){$('#vboxPane').data('vboxMedia',data.responseData);});
 						l.onLoad = function() {
 							if($('#vboxVirtualMediaManager').data('hideDiff')) {
 								var d = vboxMedia.getMediumById(med.id);
@@ -520,11 +520,11 @@ var vmmButtons = new Array(
 						'untouched which makes it possible to add this hard disk to the list later again.</p>','UIMessageCenter').replace('%1',m.location);
 				
 				buttons[trans('Delete','UIMessageCenter')] = function(){
-					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType,'delete':1},function(ret,xtra,persist){
-						if(ret && ret.progress) {
-							vboxProgress({'progress':ret.progress,'persist':persist},function(){
+					$.when(vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType,'delete':1})).then(function(ret){
+						if(ret && ret.responseData && ret.responseData.progress) {
+							vboxProgress(ret.responseData,function(){
 								var l = new vboxLoader();
-								l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
+								l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 								l.onLoad = function() {vboxVMMFillMedia(); };
 								l.run();
 							},'progress_media_delete_90px.png',trans('Delete','UIMessageCenter'),
@@ -535,9 +535,9 @@ var vmmButtons = new Array(
 				};
 				
 				buttons[trans('Keep','UIMessageCenter')] = function(){
-					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType},function(ret){
+					$.when(vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType})).then(function(ret){
 						var l = new vboxLoader();
-						l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
+						l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 						l.onLoad = function() {vboxVMMFillMedia(); };
 						l.run();
 					});
@@ -551,9 +551,9 @@ var vmmButtons = new Array(
 				
 				buttons[trans('Remove','UIMessageCenter')] = function(){
 					var b = this;
-					vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType},function(ret){
+					$.when(vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType})).then(function(ret){
 						var l = new vboxLoader();
-						l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
+						l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 						l.onLoad = function() {vboxVMMFillMedia(); };
 						$(b).empty().remove();
 						l.run();
@@ -602,10 +602,10 @@ var vmmButtons = new Array(
 			var buttons = {};
 			buttons[trans('Release','UIMessageCenter')] = function(){
 				var b = this;
-				vboxAjaxRequest('mediumRelease',{'medium':m.location,'type':m.deviceType},function(ret){
+				$.when(vboxAjaxRequest('mediumRelease',{'medium':m.location,'type':m.deviceType})).then(function(ret){
 					
 					var l = new vboxLoader();
-					l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
+					l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 					l.onLoad = function(){
 						vboxVMMFillMedia(m.id);
 					};
@@ -635,7 +635,7 @@ var vmmButtons = new Array(
 
 			// Force a refresh of media
 			var l = new vboxLoader();
-			l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
+			l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 			l.onLoad = function() {vboxVMMFillMedia(); };
 			l.run();
 			

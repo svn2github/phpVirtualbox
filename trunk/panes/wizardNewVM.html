@@ -291,11 +291,11 @@ $('#wizardNewVMStep2').bind('show',function(e,wiz){
 	var l = new vboxLoader();
 	l.add('vboxGetComposedMachineFilename',function(d){
 		
-		loc = vboxDirname(d.file);
+		loc = vboxDirname(d.responseData);
 		
 		var fe = new vboxLoader();
 		fe.add('fileExists',function(d){
-			fileExists = d.exists;
+			fileExists = d.responseData;
 		},{'file':loc});
 		fe.onLoad = function() { 
 			if(fileExists) {

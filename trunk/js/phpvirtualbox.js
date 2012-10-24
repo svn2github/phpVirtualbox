@@ -148,8 +148,8 @@ var vboxHostDetailsSections = {
 			}
 			
 			var vboxHostUpdateMeminfo = function() {
-				vboxAjaxRequest('hostGetMeminfo',{},function(d){
-					vboxHostShowMemInfo(d.memoryAvailable);		
+				$.when(vboxAjaxRequest('hostGetMeminfo')).then(function(d){
+					vboxHostShowMemInfo(d.responseData);		
 				});
 			};
 			vboxHostUpdateMeminfo();
@@ -207,27 +207,7 @@ var vboxHostDetailsSections = {
 					indented: true
 				};
 				
-				
-				/* VMs bound to NIC */
-				if(d['nics'][d['networkInterfaces'][i].name]) {
-					var vms = new Array();
-					for(var vmname in d['nics'][d['networkInterfaces'][i].name]) {
-						d['nics'][d['networkInterfaces'][i].name][vmname].sort();
-						var ads = new Array();
-						for(var n = 0; n < d['nics'][d['networkInterfaces'][i].name][vmname].length; n++) {
-							ads[ads.length] = trans("Adapter %1",'VBoxGlobal').replace('%1',d['nics'][d['networkInterfaces'][i].name][vmname][n]);
-						}
-						vms[vms.length] = vmname + ' (' + ads.join(', ') + ')';
-					}
-					vms.sort(strnatcasecmp);
-					
-					netRows[netRows.length] = {
-						title: '',
-						data: vms.join(', '),
-						indented: true
-					};
-				}
-				
+							
 			}
 			return netRows;
 		}
@@ -995,11 +975,12 @@ var vboxVMDetailsSections = {
 			// See if medium is there
 			var mRefresh = function() { return; };
 			if(!vboxMedia.getMediumById(mid)) {
-				mRefresh = vboxAjaxRequest('vboxGetMedia',{},function(d){$('#vboxPane').data('vboxMedia',d);});
+				mRefresh = vboxAjaxRequest('vboxGetMedia');
 			}
 			var l = new vboxLoader();
 			l.showLoading();
-			$.when(mRefresh, vboxVMDataMediator.refreshVMData(vmid)).then(function(){
+			$.when(mRefresh, vboxVMDataMediator.refreshVMData(vmid)).then(function(d){
+				if(d && d.responseData) $('#vboxPane').data('vboxMedia',d.responseData);
 				l.removeLoading();
 			});
 		},
@@ -1033,7 +1014,7 @@ var vboxVMDetailsSections = {
 						
 						if(!d._isSnapshot) {
 							portDesc = '<a href="javascript:vboxVMDetailsSections.storage._refreshVMMedia(\''+
-							d.id+"','"+d['storageControllers'][a]['mediumAttachments'][b].medium.id+"');\">"+trans('Refresh','UIVMLogViewer')+"</a>";							
+							d.id+"','"+d['storageControllers'][a]['mediumAttachments'][b].medium.id+"');return false;\">"+trans('Refresh','UIVMLogViewer')+"</a>";							
 
 						} else {
 							portDesk = trans('Refresh','UIVMLogViewer');
@@ -1170,7 +1151,7 @@ var vboxVMDetailsSections = {
 				
 				rows[rows.length] = {
 					title: '',
-					data: '<a href="javascript:vboxGuestNetworkAdaptersDialogInit(\''+d['id']+'\')">('+trans('Guest Network Adapters','VBoxGlobal')+')</a>',
+					data: '<a href="javascript:vboxGuestNetworkAdaptersDialogInit(\''+d['id']+'\');">('+trans('Guest Network Adapters','VBoxGlobal')+')</a>',
 					html: true
 				};
 				
@@ -1442,7 +1423,7 @@ var vboxVMActions = {
 			icon:'vm_new',
 			icon_16:'new',
 			click: function(fromGroup){
-				vboxWizardNewVMInit(function(){return;},(fromGroup ? $(vboxChooser.getSelectedGroupElements()[0]).data('vmGroupPath') : ''));
+				vboxWizardNewVMDialog((fromGroup ? $(vboxChooser.getSelectedGroupElements()[0]).data('vmGroupPath') : ''));
 			}
 	},
 	
@@ -1457,7 +1438,7 @@ var vboxVMActions = {
 				l.add('machineAdd',function(){},{'file':f});
 				l.onLoad = function(){
 					var lm = new vboxLoader();
-					lm.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d);});
+					lm.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 					lm.run();
 				};
 				l.run();
@@ -1475,31 +1456,82 @@ var vboxVMActions = {
 		click : function (btn) {
 		
 			
-			// Start a single vm
-			var startVM = function (vm) {
+			// Should the "First Run" wizard be started
+			////////////////////////////////////////////
+			var firstRun = function(vm) {
 				
-				vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'},function(d,evm,persist){
-					// check for progress operation
-					if(d && d.progress) {
-						var icon = null;
-						if(vboxVMStates.isSaved(evm)) icon = 'progress_state_restore_90px.png';
-						else icon = 'progress_start_90px.png';
-						vboxProgress({'progress':d.progress,'persist':persist},function(){return;},icon,
-								trans('Start the selected virtual machines','UIActionPool'),evm.name);
+				var frDef = $.Deferred();
+				
+				$.when(vboxVMDataMediator.getVMDetails(vm.id)).then(function(d) {
+
+					// Not first run?
+					if(d.GUI.FirstRun != 'yes') {
+						// Just resolve, nothing to do
+						frDef.resolve(d);
 						return;
 					}
-				},vm);
+
+					// Check for CD/DVD drive attachment that has no CD/DVD
+					var cdFound = false;
+					for(var i = 0; i < d.storageControllers.length; i++) {
+						for(var a = 0; a < d.storageControllers[i].mediumAttachments.length; a++) {
+							if(d.storageControllers[i].mediumAttachments[a].type == "DVD" &&
+									d.storageControllers[i].mediumAttachments[a].medium == null) {
+								cdFound = true;
+								break;
+							}
+						}
+					}
+					
+					// No CD/DVD attachment
+					if(!cdFound) {
+						// Just resolve, nothing to do
+						frDef.resolve(d);
+						return;	
+					}
+					
+					// First time run
+					$.when(d, vboxWizardFirstRunDialog(d)).then(function(vm2start){
+						frDef.resolve(vm2start);
+					});
+					
+					
+				});
+				return frDef.promise();
 			};
 			
 			// Start each eligable selected vm
+			//////////////////////////////////////
 			var startVMs = function() {				
+				
 				var vms = vboxChooser.getSelectedVMsData();
+				var vmsToStart = [];
 				for(var i = 0; i < vms.length; i++) {
 					if(vboxVMStates.isPaused(vms[i]) || vboxVMStates.isPoweredOff(vms[i]) || vboxVMStates.isSaved(vms[i])) {
-						startVM(vms[i]);
+						vmsToStart[vmsToStart.length] = vms[i];
 					}
 					
 				}
+				
+				(function runVMsToStart(vms){
+					
+					(vms.length && $.when(firstRun(vms.shift())).then(function(vm){
+
+						$.when(vm,vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'})).then(function(evm,d){
+							// check for progress operation
+							if(d && d.responseData && d.responseData.progress) {
+								var icon = null;
+								if(vboxVMStates.isSaved(evm)) icon = 'progress_state_restore_90px.png';
+								else icon = 'progress_start_90px.png';
+								vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){return;},icon,
+										trans('Start the selected virtual machines','UIActionPool'),evm.name);
+							}
+						});
+						
+						runVMsToStart(vms);
+						
+					}));
+				})(vmsToStart);
 			};
 			
 			// Check for memory limit
@@ -1509,22 +1541,44 @@ var vboxVMActions = {
 				var freeMem = 0;
 				var baseMem = 0;
 				
-				var l = new vboxLoader();
-				l.add('hostGetMeminfo',function(d){freeMem = d.memoryAvailable;});
-				l.onLoad = function() {
+				// Host memory needs to be checked
+				var loadData = [vboxAjaxRequest('hostGetMeminfo')];
+				
+				// Load details of each machine to get memory info
+				var vms = vboxChooser.getSelectedVMsData();
+				for(var i = 0; i < vms.length; i++) {
+					if(vboxVMStates.isPoweredOff(vms[i]) || vboxVMStates.isSaved(vms[i]))
+						loadData[loadData.length] = vboxVMDataMediator.getVMDataCombined(vms[i].id);
+				}
+				
+				// Show loading screen while this is occuring
+				var l = new vboxLoader('vboxHostMemCheck');
+				l.showLoading();
+				
+				// Load all needed data
+				$.when.apply($, loadData).then(function() {
 					
-					// Subtract memory for each VM selected
-					var vms = vboxChooser.getSelectedVMsData();
-					for(var i = 0; i < vms.length; i++) {
-						if(vboxVMStates.isPoweredOff(vms[i]) || vboxVMStates.isSaved(vms[i])) {
-							// VM memory + a little bit of overhead
-							baseMem += (vms[i].memorySize + 50);
-						}
+					// Remove loading screen
+					l.removeLoading();
+
+					// First result is host memory info
+					freeMem = arguments[0].responseData;
+					
+					
+					// Add memory of each VM
+					for(var i = 1; i < arguments.length; i++) {
+				
+						// Paused VMs are already using their memory
+						if(vboxVMStates.isPaused(arguments[i].responseData)) continue;
+						
+						// memory + a little bit of overhead
+						baseMem += (arguments[i].responseData.memorySize + 50);
 					}
 
+					// subtract offset
 					if($('#vboxPane').data('vboxConfig').vmMemoryOffset)
 						freeMem -= $('#vboxPane').data('vboxConfig').vmMemoryOffset;
-
+					
 					// Memory breaches warning threshold
 					if(baseMem >= freeMem) {
 						var buttons = {};
@@ -1537,13 +1591,13 @@ var vboxVMActions = {
 								'MB of memory, but your VirtualBox host only has ' + freeMem + 'MB '+
 								($('#vboxPane').data('vboxConfig').vmMemoryOffset ? ' (-'+$('#vboxPane').data('vboxConfig').vmMemoryOffset+'MB)': '') +
 								' free.</p><p>Are you sure you want to start the virtual machine(s)?</p>',buttons,trans('No','QIMessageBox'));
-					
-					// Memory is fine. Start vms.
+						
+						// Memory is fine. Start vms.
 					} else {
 						startVMs();
 					}
-				};
-				l.run();
+					
+				});
 				
 			// No memory limit warning configured
 			} else {
@@ -1564,7 +1618,7 @@ var vboxVMActions = {
 		icon_16:'settings',
 		click:function(){
 			
-			vboxVMsettingsInit(vboxChooser.getSingleSelectedId());
+			vboxVMsettingsDialog(vboxChooser.getSingleSelectedId());
 		},
 		enabled : function () {
 			return vboxChooser && vboxChooser.selectionMode == vboxSelectionModeSingleVM && 
@@ -1578,7 +1632,7 @@ var vboxVMActions = {
 		icon:'vm_clone',
 		icon_16:'vm_clone',
 		icon_disabled:'vm_clone_disabled',
-		click:function(){vboxWizardCloneVMInit(function(){return;},{vm:vboxChooser.getSingleSelected()});},
+		click:function(){vboxWizardCloneVMDialog({vm:vboxChooser.getSingleSelected()});},
 		enabled: function () {
 			return (vboxChooser.selectionMode == vboxSelectionModeSingleVM && vboxChooser.isSelectedInState('PoweredOff'));
 		}
@@ -1620,16 +1674,15 @@ var vboxVMActions = {
 					if(vboxVMStates.isPoweredOff(vms[i])) {
 
 						// Remove each selected vm
-						vboxAjaxRequest('machineRemove',{'vm':vms[i].id,'delete':(keepFiles ? '0' : '1'),'keep':(keepFiles ? '1' : '0')},
-							function(d,vmname,persist){
+						$.when(vms[i].name, vboxAjaxRequest('machineRemove',
+								{'vm':vms[i].id,'delete':(keepFiles ? '0' : '1')}))
+							.then(function(vmname, d){
 								// check for progress operation
-								if(d && d.progress) {
-									vboxProgress({'progress':d.progress,'persist':persist},function(){return;},'progress_delete_90px.png',
+								if(d && d.responseData && d.responseData.progress) {
+									vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){return;},'progress_delete_90px.png',
 											trans('Remove the selected virtual machines', 'UIActionPool'), vmname);
 								}
-						}, vms[i].name);
-						
-						
+						});						
 					}
 				}				
 			};
@@ -1917,10 +1970,11 @@ var vboxVMActions = {
 			case 'reset': fn = 'reset'; break;
 			default: return;
 		}
-		vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':fn},function(d,xtra,persist){
+		
+		$.when(vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':fn})).then(function(d){
 			// check for progress operation
-			if(d && d.progress) {
-				vboxProgress({'progress':d.progress,'persist':persist},function(){
+			if(d && d.responseData && d.responseData.progress) {
+				vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){
 					return;
 				},icon,trans(pt,'UIActionPool'), vm.name);
 				return;
@@ -2113,7 +2167,7 @@ var vboxMedia = {
 		
 	    // Update recent path
 		if(!skipPathAdd) {
-			vboxAjaxRequest('vboxRecentMediaPathSave',{'type':m.deviceType,'folder':vboxDirname(m.location)},function(){});
+			vboxAjaxRequest('vboxRecentMediaPathSave',{'type':m.deviceType,'folder':vboxDirname(m.location)});
 			$('#vboxPane').data('vboxRecentMediaPaths')[m.deviceType] = vboxDirname(m.location);
 		}
 		
@@ -2140,7 +2194,7 @@ var vboxMedia = {
 		}
 
 		// Update Recent Media in background
-		vboxAjaxRequest('vboxRecentMediaSave',{'type':m.deviceType,'list':$('#vboxPane').data('vboxRecentMedia')[m.deviceType]},function(){});
+		vboxAjaxRequest('vboxRecentMediaSave',{'type':m.deviceType,'list':$('#vboxPane').data('vboxRecentMedia')[m.deviceType]});
 		
 		return true;
 
@@ -2192,15 +2246,15 @@ var vboxMedia = {
 				var ml = new vboxLoader();
 				ml.add('mediumAdd',function(ret){
 					var l = new vboxLoader();
-					if(ret && ret.id) {
-						var med = vboxMedia.getMediumById(ret.id);
+					if(ret && ret.responseData.id) {
+						var med = vboxMedia.getMediumById(ret.responseData.id);
 						// Not registered yet. Refresh media.
 						if(!med)
-							l.add('vboxGetMedia',function(dret){$('#vboxPane').data('vboxMedia',dret);});
+							l.add('vboxGetMedia',function(dret){$('#vboxPane').data('vboxMedia',dret.responseData);});
 					}
 					l.onLoad = function() {
 						if(ret && ret.id) {
-							var med = vboxMedia.getMediumById(ret.id);
+							var med = vboxMedia.getMediumById(ret.responseData.id);
 							if(med && med.deviceType == type) {
 								vboxMedia.updateRecent(med);
 								callback(med);
@@ -2256,12 +2310,14 @@ function vboxWizard(name, title, bg, icon) {
 	this.validate = function(){
 		return true;
 	};
+	this.completed = $.Deferred();
 	
 	/**
 	 * Initialize / display wizard
 	 * 
 	 * @memberOf vboxWizard
 	 * @name vboxWizard.run
+	 * @returns {Object} deferred promise
 	 */
 	self.run = function() {
 
@@ -2314,11 +2370,13 @@ function vboxWizard(name, title, bg, icon) {
 			
 			// Show / Hide description button
 			if(!self.stepButtons) self.stepButtons = [];
-			self.stepButtons = jQuery.merge([{
+			if(!self.noAdvanced) {
+				
+				self.stepButtons = jQuery.merge([{
 					
 					name: trans((self.mode == 'advanced' ? 'Show Description' : 'Hide Description'), 'UIWizard'),
 					click: function() {
-				
+						
 						// Unbind any old resize handlers
 						$('#'+self.name+'Dialog').unbind('dialogresizestop');
 						
@@ -2337,10 +2395,10 @@ function vboxWizard(name, title, bg, icon) {
 							
 							// resize dialog
 							$('#'+self.name+'Dialog').dialog('option', 'width', self.widthAdvanced)
-								.dialog('option', 'height', self.heightAdvanced)
-								.css({'background':'url('+self.bg+') ' + ((self.mode == 'advanced' ? self.widthAdvanced : self.width) - 360) +'px -60px no-repeat','background-color':'#fff'});
-						
-
+							.dialog('option', 'height', self.heightAdvanced)
+							.css({'background':'url('+self.bg+') ' + ((self.mode == 'advanced' ? self.widthAdvanced : self.width) - 360) +'px -60px no-repeat','background-color':'#fff'});
+							
+							
 							
 							var vl = new vboxLoader();
 							vl.addFileToDOM('panes/'+self.name+'Advanced.html',$('#'+self.name+'Content'));
@@ -2348,13 +2406,13 @@ function vboxWizard(name, title, bg, icon) {
 								
 								// Change this button text
 								$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+trans('Hide Description', 'UIWizard')+'")')
-									.html(trans('Show Description', 'UIWizard'));
+								.html(trans('Show Description', 'UIWizard'));
 								
 								for(var i = 0; i < self.stepButtons.length; i++) {
 									if(self.stepButtons[i].name == trans('Hide Description', 'UIWizard')) {
 										self.stepButtons[i].name = trans('Show Description', 'UIWizard');
 									}
-										
+									
 								}
 								
 								// Hide back button
@@ -2380,9 +2438,9 @@ function vboxWizard(name, title, bg, icon) {
 							
 							// resize dialog
 							$('#'+self.name+'Dialog').dialog('option', 'width', self.width)
-								.dialog('option', 'height', self.height)
-								.css({'background':'url('+self.bg+') ' + ((self.mode == 'advanced' ? self.widthAdvanced : self.width) - 360) +'px -60px no-repeat','background-color':'#fff'});
-
+							.dialog('option', 'height', self.height)
+							.css({'background':'url('+self.bg+') ' + ((self.mode == 'advanced' ? self.widthAdvanced : self.width) - 360) +'px -60px no-repeat','background-color':'#fff'});
+							
 							
 							// Reset old number of steps
 							self.steps = self.simpleSteps;
@@ -2393,16 +2451,16 @@ function vboxWizard(name, title, bg, icon) {
 								
 								// Change this button text
 								$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane')
-									.find('span:contains("'+trans('Show Description', 'UIWizard')+'")')
-									.html(trans('Hide Description', 'UIWizard'));
-
+								.find('span:contains("'+trans('Show Description', 'UIWizard')+'")')
+								.html(trans('Hide Description', 'UIWizard'));
+								
 								for(var i = 0; i < self.stepButtons.length; i++) {
 									if(self.stepButtons[i].name == trans('Show Description', 'UIWizard')) {
 										self.stepButtons[i].name = trans('Hide Description', 'UIWizard');
 									}
-										
+									
 								}
-
+								
 								// Translations
 								if(self.perPageContext) {
 									for(var s = 1; s <= self.steps; s++) {
@@ -2411,7 +2469,7 @@ function vboxWizard(name, title, bg, icon) {
 								} else {
 									vboxInitDisplay(self.name+'Content',self.context);
 								}
-
+								
 								// Show back button
 								$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.backArrow + ' '+self.backText+'")').parent().show();
 								
@@ -2422,13 +2480,15 @@ function vboxWizard(name, title, bg, icon) {
 							};
 							vl.run();
 						}
-
+						
 						vboxSetLocalDataItem('vboxWizardMode'+self.name, (self.mode == 'advanced' ? 'a' : ''));
 						
-					
-				},
-				steps: [1]
-			}], self.stepButtons);
+						
+					},
+					steps: [1]
+				}], self.stepButtons);
+				
+			}
 			
 			
 			// buttons
@@ -2439,7 +2499,10 @@ function vboxWizard(name, title, bg, icon) {
 					buttons[self.stepButtons[i].name] = self.stepButtons[i].click;
 				}
 			}
-			buttons[self.backArrow + ' '+self.backText] = self.displayPrev;
+			
+			if(!self.noAdvanced || self.steps > 1)
+				buttons[self.backArrow + ' '+self.backText] = self.displayPrev;
+			
 			buttons[(self.steps > 1 ? self.nextText +' '+self.nextArrow : self.finishText)] = self.displayNext;
 			buttons[self.cancelText] = self.close;
 			
@@ -2464,7 +2527,10 @@ function vboxWizard(name, title, bg, icon) {
 				'autoOpen':true,
 				'stack':true,
 				'dialogClass':'vboxDialogContent vboxWizard',
-				'title':(icon ? '<img src="images/vbox/'+icon+'_16px.png" class="vboxDialogTitleIcon" /> ' : '') + self.title
+				'title':(icon ? '<img src="images/vbox/'+icon+ ( (icon.indexOf('.png') == -1) ? '_16px.png' : '') +'" class="vboxDialogTitleIcon" /> ' : '') + self.title
+			}).bind('dialogclose', function(){
+				self.completed.reject();
+				$(this).empty().remove();
 			});
 
 			// Setup if in advanced mode
@@ -2484,7 +2550,8 @@ function vboxWizard(name, title, bg, icon) {
 			self.displayStep(1);
 		};
 		l.run();
-				
+		
+		return self.completed.promise();
 	};
 	
 	/**
@@ -2493,7 +2560,7 @@ function vboxWizard(name, title, bg, icon) {
 	 * @memberOf vboxWizard
 	 */
 	self.close = function() {
-		$('#'+self.name+'Dialog').trigger('close').empty().remove();
+		$('#'+self.name+'Dialog').trigger('dialogclose');
 	};
 	
 	/**
@@ -3404,7 +3471,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 		
 			// Create hard disk
 			case 'createD':
-				vboxWizardNewHDInit(function(id){
+				vboxWizardNewHDDialog(function(id){
 					if(!id) return;
 					var med = vboxMedia.getMediumById(id);
 					self.callback(med);
@@ -3414,13 +3481,13 @@ function vboxMediaMenu(type,callback,mediumPath) {
 			
 			// VMM
 			case 'vmm':
-				// vboxVMMDialogInit(callback,type,hideDiff,mPath)
-				vboxVMMDialogInit(function(m){
+				// vboxVMMDialog(select,type,hideDiff,mPath)
+				$.when(vboxVMMDialog(true,self.type,true,(self.mediumPath ? self.mediumPath : $('#vboxPane').data('vboxRecentMediaPaths')[self.type]))).done(function(m){
 					if(m) {
 						self.callback(vboxMedia.getMediumById(m));
 						self.menuUpdateRecent();
 					}
-				},self.type,true,(self.mediumPath ? self.mediumPath : $('#vboxPane').data('vboxRecentMediaPaths')[self.type]));
+				});
 				break;
 				
 			// Choose medium file
@@ -3858,8 +3925,7 @@ function vboxLoader(name) {
 	 * @see vboxAjaxRequest()
 	 */
 	self.add = function(dataFunction, callback, params) {
-		if (params === undefined) params = {};
-		this._data[this._data.length] = vboxAjaxRequest(dataFunction,params,callback);
+		this._data[this._data.length] = vboxAjaxRequest(dataFunction,params).then(callback);
 	};
 
 	/**
@@ -3900,7 +3966,7 @@ function vboxLoader(name) {
 	 */
 	self.showLoading = function() {
 		
-		var div = $('<div />').attr({'id':'vboxLoaderDialog'+self.name,'title':'','style':'display: none;','class':'vboxDialogContent'});
+		var div = $('<div />').attr({'id':'vboxLoaderDialog'+self.name,'title':'','style':'display: none;','class':'vboxLoaderDialog'});
 		
 		var tbl = $('<table />');
 		var tr = $('<tr />');
@@ -3947,14 +4013,14 @@ function vboxLoader(name) {
 		}
 		
 		// Data first
-		$.when.apply(null, self._data).then(function() {
+		$.when.apply($, self._data).then(function() {
 			
 			// files
 			for(var i = 0; i < self._files.length; i++) {
 				self._files[i] = jQuery.get(self._files[i]['file'],self._files[i]['callback']);
 			}
 			
-			$.when.apply(null, self._files).then(function() {
+			$.when.apply($, self._files).then(function() {
 				self._stop();
 			});
 				

@@ -68,9 +68,9 @@ class phpvbAuthBuiltin implements phpvbAuth {
 	 * Change password function.
 	 * @param string $old old password
 	 * @param string $new new password
-	 * @param string $response response passed byref by ajax.php and populated within function
+	 * @return boolean true on success
 	 */
-	function changePassword($old, $new, &$response)
+	function changePassword($old, $new)
 	{
 		global $_SESSION;
 		
@@ -85,7 +85,9 @@ class phpvbAuthBuiltin implements phpvbAuth {
 			$response['data']['result'] = 1;
 			$_SESSION['uHash'] = $np;
 			$_SESSION['uHash256'] = hash('sha256',$np);
+			return true;
 		}
+		return false;
 	}
 	
 	/**

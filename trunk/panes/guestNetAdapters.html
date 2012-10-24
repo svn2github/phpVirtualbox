@@ -48,8 +48,8 @@ function vboxVMNetAdaptersInit(vm) {
 	$('#vboxGuestNetAdapters').prepend("<div class='vboxTabLoading'><img src='images/spinner.gif'></div>");
 	
 	var pattern = '/VirtualBox/GuestInfo/Net/*';
-	vboxAjaxRequest('machineEnumerateGuestProperties',{'vm':vm,'pattern':pattern},function(d){
-		vboxVMNetAdaptersDisplay(d);
+	$.when(vboxAjaxRequest('machineEnumerateGuestProperties',{'vm':vm,'pattern':pattern})).done(function(d){
+		vboxVMNetAdaptersDisplay(d.responseData);
 	});
 }
 

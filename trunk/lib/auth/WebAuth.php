@@ -45,7 +45,7 @@ class phpvbAuthWebAuth implements phpvbAuth {
 		}
 	}
 	
-	function changePassword($old, $new, &$response)
+	function changePassword($old, $new)
 	{
 	}
 	

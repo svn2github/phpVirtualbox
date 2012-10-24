@@ -74,7 +74,7 @@ $('#wizardExportApplianceStep3').find('.translatep3').html(function(i,h){
 }).removeClass('translatep3');
 
 var l = new vboxLoader();
-l.add('vboxGetExportableMachines',function(d){$('#wizardExportApplianceStep1').data('vms',d);});
+l.add('vboxGetExportableMachines',function(d){$('#wizardExportApplianceStep1').data('vms',d.responseData);});
 l.onLoad = function() {
 	var vms = $('#wizardExportApplianceStep1').data('vms');
 	var vmlist = $('#vboxExportAppVMList');

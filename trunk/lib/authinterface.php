@@ -61,9 +61,9 @@ interface phpvbAuth {
 	* Change password function.
 	* @param string $old old password
 	* @param string $new new password
-	* @param string $response response passed byref by ajax.php and populated within function
+	* @return boolean true on success
 	*/
-	function changePassword($old, $new, &$response);
+	function changePassword($old, $new);
 	
 	/**
 	*

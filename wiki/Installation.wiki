@@ -18,28 +18,28 @@ to the command line of vboxwebsrv. Where IP.ADDRESS.OF.HOST is the IP address of
 
 === !VirtualBox 3.x OSE ===
 
-For *VirtualBox 3.x OSE* users, you must execute the following command:
-
+For *!VirtualBox 3.x OSE* users, you must execute the following command:
+{{{
    VBoxManage setproperty websrvauthlibrary null
-
+}}}
 This disables authentication for vboxwebsrv. At the moment, this is the only way for an application to communicate with the OSE version of vboxwebsrv. Taking security into consideration, only run vboxwebsrv OSE on a non-public network. 
 
 If you are not sure whether or not you are running the OSE version of !VirtualBox, you can run:
-
+{{{
    vboxwebsrv -h
-
+}}}
 If the first line contains "OSE" (e.g. Oracle VM !VirtualBox web service version x.x.x_OSE), you are running the OSE version of !VirtualBox.
 
 ==FreeBSD==
 
 To install the port:
-
+{{{
    cd /usr/ports/www/phpvirtualbox/ && make install clean
-
+}}}
 To add the package:
-
+{{{
    pkg_add -r phpvirtualbox
-
+}}}
 Thanks to Bernhard Fröhlich for his time and effort in creating the FreeBSD port.
 
 ==Linux==
@@ -48,28 +48,28 @@ Linux users should use the instructions for vboxweb-service found at http://code
 
 ==Solaris==
 
-Assuming your !VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /opt/VirtualBox, you may start vboxwebsrv by running the following command as *vbox*:
-
+Assuming your !VirtualBox installation is run by the user *vbox* and vboxwebsrv is located in /opt/!VirtualBox, you may start vboxwebsrv by running the following command as *vbox*:
+{{{
  /opt/VirtualBox/vboxwebsrv -b --logfile /dev/null >/dev/null
-
+}}}
 Solaris users will also have to follow the same instructions outlined in the !VirtualBox OSE section above, or vboxwebsrv will fail to authenticate.
 
 ==Windows==
 
 On Windows (assuming your !VirtualBox installation is located in C:\Program Files\Oracle\VirtualBox), the following command will start vboxwebsrv:
-
- "C:\Program Files\Oracle\VirtualBox\vboxwebsrv.exe" >nul
-
+{{{
+   "%ProgramFiles%\Oracle\VirtualBox\vboxwebsrv.exe" >nul
+}}}
 Note that *>nul* is needed so that vboxwebsrv does not send its output to the command prompt window. Without it, performance will be severely degraded.
 
 ==OS X==
 
 In OS X, start Terminal (usually located in Applications -> Utilities) and enter the following commands:
-
+{{{
   cd /Applications/VirtualBox.app/Contents/MacOS
 
   ./vboxwebsrv >/dev/null
-
+}}}
 Running /usr/bin/vboxwebsrv or not running the command from within /Applications/VirtualBox.app/Contents/MacOS seems to crash vboxwebsrv
 
 = phpVirtualBox =

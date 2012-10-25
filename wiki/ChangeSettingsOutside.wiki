@@ -1,4 +1,4 @@
-#summary Changing !VirtualBox settings outside of phpVirtualBox (<= 4.1-x)
+#summary Changing VirtualBox settings outside of phpVirtualBox (<= 4.1-x)
 #labels Manual
 #sidebar TableOfContents
 

@@ -113,6 +113,8 @@ var $authConfig = array(
 
 In this scenario, the organization unit *Engineering\Admins* is searched for users.
 
+[http://phpvirtualbox.googlecode.com/svn/wiki/images/adou.png]
+
 == Summary ==
 
 You can mix-and-match the container, admin_group, adminUser, and user_group in your configuration. It is important to remember the following:

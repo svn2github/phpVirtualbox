@@ -1,10 +1,12 @@
-#summary Changing VirtualBox settings outside of phpVirtualBox
+#summary Changing VirtualBox settings outside of phpVirtualBox (<= 4.1-x)
 #labels Manual
 #sidebar TableOfContents
 
 <wiki:toc max_depth="2" />
 
 = Introduction =
+
+*This page is only applicable to phpVirtualBox <= 4.1-x*
 
 phpVirtualBox uses a caching mechanism to limit the amount of work vboxwebsrv has to perform, as well as the amount of network traffic generated. This allows for many users to access phpVirtualBox at the same time with a minimal performance hit.
 

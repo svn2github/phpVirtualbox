@@ -89,13 +89,14 @@ $('#wizardCloneVMStep1').bind('show',function(e,wiz){
 	
 	$('#vboxWizCloneMessage1').html(trans('<p>Please choose a name for the new virtual machine. The new machine will be a clone of the machine <b>%1</b>.</p>','UIWizardCloneVMPage1').replace('%1',wiz.args.vm.name));
 	
-	document.forms['frmwizardCloneVM'].elements.machineCloneName.value = trans('%1 Clone','UIWizardCloneVMPage1').replace('%1',wiz.args.vm.name);
 	
 	if((wiz.args.snapshot && wiz.args.snapshot.children && wiz.args.snapshot.children.length)) {
 		$('#wizardCloneVMCurrentAll').show();
 		$('#vboxCloneCurrentAll').show();
 	}
 
+	$(document.forms['frmwizardCloneVM'].elements.machineCloneName).focus();
+	document.forms['frmwizardCloneVM'].elements.machineCloneName.value = trans('%1 Clone','UIWizardCloneVMPage1').replace('%1',wiz.args.vm.name);
 });
 
 /* When going to step2, make sure a name is entered */

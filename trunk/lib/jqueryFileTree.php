@@ -259,7 +259,7 @@ function printdirlocal($dir, $recurse=array()) {
 		$file = $dir.DSEP.$file;
 		if( file_exists($file) && is_dir($file) ) {
 			if(count($recurse) && (strcasecmp($recurse[0],vbox_basename($file)) == 0)) {
-				folder_folder($file,false,true,count($recurse) == 1);
+				folder_folder($file,false,true);
 				printdir($dir.DSEP.array_shift($recurse),$recurse);
 				echo('</li>');
 			} else {
@@ -290,7 +290,8 @@ function folder_file($f) {
 	$ext = strtolower(preg_replace('/^.*\./', '', $f));
 	echo "<li class=\"file file_{$ext} vboxListItem\"><a href=\"#\" name='".htmlentities($f, ENT_QUOTES)."' rel=\"".htmlentities($f, ENT_QUOTES)."\">".htmlentities(vbox_basename($f), ENT_QUOTES)."</a></li>";
 }
-function folder_folder($f,$full=false,$expanded=false,$selected=false) {
+function folder_folder($f,$full=false,$expanded=false) {
+	$selected = (strnatcasecmp(rtrim($f,DSEP),rtrim($GLOBALS['vboxRequest']['dir'],DSEP)) == 0) && $expanded;
 	echo "<li class=\"directory ".($expanded ? 'expanded' : 'collapsed')." vboxListItem\"><a href=\"#\" class='".($selected ? 'vboxListItemSelected' : '')."' name='".htmlentities($f,ENT_QUOTES)."' rel=\"".htmlentities($f,ENT_QUOTES)."\">".htmlentities(($full ? $f : vbox_basename($f)),ENT_QUOTES)."</a>".($expanded ? '' : '</li>');
 }
 

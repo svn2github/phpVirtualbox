@@ -68,6 +68,11 @@
 
 <script type='text/javascript'>
 
+// On keypress, mark this as changed
+$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).bind('keyup',function(){
+	$(this).data('vboxChanged', true);
+});
+
 // Translate step 3
 $('#wizardExportApplianceStep3').find('.translatep3').html(function(i,h){
 	return trans($('<span />').html(h).text(),'UIWizardExportAppPageBasic3');
@@ -87,7 +92,8 @@ l.onLoad = function() {
 		} else {
 			$(li).click(function(){$(this).toggleClass('vboxListItemSelected');}).addClass('vboxListItem');
 		}
-		$(li).html("<img style='width: 16px; height: 16px;' src='images/vbox/" + vboxGuestOSTypeIcon(vms[i].OSTypeId) + "' /> " + vms[i].name);
+		$(li).html("<img style='width: 16px; height: 16px;' src='images/vbox/" + vboxGuestOSTypeIcon(vms[i].OSTypeId) + "' /> " + vms[i].name)
+			.data('vboxVMName', vms[i].name);
 		$(vmlist).append(li);
 	}
 	vboxColorRows(vmlist);
@@ -166,6 +172,7 @@ function wizardExportApplianceBrowseLocation() {
 		var r = new RegExp('.*'+dsepRegEx);
 		file = $(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val().replace(r,'');
 		document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation.value = f+($('#vboxPane').data('vboxConfig').DSEP)+file;
+		$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).data('vboxChanged', true);
 	},true,trans('Select a file to export into','UIWizardExportAppPage3'));
 
 }
@@ -190,17 +197,21 @@ $('#wizardExportApplianceStep3').bind('show',function(e,wiz){
 	if(!vmSel.length) {
 		$('#vboxExportAppVMListContainer').addClass('vboxRequired');
 		wiz.displayStep(1);
-	} else {
-		$('#vboxExportAppVMListContainer').removeClass('vboxRequired');		
-	}
+		return;
+	};
+
+	$('#vboxExportAppVMListContainer').removeClass('vboxRequired');
+	
+	if($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).data('vboxChanged'))
+		return;
 
 	var name = '';
-	if(vmSel.length > 1) {
-		name = 'Appliance';
-	} else {
-		name = jQuery.trim($(vmSel[0]).text());
+	if(vmSel.length == 1) {
+		name = jQuery.trim($(vmSel[0]).data('vboxVMName'));
 	}
-	if($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val()) return;
+	
+	if(!name) name = 'Appliance';
+
 	name = $('#vboxPane').data('vboxConfig').version.settingsFilePath.substring(0,$('#vboxPane').data('vboxConfig').version.settingsFilePath.length - 27) + $('#vboxPane').data('vboxConfig').DSEP + name + '.ova';
 	$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val(name);
 });

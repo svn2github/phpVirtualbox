@@ -132,6 +132,9 @@ function wizardHDBrowseLocation() {
 		loc = vboxDirname(loc);
 	}
 
+	if(loc.indexOf($('#vboxPane').data('vboxConfig').DSEP) < 0 && $('#wizardNewHDStep1').data('wizSuggested')['path']) {
+		loc = $('#wizardNewHDStep1').data('wizSuggested')['path'];
+	}
 		
 	vboxFileBrowser(loc,function(f){
 		if(!f) return;

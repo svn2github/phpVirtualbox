@@ -322,8 +322,10 @@ function vboxWizardNewVMDialog(vmgroup) {
 				var mem = parseInt(document.forms['frmwizardNewVM'].wizardNewVMSizeValue.value);
 				
 				$.when(vboxAjaxRequest('machineCreate',{'disk':disk,'ostype':ostype,'memory':mem,'name':name,'group':vmgroup})).then(function(res){
+
 					if(res && res.responseData && res.responseData.exists) {
 						vboxAlert(trans('<p>Cannot create the machine folder <b>%1</b> in the parent folder <nobr><b>%2</b>.</nobr></p><p>This folder already exists and possibly belongs to another machine.</p>','UIMessageCenter').replace('%1',vboxBasename(res.exists)).replace('%2',vboxDirname(res.exists)));
+					
 					} else if(res && res.success) {
 						$(dialog).trigger('close').empty().remove();
 						var lm = new vboxLoader('machineCreate');

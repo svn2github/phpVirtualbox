@@ -154,7 +154,7 @@ function vboxAjaxRequest(fn,params) {
 				
 			} // </ if errors.length >
 				
-			return d.data;
+			return (d && d.data ? d.data : null);
 			
 		});
 }

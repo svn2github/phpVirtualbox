@@ -120,7 +120,11 @@ function wizardHDBrowseLocation() {
 	} else {
 		loc = vboxDirname(loc);
 	}
-		
+	
+	if(loc.indexOf($('#vboxPane').data('vboxConfig').DSEP) < 0 && $('#wizardNewHDStep1').data('wizSuggested')['path']) {
+		loc = $('#wizardNewHDStep1').data('wizSuggested')['path'];
+	}
+
 	vboxFileBrowser(loc,function(f){
 		if(!f) return;
 		// get file name
@@ -209,6 +213,11 @@ $('#wizardNewHDStep1').bind('show',function(e,wiz){
 	// Already initialized?
 	if($('#wizardNewHDStep1').data('init') || !wiz || !wiz.suggested) return;
 	
+	$(document.forms['frmwizardNewHD'].elements.wizardNewHDLocation).focus();
+	
+	/* Keep suggested options */
+	$('#wizardNewHDStep1').data('wizSuggested', wiz.suggested);
+
 	if(wiz.suggested.name) {
 		document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value = wiz.suggested.name;
 	}
@@ -229,6 +238,7 @@ $('#wizardNewHDStep1').bind('show',function(e,wiz){
 		vboxWizardNewHDElectName();
 
 	$('#wizardNewHDStep1').data('init',true);
+
 	
 });
 </script>

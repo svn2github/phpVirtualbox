@@ -273,6 +273,8 @@ $('#newVMHDTriggerBind').bind('enable',function(){
 	newVMToggleNewDisk(true);
 }).trigger('disable');
 
- 
- 
+$('#wizardNewVMStep1').bind('show',function() {
+	$(document.forms['frmwizardNewVM'].newVMName).focus();
+});
+
 </script>

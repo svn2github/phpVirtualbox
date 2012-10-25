@@ -37,6 +37,8 @@ full clone when in 'Expert' (Hide Description) mode
 Reintroduced the Stop button in place of the Discard button in the
 main window toolbar
 
+Cleaned up wizards to perform expected actions when pressing Enter
+
 -------------------------------------
 	4.2-3b	2012-10-21
 -------------------------------------

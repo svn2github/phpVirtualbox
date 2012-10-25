@@ -2331,7 +2331,13 @@ function vboxWizard(name, title, bg, icon) {
 		
 		var d = $('<div />').attr({'id':self.name+'Dialog','style':'display: none','class':'vboxWizard'});
 		
-		var f = $('<form />').attr({'name':('frm'+self.name),'onSubmit':'return false;','style':'height:100%;margin:0px;padding:0px;border:0px;'});
+		var f = $('<form />').attr({'name':('frm'+self.name),'style':'height:100%;margin:0px;padding:0px;border:0px;'})
+			.on('submit',function(e){
+				self.displayNext();
+				e.stopPropagation();
+				e.preventDefault();
+				return false;
+			});
 
 		// main table
 		var tbl = $('<table />').attr({'class':'vboxWizard','style':'height: 100%; margin:0px; padding:0px;border:0px;'});
@@ -2430,6 +2436,9 @@ function vboxWizard(name, title, bg, icon) {
 								
 								// Go to last step
 								self.displayStep(1);
+								
+								$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.finishText+'")').parent().focus();
+								
 							};
 							vl.run();
 							
@@ -2443,8 +2452,8 @@ function vboxWizard(name, title, bg, icon) {
 							
 							// resize dialog
 							$('#'+self.name+'Dialog').dialog('option', 'width', self.width)
-							.dialog('option', 'height', self.height)
-							.css({'background':'url('+self.bg+') ' + ((self.mode == 'advanced' ? self.widthAdvanced : self.width) - 360) +'px -60px no-repeat','background-color':'#fff'});
+								.dialog('option', 'height', self.height)
+								.css({'background':'url('+self.bg+') ' + ((self.mode == 'advanced' ? self.widthAdvanced : self.width) - 360) +'px -60px no-repeat','background-color':'#fff'});
 							
 							
 							// Reset old number of steps
@@ -2481,6 +2490,9 @@ function vboxWizard(name, title, bg, icon) {
 								self.steps = self.simpleSteps;
 								
 								self.displayStep(1);
+								
+								$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.nextArrow+'")').parent().focus();
+
 								
 							};
 							vl.run();
@@ -2532,10 +2544,25 @@ function vboxWizard(name, title, bg, icon) {
 				'autoOpen':true,
 				'stack':true,
 				'dialogClass':'vboxDialogContent vboxWizard',
+				'open' : function() {
+					$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.nextArrow+'")').parent().focus();
+				},
 				'title':(icon ? '<img src="images/vbox/'+icon+ ( (icon.indexOf('.png') == -1) ? '_16px.png' : '') +'" class="vboxDialogTitleIcon" /> ' : '') + self.title
+			
 			}).bind('dialogclose', function(){
+				
 				self.completed.reject();
 				$(this).empty().remove();
+				
+			}).bind('keyup',function(e) {
+			    
+				if (e.keyCode == 13) {
+			    	
+					self.displayNext();
+					e.stopPropagation();
+					e.preventDefault();
+					return false;
+			    }
 			});
 
 			// Setup if in advanced mode

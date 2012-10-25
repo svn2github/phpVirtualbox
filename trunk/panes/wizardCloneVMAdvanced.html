@@ -73,13 +73,15 @@ $('#wizardCloneVMStep1').bind('show',function(e,wiz){
 	if(wiz.args && wiz.args.snapshot)
 		$('#vboxCloneVMNewSnap').hide();
 	
-	document.forms['frmwizardCloneVM'].elements.machineCloneName.value = trans('%1 Clone','UIWizardCloneVMPage1').replace('%1',wiz.args.vm.name);
 	
 	if((wiz.args.snapshot && wiz.args.snapshot.children && wiz.args.snapshot.children.length)) {
 		$('#wizardCloneVMCurrentAll').show();
 		$('#vboxCloneCurrentAll').show();
 	}
+	
+	$(document.forms['frmwizardCloneVM'].elements.machineCloneName).focus();
 
+	document.forms['frmwizardCloneVM'].elements.machineCloneName.value = trans('%1 Clone','UIWizardCloneVMPage1').replace('%1',wiz.args.vm.name);
 });
 
 

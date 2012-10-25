@@ -8,9 +8,9 @@
 
 phpVirtualBox comes with authentication that allow it to use custom authentication mechanisms.
 
-= WebAuth =
+= !WebAuth =
 
-The WebAuth authentication module automatically logs in the user when .htaccess style authentication is being utilized by your web server. To enable this authentication method, add the following to config.php:
+The !WebAuth authentication module automatically logs in the user when .htaccess style authentication is being utilized by your web server. To enable this authentication method, add the following to config.php:
 
 {{{
 var $authLib = 'WebAuth';

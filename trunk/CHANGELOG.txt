@@ -34,6 +34,9 @@ network interfaces
 Fixed bug in Clone Virtual Machine wizard that would not create a
 full clone when in 'Expert' (Hide Description) mode
 
+Reintroduced the Stop button in place of the Discard button in the
+main window toolbar
+
 -------------------------------------
 	4.2-3b	2012-10-21
 -------------------------------------

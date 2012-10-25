@@ -1326,7 +1326,7 @@ var vboxVMDetailsSections = {
 				title: '',
 				data: $('<tr />').attr({'class':'vboxDetailRow'}).append(
 						$('<td />').attr({'class':'vboxDetailDescriptionCell','colspan':'2'})
-							.html(d.description.length ? $('<div />').html(d.description).text() : '<span class="vboxDetailsNone">'+trans("None",null,null,'details report (description)')+'</span>')
+							.html(d.description.length ? $('<div />').text(d.description).html() : '<span class="vboxDetailsNone">'+trans("None",null,null,'details report (description)')+'</span>')
 				),
 				rawRow: true
 			}];
@@ -1950,8 +1950,10 @@ var vboxVMActions = {
 	/** Stop a VM */
 	stop: {
 		name: 'stop',
-		label: trans('Close','UIActionPool'),
-		icon: 'exit',
+//		label: trans('Close','UIActionPool'),
+		label: trans('Stop','VBoxSelectorWnd'),
+		icon: 'acpi',
+		icon_disabled:'acpi_disabled',
 		menu: true,
 		click: function () { return true; /* handled by stop context menu */ },
 		enabled: function () {
@@ -2127,7 +2129,10 @@ var vboxMedia = {
 	 * 
 	 * @static
 	 */
-	getMediumByLocation : function(p) {		
+	getMediumByLocation : function(p) {
+		// Fix this in windows version
+		if($('#vboxPane').data('vboxConfig').DSEP == '\\')
+			p = p.replace('\\.','/.');
 		return vboxTraverse($('#vboxPane').data('vboxMedia'),'location',p,false,'children');
 	},
 

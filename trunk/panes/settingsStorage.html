@@ -983,19 +983,22 @@ function vboxSettingsStorageAddMedium(bus, type) {
 	if (type == 'HardDisk') {
 		
 		buttons[trans('Create new disk','UIMessageCenter')] = function() {
-			vboxWizardNewHDDialog(function(id){
-				if(!id) return;
-				mAttachToolbarHD.mediaMenu.menuUpdateRecent();
-				vboxSettingsAddAttachment({'controller':controller,'port':port,'device':device,'type':type,'medium':vboxMedia.getMediumById(id),'ignoreFlush':1},bus);
-				$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().click();
-			},{'path':vboxDirname($('#vboxSettingsDialog').data('vboxMachineData').settingsFilePath)+$('#vboxPane').data('vboxConfig').DSEP}); 
+
+			$.when(vboxWizardNewHDDialog({'path':vboxDirname($('#vboxSettingsDialog').data('vboxMachineData').settingsFilePath)+$('#vboxPane').data('vboxConfig').DSEP}))
+				.then(function(id){
+					if(!id) return;
+					mAttachToolbarHD.mediaMenu.menuUpdateRecent();
+					vboxSettingsAddAttachment({'controller':controller,'port':port,'device':device,'type':type,'medium':vboxMedia.getMediumById(id),'ignoreFlush':1},bus);
+					$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().click();
+				});
+			
 			$(this).remove();
 			
 		};
 		buttons[trans('Choose existing disk','UIMessageCenter')] = function() {
 			var dlg = $(this);
 			vboxMedia.actions.choose(null,'HardDisk',function(med){
-				if(med) {
+								if(med) {
 					mAttachToolbarHD.mediaMenu.menuUpdateRecent();
 					vboxSettingsAddAttachment({'controller':controller,'port':port,'device':device,'type':type,'medium':med,'ignoreFlush':1},bus);
 					$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().click();

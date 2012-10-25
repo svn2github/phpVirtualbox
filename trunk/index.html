@@ -330,7 +330,7 @@
 
 			/** Load login form */
 			var login = new vboxLoader();
-			login.add('getSession',function(d){$('#vboxPane').data('vboxSession',d.responseData);});
+			login.add('getSession',function(d){$('#vboxPane').data('vboxSession',$.extend({'success':d.success},d.responseData));});
 			login.addFileToDOM('panes/login.html');
 			login.onLoad = function(loader) {
 
@@ -345,7 +345,7 @@
 					
 					// A valid login should create a valid session
 					var trylogin = new vboxLoader();
-					trylogin.add('login',function(d){$('#vboxPane').data('vboxSession',d.responseData);},{'u':u,'p':p});
+					trylogin.add('login',function(d){$('#vboxPane').data('vboxSession',$.extend({'success':d.success},d.responseData));},{'u':u,'p':p});
 					trylogin.onLoad = function() { vboxCheckSession(true);};
 					trylogin.run();
 				};

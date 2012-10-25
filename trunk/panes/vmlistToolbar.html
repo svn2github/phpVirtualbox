@@ -16,16 +16,20 @@ var tButtons = [
 	
 	/* All toolbar items need a 'name' property */
 	$.extend({},vboxVMActions['new'],{'name':'new'}),
-	$.extend({},vboxVMActions['settings'],{'name':'settings','enabled':function(chooser){
-		return (vboxVMActions['settings'].enabled(chooser));
-	},click:function(){
+	$.extend({},vboxVMActions['settings'],{'name':'settings',click:function(){
 		var vm = vboxChooser.getSingleSelected();
 		if(!vm || vboxVMStates.isRunning(vm) || vboxVMStates.isPaused(vm)) return;
 		vboxVMActions['settings'].click();
 		
 	}}),
 	$.extend({},vboxVMActions['start'],{'name':'start'}),
-	$.extend({},vboxVMActions['discard'],{'name':'discard'},{'label':trans('Discard','UIActionPool')})
+	{
+		'name':'stop',
+		'icon':'vm_poweroff',
+		'label':trans('Stop','VBoxSelectorWnd'),
+		'enabled': vboxVMActions['stop'].enabled,
+		'click' : function() {return;}
+	}
 ];
 
 /* Append Top Toolbar */
@@ -33,6 +37,24 @@ var vboxChooserToolbarTop = new vboxToolbar(tButtons);
 vboxChooserToolbarTop.size = 32;
 vboxChooserToolbarTop.addButtons('vboxPaneToolbar');
 
+/* Stop button menu and actions */
+var ul = $('<ul />').attr({'class':'contextMenu','style':'display: none','id':'vboxStopMenu'});
+for(var i = 0; i < vboxVMActions.stop_actions.length; i++) {
+	var n = vboxVMActions.stop_actions[i];
+	$(ul).append($('<li />').html("<a href='#" + n + "' style='background-image: url(images/vbox/" + vboxVMActions[n].icon +"_16px.png);' >"+vboxVMActions[n].label+"</a>"));
+}
+
+/* Append 'Stop' button Menu */
+$('#vboxPane').append(ul);
+
+vboxChooserToolbarTop.getButtonElement('stop').contextMenu({
+	menu: 'vboxStopMenu',
+	button: 0,
+	mode: 'menu'
+	},function(a, el, pos) {
+        vboxVMActions[a].click();
+	}
+);
 
 
 /* 'Settings' menu items / actions */

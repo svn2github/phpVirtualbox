@@ -131,6 +131,7 @@ function wizardHDBrowseLocation() {
 	} else {
 		loc = vboxDirname(loc);
 	}
+
 		
 	vboxFileBrowser(loc,function(f){
 		if(!f) return;
@@ -151,6 +152,12 @@ function wizardHDBrowseLocation() {
 	},true,trans('Location','UIWizardNewVD'));
 
 }
+
+/* Keep suggested options */
+$('#wizardNewHDStep1').bind('show',function(e,wiz){
+
+	$('#wizardNewHDStep1').data('wizSuggested', (wiz.suggested ? wiz.suggested : {}));
+});
 
 /* WHen showing step 2, show / hide split option */
 $('#wizardNewHDStep2').bind('show',function(e,wiz){

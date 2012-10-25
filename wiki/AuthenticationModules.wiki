@@ -1,0 +1,195 @@
+#summary Authentication Modules
+#labels Manual
+#sidebar TableOfContents
+
+<wiki:toc max_depth="3" />
+
+= Introduction =
+
+phpVirtualBox comes with authentication that allow it to use custom authentication mechanisms.
+
+= WebAuth =
+
+The WebAuth authentication module automatically logs in the user when .htaccess style authentication is being utilized by your web server. To enable this authentication method, add the following to config.php:
+
+{{{
+var $authLib = 'WebAuth';
+}}}
+
+By default, all users are admins in phpVirtualBox. You can specify a specific user as being an admin by adding the following to config.php:
+
+{{{
+var $authConfig = array('adminUser' => 'bob');
+}}}
+
+In the above case, 'bob' would be an admin in phpVirtualBox, while all other users would not.
+
+= LDAP =
+
+The LDAP authentication module provides a simple mechanism to authenticate against an LDAP server. To enable this authentication method, add the following to config.php:
+
+{{{
+var $authLib = 'LDAP';
+var $authConfig = array(
+   'host' => '127.0.0.1', // LDAP server IP
+   'bind_dn' => 'uid=%s, ou=admins, dc=internal, dc=local', // %s will be replaced with login username
+   'adminUser => '' // leave blank to let all users be admins in phpVirtualBox or specify a username
+);
+}}}
+
+Where values in the $authConfig array are appropriately set according to your LDAP environment. Contact your LDAP administrator for help with setting these values.
+
+= Active Directory (>= 4.2-x only) =
+
+The Active Directory authentication module allows phpVirtualBox to authenticate users against an Active Directory domain controller. For a very basic setup, add the following to config.php:
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+
+This configuration allows everyone in your Active Directory environment to log in and makes them all administrators in phpVirtualBox.
+
+Each Active Directory implementation can provide varying levels of complexity. This authentication module aims to be flexible enough for any environment, but its configuration can be equally complex.
+
+== Restricting Access ==
+
+The $authConfig items 'user_group' and 'admin_group' allow one to restrict access to phpVirtualBox. If user_group is set, only users that are members of this group (or an admin_group) will be able to log in. This can be specified in $authConfig in config.php as:
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'user_group' => 'Development Lab',
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+
+In this scenario, only users that are a member of the 'Development Lab' group can log in. Since no admin information is specified, all users would be admins in phpVirtualBox.
+
+There are 2 mechanisms to specify one or more users as admins in phpVirtualBox. You can explicitly set one user to be an admin by setting the 'adminUser' item:
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'adminUser' => 'bob',
+   'user_group' => 'Development Lab',
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+
+In this scenario, only users that are a member of the 'Development Lab' group can log in. The user 'bob' can log in (regardless of his group membership) and is an admin in phpVirtualBox.
+
+You can also specify an entire group as administrators by setting the 'admin_group' item:
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'admin_group' => 'Domain Admins',
+   'user_group' => 'Development Lab',
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+
+In this scenario, only users that are a member of the 'Development Lab' or 'Domain Admins' groups can log in. Only users in the 'Domain Admins' group are admins in phpVirtualBox.
+
+=== Containers ===
+
+The default container searched is *CN=Users*. This is the "Users" folder in your Active Directory domain. To change the default container searched, you can specify the 'container' item in your $authConfig array:
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'container' => 'OU=Admins, OU=Engineering',
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+
+In this scenario, the organization unit *Engineering\Admins* is searched for users.
+
+== Summary ==
+
+You can mix-and-match the container, admin_group, adminUser, and user_group in your configuration. It is important to remember the following:
+
+  * If no admin information is specified (via adminUser or admin_group), all users that can log in to phpVirtualBox will be administrators
+  * Users identified as admins (via adminUser or admin_group) will be able to log in regardless of the user_group setting
+  * To be able to log in to phpVirtualBox, users must be in the organizational unit specified by 'container' (defaults to CN=Users)
+
+Consider the following:
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'admin_user' => 'james',
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+Anyone with an AD account can log in. Only 'james' is an admin in phpvirtualbox.
+
+----
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'user_group' => 'Dev Lab',
+   'admin_user' => 'susan'
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+Anyone in the Dev Lab group can log in. 'susan' is an admin in phpVirtualBox, but does not have to be a member of the Dev Lab group to log in.
+----
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'admin_group' => 'vbox admins',
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+Anyone with an AD account can log in. Users in the 'vbox admins' group are admins in phpVirtualBox.
+----
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'user_group' => 'Dev Lab Users',
+   'admin_group' => 'Dev Lab Admins',
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+Anyone in the Dev Lab Users group can log in. Users in Dev Lab Admins are admins in phpVirtualBox, but do not have to be a member of 'Dev Lab Users' to log in.
+----
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+Anyone with an AD account can log in, and everyone will be an admin in phpVirtualBox.
+----
+
+{{{
+var $authLib = 'ActiveDirectory';
+var $authConfig = array(
+   'container' => 'OU=Admins, OU=Engineering',
+   'adminUser' => 'jason',
+   'host' => '192.168.1.100', // domain controller IP
+   'domain' => 'adtest.local' // active directory domain
+);
+}}}
+
+Only the *Engineering\Admins* organizational unit will be searched for users. Any user in this container can log in to phpVirtualBox. Only jason is an admin in phpVirtualBox, but must also be found in the *Engineering\Admins* organizational unit.
+
+----

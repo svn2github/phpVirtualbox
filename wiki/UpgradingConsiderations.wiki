@@ -21,16 +21,16 @@ For instance, the config.php file distributed with phpVirtualBox for !VirtualBox
 == Authentication Update ===
 
 If you have upgraded from !VirtualBox 3.2.x, you will have to run the following commands on your !VirtualBox host *as the same user that runs vboxwebsrv*:
-
+{{{
     VBoxManage setproperty vrdeauthlibrary default 
 
     VBoxManage setproperty websrvauthlibrary default 
-
+}}}
 === Windows ===
 NOTE: On windows, start a command prompt and type:
-
-    cd "C:\Program Files\Oracle\VirtualBox"
-
+{{{
+    cd "%ProgramFiles%\Oracle\VirtualBox"
+}}}
 Before entering the VBoxManage commands.
 
 == vboxwebsrv ==

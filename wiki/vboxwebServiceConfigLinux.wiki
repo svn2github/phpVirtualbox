@@ -6,7 +6,7 @@
 
 = Introduction =
 
-On Linux systems, VirtualBox creates the init script */etc/init.d/vboxweb-service* when it is installed. This can be used to start and stop vboxwebsrv. While there may be numerous ways to configure this script, this document aims to keep it simple.
+On Linux systems, !VirtualBox creates the init script */etc/init.d/vboxweb-service* when it is installed. This can be used to start and stop vboxwebsrv. While there may be numerous ways to configure this script, this document aims to keep it simple.
 
 
 = Details =
@@ -33,7 +33,7 @@ The following settings are available for use in this file:
 
 At a minimum, *VBOXWEB_USER* must be set. Some may need to set *VBOXWEB_HOST* as well.
 
-VBOXWEB_USER should be set to the user that runs VirtualBox virtual machines on your system. If more than one user runs virtual machines, you will have to pick one (multiple instances are possible, but beyond the scope of this document).
+VBOXWEB_USER should be set to the user that runs !VirtualBox virtual machines on your system. If more than one user runs virtual machines, you will have to pick one (multiple instances are possible, but beyond the scope of this document).
 
 VBOXWEB_HOST should be set if phpVirtualBox (your web server) is not running on the same host as vboxwebsrv. If phpVirtualBox must communicate with vboxwebsrv across a network, this must be set to an IP address reachable by your web server. If your web server and vboxwebsrv are running on the same host, you may exclude this setting.
 

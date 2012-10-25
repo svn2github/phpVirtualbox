@@ -6,7 +6,7 @@
 
 = Introduction =
 
-Many of the same modifications that can be made through the VirtualBox GUI when a virtual machine is running, can also be made through phpVirtualBox by selecting the VM in the VM list and clicking on the Settings button. This behaves much like the Devices menu in the window of a running virtual machine in the VirtualBox GUI.
+Many of the same modifications that can be made through the !VirtualBox GUI when a virtual machine is running, can also be made through phpVirtualBox by selecting the VM in the VM list and clicking on the Settings button. This behaves much like the Devices menu in the window of a running virtual machine in the !VirtualBox GUI.
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbrunningsettings.png]
 
@@ -24,4 +24,4 @@ To change folders shared to a running VM, click on the Shared Folders header lin
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbvmsettingsshared.png]
 
-Note that only permanent ("Machine") folders will be listed on the Details tab. For more information regarding transient and machine shared folders, reference the Shared Folders section of the VirtualBox documentation.
+Note that only permanent ("Machine") folders will be listed on the Details tab. For more information regarding transient and machine shared folders, reference the Shared Folders section of the !VirtualBox documentation.

@@ -14,9 +14,9 @@ See: http://code.google.com/p/phpvirtualbox/wiki/Authentication
 
 == Error logging in or connecting to vboxwebsrv==
 
-This typically indicates that the username and / or password is incorrect in config.php. These must be set to the system username / password of the user that administers your VirtualBox virtual machines.
+This typically indicates that the username and / or password is incorrect in config.php. These must be set to the system username / password of the user that administers your !VirtualBox virtual machines.
 
-*If you have upgraded from VirtualBox 3.2.x and this was working before*, you may have to run the following commands on your VirtualBox host:
+*If you have upgraded from !VirtualBox 3.2.x and this was working before*, you may have to run the following commands on your !VirtualBox host:
 
    VBoxManage setproperty vrdeauthlibrary default
 
@@ -24,7 +24,7 @@ This typically indicates that the username and / or password is incorrect in con
 
 == Could not connect to host ==
 
-This indicates that phpVirtualBox could not connect to the vboxwebsrv server. Either the *location* setting in config.php is wrong, *vboxwebsrv* is not running on the VirtualBox host, or SELinux is blocking access to vboxwebsrv. If you have SELinux enabled, see:
+This indicates that phpVirtualBox could not connect to the vboxwebsrv server. Either the *location* setting in config.php is wrong, *vboxwebsrv* is not running on the !VirtualBox host, or SELinux is blocking access to vboxwebsrv. If you have SELinux enabled, see:
 
 http://code.google.com/p/phpvirtualbox/wiki/Installation#SELinux_Considerations
 
@@ -51,19 +51,19 @@ The URL through which phpVirtualBox is accessible does not need to be specified.
 
 == HTTP GET method not implemented ==
 
-You are navigating to the $location setting in config.php. This is the URL through which phpVirtualBox communicates with VirtualBox's vboxwebsrv. Instead you need to navigate to phpVirtualBox's folder on your web server. Probably something like: http://localhost/phpvirtualbox
+You are navigating to the $location setting in config.php. This is the URL through which phpVirtualBox communicates with !VirtualBox's vboxwebsrv. Instead you need to navigate to phpVirtualBox's folder on your web server. Probably something like: http://localhost/phpvirtualbox
 
 == The virtual machine 'vm name' has terminated unexpectedly during startup ==
 
-This is usually an indication of some sort of misconfiguration of the VM. For instance you may have enabled "Enable VT-x/AMD-V" in the VM's configuration, but your processor does not support it (just an example). Unfortunately the only way to get the correct error message is to start the VM using another VirtualBox interface such as the VirtualBox GUI, VBoxManage, or VBoxHeadless. These should print a more descriptive error.
+This is usually an indication of some sort of misconfiguration of the VM. For instance you may have enabled "Enable VT-x/AMD-V" in the VM's configuration, but your processor does not support it (just an example). Unfortunately the only way to get the correct error message is to start the VM using another !VirtualBox interface such as the !VirtualBox GUI, VBoxManage, or VBoxHeadless. These should print a more descriptive error.
 
 If the cause is not apparent through the error message, post the issue on the forums over at http://www.virtualbox.org
 
 == Method 'ns1:xxxxxxxxxxx' not implemented: method name or namespace not recognized ==
 
-You are probably using a version of phpVirtualBox that is incompatible with your version of VirtualBox. 
+You are probably using a version of phpVirtualBox that is incompatible with your version of !VirtualBox. 
 
-phpVirtualBox versioning is aligned with VirtualBox versioning in that the major and minor release numbers will maintain compatibility. phpVirtualBox 4.0-x will only be compatible with VirtualBox 4.0.x. Regardless of what the latest x revision is. phpVirtualBox 4.1-x will only be compatible with VirtualBox 4.1.x. ..etc..
+phpVirtualBox versioning is aligned with !VirtualBox versioning in that the major and minor release numbers will maintain compatibility. phpVirtualBox 4.0-x will only be compatible with !VirtualBox 4.0.x. Regardless of what the latest x revision is. phpVirtualBox 4.1-x will only be compatible with !VirtualBox 4.1.x. ..etc..
 
 Download and install the correct version of phpVirtualBox, restart apache, and clear your web browser's cache.
 
@@ -81,13 +81,13 @@ You have probably upgraded phpVirtualBox and not cleared your web browser's cach
 
 == Empty virtual machine list ==
 
-This is usually an indication that the username / password entered in config.php is not that of the user that administers your VirtualBox virtual machines.
+This is usually an indication that the username / password entered in config.php is not that of the user that administers your !VirtualBox virtual machines.
 
 == Preview Box only shows VM name. Even when the VM is running. ==
 	- or -
 == Console Tab is ALWAYS disabled ==
 
-To enable screen shots and the Console tab, please install a VirtualBox extension pack that supports VRDE such as the Oracle VM VirtualBox Extension Pack found in the Downloads section of http://www.virtualbox.org
+To enable screen shots and the Console tab, please install a !VirtualBox extension pack that supports VRDE such as the Oracle VM !VirtualBox Extension Pack found in the Downloads section of http://www.virtualbox.org
 
 == Right click menu is displayed under context menu on VM Details tab when using Firefox ==
 
@@ -109,13 +109,13 @@ The fixes are easy, but the explanations around the fixes are long. The short an
 
 Each have their own gotchas. 
 
-  * Disable authentication in vboxwebsrv - The end-result of this is that a username / password is no longer required to interact with VirtualBox through vboxwebsrv. If you are running vboxwebsrv bound to localhost or 127.0.0.1, and you are not worried about other people on your system mucking with vboxwebsrv, or you are on a protected network, then this is probably not an issue. To disable authentication in vboxwebsrv, run:
+  * Disable authentication in vboxwebsrv - The end-result of this is that a username / password is no longer required to interact with !VirtualBox through vboxwebsrv. If you are running vboxwebsrv bound to localhost or 127.0.0.1, and you are not worried about other people on your system mucking with vboxwebsrv, or you are on a protected network, then this is probably not an issue. To disable authentication in vboxwebsrv, run:
 
 {{{
 VBoxManage setproperty websrvauthlibrary null
 }}}
 
-as the user that runs VirtualBox on your system. *_NOTE: a username / password will still be required to log into phpVirtualBox._* If you don't like that option, read on..
+as the user that runs !VirtualBox on your system. *_NOTE: a username / password will still be required to log into phpVirtualBox._* If you don't like that option, read on..
 
   * Remove pam_smbpass.so or PAM references to it - pam_smbpass is a PAM module that can be used on conforming systems to keep the smbpasswd (Samba password) database in sync with the UNIX password file. If you do not use samba (a software suite used to integrate `*`nix with Windows), removing the samba package from your system is the easiest choice. If you do use samba, but don't care to keep your your samba user database in sync with system passwords, you can comment out any references to pam_smbpass in /etc/pam.d/`*`. If you use samba AND want to keep your samba user database in sync with system passwords, your only choice is to disable vboxwebsrv authentication.
 

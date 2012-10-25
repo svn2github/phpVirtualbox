@@ -58,4 +58,4 @@ Once this is done, no username / password will be required to access phpVirtualB
 
 = Multiple Server Considerations =
 
-If you have phpVirtualBox configured to communicate with multiple VirtualBox installations, please see the authentication notes provided in the [http://code.google.com/p/phpvirtualbox/wiki/MultipleServerConfiguration#Multiple_servers_and_Authentication Multiple Server Configuration wiki].
+If you have phpVirtualBox configured to communicate with multiple !VirtualBox installations, please see the authentication notes provided in the [http://code.google.com/p/phpvirtualbox/wiki/MultipleServerConfiguration#Multiple_servers_and_Authentication Multiple Server Configuration wiki].

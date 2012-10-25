@@ -14,13 +14,13 @@ You may wish to create an entirely new folder for a new version of phpVirtualBox
 
 Do not use the config.php file from your old phpVirtualBox installation. New configuration items may have been added and using an old version may cause undesirable results. Instead, edit the config.php file that is distributed with the new version and change as needed.
 
-For instance, the config.php file distributed with phpVirtualBox for VirtualBox 3.x will not work in phpVirtualBox for VirtualBox 4.x.
+For instance, the config.php file distributed with phpVirtualBox for !VirtualBox 3.x will not work in phpVirtualBox for !VirtualBox 4.x.
 
-= Upgrading from VirtualBox 3.x to 4.x =
+= Upgrading from !VirtualBox 3.x to 4.x =
 
 == Authentication Update ===
 
-If you have upgraded from VirtualBox 3.2.x, you will have to run the following commands on your VirtualBox host *as the same user that runs vboxwebsrv*:
+If you have upgraded from !VirtualBox 3.2.x, you will have to run the following commands on your !VirtualBox host *as the same user that runs vboxwebsrv*:
 
     VBoxManage setproperty vrdeauthlibrary default 
 
@@ -39,13 +39,13 @@ After upgrading, it is a good idea to stop vboxwebsrv for the time being. If you
 
     /etc/init.d/vboxwebsrv stop
 
-If your VirtualBox host is running Linux, please see: http://code.google.com/p/phpvirtualbox/wiki/vboxwebServiceConfigLinux for a new-and-improved startup script configuration.
+If your !VirtualBox host is running Linux, please see: http://code.google.com/p/phpvirtualbox/wiki/vboxwebServiceConfigLinux for a new-and-improved startup script configuration.
 
 Then, start vboxwebsrv. If you are now using the vboxweb-service script described in the above link, you may run:
 
     /etc/init.d/vboxweb-service start
 
-If you are not, you may start vboxwebsrv using the same method you had been using for VirtualBox 3.x.
+If you are not, you may start vboxwebsrv using the same method you had been using for !VirtualBox 3.x.
 
 = Post Upgrade =
 

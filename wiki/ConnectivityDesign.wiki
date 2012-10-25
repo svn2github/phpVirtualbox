@@ -2,7 +2,7 @@
 #labels Design
 #sidebar TableOfContents
 
-The connectivity diagram below should aid in understanding of its interaction and why *user X* (the VirtualBox user that administers your VirtualBox installation) must be properly configured.
+The connectivity diagram below should aid in understanding of its interaction and why *user X* (the !VirtualBox user that administers your !VirtualBox installation) must be properly configured.
 
 <pre>
  -----------------------------------------------------
@@ -11,17 +11,17 @@ The connectivity diagram below should aid in understanding of its interaction an
  |     |              system username / password)    |
  ------|----------------------------------------------
        |
-   Authentication and VirtualBox communication
+   Authentication and !VirtualBox communication
        |
        |  -----------------------------------------------
-       |  | VirtualBox Installation                     |
+       |  | !VirtualBox Installation                     |
        |  |                                             |
        '---- vboxwebsrv (running as user X)             |
           |    |                                        |
-          |    '--- User X's VirtualBox configuration   |
+          |    '--- User X's !VirtualBox configuration   |
           |         and virtual machines                |
           |                                             |
           -----------------------------------------------
 </pre>
 
-_Note that although the web server and VirtualBox installation are in 2 different boxes in the diagram, they certainly may run on the same physical host. Taking security considerations in mind, they probably should run on the same host._
+_Note that although the web server and !VirtualBox installation are in 2 different boxes in the diagram, they certainly may run on the same physical host. Taking security considerations in mind, they probably should run on the same host._

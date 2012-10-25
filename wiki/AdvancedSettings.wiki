@@ -6,7 +6,7 @@
 
 = Introduction =
 
-Advanced settings that do not appear in the VirtualBox GUI have been added to phpVirtualBox. These can be enabled by setting or adding:
+Advanced settings that do not appear in the !VirtualBox GUI have been added to phpVirtualBox. These can be enabled by setting or adding:
 
 {{{
 var $enableAdvancedConfig = true;
@@ -14,7 +14,7 @@ var $enableAdvancedConfig = true;
 
 in config.php.
 
-*NOTE: though the following sections reference VBoxManage (a command line tool distributed with VirtualBox), phpVirtualBox does not use VBoxManage to perform these actions. VBoxManage equivalent commands are provided for documentation reference only.*
+*NOTE: though the following sections reference VBoxManage (a command line tool distributed with !VirtualBox), phpVirtualBox does not use VBoxManage to perform these actions. VBoxManage equivalent commands are provided for documentation reference only.*
 
 The following options / actions are exposed:
 
@@ -34,7 +34,7 @@ See the VBoxManage documentation at http://www.virtualbox.org for more informati
 
 An HPET (High Precision Event Timer) setting is available in the System section on the Motherboard tab of Virtual Machines' settings windows.
 
-A Disable host time sync option is available to disable time synchronization between the VirtualBox host and the virtual machine.
+A Disable host time sync option is available to disable time synchronization between the !VirtualBox host and the virtual machine.
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/advhpet.png]
 

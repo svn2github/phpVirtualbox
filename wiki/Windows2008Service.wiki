@@ -7,13 +7,13 @@ The following is user-contributed documentation. I am unable to verify the valid
 
 = Details =
 
-1) install VirtualBox
+1) install !VirtualBox
 
 2) menu start --> administrative tools --> task scheduler
 
 3) create a new task
 
-4) put name and description. Under security option, click on "change user or group", *if needed to select the user VirtualBox is supposed to run as*. Than select "run whatever the user is log on or not" and check the box "hidden"
+4) put name and description. Under security option, click on "change user or group", *if needed to select the user !VirtualBox is supposed to run as*. Than select "run whatever the user is log on or not" and check the box "hidden"
 
 5) tab triggers --> new --> begin the task: At startup
 

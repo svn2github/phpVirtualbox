@@ -18,7 +18,7 @@ The following is user-contributed documentation. I am unable to verify the valid
 5) tab triggers --> new --> begin the task: At startup
 
 6) tab Actions --> new --> Action : start a program
-   Program Script : browse to find an select vboxwebsrv (suppose to be in C:\Program Files\Oracle\VirtualBox
+   Program Script : browse to find an select vboxwebsrv (should be in C:\Program Files\Oracle\!VirtualBox)
 
 7) DO NOT ADD ARGUMENTS
 

@@ -117,13 +117,13 @@ In this scenario, the organization unit *Engineering\Admins* is searched for use
 
 == Summary ==
 
-You can mix-and-match the container, admin_group, adminUser, and user_group in your configuration. It is important to remember the following:
+You can mix-and-match the container, admin_group, adminUser, and user_group in your configuration. It is important to remember:
 
   * If no admin information is specified (via adminUser or admin_group), all users that can log in to phpVirtualBox will be administrators
   * Users identified as admins (via adminUser or admin_group) will be able to log in regardless of the user_group setting
   * To be able to log in to phpVirtualBox, users must be in the organizational unit specified by 'container' (defaults to CN=Users)
 
-Consider the following:
+Consider the following configuration scenarios and their effects:
 
 {{{
 var $authLib = 'ActiveDirectory';

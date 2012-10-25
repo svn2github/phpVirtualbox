@@ -10,7 +10,7 @@
 
 phpVirtualBox uses a caching mechanism to limit the amount of work vboxwebsrv has to perform, as well as the amount of network traffic generated. This allows for many users to access phpVirtualBox at the same time with a minimal performance hit.
 
-As a result, changing settings *outside of phpVirtualBox* (using VBoxManage, or the VirtualBox GUI) may not be reflected in the phpVirtualBox web page. While phpVirtualBox DOES refresh its cache periodically, you may wish to manually refresh an item's cache. If you do not use VBoxManage, or the VirtualBox GUI, you may never have to worry about this at all.
+As a result, changing settings *outside of phpVirtualBox* (using VBoxManage, or the !VirtualBox GUI) may not be reflected in the phpVirtualBox web page. While phpVirtualBox DOES refresh its cache periodically, you may wish to manually refresh an item's cache. If you do not use VBoxManage, or the !VirtualBox GUI, you may never have to worry about this at all.
 
 Again, *phpVirtualBox refreshes an appropriate item's cache each time a change that affects the cached item has been made through the phpVirtualBox web page. You may only have to perform these steps if you have made a change outside of the phpVirtualBox web page.*
 
@@ -32,22 +32,22 @@ You may refresh phpVirtualBox's medium list by opening the Virtual Media Manager
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbrefreshmediums.png]
 
-== VirtualBox host settings (host drives, host-only interfaces, etc.) ==
+== !VirtualBox host settings (host drives, host-only interfaces, etc.) ==
 
-If you change the VirtualBox host settings *outside of phpVirtualBox*, you may refresh its cache by highlighting the VirtualBox at the top of the left hand side of phpVirtualBox. Then click on Machine (top menu item) -> Refresh.
+If you change the !VirtualBox host settings *outside of phpVirtualBox*, you may refresh its cache by highlighting the !VirtualBox at the top of the left hand side of phpVirtualBox. Then click on Machine (top menu item) -> Refresh.
 
 [http://phpvirtualbox.googlecode.com/svn/wiki/images/phpvbrefreshhost.png]
 
-The following are examples of tasks that may alter VirtualBox host settings:
+The following are examples of tasks that may alter !VirtualBox host settings:
   * Attaching a new CD/DVD drive to the host
   * Attaching a new network card to the host
   * Creating a new Host-only interface
 
-== VirtualBox System Settings ==
+== !VirtualBox System Settings ==
 
-If you have changed VirtualBox system settings *outside of phpVirtualBox*, you may refresh the cache using the same instructions for refreshing VirtualBox host settings. When the VirtualBox host cache is refreshed, VirtualBox system settings are also refreshed.
+If you have changed !VirtualBox system settings *outside of phpVirtualBox*, you may refresh the cache using the same instructions for refreshing !VirtualBox host settings. When the !VirtualBox host cache is refreshed, !VirtualBox system settings are also refreshed.
 
-The following are examples of tasks that may alter VirtualBox system settings:
+The following are examples of tasks that may alter !VirtualBox system settings:
   * Installing a new extension pack
   * Changing the Default Machine Folder setting
   * Any change made by running "VBoxManage setproperty"

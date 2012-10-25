@@ -13,7 +13,7 @@ class phpvbAuthActiveDirectory implements phpvbAuth {
 	var $config = array(
 		'host' => '127.0.0.1',
 		'admin_group' => null,
-		'admin_user' => null,
+		'adminUser' => null,
 		'user_group' => null,
 		'container' => 'CN=Users',
 		'domain' =>   'internal.local',
@@ -126,8 +126,8 @@ class phpvbAuthActiveDirectory implements phpvbAuth {
 		}
 		
 		// Admin user explicitly set?
-		if(!$_SESSION['admin'] && $this->config['admin_user']) {
-			$_SESSION['admin'] = (strtolower($this->config['admin_user']) == strtolower($_SESSION['user']));
+		if(!$_SESSION['admin'] && $this->config['adminUser']) {
+			$_SESSION['admin'] = (strtolower($this->config['adminUser']) == strtolower($_SESSION['user']));
 			// Admin is ok
 			$_SESSION['valid'] = ($_SESSION['admin'] || $_SESSION['valid']);
 		}
@@ -148,6 +148,15 @@ class phpvbAuthActiveDirectory implements phpvbAuth {
 		if(!$_SESSION['valid'])
 			throw new Exception("Permission denied");
 
+		// Admin user explicitly set?
+		if(!$_SESSION['admin'] && $this->config['adminUser']) {
+			$_SESSION['admin'] = (strtolower($this->config['adminUser']) == strtolower($_SESSION['user']));
+		}
+
+		// No admin information specified makes everyone an admin
+		if(!$this->config['adminUser'] && !$this->config['admin_group'])
+			$_SESSION['admin'] = true;
+		
 		// user has permission. establish session variables
 		$_SESSION['user'] = $username;
 		$_SESSION['authCheckHeartbeat'] = time();

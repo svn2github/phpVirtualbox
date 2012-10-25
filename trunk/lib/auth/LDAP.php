@@ -14,7 +14,8 @@ class phpvbAuthLDAP implements phpvbAuth {
 	
 	var $config = array(
 		'host' => '127.0.0.1', // LDAP server ip
-		'bind_dn' => 'uid=%s, ou=admins, dc=internal, dc=local' // %s will be replaced with login username
+		'bind_dn' => 'uid=%s, ou=admins, dc=internal, dc=local', // %s will be replaced with login username
+		'adminUser' => ''
 	);
 	
 	function phpvbAuthLDAP($userConfig = null) {
@@ -61,6 +62,7 @@ class phpvbAuthLDAP implements phpvbAuth {
 		
 		$_SESSION['valid'] = true;
 		$_SESSION['user'] = $username;
+		$_SESSION['admin'] = (!$this->config['adminUser']) || ($_SESSION['user'] == $this->config['adminUser']);
 		$_SESSION['authCheckHeartbeat'] = time();
 		
 	}

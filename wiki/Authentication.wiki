@@ -36,7 +36,7 @@ This section allows you to add, edit, and remove users. Access levels and authen
 
 == Access Levels ==
 
-phpVirtualBox essentially has two access levels. Admin users and non-admin users. Admin users have access to the Users section of phpVirtualBox and can add / edit / remove other users.
+phpVirtualBox essentially has two access levels. Admin users and non-admin users. Admin users have access to the Users section of phpVirtualBox and can add / edit / remove other users. They can also perform actions that change VM group memberships and manipulate VM groups (Rename / Group / Ungroup).
 
 = Password Recovery =
 

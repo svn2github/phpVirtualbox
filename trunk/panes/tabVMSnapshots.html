@@ -496,10 +496,39 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 
 	var vm = vboxChooser.getSingleSelected();
 	
-	if(vm) {
+	$('#vboxSnapshotList').trigger('select',null);
+	
+	// Got vm and it's not host
+	if(vm && vm.id != 'host') {
+
+		// Enable tab
+		$('#vboxTabVMSnapshots').parent().trigger('enableTab', ['vboxTabVMSnapshots']);		
+
 		$.when(vboxVMDataMediator.getVMDetails(vm.id)).then(function(vm) {
 			$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
 		});
+		
+		// Remove children
+		$('#vboxSnapshotList').children().empty().remove();
+		
+		// Fill snapshots if this tab is being shown
+		if($('#vboxTabVMSnapshots').data('vboxShowing')) {
+			
+			// Keep track of last VM shown
+			$('#vboxTabVMSnapshots').data('lastVM',vm.id);
+			
+			// append spinner
+			$('#vboxSnapshotList').append($('<li />').attr({'class':'last'}).html("<div><img src='images/spinner.gif'></div>"));
+			
+			$.when(vboxAjaxRequest('machineGetSnapshots',{'vm':vm.id})).done(__vboxTabSnapshotsFill);
+			
+		}
+		
+	// No single selected VM or it is host
+	} else {
+		// disable tab
+		$('#vboxTabVMConsole').parent().trigger('disableTab', ['vboxTabVMSnapshots']);
+		$('#vboxTabVMSnapshots').data('lastVM',0);
 	}
 
 /**
@@ -567,12 +596,20 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 	// Redraw current snapshot
 	if(redrawCurrent) {
 		
-		var vm = vboxChooser.getSingleSelected();
+		var vmid = vboxChooser.getSingleSelectedId();
 		
-		if(vm) {
-        	$('#vboxTabVMSnapshots').find('li.vboxSnapshotCurrentState').children('div.vboxListItem')
-                .html('<img src="images/vbox/'+vboxMachineStateIcon(vm.state)+'" /> ' + $('<div />').text(trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')).html());
-		}
+		// Get current state and details data
+		$.when(vboxVMDataMediator.getVMData(vmid), vboxVMDataMediator.getVMDetails(vmid)).done(function(vm, vmd) {
+			
+			if($('#vboxTabVMSnapshots').data('lastVM') != vm.id) return;
+			
+			var selected = $('#vboxTabVMSnapshots').find('li.vboxSnapshotCurrentState').children('div.vboxListItemSelected').length;
+        	$('#vboxTabVMSnapshots').find('li.vboxSnapshotCurrentState').replaceWith(__vboxTabSnapshotCurrent($.extend(true,{},vm,vmd)));
+        	if(selected) {
+				$('#vboxSnapshotList').trigger('select',
+						$('#vboxTabVMSnapshots').find('li.vboxSnapshotCurrentState').children('div.vboxListItem').addClass('vboxListItemSelected').parent());
+        	}
+		});
 	}
 
 
@@ -581,16 +618,13 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 // Load snapshots on show
 $('#vboxTabVMSnapshots').bind('show',function(e){
 
+	$('#vboxTabVMSnapshots').data('vboxShowing', 1);
+	
 	var vm = vboxChooser.getSingleSelected();
 	
-	if(vboxSnapshotToolbar._timer) {
-		window.clearTimeout(vboxSnapshotToolbar._timer);
-		vboxSnapshotToolbar._timer = null;
-	}
-
 	if(vm && vm.id) {
 		if($('#vboxTabVMSnapshots').data('lastVM') == vm.id) return;
-		$('#vboxTabVMSnapshots').data('lastVM',vm.id);
+		$('#vboxTabVMSnapshots').data('lastVM', vm.id);
 	} else {
 		$('#vboxSnapshotList').children().remove();
 		$('#vboxTabVMSnapshots').data('lastVM',0);
@@ -598,14 +632,15 @@ $('#vboxTabVMSnapshots').bind('show',function(e){
 		return;
 	}
 	
-	// Append spinner
-	$('#vboxSnapshotList').children().remove();
-	$('#vboxSnapshotList').append($('<li />').attr({'class':'last'}).html("<div><img src='images/spinner.gif'></div>"));
 	
 	// Get snapshots
+	// Append spinner
+	$('#vboxSnapshotList').append($('<li />').attr({'class':'last'}).html("<div><img src='images/spinner.gif'></div>"));
 	$.when(vboxAjaxRequest('machineGetSnapshots',{'vm':vm.id})).done(__vboxTabSnapshotsFill);
 
 	
+}).bind('hide',function(e) {
+	$('#vboxTabVMSnapshots').data('vboxShowing', 0);
 });
 
 /*
@@ -615,9 +650,6 @@ function __vboxTabSnapshotsFill(response) {
 
 	var snapshotData = response.responseData;
 	
-	var list = $('#vboxSnapshotList');
-	$(list).children().remove();
-
 	if(vboxSnapshotToolbar._timer) {
 		window.clearTimeout(vboxSnapshotToolbar._timer);
 		vboxSnapshotToolbar._timer = null;
@@ -625,36 +657,48 @@ function __vboxTabSnapshotsFill(response) {
 	
 	if(!snapshotData) return;
 	
-	// Snapshots exist
-	if(snapshotData.snapshot && snapshotData.snapshot.name) {
-
-		// Traverse snapshots
-		$(list).append(__vboxTabSnapshot(snapshotData.snapshot, snapshotData.currentSnapshotId));
-	
-		// Append current state to last snapshot
-		if(snapshotData.currentSnapshotId) {
-	
-			// Has children
-			if($('#'+snapshotData.currentSnapshotId).children('ul').first()[0]) {
-				$('#'+snapshotData.currentSnapshotId).children('ul').last().append(__vboxTabSnapshotCurrent());
-			} else {
-				$('#'+snapshotData.currentSnapshotId).append($('<ul />').append(__vboxTabSnapshotCurrent()));
-			}
-		}			
+	// Get current state and details data
+	$.when(vboxVMDataMediator.getVMData(response.responseData.vm), vboxVMDataMediator.getVMDetails(response.responseData.vm)).done(function(vm, vmd) {
 		
-	// No snapshots. Append current state to list
-	} else {
-		$(list).append(__vboxTabSnapshotCurrent());
-	}
+		if($('#vboxTabVMSnapshots').data('lastVM') != vm.id) return;
+		
+		var list = $('#vboxSnapshotList');
+		$(list).children().remove();
 	
-	// Init vbox tree list
-	$('#vboxSnapshotList').vbtree();
+		var vmc = $.extend(true, {}, vm, vmd);
+		
+		// Snapshots exist
+		if(snapshotData.snapshot && snapshotData.snapshot.name) {
 	
-	vboxSnapshotToolbar.enable();
-
-	$('#vboxSnapshotList').trigger('select');
-
-	__vboxTabSnapshotTimestamps();	
+			// Traverse snapshots
+			$(list).append(__vboxTabSnapshot(snapshotData.snapshot, snapshotData.currentSnapshotId));
+		
+			// Append current state to last snapshot
+			if(snapshotData.currentSnapshotId) {
+		
+				// Has children
+				if($('#'+snapshotData.currentSnapshotId).children('ul').first()[0]) {
+					$('#'+snapshotData.currentSnapshotId).children('ul').last().append(__vboxTabSnapshotCurrent(vmc));
+				} else {
+					$('#'+snapshotData.currentSnapshotId).append($('<ul />').append(__vboxTabSnapshotCurrent(vmc)));
+				};
+			};	
+			
+		// No snapshots. Append current state to list
+		} else {
+			$(list).append(__vboxTabSnapshotCurrent(vmc));
+		}
+		
+		// Init vbox tree list
+		$('#vboxSnapshotList').vbtree();
+		
+		vboxSnapshotToolbar.enable();
+	
+		$('#vboxSnapshotList').trigger('select');
+	
+		__vboxTabSnapshotTimestamps();	
+		
+	});
 
 }
 
@@ -717,7 +761,12 @@ function __vboxTabSnapshot(s, currentId) {
 				'<p>'+ vboxDateTimeString(s.timeStamp, trans('Taken at %1','VBoxSnapshotsWgt'), trans('Taken on %1','VBoxSnapshotsWgt'))+'</p>' +
 							(s.description ? '<hr />' + $('<div />').text(s.description).html() : '')})
 			
-	).addClass(currentId == s.id ? 'vboxSnapshotCurrent' : '');
+	).addClass(currentId == s.id ? 'vboxSnapshotCurrent' : '').children('div.vboxListItem').first().click(function(){
+		$('#vboxSnapshotList').find('div.vboxListItemSelected').first().removeClass('vboxListItemSelected');
+		$(this).addClass('vboxListItemSelected');
+		$('#vboxSnapshotList').trigger('select',$(this).parent());
+	});
+
 	
 	if(s.children.length) {
 		var ul = $('<ul />');
@@ -733,10 +782,8 @@ function __vboxTabSnapshot(s, currentId) {
 }
 
 /* Current state list item */
-function __vboxTabSnapshotCurrent() {
+function __vboxTabSnapshotCurrent(vm) {
 
-	var vm = vboxVMDataMediator.getVMDetails(vboxChooser.getSingleSelectedId());
-	
 	return $('<li />').data('vboxSnapshot',{'state':'current','name':trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')}).html(' ')
 		.addClass('last vboxSnapshotCurrent vboxSnapshotCurrentState')
 		.append(
@@ -745,6 +792,11 @@ function __vboxTabSnapshotCurrent() {
 						menu: vboxSnapshotContextMenuCurrent.menuId(),
 						clickthrough : true
 					},vboxSnapshotContextMenuCurrent.menuClickCallback)
+				.click(function(){
+					$('#vboxSnapshotList').find('div.vboxListItemSelected').first().removeClass('vboxListItemSelected');
+					$(this).addClass('vboxListItemSelected');
+					$('#vboxSnapshotList').trigger('select',$(this).parent());
+				})
 				.tipped({'position':'mouse','delay':1500,'source':'<strong>'+
 					trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt') + '</strong><br />'+
 					trans('%1 since %2','VBoxSnapshotsWgt').replace('%1',trans(vboxVMStates.convert(vm.state),'VBoxGlobal'))

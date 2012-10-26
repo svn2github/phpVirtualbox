@@ -1093,6 +1093,17 @@ function vboxParseCookies() {
 }
 
 /**
+ * General application failure
+ */
+function phpVirtualBoxFailure() {
+	if($('#vboxPane').data('vboxFatalError')) return;
+	$('#vboxPane').data('vboxFatalError', 1);
+	$('#vboxPane').css({'display':'none'});
+	$('#vboxPane').trigger('phpVirtualBoxFailure');
+	vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox'));
+}
+
+/**
  * Set a cookie and update $('#vboxPane').data('vboxCookies') 
  * @param {String} k - cookie key
  * @param {any} v - cookie value

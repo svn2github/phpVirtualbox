@@ -27,18 +27,16 @@ var tabs = [
     	content:'tabVMSnapshots',
     	label:'Snapshots',
     	icon:'take_snapshot',
-    	enabled:function(vm){
-    		return (vm && vm.id != 'host');
-    	},
-    	disabled_icon:'take_snapshot_dis'
+    	disabled_icon:'take_snapshot_dis',
+    	default_disabled: true
     	
     // Console
     },{
     	name:'vboxTabVMConsole',
     	content:'tabVMConsole',
     	label:'Console',
-    	selfManageEnabled: true,
-    	icon:'vrdp'
+    	icon:'vrdp',
+    	default_disabled: true
    	}
 ];
 
@@ -76,8 +74,6 @@ tabLoader.onLoad = function(){
 		
 	}
 	
-	$('#vboxPane').bind('vmSelectionListChanged',tabsMain.updateTabs);
-
 	// Add "click" functionality to each tab
 	$('#tablistMain').children().click(function(){
 		if(!$(this).hasClass('vboxDisabled'))
@@ -91,9 +87,6 @@ tabLoader.onLoad = function(){
 	},function(){
 		$(this).removeClass('hover');
 	});
-
-	// Initial update of tabs
-	tabsMain.updateTabs();
 	
 	// Watch for tabs asking to be enabled / disabled
 	$('#tabMainContent').bind('enableTab',function(e,tabName) {
@@ -131,9 +124,8 @@ function vboxTabs(id) {
 		}
 		this.tabs[this.tabs.length] = tab;
 		
-		// Initially Disable tab if it manages
-		// its enabled / disabled status itself
-		if(tab.selfManageEnabled) {
+		// Initially Disable tab
+		if(tab.default_disabled) {
 			self.disableTab(tab);
 		}
 	};
@@ -165,32 +157,7 @@ function vboxTabs(id) {
 		
 	};
 
-	// Update (disable/enable) tabs
-	this.updateTabs = function() {
-		
-		var vm = null;
-		
-		if(vboxChooser) vm = vboxChooser.getSingleSelected();
-		
-		for(var i = 0; i < self.tabs.length; i++) {
-			
-			// No enable test? Skip
-			if(!self.tabs[i].enabled) continue;
-			
-			// Other tabs require that one vm is selected
-			if(!vboxChooser || vboxChooser.selectedVMs.length != 1 ||
-					!self.tabs[i].enabled(vm)) {
-				
-				self.disableTab(self.tabs[i]);
-				
-				
-			} else {
-				self.enableTab(self.tabs[i]);
-			}
-		}		
-		$(''+self.tabSelected).trigger('show',[vm]);
-	};
-		
+	// Disable a tab		
 	this.disableTab = function(tab) {
 		
 		// Was this tab selected?
@@ -200,6 +167,7 @@ function vboxTabs(id) {
 		$('#tabsMain-'+tab.name).addClass('vboxDisabled').find('img').attr('src','images/vbox/'+(tab.disabled_icon ? tab.disabled_icon : tab.icon+'_disabled')+'_16px.png');
 	};
 	
+	// Enable a tab
 	this.enableTab = function(tab) {
 		$('#tabsMain-'+tab.name).removeClass('vboxDisabled').find('img').attr('src','images/vbox/'+tab.icon+'_16px.png');
 	};

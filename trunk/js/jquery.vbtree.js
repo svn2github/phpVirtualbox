@@ -36,13 +36,6 @@
 			}
 			$(li).addClass(classadd);
 			
-			// Update vboxListItem elements
-			$(li).children('div.vboxListItem').first().click(function(){
-				$(toplevel).find('div.vboxListItemSelected').first().removeClass('vboxListItemSelected');
-				$(this).addClass('vboxListItemSelected');
-				$(toplevel).trigger('select',$(this).parent());
-			});
-
 			// Insert hitarea
 			var d = document.createElement('div');
 			$(d).addClass('hitarea').addClass((classadd ? classadd + '-hitarea' : '')).toggle(

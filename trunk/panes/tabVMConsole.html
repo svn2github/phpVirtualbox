@@ -320,7 +320,7 @@ function RDPWebEventLoaded(flashid) {
 	    vboxRDPConnect();
 	} else {
 		
-		$('#vboxRDPConnParams').css({'visibility':'visible'});
+		$('#vboxRDPConnParams').show();
 		$('#vboxRDPFormContainer').css('display','');
 		
 		// Did not explicitly disconnect from this VM and has no auth settings so reconnect
@@ -347,7 +347,7 @@ function RDPWebEventDisconnected(flashId) {
 
 	$("#vboxRDPStatus").data('vmConnected',false);
 
-   	$('#vboxRDPConnParams').css({'visibility':'visible'});
+   	$('#vboxRDPConnParams').show();
    	$('#vboxVRDPDetachBtn').hide();
        
     /* RDP connection has been lost */
@@ -378,7 +378,7 @@ function vboxRDPConnect() {
     var flash = RDPWebClient.getFlashById("FlashRDP");
     if (!flash) return;
 
-    $('#vboxRDPConnParams').css({'visibility':'hidden'});
+    $('#vboxRDPConnParams').hide();
 
     document.vboxRDPForm.connectionButton.value = trans("Disconnect",'VBoxConsoleWgt');
     document.vboxRDPForm.connectionButton.onclick=function(){

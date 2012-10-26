@@ -4392,12 +4392,13 @@ class vboxconnector {
 		/* @var $machine IMachine */
 		$machine = $this->vbox->findMachine($args['vm']);
 
-		$response = array('snapshot' => array(),
+		$response = array('vm' => $args['vm'], 
+			'snapshot' => array(),
 			'currentSnapshotId' => null);
 		
 		/* No snapshots? Empty array */
 		if($machine->snapshotCount < 1) {
-			return true;
+			return $response;
 		} else {
 
 			/* @var $s ISnapshot */

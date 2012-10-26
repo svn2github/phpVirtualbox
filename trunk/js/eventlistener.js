@@ -25,6 +25,19 @@ var vboxEventListener = {
 	// List of machines to subscribe to at runtime
 	_subscribeList : [],
 	
+	// Watchdog to make sure vboxEventListener is still
+	// running and attempting to get events
+	_watchdog : {
+		lastRun : 0,
+		timer : window.setInterval(function() {
+			if(vboxEventListener._running && 
+					((new Date().getTime()/1000) - vboxEventListener._watchdog.lastRun > 20000)) {
+				phpVirtualBoxFailure();
+				window.clearInterval(vboxEventListener._watchdog.timer);
+			} 
+		}, 20000) // 20 seconds
+	},
+		
 	// Since VirtualBox handles to event listener objects are persistent,
 	// calls using the same handle should be synchronous
 	_requestQueue : {
@@ -72,8 +85,6 @@ var vboxEventListener = {
 		if(vboxEventListener._running) return;
 		
 		vboxEventListener._running = true;
-		
-		vboxEventListener._started = $.Deferred();
 		
 		// Subscribe to events and start main loop
 		$.when(vboxAjaxRequest('subscribeEvents',{vms:vmlist})).done(function(d) {
@@ -144,11 +155,12 @@ var vboxEventListener = {
 				if(!vboxEventListener._running || !vboxEventListener._started) return;
 				
 				// Check for valid result
-				if(!d.success && vboxEventListener._running) {
-					$('#vboxPane').css({'display':'none'});
-					vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox'));
+				if(!d.success) {
+					if(vboxEventListener._running)
+						phpVirtualBoxFailure();
 					return;
 				}
+				
 				
 				
 				// Resolve started object?
@@ -159,6 +171,9 @@ var vboxEventListener = {
 				// Check key to make sure this isn't a stale
 				// response from a previously selected server
 				if(!d.key || (d.key != $('#vboxPane').data('vboxConfig').key)) return;
+				
+				// Tell the watch dog that we were run
+				vboxEventListener._watchdog.lastRun = (new Date().getTime() / 1000);
 				
 				// Always set persistent request data
 				vboxEventListener._persist = d.persist;

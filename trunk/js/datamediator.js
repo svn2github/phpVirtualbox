@@ -57,7 +57,6 @@ var vboxVMDataMediator = {
 		
 		// VMList must exist
 		if(!vboxVMDataMediator.vmData) {
-			vboxAlert('vboxVMDataMediator.getVMList not called yet!');
 			return;
 		}
 		

@@ -38,6 +38,14 @@
 			</table>				
 		</td>
 	</tr>
+
+	<tr style='vertical-align: middle' id='vboxAutostartConfigPropsGeneral'>
+		<th><span class='translate'>Auto-start DB Path:</span></th>
+		<td>
+			<input type='text' class='vboxText' name='vboxAutostartConfigDBPath' />
+		</td>
+	</tr>
+	
 </table>
 <script type='text/javascript'>
 
@@ -45,6 +53,16 @@
 
 document.frmVboxSettings.vboxSettingsDefaultMachineFolder.value = $('#vboxSettingsDialog').data('vboxSystemProperties').defaultMachineFolder;
 document.frmVboxSettings.vboxSettingsVRDEAuthLibrary.value = $('#vboxSettingsDialog').data('vboxSystemProperties').VRDEAuthLibrary;
+
+// Autostart config path
+if($('#vboxPane').data('vboxConfig').vboxAutostartConfig) {
+	
+	document.frmVboxSettings.vboxAutostartConfigDBPath.value = $('#vboxSettingsDialog').data('vboxSystemProperties').autostartDatabasePath;
+	
+} else {
+	
+	$('#vboxAutostartConfigPropsGeneral').hide();
+}
 
 /* Browsers */
 function vboxSettingsBrowseMachineFolder(btn) {
@@ -70,6 +88,11 @@ $('#vboxSettingsDialog').bind('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxSystemProperties').defaultMachineFolder = document.frmVboxSettings.vboxSettingsDefaultMachineFolder.value;
 	$('#vboxSettingsDialog').data('vboxSystemProperties').VRDEAuthLibrary = document.frmVboxSettings.vboxSettingsVRDEAuthLibrary.value;
+	
+	// Autostart config path
+	if($('#vboxPane').data('vboxConfig').vboxAutostartConfig) {
+		$('#vboxSettingsDialog').data('vboxSystemProperties').autostartDatabasePath = document.frmVboxSettings.vboxAutostartConfigDBPath.value;
+	}
 
 });
 </script>

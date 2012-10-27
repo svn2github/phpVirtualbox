@@ -46,7 +46,28 @@
 				<option value='manual'>Manual</option>
 			</select>
 		</td>
-	</tr>		
+	</tr>
+	<!-- Autostart shutdown options -->
+	<tr class='vboxAutostartConfig vboxRunningEnabled' id='vboxAutostartConfigShutdown'>
+		<th><span class='translate'>Shutdown mode:</span></th>
+		<td colspan='2'>
+			<select name='vboxAutostartConfigShutdownOptions'>
+				<option value='Disabled'>Disabled</option>
+				<option value='SaveState'>Save State</option>
+				<option value='PowerOff'>Power Off</option>
+				<option value='AcpiShutdown'>ACPI Shutdown</option>
+			</select>
+		</td>
+	</tr>
+	<!-- Autostart options -->
+	<tr class='vboxAutostartConfig vboxRunningEnabled' id='vboxAutostartConfigStartup'>
+		<th><span class='translate'>Enable auto-start:</span></th>
+		<td colspan='2'>
+			<input type='checkbox' class='vboxCheckbox' name='autostartEnabled'/> <span class='translate'>after</span>
+			<input type='text' class='vboxText' size='3' name='autostartDelay' style='width: 30px'/>
+				<span class='translate'>second(s)</span>
+		</td>
+	</tr>	
 </table>
 </div>
 
@@ -94,11 +115,25 @@
     	</tr>
     </table>
 </div>
-
 <script type='text/javascript'>
 
 /* Translations */
 $('#vboxSettingsTabGeneralBasic').find(".translateos").html(function(i,h){return trans(h,'UINameAndSystemEditor');});
+if($('#vboxPane').data('vboxConfig').vboxAutostartConfig) {
+	
+	// Shutdown options select buttons
+	$('#vboxAutostartConfigShutdown').find('option').each(function(i,opt){
+		$(opt).text(i == 0 ? trans('Disabled','UIGDetails',null,'details (audio)') : trans($(opt).text(),'UIActionPool'));
+		if($(opt).val() == $('#vboxSettingsDialog').data('vboxMachineData').autostopType)
+			$(opt).prop('selected', true);
+	});
+	
+	document.forms['frmVboxSettings'].autostartEnabled.checked = ($('#vboxSettingsDialog').data('vboxMachineData').autostartEnabled);
+	document.forms['frmVboxSettings'].autostartDelay.value = $('#vboxSettingsDialog').data('vboxMachineData').autostartDelay;
+	
+} else {
+	$('#vboxSettingsTabGeneralBasic .vboxAutostartConfig').empty().remove();
+}
 
 /* Browse for snapshot folder */
 function vboxSnapshotBrowseFolder(btn) {
@@ -246,7 +281,19 @@ $('#vboxSettingsDialog').bind('save',function(){
 	if($('#vboxPane').data('vboxConfig').startStopConfig) {
 		$('#vboxSettingsDialog').data('vboxMachineData').startupMode = document.forms['frmVboxSettings'].vboxStartStopConfigStartup.value;
 	}
+	
+	// VirtualBox style start / stop config
+	if($('#vboxPane').data('vboxConfig').vboxAutostartConfig) {
+		
+		$('#vboxSettingsDialog').data('vboxMachineData').autostopType = document.forms['frmVboxSettings'].vboxAutostartConfigShutdownOptions.value; 
+		$('#vboxSettingsDialog').data('vboxMachineData').autostartEnabled = (document.forms['frmVboxSettings'].autostartEnabled.checked ? 1 : 0);
+		if(isNaN(document.forms['frmVboxSettings'].autostartDelay.value))
+			document.forms['frmVboxSettings'].autostartDelay.value = 0;
+		$('#vboxSettingsDialog').data('vboxMachineData').autostartDelay = parseInt(document.forms['frmVboxSettings'].autostartDelay.value);
+		
 
+	}
+	
 	if(jQuery.trim(document.forms['frmVboxSettings'].vboxSettingsGeneralName.value))
 		$('#vboxSettingsDialog').data('vboxMachineData').name = jQuery.trim(document.forms['frmVboxSettings'].vboxSettingsGeneralName.value);
 		

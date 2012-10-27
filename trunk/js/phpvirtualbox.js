@@ -618,9 +618,6 @@ var vboxVMDetailsSections = {
 					return;
 				}
 				
-				// Get fresh VM data
-				var vm = vboxVMDataMediator.getVMData(vmid);
-
 				// Set and cache dimensions
 				if(this.height > 0) {
 					
@@ -655,6 +652,14 @@ var vboxVMDetailsSections = {
 				
 				// Get fresh VM data
 				var vm = vboxVMDataMediator.getVMData(vmid);
+				
+				// Return if this is stale
+				if(!vm) {
+					var timer = $('#vboxPane').data('vboxPreviewTimer-'+vmid);
+					if(timer) window.clearInterval(timer);
+					$('#vboxPane').data('vboxPreviewTimer-'+vmid, null);
+					return;
+				}
 				
 				// Canvas redraw
 				if(isCanvasSupported()) {
@@ -1796,7 +1801,7 @@ var vboxVMActions = {
 
     /** Save the current VM State */
 	savestate: {
-		label: trans('Save the machine state', 'UIVMCloseDialog'),
+		label: trans('Save State', 'UIActionPool'),
 		icon: 'fd',
 		stop_action: true,
 		enabled: function(){

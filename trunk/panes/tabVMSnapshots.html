@@ -508,6 +508,9 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 			$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
 		});
 		
+		// Unset last vm
+		$('#vboxTabVMSnapshots').data('lastVM',0);
+		
 		// Remove children
 		$('#vboxSnapshotList').children().empty().remove();
 		

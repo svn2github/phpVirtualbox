@@ -116,6 +116,13 @@ class phpVBoxConfigClass {
 	var $auth = null;
 	
 	/**
+	 * Enable VirtualBox start / stop configuration.
+	 * Only available in Linux (I beleive)
+	 * @var boolean
+	 */
+	var $vboxAutostartConfig = false;
+	
+	/**
 	 * Authentication capabilities provided by authentication module.
 	 * Set in __construct
 	 * @var phpvbAuthBuiltin::authCapabilities

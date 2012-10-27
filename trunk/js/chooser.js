@@ -284,14 +284,25 @@ var vboxChooser = {
         	});
 		}
 
+        var groups = [];
 		// Each item in list
 		for(var i = 0; i < vmlist.length; i++) {	
 			// Update
 			vboxChooser.updateVMElement(vmlist[i], true);
+			groups = groups.concat(vmlist[i].groups);
+		}
+		
+		// Sort groups
+		var groupsSorted = {};
+		for(var i = 0; i < groups.length; i++) {
+			if(groupsSorted[groups[i]]) continue;
+			groupsSorted[groups[i]] = true;
+			var gElm = vboxChooser.getGroupElement(groups[i], true);
+			if(gElm[0]) vboxChooser.sortGroup(gElm);
 		}
 
-		// compose / save group definitions
-		vboxChooser.composeGroupDef(true);
+		// compose group definitions
+		vboxChooser.composeGroupDef();
 		
 		// Set initial resize
 		vboxChooser._initialResize = true;
@@ -446,28 +457,13 @@ var vboxChooser = {
 			if(!vmUpdate.groups || vmUpdate.groups.length == 0)
 				vmUpdate.groups = ['/'];
 			
-			var groupSelected = false;
-			
 			for(var i = 0; i < vmUpdate.groups.length; i++) {
 				var gElm = $(vboxChooser.getGroupElement(vmUpdate.groups[i]));
 				vboxChooser.vmHTML(vmUpdate).appendTo(
 					gElm.children('div.vboxChooserGroupVMs')
 				);
-				vboxChooser.sortGroup(gElm);
-				
-				if(!groupSelected)
-					groupSelected = $(gElm).children('div.vboxChooserGroupVMs').closest('div.vboxVMGroupSelected').length;
 			}
 			
-			// Resize chooser elements
-			vboxChooser._resizeElements();
-			
-			// Update selection list if a group the VM
-			// was added to is selected
-			if(groupSelected) {
-				vboxChooser.selectionListChanged(vboxChooser._selectedList);
-			}
-
 		// Existing VM. Replace existing elements
 		} else {
 				
@@ -816,7 +812,8 @@ var vboxChooser = {
 			
 		}
 
-		vboxChooser.composeGroupDef();
+		// vmGroup dropped - compose and save group definitions
+		vboxChooser.composeGroupDef(true);
 		
 		// Hide group info
 		vboxChooser._anchor.find('div.vboxChooserGroupHeader').trigger('mouseout');
@@ -978,7 +975,8 @@ var vboxChooser = {
 			
 		}
 
-		vboxChooser.composeGroupDef();
+		// vm dropped - compose and save group definitions
+		vboxChooser.composeGroupDef(true);
 		
 		// Resize chooser elements
 		vboxChooser._resizeElements();
@@ -1053,7 +1051,9 @@ var vboxChooser = {
 
 		gHTML.insertBefore($(target).children('div.vboxChooserGroupVMs'));
 		
-		vboxChooser.composeGroupDef();
+		// group selected items,
+		// Compose and save group definitions
+		vboxChooser.composeGroupDef(true);
 		
 		// Resize chooser elements
 		vboxChooser._resizeElements();
@@ -1065,9 +1065,9 @@ var vboxChooser = {
 	/**
 	 * Compose group data from GUI and optionally save it
 	 * 
-	 * @param skipSave - do not save
+	 * @param save - save group definitions to vbox
 	 */
-	composeGroupDef : function(skipSave) {
+	composeGroupDef : function(save) {
 		
 		var allGroups = [];
 		var groupsResolved = false;
@@ -1172,7 +1172,7 @@ var vboxChooser = {
 		}
 		
 		// Save GUI group definition?
-		if(skipSave) return;
+		if(!save) return;
 		
 		vboxChooser._groupDefs = allGroups;
 		vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups});		
@@ -1305,8 +1305,10 @@ var vboxChooser = {
 				target.append(elm);
 		});
 		
-		
-		vboxChooser.composeGroupDef();
+
+		// ungroup selected items
+		// compose and save group definitions
+		vboxChooser.composeGroupDef(true);
 		
 		// Resize chooser elements
 		vboxChooser._resizeElements();
@@ -1351,8 +1353,8 @@ var vboxChooser = {
 			var Pos1 = jQuery.inArray($(a).children('div.vboxChooserGroupIdentifier').attr('title'), groupOrder);
 			var Pos2 = jQuery.inArray($(b).children('div.vboxChooserGroupIdentifier').attr('title'), groupOrder);
 
-			if(Pos1==-1)Pos1=maxPos;
-			if(Pos2==-1)Pos2=maxPos;
+			if(Pos1==-1) Pos1 = maxPos;
+			if(Pos2==-1) Pos2 = maxPos;
 
 			return (Pos1 > Pos2 || Pos1 == -1 ? -1 : (Pos2 == Pos1 ? 0 : 1));
 			
@@ -1369,8 +1371,8 @@ var vboxChooser = {
 			var Pos1 = jQuery.inArray($(a).data('vmid'), machineOrder);
 			var Pos2 = jQuery.inArray($(b).data('vmid'), machineOrder);
 			
-			if(Pos1==-1)Pos1=maxPos;
-			if(Pos2==-1)Pos2=maxPos;
+			if(Pos1==-1) Pos1 = maxPos;
+			if(Pos2==-1) Pos2 = maxPos;
 			
 			return (Pos1 > Pos2 ?  1 : (Pos2 == Pos1 ? 0 : -1));
 
@@ -1411,7 +1413,8 @@ var vboxChooser = {
 			$(el).children('div.vboxChooserGroupVMs').append(itm);
 		});
 		
-		vboxChooser.composeGroupDef();
+		// compose and save group definitions
+		vboxChooser.composeGroupDef(true);
 
 	},
 	
@@ -1444,7 +1447,8 @@ var vboxChooser = {
 					.siblings('div.vboxChooserGroupHeader')
 						.children('span.vboxChooserGroupName').html(newName);
 
-				vboxChooser.composeGroupDef();
+				// group renamed, compose and save groups
+				vboxChooser.composeGroupDef(true);
 				
 				// Write out collapsed group list
 				vboxChooser._saveCollapsedGroups();
@@ -1793,7 +1797,7 @@ var vboxChooser = {
 	},
 	
 	/*
-	 * Return HTML for group with VM place-holders
+	 * Return HTML for group
 	 */
 	groupHTML : function(gpath) {
 		
@@ -2126,6 +2130,10 @@ $(document).ready(function(){
 	}).bind('vboxEvents',function(e, eventList) {
 
 		var redrawVMs = [];
+		var sortGroups = [];
+		var groupsChanged = false;
+		var selectedChanged = false;
+		var resizeElements = false;
 		
 		for(var i = 0; i < eventList.length; i++) {
 			
@@ -2151,26 +2159,23 @@ $(document).ready(function(){
 						}
 
 						redrawVMs[redrawVMs.length] = vmid;
-
-						// Keep track of whether or not a selected group has changed
-						var groupSelectedChanged = false;
 						
 						// Remove from groups if they have changed
 						var currGroups  = vboxChooser.getGroupsForVM(vmid);
 						var groupDiff = $(currGroups).not(data.groups);
-						var groupsChanged = groupDiff.length;
+						groupsChanged = groupDiff.length;
 						for(var a = 0; a < groupDiff.length; a++) {
 							
 							var gElm = vboxChooser.getGroupElement(groupDiff[a], false);
 							if(!$(gElm)[0]) return;
 							
-							groupSelectedChanged = (groupSelectedChanged || $(gElm).children('div.vboxChooserGroupVMs').closest('div.vboxVMGroupSelected').length);
+							selectedChanged = (selectedChanged || $(gElm).children('div.vboxChooserGroupVMs').closest('div.vboxVMGroupSelected').length);
 							
 							$(gElm).children('div.vboxChooserGroupVMs')
-							.children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+data.id).empty().remove();
+								.children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+data.id).empty().remove();
 						}
 						
-						// Add placeholder to other groups
+						// Add to other groups
 						var groupDiff = $(data.groups).not(currGroups);
 						groupsChanged = (groupsChanged || groupDiff.length);
 						for(var a = 0; a < groupDiff.length; a++) {
@@ -2186,25 +2191,13 @@ $(document).ready(function(){
 									vboxChooser.vmHTML(data)
 							);
 							
-							groupSelectedChanged = (groupSelectedChanged || $(gElm).children('div.vboxChooserGroupVMs').closest('div.vboxVMGroupSelected').length);
+							selectedChanged = (selectedChanged || $(gElm).children('div.vboxChooserGroupVMs').closest('div.vboxVMGroupSelected').length);
 							
 						}
 						
+						resizeElements = (resizeElements || groupsChanged);
 						
-						if(groupsChanged) {
-							
-							vboxChooser.composeGroupDef();
-							
-							// Resize chooser elements
-							vboxChooser._resizeElements();
-							
-							// update selection list
-							if(groupSelectedChanged) {
-								vboxChooser.selectionListChanged(vboxChooser._selectedList);
-							}
-							
-							
-						}
+						
 					}
 					
 					break;
@@ -2235,22 +2228,22 @@ $(document).ready(function(){
 						
 						$('#'+vboxChooser._anchorid +' table.vboxChooserItem-'+vboxChooser._anchorid+'-'+vmid).remove();
 						
-						vboxChooser.composeGroupDef(true);
+						groupsChanged = true;
 						
 						// See if VM was selected
 						if(wasSelected) {
 							
-							var selectedList = vboxChooser._selectedList.filter(function(v){
+							selectedChanged = true;
+							
+							 vboxChooser._selectedList = vboxChooser._selectedList.filter(function(v){
 								return (v.type == 'group' || (v.id != vmid));
 							});
 							
-							vboxChooser.selectionListChanged(selectedList);
 							
 						}
 						
+						resizeElements = true;
 						
-						// Resize chooser elements
-						vboxChooser._resizeElements();
 						
 						break;
 
@@ -2260,11 +2253,13 @@ $(document).ready(function(){
 					
 					// Enforce VM ownership
 					if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin && eventList[i].enrichmentData.owner != $('#vboxPane').data('vboxSession').user) {
-						return;
+						break;
 					}
 					
 					// Add to list			
 					vboxChooser.updateVMElement(eventList[i].enrichmentData, true);
+					
+					resizeElements = true;
 					break;
 					
 					
@@ -2283,27 +2278,28 @@ $(document).ready(function(){
 						var vboxVMGroups = vboxChooser._groupDefs;
 						var found = false;
 						
+						// No current group definitions?
 						if(!vboxVMGroups) break;
 						
+						// Step through each group, comparing
 						for(var a = 0; a < vboxVMGroups.length; a++) {
 							if(vboxVMGroups[a].path == path) {
-								// Don't do anything if its the same
-								if(vboxVMGroups[a].order == eventList[i].value)
-									return;					
+								// Sort this group if it is different
+								if(vboxVMGroups[a].order != eventList[i].value)
+									sortGroups[sortGroups.length] = path;
 								found = true;
 								vboxVMGroups[a] = {'path':path,'name':name,'order':eventList[i].value};
 								break;
 							}
 						}
 						
-						if(!found)
+						// Add to group if not found
+						if(!found) {
 							vboxVMGroups[vboxVMGroups.length] = {'path':path,'name':name,'order':eventList[i].value};
-						
-						// Sort element
-						if(eventList[i].value) {
-							vboxChooser.sortGroup($(vboxChooser.getGroupElement(path),false));
+							sortGroups[sortGroups.length] = path; // sort when added
+							resizeElements = true;
 						}
-						
+												
 					} else {
 						
 						switch(eventList[i].key) {
@@ -2323,7 +2319,6 @@ $(document).ready(function(){
 				///////////////////////////////////////
 				case 'OnSessionStateChanged':
 				case 'OnMachineStateChanged':
-
 					redrawVMs[redrawVMs.length] = eventList[i].machineId;
 					break;
 					
@@ -2335,7 +2330,7 @@ $(document).ready(function(){
 		// Now redraw each VM
 		///////////////////////////
 		var redrawn = {};
-		var menusUpdated = false;
+		var updateMenus = false;
 		for(var i = 0; i < redrawVMs.length; i++) {
 			
 			if(redrawn[redrawVMs[i]]) continue;
@@ -2344,19 +2339,45 @@ $(document).ready(function(){
 			vboxChooser.updateVMElement(vboxVMDataMediator.getVMData(redrawVMs[i]));
 			
 			// Update menus if the VM is selected
-			if(!menusUpdated && vboxChooser.isVMSelected(redrawVMs[i])) {
-				
-				if(vboxChooser._vmGroupContextMenuObj)
-					vboxChooser._vmGroupContextMenuObj.update(vboxChooser);
-				
-				if(vboxChooser._vmContextMenuObj)
-					vboxChooser._vmContextMenuObj.update(vboxChooser);
-				
-				menusUpdated = true;
-				
-			}
+			updateMenus = (updateMenus || vboxChooser.isVMSelected(redrawVMs[i]));
+			
+		}
+
+		// Sort groups
+		var groupsSorted = {};
+		for(var i = 0; i < sortGroups.length; i++) {
+			if(groupsSorted[sortGroups[i]]) continue;
+			groupsSorted[sortGroups[i]] = true;
+			var gElm = $(vboxChooser.getGroupElement(sortGroups[i]),false);
+			if(gElm[0])
+				vboxChooser.sortGroup(gElm);
+			
+		}
+		
+		// Groups changed
+		if(groupsChanged || sortGroups.length) {
+			vboxChooser.composeGroupDef();
+		}
+		
+
+		// update selection list
+		if(selectedChanged) {
+			
+			vboxChooser.selectionListChanged(vboxChooser._selectedList);
+			
+		} else if(updateMenus) {
+
+			if(vboxChooser._vmGroupContextMenuObj)
+				vboxChooser._vmGroupContextMenuObj.update(vboxChooser);
+		
+			
+			if(vboxChooser._vmContextMenuObj)
+				vboxChooser._vmContextMenuObj.update(vboxChooser);
 
 		}
+		
+		if(resizeElements) vboxChooser._resizeElements(true);
+
 		
 
 	// Update menus on selection list change

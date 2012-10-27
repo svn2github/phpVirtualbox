@@ -1360,6 +1360,15 @@ class vboxconnector {
 			$m->setExtraData('pvbx/startupMode', $args['startupMode']);
 		}
 
+		// VirtualBox style start / stop config
+		if(@$this->settings->vboxAutostartConfig && @$args['clientConfig']['vboxAutostartConfig']) {
+		
+			$m->autostopType = $args['autostopType'];
+			$m->autostartEnabled = intval($args['autostartEnabled']);
+			$m->autostartDelay = intval($args['autostartDelay']);
+		
+		}
+		
 		$m->setExtraData('GUI/SaveMountedAtRuntime', ($args['GUI']['SaveMountedAtRuntime'] == 'no' ? 'no' : 'yes'));
 
 		// VRDE settings
@@ -1735,6 +1744,15 @@ class vboxconnector {
 		}
 		
 
+		// VirtualBox style start / stop config
+		if(@$this->settings->vboxAutostartConfig && @$args['clientConfig']['vboxAutostartConfig']) {
+		
+			$m->autostopType = $args['autostopType'];
+			$m->autostartEnabled = intval($args['autostartEnabled']);
+			$m->autostartDelay = intval($args['autostartDelay']);
+
+		}
+		
 		// Determine if host is capable of hw accel
 		$hwAccelAvail = intval($this->vbox->host->getProcessorFeature('HWVirtEx'));
 
@@ -2380,6 +2398,9 @@ class vboxconnector {
 
 		$this->vbox->systemProperties->defaultMachineFolder = $args['SystemProperties']['defaultMachineFolder'];
 		$this->vbox->systemProperties->VRDEAuthLibrary = $args['SystemProperties']['VRDEAuthLibrary'];
+		if(@$this->settings->vboxAutostartConfig) {
+			$this->vbox->systemProperties->autostartDatabasePath = $args['SystemProperties']['autostartDatabasePath'];
+		}
 
 		return true;
 
@@ -2717,12 +2738,10 @@ class vboxconnector {
 		// Connect to vboxwebsrv
 		$this->connect();
 
-		$response = array();
-		
 		/*
 		 * NICs
 		 */
-		$response['data']['networkInterfaces'] = array();
+		$response = array('networkInterfaces' => array());
 		foreach($this->vbox->host->networkInterfaces as $d) { /* @var $d IHostNetworkInterface */
 
 			if((string)$d->interfaceType != 'HostOnly') {
@@ -3897,6 +3916,9 @@ class vboxconnector {
 			'description' => $m->description,
 			'groups' => $groups,
 			'id' => $m->id,
+			'autostopType' => ($this->settings->vboxAutostartConfig ? (string)$m->autostopType : ''),
+			'autostartEnabled' => intval($this->settings->vboxAutostartConfig && $m->autostartEnabled),
+			'autostartDelay' => ($this->settings->vboxAutostartConfig ? intval($m->autostartDelay) : '0'),
 			'settingsFilePath' => $m->settingsFilePath,
 			'OSTypeId' => $m->OSTypeId,
 			'OSTypeDesc' => $this->vbox->getGuestOSType($m->OSTypeId)->description,
@@ -5104,10 +5126,13 @@ class vboxconnector {
 		$this->connect();
 
 		$mediumFormats = array();
+		
+		// Shorthand
+		$sp = $this->vbox->systemProperties;
 
 		// capabilities
 		$mfCap = new MediumFormatCapabilities(null,'');
-		foreach($this->vbox->systemProperties->mediumFormats as $mf) { /* @var $mf IMediumFormat */
+		foreach($sp->mediumFormats as $mf) { /* @var $mf IMediumFormat */
 			$exts = $mf->describeFileExtensions();
 			$dtypes = array();
 			foreach($exts[1] as $t) $dtypes[] = (string)$t;
@@ -5119,24 +5144,24 @@ class vboxconnector {
 		}
 
 		return array(
-			'minGuestRAM' => (string)$this->vbox->systemProperties->minGuestRAM,
-			'maxGuestRAM' => (string)$this->vbox->systemProperties->maxGuestRAM,
-			'minGuestVRAM' => (string)$this->vbox->systemProperties->minGuestVRAM,
-			'maxGuestVRAM' => (string)$this->vbox->systemProperties->maxGuestVRAM,
-			'minGuestCPUCount' => (string)$this->vbox->systemProperties->minGuestCPUCount,
-			'maxGuestCPUCount' => (string)$this->vbox->systemProperties->maxGuestCPUCount,
-			'infoVDSize' => (string)$this->vbox->systemProperties->infoVDSize,
+			'minGuestRAM' => (string)$sp->minGuestRAM,
+			'maxGuestRAM' => (string)$sp->maxGuestRAM,
+			'minGuestVRAM' => (string)$sp->minGuestVRAM,
+			'maxGuestVRAM' => (string)$sp->maxGuestVRAM,
+			'minGuestCPUCount' => (string)$sp->minGuestCPUCount,
+			'maxGuestCPUCount' => (string)$sp->maxGuestCPUCount,
+			'autostartDatabasePath' => (@$this->settings->vboxAutostartConfig ? $sp->autostartDatabasePath : ''),
+			'infoVDSize' => (string)$sp->infoVDSize,
 			'networkAdapterCount' => 8, // static value for now
-			'maxBootPosition' => (string)$this->vbox->systemProperties->maxBootPosition,
-			'defaultMachineFolder' => (string)$this->vbox->systemProperties->defaultMachineFolder,
-			'defaultHardDiskFormat' => (string)$this->vbox->systemProperties->defaultHardDiskFormat,
+			'maxBootPosition' => (string)$sp->maxBootPosition,
+			'defaultMachineFolder' => (string)$sp->defaultMachineFolder,
+			'defaultHardDiskFormat' => (string)$sp->defaultHardDiskFormat,
 			'homeFolder' => $this->vbox->homeFolder,
-			'VRDEAuthLibrary' => (string)$this->vbox->systemProperties->VRDEAuthLibrary,
-			'defaultAudioDriver' => (string)$this->vbox->systemProperties->defaultAudioDriver,
-			'maxGuestMonitors' => $this->vbox->systemProperties->maxGuestMonitors,
-			'defaultVRDEExtPack' => $this->vbox->systemProperties->defaultVRDEExtPack,
-			'serialPortCount' => $this->vbox->systemProperties->serialPortCount,
-			'parallelPortCount' => $this->vbox->systemProperties->parallelPortCount,
+			'VRDEAuthLibrary' => (string)$sp->VRDEAuthLibrary,
+			'defaultAudioDriver' => (string)$sp->defaultAudioDriver,
+			'defaultVRDEExtPack' => $sp->defaultVRDEExtPack,
+			'serialPortCount' => $sp->serialPortCount,
+			'parallelPortCount' => $sp->parallelPortCount,
 			'mediumFormats' => $mediumFormats
 		);
 	}

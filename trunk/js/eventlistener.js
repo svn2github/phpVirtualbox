@@ -16,11 +16,11 @@
  */
 var vboxEventListener = {
 	
+	// Not initially running
 	_running : false,
 	
-	// Deferred state objects
-	_started: $.Deferred(), // resolved when we get our first list of events
-	_persist: {}, // persistent request data
+	// persistent request data
+	_persist: {},
 
 	// List of machines to subscribe to at runtime
 	_subscribeList : [],
@@ -48,8 +48,12 @@ var vboxEventListener = {
 		// Add a request to the queue
 		addReq : function(q) {
 			
-			vboxEventListener._requestQueue.requests.push(q);
+			var d = $.Deferred();
+			
+			vboxEventListener._requestQueue.requests.push({'request':q,'deferred':d});
 			vboxEventListener._requestQueue.run();
+			
+			return d.promise();
 		},
 		
 		// Run through the queue
@@ -67,7 +71,9 @@ var vboxEventListener = {
 		runReq : function() {
 			var r = vboxEventListener._requestQueue.requests.shift();
 			if(r) {
-				$.when(r()).always(vboxEventListener._requestQueue.runReq);
+				$.when(r.request())
+					.done(r.deferred.resolve)
+					.always(vboxEventListener._requestQueue.runReq);
 			} else {
 				vboxEventListener._requestQueue.running = false;
 			}
@@ -86,13 +92,17 @@ var vboxEventListener = {
 		
 		vboxEventListener._running = true;
 		
+		var started = $.Deferred();
+		
 		// Subscribe to events and start main loop
 		$.when(vboxAjaxRequest('subscribeEvents',{vms:vmlist})).done(function(d) {
 			vboxEventListener._persist = d.persist;
-			vboxEventListener._getEvents();
+			$.when(vboxEventListener._getEvents()).then(function(){
+				started.resolve();
+			});
 		});
 		
-		return vboxEventListener._started.promise();
+		return started.promise();
 		
 	},
 	
@@ -106,8 +116,8 @@ var vboxEventListener = {
 		// Push into list
 		vboxEventListener._subscribeList.push(vmid);
 		
-		// Add subscription requst to queue
-		vboxEventListener._requestQueue.addReq(function(){
+		// Add subscription request to queue
+		return vboxEventListener._requestQueue.addReq(function(){
 			
 			if(!vboxEventListener._subscribeList.length) return;
 			
@@ -132,7 +142,7 @@ var vboxEventListener = {
 		vboxEventListener._running = false;
 		
 		// Unsubscribe from events. Returns a deferred object
-		vboxEventListener._requestQueue.addReq(function(){
+		return vboxEventListener._requestQueue.addReq(function(){
 			return vboxAjaxRequest('unsubscribeEvents', {'_persist':vboxEventListener._persist});
 		});
 		
@@ -147,12 +157,12 @@ var vboxEventListener = {
 		if(!vboxEventListener._running) return;
 		
 		// Add to queue
-		vboxEventListener._requestQueue.addReq(function(){
+		return vboxEventListener._requestQueue.addReq(function(){
 			
 			return $.when(new Date().getTime(), vboxAjaxRequest('getEvents',{'_persist':vboxEventListener._persist})).then(function(lastTime,d) {
 				
 				// Don't do anything if this is not running
-				if(!vboxEventListener._running || !vboxEventListener._started) return;
+				if(!vboxEventListener._running) return;
 				
 				// Check for valid result
 				if(!d.success) {
@@ -161,12 +171,6 @@ var vboxEventListener = {
 					return;
 				}
 				
-				
-				
-				// Resolve started object?
-				if(vboxEventListener._started.state() != 'resolved') {
-					vboxEventListener._started.resolve({});
-				}
 				
 				// Check key to make sure this isn't a stale
 				// response from a previously selected server
@@ -178,8 +182,7 @@ var vboxEventListener = {
 				// Always set persistent request data
 				vboxEventListener._persist = d.persist;
 				
-				// Loop through each event recording or
-				// triggering changes
+				// Loop through each event triggering changes
 				if(d.responseData && d.responseData.length) {
 									
 					// Trigger each event individually

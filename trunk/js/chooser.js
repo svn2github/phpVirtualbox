@@ -2173,6 +2173,7 @@ $(document).ready(function(){
 							
 							$(gElm).children('div.vboxChooserGroupVMs')
 								.children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+data.id).empty().remove();
+							
 						}
 						
 						// Add to other groups
@@ -2192,6 +2193,9 @@ $(document).ready(function(){
 							);
 							
 							selectedChanged = (selectedChanged || $(gElm).children('div.vboxChooserGroupVMs').closest('div.vboxVMGroupSelected').length);
+							
+							// Sort the group this machine was added to
+							sortGroups = sortGroups.concat(data.groups);
 							
 						}
 						

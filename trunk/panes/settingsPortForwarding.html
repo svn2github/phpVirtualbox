@@ -46,7 +46,7 @@ var sButtons = new Array(
 			var rname = null;
 			var rules = $('#vboxSettingsPortForwardingList').children('tr');
 			for(var n = 1; n < 100; n++) {
-				var rname = trans('Rule %1').replace('%1',n);
+				rname = trans('Rule %1').replace('%1',n);
 				for(var i = 0; i < rules.length; i++) {
 					if($(rules[i]).data('vboxRule')[0] == rname) {
 						rname = null;

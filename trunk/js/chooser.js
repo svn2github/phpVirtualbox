@@ -589,15 +589,17 @@ var vboxChooser = {
 						// Unsubscribe from events
 						$.when(vboxEventListener.stop()).done(function() {
 							
-							// remove loading screen
-							l.removeLoading();
-							
 							// Expire data mediator data
 							vboxVMDataMediator.expireAll();
 							
 							// Trigger host change
 							vboxSetCookie("vboxServer",a);
 							$('#vboxPane').trigger('hostChange',[a]);	
+							
+						}).always(function(){
+							
+							// remove loading screen
+							l.removeLoading();
 							
 						});
 						
@@ -1226,7 +1228,7 @@ var vboxChooser = {
 			
 			$.when(vboxAjaxRequest('machinesSaveGroups',{'vms':vms})).done(function(res){
 				
-				if(!res || !res.responseData || res.responseData.errored) {
+				if(res.responseData.errored) {
 					reloadAll();
 				}
 				
@@ -1234,7 +1236,6 @@ var vboxChooser = {
 			
 		}
 		
-			
 		
 		return allGroups;
 		
@@ -1726,7 +1727,7 @@ var vboxChooser = {
 			
 			
 			// Slide over or back
-			$.when(vboxChooser._anchor.hide('slide', {direction: (back ? 'right' : 'left'), distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200)).then(function() {
+			$.when(vboxChooser._anchor.hide('slide', {direction: (back ? 'right' : 'left'), distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200)).always(function() {
 				
 
 				/* hide host when showing only a group */
@@ -1767,7 +1768,7 @@ var vboxChooser = {
 			vboxChooser._showOnlyGroupHistory = [];
 
 			// Slide back to anchor
-			$.when(vboxChooser._anchor.hide('slide', {direction: 'right', distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200)).then(function() {
+			$.when(vboxChooser._anchor.hide('slide', {direction: 'right', distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200)).always(function() {
 
 				/* show host when going back to main list */
 				$('table.vboxChooserItem-'+vboxChooser._anchorid+'-host').show();
@@ -1826,6 +1827,9 @@ var vboxChooser = {
 						
 						var ctx = $(this).children('canvas.vboxChooserGroupNameArrowCollapse')[0].getContext('2d');
 						
+						var imgButton = ($(this).closest('div.vboxChooserGroup').hasClass('vboxVMGroupSelected') ?
+								vboxImageDownWhite : vboxImageDownGrey);
+
 						rotateButton = function() {
 							
 							return $('<div />').animate({left:90},
@@ -1836,7 +1840,7 @@ var vboxChooser = {
 									ctx.clearRect(0,0,18,18);
 									ctx.translate(9,9);
 									ctx.rotate((collapsed ? -90 + currentStep : (currentStep*-1)) * Math.PI / 180.0);
-									ctx.drawImage(vboxImageDownWhite,-9,-9,18,18);
+									ctx.drawImage(imgButton,-9,-9,18,18);
 									ctx.restore();
 								},
 								queue: true
@@ -1881,7 +1885,7 @@ var vboxChooser = {
 
 					
 					// Run button rotation and toggle class
-					$.when(rotateButton(), $(this).closest('div.vboxChooserGroup').toggleClass('vboxVMGroupCollapsed', ($.browser.msie && $.browser.version.substring(0,1) < 9) ? undefined : 300)).then(function(){
+					$.when(rotateButton(), $(this).closest('div.vboxChooserGroup').toggleClass('vboxVMGroupCollapsed', ($.browser.msie && $.browser.version.substring(0,1) < 9) ? undefined : 300)).always(function(){
 						
 						// Write out collapsed group list
 						vboxChooser._saveCollapsedGroups();
@@ -1916,14 +1920,21 @@ var vboxChooser = {
 									} else {
 										ctx.drawImage(vboxImageDownGrey,0,0,18,18);
 									}
-								}).click(function(){
-									
-									$(this).closest('div.vboxChooserGroupHeader').trigger('dblclick');
+								}).mousedown(function(e){
+									e.stopPropagation();
+									e.preventDefault();
+									return false;
+								}).mouseup(function(){
+									$(this).closest('div.vboxChooserGroupHeader').trigger('dblclick');									
 								})
 								
 							: $('<span />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse vboxArrowImage')
-								.click(function(){	
-									$(this).closest('div.vboxChooserGroupHeader').trigger('dblclick');
+								.mousedown(function(e){
+									e.stopPropagation();
+									e.preventDefault();
+									return false;
+								}).mouseup(function(){
+									$(this).closest('div.vboxChooserGroupHeader').trigger('dblclick');									
 								})
 						)
 				).append(

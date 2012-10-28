@@ -681,11 +681,12 @@ vmmCMenu.addMenu(vmmCMButtons);
 
 
 /**
- * Display selected media info
+ * Displays medium info
+ * @param {HTMLElement} med selected medium row
  */
-function vboxVMMMediaInfo(m) {
+function vboxVMMMediaInfo(med) {
 	
-	var m = (m ? vboxMedia.getMediumById($(m).data('medium')) : null);
+	var m = (med ? vboxMedia.getMediumById($(med).data('medium')) : null);
 	
 	$('#vboxVirtualMediaManager').find('.vmmMediumLocation').val((m && m.location ? m.location : '--'));
 	$('#vboxVirtualMediaManager').find('.vmmMediumFormat').val(m ? m.format.toUpperCase() : '--');

@@ -1,13 +1,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" >
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:xi="http://www.w3.org/2001/XInclude">
+<!-- $Id$ -->
+<!-- Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com) -->
 <head>
 
-	<!-- $Id$ -->
-	<!-- Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com) -->
-
-	<!-- Meta fields. -->
-	<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=9" />
+	<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
 	<meta http-equiv="Expires" content="0"/>
 	<meta http-equiv="Cache-Control" content ="no-cache"/>
 	<meta http-equiv="Cache-Control" content ="no-store, must-revalidate, max-age=0"/>
@@ -299,7 +297,7 @@
 						
 			/**
 			 * Check for valid session and display login box if one does not exist
-			 * @param {Boolean} tried - set to true if login was attempted before this call
+			 * @params {Boolean} tried - true if login was attempted before this call
 			 */
 			var vboxCheckSession = function(tried) {
 				
@@ -326,7 +324,7 @@
 					vboxAlert(trans('Invalid username or password.','UIUsers'),{'width':'auto'});
 				}
 				
-			}
+			};
 
 			/** Load login form */
 			var login = new vboxLoader();

@@ -879,7 +879,7 @@ var vboxVMDetailsSections = {
 							$('#vboxPane').data('vboxPreviewTimer-'+d.id, window.setInterval('vboxVMDetailsSections.preview._drawPreview("'+d.id+'")',vboxVMDetailsSections.preview._updateInterval*1000));							
 						},vboxVMDetailsSections.preview._updateInterval*1000);
 					}
-				}
+				};
 				
 
 				var randid = d.lastStateChange;
@@ -1859,7 +1859,7 @@ var vboxVMActions = {
 		icon: 'pause',
 		icon_disabled: 'pause_disabled',
 		enabled: function(){
-			return vboxChooser.isSelectedInState('Running')
+			return vboxChooser.isSelectedInState('Running');
 		},
 		click: function() {
 			var vms = vboxChooser.getSelectedVMsData();

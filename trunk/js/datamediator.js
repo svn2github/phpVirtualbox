@@ -90,12 +90,6 @@ var vboxVMDataMediator = {
 			var vmData = {};
 			var subscribeList = [];
 
-			// No data?
-			if(!d || !d.success) {
-				mList.reject();
-				return;
-			}
-			
 			for(var i = 0; i < d.responseData.length; i++) {
 				
 				// Enforce VM ownership
@@ -115,9 +109,13 @@ var vboxVMDataMediator = {
 				vboxVMDataMediator.vmData = vmData;
 				mList.resolve(d.responseData);		
 				
+			}).fail(function() {
+				mList.reject();
 			});
 			
 			
+		}).fail(function() {
+			mList.reject();
 		});
 		
 		return mList.promise();
@@ -145,6 +143,9 @@ var vboxVMDataMediator = {
 			$.when(vboxAjaxRequest('machineGetDetails',{vm:vmid})).done(function(d){
 				vboxVMDataMediator.vmDetailsData[d.responseData.id] = d.responseData;
 				vboxVMDataMediator.promises.getVMDetails[vmid].resolve(d.responseData);
+			}).fail(function(){
+				vboxVMDataMediator.promises.getVMDetails[vmid].reject();
+				vboxVMDataMediator.promises.getVMDetails[vmid] = null;
 			});
 
 		}		
@@ -173,6 +174,9 @@ var vboxVMDataMediator = {
 			$.when(vboxAjaxRequest('machineGetRuntimeData',{vm:vmid})).done(function(d){
 				vboxVMDataMediator.vmRuntimeData[d.responseData.id] = d.responseData;
 				vboxVMDataMediator.promises.getVMRuntimeData[vmid].resolve(d.responseData);
+			}).fail(function(){
+				vboxVMDataMediator.promises.getVMRuntimeData[vmid].reject();
+				vboxVMDataMediator.promises.getVMRuntimeData[vmid] = null;
 			});
 
 		}		
@@ -191,6 +195,8 @@ var vboxVMDataMediator = {
 			var def = $.Deferred();
 			$.when(vboxVMDataMediator.getVMDetails(vmid)).then(function(d){
 				def.resolve(d);
+			}).fail(function(){
+				def.reject();
 			});
 			return def.promise();
 		}
@@ -205,6 +211,8 @@ var vboxVMDataMediator = {
 		var def = $.Deferred();
 		$.when(vboxVMDataMediator.getVMDetails(vmid), runtime, vboxVMDataMediator.getVMData(vmid)).then(function(d1,d2,d3){
 			def.resolve($.extend(true,{},d1,d2,d3));
+		}).fail(function(){
+			def.reject();
 		});
 		return def.promise();
 		
@@ -233,6 +241,8 @@ var vboxVMDataMediator = {
 			def.resolve();
 			$('#vboxPane').trigger('vboxOnMachineDataChanged', [{machineId:d.responseData.id,enrichmentData:d}]);
 			$('#vboxPane').trigger('vboxEvents', [[{eventType:'OnMachineDataChanged',machineId:d.responseData.id,enrichmentData:d}]]);
+		}).fail(function(){
+			def.reject();
 		});
 		
 		return def.promise();

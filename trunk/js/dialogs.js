@@ -321,18 +321,25 @@ function vboxWizardNewVMDialog(vmgroup) {
 				var ostype = document.forms['frmwizardNewVM'].newVMOSType.options[document.forms['frmwizardNewVM'].newVMOSType.selectedIndex].value;
 				var mem = parseInt(document.forms['frmwizardNewVM'].wizardNewVMSizeValue.value);
 				
+				// Show loading screen
+				var l = new vboxLoader('machineCreate');
+				l.showLoading();
+				
 				$.when(vboxAjaxRequest('machineCreate',{'disk':disk,'ostype':ostype,'memory':mem,'name':name,'group':vmgroup})).then(function(res){
 
-					if(res && res.responseData && res.responseData.exists) {
+					if(res.responseData.exists) {
 						vboxAlert(trans('<p>Cannot create the machine folder <b>%1</b> in the parent folder <nobr><b>%2</b>.</nobr></p><p>This folder already exists and possibly belongs to another machine.</p>','UIMessageCenter').replace('%1',vboxBasename(res.exists)).replace('%2',vboxDirname(res.exists)));
 					
-					} else if(res && res.success) {
+					} else if(res.success) {
 						$(dialog).trigger('close').empty().remove();
 						var lm = new vboxLoader('machineCreate');
 						lm.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 						lm.run();
 					}
-				});			
+					
+				}).always(function() {
+					l.removeLoading();
+				});
 				
 			};
 			
@@ -427,8 +434,6 @@ function vboxWizardCloneVMDialog(args) {
 	
 	$.when(vboxVMDataMediator.getVMDetails(args.vm.id)).then(function(d){
 		
-		l.removeLoading();
-				
 		var vbw = new vboxWizard('wizardCloneVM',trans('Clone Virtual Machine','UIWizardCloneVM'),'images/vbox/vmw_clone_bg.png','vm_clone');		
 		vbw.steps = (d.snapshotCount > 0 ? 3 : 2);
 		vbw.args = $.extend(true,args,{'vm':d});
@@ -528,6 +533,10 @@ function vboxWizardCloneVMDialog(args) {
 	
 		};
 		vbw.run();
+	}).always(function() {
+		
+		// Always remove loading screen
+		l.removeLoading();		
 	});
 	
 	return result.promise();
@@ -1292,7 +1301,7 @@ function vboxWizardFirstRunDialog(vm) {
 				l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 				l.onLoad = function(){
 					result.resolve();
-				}
+				};
 				l.run();		
 			},args);
 			mount.run();	

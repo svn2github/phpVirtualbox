@@ -1202,43 +1202,30 @@ function vboxDateTimeString(t, replaceTime, replaceDateTime) {
  */
 var getScrollbarWidth = function() {
 	
-	//if($.browser.webkit) {
-		
-		var inner = document.createElement('p');  
-	    inner.style.width = "100%"; 
-	    inner.style.height = "200px";  
-	  
-	    var outer = document.createElement('div');  
-	    outer.style.position = "absolute";  
-	    outer.style.top = "0px";  
-	    outer.style.left = "0px";  
-	    outer.style.visibility = "hidden";  
-	    outer.style.width = "200px";  
-	    outer.style.height = "150px";  
-	    outer.style.overflow = "hidden";  
-	    outer.appendChild (inner);  
-	  
-	    document.body.appendChild (outer);  
-	    var w1 = inner.offsetWidth;  
-	    outer.style.overflow = 'scroll';  
-	    var w2 = inner.offsetWidth;  
-	    if (w1 == w2) w2 = outer.clientWidth;  
-	  
-	    document.body.removeChild (outer);  
-	  
-	    return (w1 - w2);  
+	var inner = document.createElement('p');  
+    inner.style.width = "100%"; 
+    inner.style.height = "200px";  
+  
+    var outer = document.createElement('div');  
+    outer.style.position = "absolute";  
+    outer.style.top = "0px";  
+    outer.style.left = "0px";  
+    outer.style.visibility = "hidden";  
+    outer.style.width = "200px";  
+    outer.style.height = "150px";  
+    outer.style.overflow = "hidden";  
+    outer.appendChild (inner);  
+  
+    document.body.appendChild (outer);  
+    var w1 = inner.offsetWidth;  
+    outer.style.overflow = 'scroll';  
+    var w2 = inner.offsetWidth;  
+    if (w1 == w2) w2 = outer.clientWidth;  
+  
+    document.body.removeChild (outer);  
+  
+    return (w1 - w2);  
 	    
-	//}		
-
-	var div = $('<div style="width:50px;height:50px;overflow:hidden;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div>'); 
-    // Append our div, do our calculation and then remove it 
-    $('body').append(div); 
-    var w1 = $('div', div).innerWidth(); 
-    div.css('overflow-y', 'scroll'); 
-    var w2 = $('div', div).innerWidth(); 
-    $(div).remove();
-    return (w1 - w2);
-
 };
 
 /**

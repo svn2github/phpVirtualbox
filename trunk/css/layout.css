@@ -667,9 +667,11 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAABLElEQVQ4jZXUvUoDQRQF4CV5BSFFCOJ7CBaChY1VCiF5BINCGt9IK639AZ9BIWqpolZG7Eyhn4WzZty968/AFnvuPWfOvXdmiiJYGOECM7yn7xXn2Io4VYENTP2+nrDeJLKTdoY3HKGPhfT1cZxiUu6oKrKWidyg84PrLm4zsdU8+JICd2j9oQUtPCTOcwnuZuV0EnaIPbQzchv7OMiclWWOC1ynn5OMNEnYIMOGCZtk2FnCLgufI4bNgHSVnLSzDSPxWWG+upUyvohV4SxvsWx6KBS4qrmJhGqlBa5qbqLSyuTTYMzDTGgQxL81Ox9/r8FV5GbJ/BCPS7DxQCZX1d7UD2QK5FfkXn2C+aR6eCybLL8iKWHb/y9t/KRgxd+ekSmWQ5HAXdPDNoo4H+Au/VObGQcPAAAAAElFTkSuQmCC)\9;
 }
 
-#vboxChooserPane div.vboxVMGroupCollapsed {
+#vboxChooserPane div.vboxVMGroupCollapsed.vboxVMGroupSelected,
+#vboxChooserPane div.vboxVMGroupSelected.vboxVMGroupCollapsed {
 	background: #69F;
 }
+
 #vboxChooserPane div.vboxChooserGroupShowOnly.vboxVMGroupCollapsed {
 	background: transparent;
 }

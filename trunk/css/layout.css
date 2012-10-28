@@ -132,6 +132,9 @@ ul.vboxList li table tr { vertical-align: middle; }
 ul.vboxList li img { vertical-align: middle; }
 
 .vboxListItem, a.vboxListItem, .vboxListItem a { cursor: pointer; color: #000; background: #fff; }
+#vboxChooserSpinner { height: 100%; position: relative;  background: #fff; width: 100%; vertical-align: middle; text-align: center; }
+#vboxChooserSpinner > div { width: 100%; height: 100%; background: #fff; text-align: center; }
+#vboxChooserSpinner > div img {position: relative; top: 50%; }
 #vboxChooserPane table.vboxChooserVM.vboxListItemSelected.vboxHover,
 #vboxChooserPane table.vboxChooserVM.vboxListItemSelected,
 .vboxListItemSelected.vboxHover,

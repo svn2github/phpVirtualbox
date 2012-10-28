@@ -74,6 +74,8 @@ var vboxChooser = {
 		vboxChooser._anchorid = aid;
 		vboxChooser._anchor = $('#'+aid);
 		
+		vboxChooser._anchor.html("<div id='vboxChooserSpinner' style='text-align: center'><div><img src='images/spinner.gif' /></div></div>");
+		
 		vboxChooser._anchor.hover(function(){
 			$(this).addClass('vboxChooserDropTargetHoverRoot');
 		},function() {
@@ -2097,7 +2099,7 @@ var vboxChooser = {
 		if(!vboxChooser._running) return;
 		vboxChooser._running = false;
 		
-		vboxChooser._anchor.html("<div id='vboxChooserSpinner' style='text-align: center'><img src='images/spinner.gif' /></div>");
+		vboxChooser._anchor.html("<div id='vboxChooserSpinner' style='text-align: center'><div><img src='images/spinner.gif' /></div></div>");
 		
 		// reset vars
 		vboxChooser._versionChecked = false;

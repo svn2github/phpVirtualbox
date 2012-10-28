@@ -480,7 +480,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 						
 				).then(function() {
 					$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
-						.find('canvas.vboxDetailsUpDnImg').each(function(idx, can) {
+						.find('canvas').each(function(idx, can) {
 							var ctx = can.getContext('2d');
 							ctx.clearRect(0,0,18,18);
 							if(!collapsed) {

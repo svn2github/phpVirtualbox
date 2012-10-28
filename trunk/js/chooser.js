@@ -1524,7 +1524,7 @@ var vboxChooser = {
 		
 					var ctx = $(can)[0].getContext('2d');
 					ctx.clearRect(0,0,18,18);
-					if($(can).closest('vboxChooserGroup').hasClass('vboxVMGroupCollapsed')) {
+					if($(can).closest('div.vboxChooserGroup').hasClass('vboxVMGroupCollapsed')) {
 						ctx.save();
 						ctx.translate(9,9);
 						ctx.rotate(-90 * Math.PI / 180.0);										

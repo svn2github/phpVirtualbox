@@ -72,9 +72,17 @@ var vboxVMDataMediator = {
 	 */
 	getVMList: function() {
 	
+		// Return array from existing data
 		if(vboxVMDataMediator.vmData) {
-			return vboxVMDataMediator.vmData;
+			var list = [];
+			for(var i in vboxVMDataMediator.vmData) {
+				if(typeof i != 'string') continue;
+				if(i == 'host') continue;
+				list.push(vboxVMDataMediator.vmData[i]);
+			}
+			return list;
 		}
+		
 		
 		var mList = $.Deferred();
 		$.when(vboxAjaxRequest('vboxGetMachines')).done(function(d) {

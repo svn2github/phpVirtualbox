@@ -1168,7 +1168,7 @@ class vboxconnector {
 	 * Save vms' groups if they have changed
 	 * 
 	 * @param array $args array of arguments. See function body for details.
-	 * @return boolean true on success
+	 * @return array response data
 	 */
 	public function remote_machinesSaveGroups($args) {
 		
@@ -1243,7 +1243,7 @@ class vboxconnector {
 		}
 		
 		
-		return true;
+		return $response;
 		
 		
 	}

@@ -261,7 +261,7 @@ var vboxChooser = {
 			vboxChooser._anchor.children().remove();
 			return;
 		}
-
+		
 		// Remove spinner
 		vboxChooser._anchor.children().remove();
 		
@@ -780,7 +780,7 @@ var vboxChooser = {
 				}
 
 			// Dropped onto main vm list
-			} else if($(vboxChooser._anchor).hasClass('vboxChooserDropTargetHoverRoot')) {
+			} else if($(vboxChooser._anchor).find('div.vboxGroupHover').length == 0 && $(vboxChooser._anchor).hasClass('vboxChooserDropTargetHoverRoot')) {
 
 				dropTarget = null;
 				
@@ -948,7 +948,7 @@ var vboxChooser = {
 						vboxChooser.vmHTML(vmData).appendTo(dropTarget.siblings('div.vboxChooserGroupVMs').first());
 				
 				// Main VM list
-				} else if($(vboxChooser._anchor).hasClass('vboxChooserDropTargetHoverRoot')) {
+				} else if($(vboxChooser._anchor).find('div.vboxGroupHover').length == 0 && $(vboxChooser._anchor).hasClass('vboxChooserDropTargetHoverRoot')) {
 				
 					dropTarget = null;
 					
@@ -1182,18 +1182,18 @@ var vboxChooser = {
 		// Save machine groups and trigger change
 		var vms = [];
 		var vmList = vboxVMDataMediator.getVMList();
-		for(var i in vmList) {
+		for(var i = 0; i < vmList.length; i++) {
 			
-			if(typeof i != 'string' || i == 'host' || !vmList[i]) continue;
-			
+			if(vmList[i].id == 'host') continue;
+
 			/* If a VM's groups have changed, add it to the list */
 			var eGroups = vmList[i].groups;
-			var nGroups = vboxChooser.getGroupsForVM(i);
+			var nGroups = vboxChooser.getGroupsForVM(vmList[i].id);
 			
 			if($(nGroups).not(eGroups).length || $(eGroups).not(nGroups).length) {
 			
 				vms[vms.length] = {
-						'id' : i,
+						'id' : vmList[i].id,
 						'groups' : nGroups
 				};				
 			}
@@ -2011,7 +2011,10 @@ var vboxChooser = {
 
 		// Bottom drop target
 		if(!first) {
-			gHTML.append(
+			gHTML.hover(function(){
+				$(this).addClass('vboxGroupHover'); }, function() {
+					$(this).removeClass('vboxGroupHover');
+			}).append(
 				$('<div />').addClass('vboxChooserDropTarget vboxChooserDropTargetBottom')
 					.hover(function(){
 						if(vboxChooser._draggingGroup)

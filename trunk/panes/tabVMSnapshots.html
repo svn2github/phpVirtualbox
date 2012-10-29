@@ -354,7 +354,7 @@ var vboxSnapshotButtons = [
   			// Current snapshot
   	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
   			
-  	  		vboxWizardCloneVMDialog({'vm':vm,'snapshot':(snapshot.state == 'current' ? undefined : snapshot)});
+  	  		new vboxWizardCloneVMDialog({'vm':vm,'snapshot':(snapshot.state == 'current' ? undefined : snapshot)}).run();
   			
   	  	},
   		'separator' : true

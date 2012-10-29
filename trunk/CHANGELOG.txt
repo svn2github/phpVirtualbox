@@ -39,6 +39,14 @@ main window toolbar
 
 Cleaned up wizards to perform expected actions when pressing Enter
 
+vboxinit now reads VBOX_PATH if set in /etc/default/virtualbox and
+adds it to $PATH
+http://code.google.com/p/phpvirtualbox/issues/detail?id=616
+
+If multiple servers are configured, progress operation rows now
+contain the server's name
+http://code.google.com/p/phpvirtualbox/issues/detail?id=617
+
 -------------------------------------
 	4.2-3b	2012-10-21
 -------------------------------------

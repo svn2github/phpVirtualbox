@@ -826,7 +826,9 @@ function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
 	$(tr).append(td);
 	
 	// Title
-	if(!title) title = '';
+	if($('#vboxPane').data('vboxConfig').servers.length) {
+		title = $('#vboxPane').data('vboxConfig').name + ': ' + title;		
+	}
 	$('<td />').css({'padding':'0px','text-align':'left','width':'580px'}).html(title + (target ? ' (' + target + ')' : '')).appendTo(tr);
 	
 	// Progress bar

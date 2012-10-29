@@ -276,9 +276,9 @@ var vmmButtons = new Array(
 		'icon' : 'hd_new',
 		'enabled' : function (item) { return(!$("#vboxVMMTabs").tabs('option','selected')); },
 		'click' : function () {
-			vboxWizardNewHDDialog(function(id){
-				vboxVMMFillMedia(id);
-			},{'path':$('#vboxVirtualMediaManager').data('vmPath')}); 
+			$.when(new vboxWizardNewHDDialog({'path':$('#vboxVirtualMediaManager').data('vmPath')}).run()).then(function(id){
+				vboxVMMFillMedia(id);				
+			});
 		}
 	},
 	
@@ -389,7 +389,7 @@ var vmmButtons = new Array(
 					elm = $('#vboxVMMHDList');
 					break;
 			}
-			$.when(vboxWizardCopyHDDialog({'medium':$(elm).find('tr.vboxListItemSelected').first().data('medium')})).done(function(id){
+			$.when(new vboxWizardCopyHDDialog({'medium':$(elm).find('tr.vboxListItemSelected').first().data('medium')}).run()).then(function(id){
 				vboxVMMFillMedia(id);
 			}); 
 		}

@@ -32,14 +32,17 @@ var menu = {
 			'name':'fileImport',
 			'label':trans('Import Appliance...','UIActionPool'),
 			'icon':'import',
-			'click':function(){vboxWizardImportApplianceDialog();},
+			'click':function(){
+				
+				new vboxWizardImportApplianceDialog().run();
+			},
 			'separator': true
         },
         {
 			'name':'fileExport',
 			'label':trans('Export Appliance...','UIActionPool'),
 			'icon':'export',
-			'click':function(){vboxWizardExportApplianceDialog();}
+			'click':function(){new vboxWizardExportApplianceDialog().run();}
         },
         {
 			'name':'filePrefs',

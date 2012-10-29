@@ -984,7 +984,7 @@ function vboxSettingsStorageAddMedium(bus, type) {
 		
 		buttons[trans('Create new disk','UIMessageCenter')] = function() {
 
-			$.when(vboxWizardNewHDDialog({'path':vboxDirname($('#vboxSettingsDialog').data('vboxMachineData').settingsFilePath)+$('#vboxPane').data('vboxConfig').DSEP}))
+			$.when(new vboxWizardNewHDDialog({'path':vboxDirname($('#vboxSettingsDialog').data('vboxMachineData').settingsFilePath)+$('#vboxPane').data('vboxConfig').DSEP}).run())
 				.then(function(id){
 					if(!id) return;
 					mAttachToolbarHD.mediaMenu.menuUpdateRecent();

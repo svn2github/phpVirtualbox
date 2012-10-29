@@ -125,12 +125,13 @@ var vboxVMDataMediator = {
 	 * Get VM details data
 	 * 
 	 * @param vmid {String} ID of VM to get data for
+	 * @param forceRefresh {Boolean} force refresh of VM data
 	 * @returns {Object} vm data or promise
 	 */
-	getVMDetails: function(vmid) {
+	getVMDetails: function(vmid, forceRefresh) {
 		
 		// Data exists
-		if(vboxVMDataMediator.vmDetailsData[vmid]) {
+		if(vboxVMDataMediator.vmDetailsData[vmid] && !forceRefresh) {
 			vboxVMDataMediator.promises.getVMDetails[vmid] = null;
 			return vboxVMDataMediator.vmDetailsData[vmid];
 		}

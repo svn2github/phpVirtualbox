@@ -11,7 +11,6 @@
  * 
  * @namespace vboxHostDetailsSections
  */
-
 var vboxHostDetailsSections = {
 	
 	/*
@@ -263,7 +262,6 @@ var vboxHostDetailsSections = {
  * 
  * @namespace vboxVMDetailsInfo
  */
-
 var vboxVMDetailsSections = {
 	
 	/*
@@ -1340,7 +1338,8 @@ var vboxVMDetailsSections = {
 };
 
 /**
- * Common VM Group Actions
+ * Common VM Group Actions - most of these are passed off
+ * to the vboxChooser object
  * 
  * @namespace vboxVMGroupActions
  */
@@ -1428,7 +1427,7 @@ var vboxVMActions = {
 			icon:'vm_new',
 			icon_16:'new',
 			click: function(fromGroup){
-				vboxWizardNewVMDialog((fromGroup ? $(vboxChooser.getSelectedGroupElements()[0]).data('vmGroupPath') : ''));
+				new vboxWizardNewVMDialog((fromGroup ? $(vboxChooser.getSelectedGroupElements()[0]).data('vmGroupPath') : '')).run();
 			}
 	},
 	
@@ -1496,7 +1495,7 @@ var vboxVMActions = {
 					}
 					
 					// First time run
-					$.when(d, vboxWizardFirstRunDialog(d)).then(function(vm2start){
+					$.when(d, new vboxWizardFirstRunDialog(d).run()).then(function(vm2start){
 						frDef.resolve(vm2start);
 					});
 					
@@ -1637,7 +1636,13 @@ var vboxVMActions = {
 		icon:'vm_clone',
 		icon_16:'vm_clone',
 		icon_disabled:'vm_clone_disabled',
-		click:function(){vboxWizardCloneVMDialog({vm:vboxChooser.getSingleSelected()});},
+		click:function(){
+			$.when(new vboxWizardCloneVMDialog({vm:vboxChooser.getSingleSelected()}).run()).then(function(){
+				console.log('ok');
+			},function(){
+				console.log('no');
+			});
+		},
 		enabled: function () {
 			return (vboxChooser.selectionMode == vboxSelectionModeSingleVM && vboxChooser.isSelectedInState('PoweredOff'));
 		}
@@ -2281,46 +2286,85 @@ var vboxMedia = {
 	} // </ actions >
 };
 
+
+
 /**
  * Base Wizard class (new HardDisk, VM, etc..)
  * 
  * @class vboxWizard
  * @constructor
- * @param {String}
- *            name - name of wizard
- * @param {String}
- *            title - title of wizard dialog window
- * @param {String}
- *            bg - optional URL to background image to use
- * @param {String}
- *            icon - optional URL to icon to use on dialog
  */
-function vboxWizard(name, title, bg, icon) {
+function vboxWizard() {
 	
 	var self = this;
 
+	/* Number of wizard steps */
 	this.steps = 0;
-	this.name = name;
-	this.title = title;
-	this.finish = null;
+	
+	/* Wizard name - used to determine form name and HTML pane to load */
+	this.name = '';
+	
+	/* Title of wizard */
+	this.title = '';
+	
+	/* Wizard dialog icon image */
+	this.icon = null;
+	
+	/* Width and height for Simple mode */
 	this.width = 700;
 	this.height = 400;
+	
+	/* Width and height for expert mode */
 	this.widthAdvanced = 600;
 	this.heightAdvanced = 450;
-	this.bg = bg;
+	
+	/* Background image */
+	this.bg = null;
+	
+	/* Text on Back button */
 	this.backText = trans('Back','QIArrowSplitter');
+	
+	/* Text on Next button */
 	this.nextText = trans('Next','QIArrowSplitter');
+
+	/* Text on cancel button */
 	this.cancelText = trans('Cancel','QIMessageBox');
+
+	/* Text on finish button */
 	this.finishText = 'Finish';
+	
+	/* Translation context */
 	this.context = '';
-	this.perPageContext = '';
+
+	/* Arrow on back button */
 	this.backArrow = $('<div />').html('&laquo;').text();
+
+	/* Arrow on Next button */
 	this.nextArrow = $('<div />').html('&raquo;').text();
+	
+	/* Mode of wizard */
 	this.mode = 'simple';
-	this.validate = function(){
-		return true;
-	};
+	
+	/* Data to load */
+	this.data = [];
+	
+	/* Form object held to get values */
+	this.form = null;
+	
+	/* Reference to dialog object created */
+	this.dialog = null;
+	
+	/* Deferred object resolved when complete */
 	this.completed = $.Deferred();
+	
+	/* Function to run on finish */
+	this.onFinish = function() {
+		
+		if(self.completed.state() == 'pending')
+			self.completed.resolve();
+		
+		$(self.dialog).empty().remove();
+	};
 	
 	/**
 	 * Initialize / display wizard
@@ -2329,14 +2373,14 @@ function vboxWizard(name, title, bg, icon) {
 	 * @name vboxWizard.run
 	 * @returns {Object} deferred promise
 	 */
-	self.run = function() {
+	this.run = function() {
 
 		// Set mode
-		self.mode = (vboxGetLocalDataItem('vboxWizardMode'+self.name) == 'a' ? 'advanced' : '');
+		this.mode = (vboxGetLocalDataItem('vboxWizardMode'+this.name) == 'a' ? 'advanced' : '');
 		
-		var d = $('<div />').attr({'id':self.name+'Dialog','style':'display: none','class':'vboxWizard'});
+		this.dialog = $('<div />').attr({'id':this.name+'Dialog','style':'display: none','class':'vboxWizard'});
 		
-		var f = $('<form />').attr({'name':('frm'+self.name),'style':'height:100%;margin:0px;padding:0px;border:0px;'})
+		this.form = $('<form />').attr({'name':('frm'+this.name),'style':'height:100%;margin:0px;padding:0px;border:0px;'})
 			.on('submit',function(e){
 				self.displayNext();
 				e.stopPropagation();
@@ -2349,25 +2393,26 @@ function vboxWizard(name, title, bg, icon) {
 		var tr = $('<tr />');
 
 		
-		var td = $('<td />').attr({'id':self.name+'Content','class':'vboxWizardContent'});
+		var td = $('<td />').attr({'id':this.name+'Content','class':'vboxWizardContent'});
 		
-		if(self.bg) {
-			$(d).css({'background':'url('+self.bg+') ' + ((self.mode == 'advanced' ? self.widthAdvanced : self.width) - 360) +'px -60px no-repeat','background-color':'#fff'});				
+		if(this.bg) {
+			$(this.dialog).css({'background':'url('+this.bg+') ' + ((this.mode == 'advanced' ? this.widthAdvanced : this.width) - 360) +'px -60px no-repeat','background-color':'#fff'});				
 		}
 		
 		// Title and content table
-		$('<h3 />').attr('id',self.name+'Title').html(self.title).appendTo(td);
+		$('<h3 />').attr('id',this.name+'Title').html(this.title).appendTo(td);
 
 		$(tr).append(td).appendTo(tbl);		
 		
-		f.append(tbl);
-		d.append(f);
+		this.form.append(tbl);
+		this.dialog.append(this.form).appendTo($('#vboxPane'));
 		
-		$('#vboxPane').append(d);
-				
-		// load panes
-		var l = new vboxLoader();
-		l.addFileToDOM('panes/'+self.name+(self.mode == 'advanced' ? 'Advanced' : '')+'.html',$('#'+self.name+'Content'));
+		// load data and panes
+		var l = new vboxLoader(this.name+'Loader');
+		for(var i = 0; i < this.data.length; i++) {
+			l.add(this.data[i].fn,this.data[i].callback,(this.data[i].args ? this.data[i].args : undefined));
+		}
+		l.addFileToDOM('panes/'+this.name+(this.mode == 'advanced' ? 'Advanced' : '')+'.html',$('#'+this.name+'Content'));
 		
 		l.onLoad = function(){
 		
@@ -2383,7 +2428,6 @@ function vboxWizard(name, title, bg, icon) {
 				});
 			}
 
-			
 			// Show / Hide description button
 			if(!self.stepButtons) self.stepButtons = [];
 			if(!self.noAdvanced) {
@@ -2481,13 +2525,7 @@ function vboxWizard(name, title, bg, icon) {
 								}
 								
 								// Translations
-								if(self.perPageContext) {
-									for(var s = 1; s <= self.steps; s++) {
-										vboxInitDisplay($('#'+self.name+'Step'+s),self.perPageContext.replace('%1',s));
-									}									
-								} else {
-									vboxInitDisplay(self.name+'Content',self.context);
-								}
+								vboxInitDisplay(self.name+'Content',self.context);
 								
 								// Show back button
 								$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.backArrow + ' '+self.backText+'")').parent().show();
@@ -2529,18 +2567,9 @@ function vboxWizard(name, title, bg, icon) {
 			buttons[self.cancelText] = self.close;
 			
 			// Translations
-			if(self.perPageContext) {
-
-				for(var s = 1; s <= self.steps; s++) {
-					vboxInitDisplay($('#'+self.name+'Step'+s),self.perPageContext.replace('%1',s));
-				}
-				
-			} else {
-				vboxInitDisplay(self.name+'Content',self.context);
-			}
+			vboxInitDisplay(self.name+'Content',self.context);
 			
-			
-			$(d).dialog({
+			$(self.dialog).dialog({
 				'closeOnEscape':true,
 				'width':(self.mode == 'advanced' ? self.widthAdvanced : self.width),
 				'height':(self.mode == 'advanced' ? self.heightAdvanced : self.height),
@@ -2552,11 +2581,14 @@ function vboxWizard(name, title, bg, icon) {
 				'open' : function() {
 					$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.nextArrow+'")').parent().focus();
 				},
-				'title':(icon ? '<img src="images/vbox/'+icon+ ( (icon.indexOf('.png') == -1) ? '_16px.png' : '') +'" class="vboxDialogTitleIcon" /> ' : '') + self.title
+				'title':(self.icon ? '<img src="images/vbox/'+self.icon+ ( (self.icon.indexOf('.png') == -1) ? '_16px.png' : '') +'" class="vboxDialogTitleIcon" /> ' : '') + self.title
 			
 			}).bind('dialogclose', function(){
-				
-				self.completed.reject();
+
+				// Reject if still pending
+				if(self.completed.state() == 'pending')
+					self.completed.reject();
+
 				$(this).empty().remove();
 				
 			}).bind('keyup',function(e) {
@@ -2596,8 +2628,13 @@ function vboxWizard(name, title, bg, icon) {
 	 * 
 	 * @memberOf vboxWizard
 	 */
-	self.close = function() {
-		$('#'+self.name+'Dialog').trigger('dialogclose');
+	this.close = function() {
+
+		// Reject if still pending
+		if(self.completed.state() == 'pending')
+			self.completed.reject();
+
+		$(self.dialog).empty().remove();
 	};
 	
 	/**
@@ -2607,7 +2644,7 @@ function vboxWizard(name, title, bg, icon) {
 	 * @param {Integer}
 	 *            step - step to display
 	 */
-	self.displayStep = function(step) {
+	this.displayStep = function(step) {
 		self._curStep = step;
 		for(var i = 0; i < self.steps; i++) {
 			$('#'+self.name+'Step'+(i+1)).css({'display':'none'});
@@ -2631,7 +2668,7 @@ function vboxWizard(name, title, bg, icon) {
 				$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.finishText+'")').html($('<div />').text(self.nextText+' '+self.nextArrow).html());
 			}
 		}
-		$('#'+self.name+'Title').html(trans($('#'+self.name+'Step'+step).attr('title'),(self.perPageContext ? self.perPageContext.replace('%1',step) : self.context)));
+		$('#'+self.name+'Title').html(trans($('#'+self.name+'Step'+step).attr('title'),self.context));
 		$('#'+self.name+'Step'+step).css({'display':''});
 
 		// Opera hidden select box bug
@@ -2649,7 +2686,7 @@ function vboxWizard(name, title, bg, icon) {
 	 * 
 	 * @memberOf vboxWizard
 	 */
-	self.setLast = function() {
+	this.setLast = function() {
 		$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.nextText+'")').html($('<div />').text(self.finishText).html());
 		self._origSteps = self.steps;
 		self.steps = self._curStep;
@@ -2661,7 +2698,7 @@ function vboxWizard(name, title, bg, icon) {
 	 * 
 	 * @memberOf vboxWizard
 	 */
-	self.unsetLast = function() {
+	this.unsetLast = function() {
 		$('#'+self.name+'Dialog').parent().find('.ui-dialog-buttonpane').find('span:contains("'+self.finishText+'")').html($('<div />').text(self.nextText+' '+self.nextArrow).html());
 		if(self._origSteps) self.steps = self._origSteps;
 	};
@@ -2671,7 +2708,7 @@ function vboxWizard(name, title, bg, icon) {
 	 * 
 	 * @memberOf vboxWizard
 	 */
-	self.displayPrev = function() {
+	this.displayPrev = function() {
 		if(self._curStep <= 1) return;
 		self.displayStep(self._curStep - 1);
 	};
@@ -2681,34 +2718,34 @@ function vboxWizard(name, title, bg, icon) {
 	 * 
 	 * @memberOf vboxWizard
 	 */
-	self.displayNext = function() {
+	this.displayNext = function() {
 		if(self._curStep >= self.steps) {
-			self.onFinish(self,$('#'+self.name+'Dialog'));
+			self.onFinish();
 			return;
 		}
 		self.displayStep(self._curStep + 1);
 	};
 	
 }
+
 /**
  * Common toolbar class
  * 
  * @constructor
  * @class vboxToolbar
- * @param {Array}
- *            buttons - buttons to add to toolbar
+ * @param {Array} buttons - buttons to add to toolbar
  */
 function vboxToolbar(buttons) {
 
 	var self = this;
-	self.buttons = buttons;
-	self.size = 22;
-	self.addHeight = 24;
-	self.lastItem = null;
-	self.id = null;
-	self.buttonStyle = '';
-	self.enabled = true;
-	self.mutliSelect = false; // true if multiple items are selected
+	this.buttons = buttons;
+	this.size = 22;
+	this.addHeight = 24;
+	this.lastItem = null;
+	this.id = null;
+	this.buttonStyle = '';
+	this.enabled = true;
+	this.mutliSelect = false; // true if multiple items are selected
 
 	/**
 	 * Update buttons to be enabled / disabled
@@ -2717,7 +2754,7 @@ function vboxToolbar(buttons) {
 	 * @param {Object|Null}
 	 *            item - item to check
 	 */
-	self.update = function(item) {
+	this.update = function(item) {
 		
 		// Event target or manually passed item
 		self.lastItem = item;
@@ -2742,7 +2779,7 @@ function vboxToolbar(buttons) {
 	 * @param {Object}
 	 *            item - item to pass to update
 	 */ 
-	self.enable = function(e, item) {
+	this.enable = function(e, item) {
 		self.enabled = true;
 		self.update((item||self.lastItem));
 	};
@@ -2752,7 +2789,7 @@ function vboxToolbar(buttons) {
 	 * 
 	 * @memberOf vboxToolbar
 	 */
-	self.disable = function() {
+	this.disable = function() {
 		self.enabled = false;
 		for(var i = 0; i < self.buttons.length; i++) {
 			self.disableButton(self.buttons[i]);
@@ -2766,7 +2803,7 @@ function vboxToolbar(buttons) {
 	 * @param {Object}
 	 *            b - button to enable
 	 */
-	self.enableButton = function(b) {
+	this.enableButton = function(b) {
 		$('#vboxToolbarButton-'+self.id+'-'+b.name).addClass('vboxEnabled').removeClass('vboxDisabled').children('img.vboxToolbarImg').attr('src','images/vbox/'+b.icon+'_'+self.size+'px.png');
 	};
 
@@ -2777,7 +2814,7 @@ function vboxToolbar(buttons) {
 	 * @param {Object}
 	 *            b - button to disable
 	 */
-	self.disableButton = function(b) {
+	this.disableButton = function(b) {
 		$('#vboxToolbarButton-'+self.id+'-'+b.name).addClass('vboxDisabled').removeClass('vboxEnabled').children('img.vboxToolbarImg').attr('src','images/vbox/'+b.icon+'_disabled_'+self.size+'px.png');
 	};
 
@@ -2790,7 +2827,7 @@ function vboxToolbar(buttons) {
 	 * @param {String}
 	 *            l - new label for button
 	 */
-	self.setButtonLabel = function(bname,l) {
+	this.setButtonLabel = function(bname,l) {
 		$('#vboxToolbarButton-'+self.id+'-'+bname).find('span.vboxToolbarButtonLabel').html(l);
 	};
 	
@@ -2801,9 +2838,10 @@ function vboxToolbar(buttons) {
 	 *            bname - button name
 	 * @returns {HTMLNode}
 	 */
-	self.getButtonElement = function(bname) {
+	this.getButtonElement = function(bname) {
 		return $('#vboxToolbarButton-'+self.id+'-'+bname);
-	}
+	};
+	
 	/**
 	 * Generate HTML element for button
 	 * 
@@ -2812,7 +2850,7 @@ function vboxToolbar(buttons) {
 	 *            b - button object containing various button parameters
 	 * @return {HTMLNode} button element
 	 */
-	self.buttonElement = function(b) {
+	this.buttonElement = function(b) {
 
 		// Pre-load disabled version of icon if enabled function exists
 		if(b.enabled) {
@@ -2860,7 +2898,7 @@ function vboxToolbar(buttons) {
 	 * @param {String}
 	 *            id - HTMLNode id to add buttons to
 	 */
-	self.addButtons = function(id) {
+	this.addButtons = function(id) {
 		
 		self.id = id;
 		self.height = self.size + self.addHeight; 
@@ -2900,7 +2938,7 @@ function vboxToolbar(buttons) {
 	 *            n - button name
 	 * @return {Object} button
 	 */ 
-	self.getButtonByName = function(n) {
+	this.getButtonByName = function(n) {
 		for(var i = 0; i < self.buttons.length; i++) {
 			if(self.buttons[i].name == n)
 				return self.buttons[i];
@@ -2916,7 +2954,7 @@ function vboxToolbar(buttons) {
 	 *            btn - name of button
 	 * @return return value of .click() function performed on button
 	 */
-	self.click = function(btn) {
+	this.click = function(btn) {
 		var b = self.getButtonByName(btn);
 		return b.click(btn);
 	};
@@ -2935,16 +2973,16 @@ function vboxToolbar(buttons) {
 function vboxToolbarSmall(buttons) {
 
 	var self = this;
-	self.parentClass = vboxToolbar;
-	self.parentClass();
-	self.selected = null;
-	self.buttons = buttons;
-	self.lastItem = null;
-	self.buttonStyle = '';
-	self.enabled = true;
-	self.size = 16;
-	self.disabledString = 'disabled';
-	self.buttonCSS = {};
+	this.parentClass = vboxToolbar;
+	this.parentClass();
+	this.selected = null;
+	this.buttons = buttons;
+	this.lastItem = null;
+	this.buttonStyle = '';
+	this.enabled = true;
+	this.size = 16;
+	this.disabledString = 'disabled';
+	this.buttonCSS = {};
 
 	/**
 	 * Enable a single button
@@ -2954,7 +2992,7 @@ function vboxToolbarSmall(buttons) {
 	 *            b - button to enable
 	 * @return null
 	 */
-	self.enableButton = function(b) {
+	this.enableButton = function(b) {
 		if(b.noDisabledIcon)
 			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('display','').prop('disabled',false);
 		else
@@ -2968,7 +3006,7 @@ function vboxToolbarSmall(buttons) {
 	 *            b - button to disable
 	 * @return null
 	 */
-	self.disableButton = function(b) {
+	this.disableButton = function(b) {
 		if(b.noDisabledIcon)
 			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('display','none').prop('disabled',false).removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton');
 		else
@@ -2983,7 +3021,7 @@ function vboxToolbarSmall(buttons) {
 	 * @param {Object}
 	 *            css css to be applied to button
 	 */
-	self.addButtonCSS = function(b, css) {
+	this.addButtonCSS = function(b, css) {
 		self.buttonCSS[b] = css;
 	};
 	
@@ -2995,7 +3033,7 @@ function vboxToolbarSmall(buttons) {
 	 *            b - button object containing various button parameters
 	 * @return {HTMLNode} button element
 	 */
-	self.buttonElement = function(b) {
+	this.buttonElement = function(b) {
 
 		// Pre-load disabled version of icon if enabled function exists
 		if(b.enabled && !b.noDisabledIcon) {
@@ -3032,7 +3070,7 @@ function vboxToolbarSmall(buttons) {
 	 *            id - HTMLNode id to add buttons to
 	 * @return null
 	 */
-	self.addButtons = function(id) {
+	this.addButtons = function(id) {
 		
 		self.id = id;
 		
@@ -3062,12 +3100,9 @@ function vboxToolbarSmall(buttons) {
  * 
  * @constructor
  * @class vboxButtonMediaMenu
- * @param {String}
- *            type - type of media to display
- * @param {Function}
- *            callback - callback to run when media is selected
- * @param {String}
- *            mediumPath - path to use when selecting media
+ * @param {String} type - type of media to display
+ * @param {Function} callback - callback to run when media is selected
+ * @param {String} mediumPath - path to use when selecting media
  */
 function vboxButtonMediaMenu(type,callback,mediumPath) {
 	
@@ -3080,10 +3115,10 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	this.lastItem = null;
 	
 	/** vboxMediaMenu to display when button is clicked */
-	self.mediaMenu = new vboxMediaMenu(type,callback,mediumPath);
+	this.mediaMenu = new vboxMediaMenu(type,callback,mediumPath);
 	
 	/* Static button type list */
-	self.buttons = {
+	this.buttons = {
 			
 		HardDisk : {
 			name : 'mselecthdbtn',
@@ -3114,7 +3149,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	};
 	
 	// Set button based on passed type
-	self.button = self.buttons[self.type];
+	this.button = self.buttons[self.type];
 
 	/**
 	 * Update button to be enabled / disabled
@@ -3126,7 +3161,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 *            item - item to test in button's enabled() fuction
 	 * @return null
 	 */
-	self.update = function(target,item) {
+	this.update = function(target,item) {
 		
 		if(!self.enabled) return;
 		
@@ -3144,7 +3179,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 * @memberOf vboxButtonMediaMenu
 	 * @return null
 	 */
-	self.enableButton = function() {
+	this.enableButton = function() {
 		var b = self.button;
 		$('#vboxButtonMenuButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + b.icon + '_'+self.size+'px.png)').removeClass('vboxDisabled').html('<img src="images/downArrow.png" style="margin:0px;padding:0px;float:right;width:6px;height:6px;" />');
 	};
@@ -3154,7 +3189,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 * @memberOf vboxButtonMediaMenu
 	 * @return null
 	 */
-	self.disableButton = function() {
+	this.disableButton = function() {
 		var b = self.button;
 		$('#vboxButtonMenuButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + b.icon + '_'+self.disabledString+'_'+self.size+'px.png)').removeClass('vboxToolbarSmallButtonHover').addClass('vboxDisabled').html('');
 	};
@@ -3163,9 +3198,11 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 * Enable button and menu
 	 * 
 	 * @memberOf vboxButtonMediaMenu
+	 * @param {Object} e event object
+	 * @param {Mixed} item test item passed to buttons .enabled() functions
 	 * @return null
 	 */
-	self.enable = function(e, item) {
+	this.enable = function(e, item) {
 		self.enabled = true;
 		self.update((item||self.lastItem));
 		self.getButtonElm().enableContextMenu();
@@ -3177,7 +3214,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 * @memberOf vboxButtonMediaMenu
 	 * @return null
 	 */
-	self.disable = function() {
+	this.disable = function() {
 		self.enabled = false;
 		self.disableButton();
 		self.getButtonElm().disableContextMenu();
@@ -3190,7 +3227,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 * @memberOf vboxButtonMediaMenu
 	 * @return {HTMLNode}
 	 */
-	self.buttonElement = function() {
+	this.buttonElement = function() {
 
 		var b = self.button;
 		
@@ -3227,7 +3264,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 * @memberOf vboxButtonMediaMenu
 	 * @return {Object} jQuery object containing button element
 	 */
-	self.getButtonElm = function () {
+	this.getButtonElm = function () {
 		return $('#vboxButtonMenuButton-' + self.id + '-' + self.button.name);
 	};
 
@@ -3238,7 +3275,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 * @param {String}
 	 *            id - HTMLNode id to add button to
 	 */
-	self.addButton = function(id) {
+	this.addButton = function(id) {
 		
 		self.id = id;
 		
@@ -3271,7 +3308,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 * @param {Boolean}
 	 *            enabled - whether the item should be enabled or not
 	 */
-	self.menuUpdateRemoveMedia = function(enabled) {
+	this.menuUpdateRemoveMedia = function(enabled) {
 		self.mediaMenu.menuUpdateRemoveMedia(enabled);
 	};
 }
@@ -3291,10 +3328,10 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 function vboxMediaMenu(type,callback,mediumPath) {
 
 	var self = this;
-	self.type = type;
-	self.callback = callback;
-	self.mediumPath = mediumPath;
-	self.removeEnabled = true;
+	this.type = type;
+	this.callback = callback;
+	this.mediumPath = mediumPath;
+	this.removeEnabled = true;
 	
 	/**
 	 * Generate menu element ID
@@ -3302,7 +3339,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	 * @memberOf vboxMediaMenu
 	 * @return {String} string to use for menu node id
 	 */
-	self.menu_id = function(){
+	this.menu_id = function(){
 		return 'vboxMediaListMenu'+self.type;
 	};
 		
@@ -3312,7 +3349,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	 * @memberOf vboxMediaMenu
 	 * @return {HTMLNode} menu element
 	 */
-	self.menuElement = function() {
+	this.menuElement = function() {
 		
 		// Pointer already held
 		if(self._menuElm) return self._menuElm;
@@ -3341,7 +3378,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	 * @memberOf vboxMediaMenu
 	 * @return {Array} array of objects that can be added to menu
 	 */
-	self.menuGetDrives = function() {
+	this.menuGetDrives = function() {
 		
 		var menu = [];
 		
@@ -3364,7 +3401,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	 * @return {Array} List of default menu items to use for media of type
 	 *         self.type
 	 */
-	self.menuGetDefaults = function () {
+	this.menuGetDefaults = function () {
 		
 		menus = [];
 		
@@ -3442,7 +3479,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	 * 
 	 * @memberOf vboxMediaMenu
 	 */
-	self.menuUpdateRecent = function() {
+	this.menuUpdateRecent = function() {
 		
 		var elm = $('#'+self.menu_id());
 		var list = $('#vboxPane').data('vboxRecentMedia')[self.type];
@@ -3469,7 +3506,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	 *            enabled - whether the item should be enabled or not
 	 * @return null
 	 */
-	self.menuUpdateRemoveMedia = function(enabled) {
+	this.menuUpdateRemoveMedia = function(enabled) {
 		self.removeEnabled = (enabled ? true : false);
 		if(!self._menu) self.menuElement();
 		else self._menu.update();
@@ -3485,7 +3522,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	 *            skipPathAdd - don't add medium's path to vbox's list of recent
 	 *            media paths
 	 */
-	self.updateRecent = function(m, skipPathAdd) {
+	this.updateRecent = function(m, skipPathAdd) {
 		
 		if(vboxMedia.updateRecent(m, skipPathAdd)) { // returns true if
 														// recent media list has
@@ -3502,18 +3539,19 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	 * @param {String}
 	 *            action - menu item's href value (text in a href="#...")
 	 */
-	self.menuCallback = function(action) {
+	this.menuCallback = function(action) {
 		
 		switch(action) {
 		
 			// Create hard disk
 			case 'createD':
-				vboxWizardNewHDDialog(function(id){
-					if(!id) return;
-					var med = vboxMedia.getMediumById(id);
-					self.callback(med);
-					self.menuUpdateRecent(med);
-				},{'path':(self.mediumPath ? self.mediumPath : $('#vboxPane').data('vboxRecentMediaPaths')[self.type])+$('#vboxPane').data('vboxConfig').DSEP}); 				
+				$.when(new vboxWizardNewHDDialog({'path':(self.mediumPath ? self.mediumPath : $('#vboxPane').data('vboxRecentMediaPaths')[self.type])+$('#vboxPane').data('vboxConfig').DSEP}).run())
+					.then(function(id){
+						if(!id) return;
+						var med = vboxMedia.getMediumById(id);
+						self.callback(med);
+						self.menuUpdateRecent(med);						
+					});
 				break;
 			
 			// VMM
@@ -3576,10 +3614,10 @@ function vboxMenu(name, id, menuItems) {
 
 	var self = this;
 	
-	self.name = name;
-	self.menuItems = {};
-	self.iconStringDisabled = '_dis';
-	self.id = id;
+	this.name = name;
+	this.menuItems = {};
+	this.iconStringDisabled = '_dis';
+	this.id = id;
 		
 	/**
 	 * return menu id
@@ -3587,7 +3625,7 @@ function vboxMenu(name, id, menuItems) {
 	 * @memberOf vboxMenu
 	 * @return {String} the HTMLNode id of this menu
 	 */
-	self.menuId = function() {
+	this.menuId = function() {
 		if(self.id) return self.id;
 		return self.name + 'Menu';
 	};
@@ -3599,7 +3637,7 @@ function vboxMenu(name, id, menuItems) {
 	 * @param {Object}
 	 *            m - menu configuration object
 	 */
-	self.addMenu = function(m) {
+	this.addMenu = function(m) {
 		$('#vboxPane').append(self.menuElement(m,self.menuId()));
 	};
 
@@ -3617,7 +3655,7 @@ function vboxMenu(name, id, menuItems) {
 	 *         <UL>
 	 *         node containing menu items and submenus
 	 */
-	self.menuElement = function(m,mid) {
+	this.menuElement = function(m,mid) {
 
 		var ul = null;
 		
@@ -3668,7 +3706,7 @@ function vboxMenu(name, id, menuItems) {
 	 *            item - optional selected item
 	 * @return return value of menu item's click() function
 	 */
-	self.menuClickCallback = function(i, item) {
+	this.menuClickCallback = function(i, item) {
 		return self.menuItems[i].click(item);
 	};
 	
@@ -3681,7 +3719,7 @@ function vboxMenu(name, id, menuItems) {
 	 * @return {HTMLNode}
 	 *         <li> containing menu item
 	 */
-	self.menuItem = function(i) {
+	this.menuItem = function(i) {
 
 		return $('<li />').addClass((i.separator ? 'separator' : '')).addClass((i.cssClass ? i.cssClass : '')).append($('<a />')
 			.html(i.label)
@@ -3702,7 +3740,7 @@ function vboxMenu(name, id, menuItems) {
 	 *            disabled - whether or not the icon should be disabled
 	 * @return {String} url to icon to use
 	 */
-	self.menuIcon = function(i,disabled) {
+	this.menuIcon = function(i,disabled) {
 		
 		if(!i.icon) return '';
 		
@@ -3734,7 +3772,7 @@ function vboxMenu(name, id, menuItems) {
 	 *            testObj - object used to test for enabled()
 	 * @return null
 	 */
-	self.update = function(testObj) {
+	this.update = function(testObj) {
 		
 		for(var i in self.menuItems) {
 			
@@ -3777,7 +3815,7 @@ function vboxMenu(name, id, menuItems) {
 	 * @param {Object}
 	 *            mi - optional menu item HTMLNode or jQuery object
 	 */
-	self.disableItem = function(i, mi) {
+	this.disableItem = function(i, mi) {
 		if(!mi) mi = $('#'+self.name+i);
 		if(self.menuItems[i].icon)
 			mi.css({'background-image':'url('+self.menuIcon(self.menuItems[i],true)+')'}).parent().addClass('disabled');
@@ -3795,7 +3833,7 @@ function vboxMenu(name, id, menuItems) {
 	 * @param {Object}
 	 *            mi - optional menu item HTMLNode or jQuery object
 	 */	
-	self.enableItem = function(i, mi) {
+	this.enableItem = function(i, mi) {
 		if(!mi) mi = $('#'+self.name+i);
 		if(self.menuItems[i].icon)
 			mi.css({'background-image':'url('+self.menuIcon(self.menuItems[i],false)+')'}).parent().removeClass('disabled');
@@ -3833,7 +3871,7 @@ function vboxMenuBar(name) {
 	 *            m - menu configuration object
 	 * @return void
 	 */
-	self.addMenu = function(m) {
+	this.addMenu = function(m) {
 		
 		// Create menu object
 		m.menuObj = new vboxMenu(m.name);
@@ -3854,7 +3892,7 @@ function vboxMenuBar(name) {
 	 * @param {String}
 	 *            id - HTMLNode id of node to add menu bar to
 	 */
-	self.addMenuBar = function(id) {
+	this.addMenuBar = function(id) {
 		
 		$('#'+id).prepend($('<div />').attr({'class':'vboxMenuBar','id':self.name+'MenuBar'}));
 		
@@ -3904,7 +3942,7 @@ function vboxMenuBar(name) {
 	 *            item - item to use in menu configuration items' update() test
 	 * @return void
 	 */
-	self.update = function(item) {
+	this.update = function(item) {
 		
 		
 		for(var i = 0; i < self.menus.length; i++) {
@@ -3961,7 +3999,8 @@ function vboxLoader(name) {
 	 *            params - params to pass to vboxAjaxRequest()
 	 * @see vboxAjaxRequest()
 	 */
-	self.add = function(dataFunction, callback, params) {
+	this.add = function(dataFunction, callback, params) {
+		if(!this.name) this.name = dataFunction + 'Loader';
 		this._data[this._data.length] = vboxAjaxRequest(dataFunction,params).then(callback);
 	};
 
@@ -3975,7 +4014,7 @@ function vboxLoader(name) {
 	 *            callback - callback to run when file is loaded
 	 * @see vboxAjaxRequest()
 	 */
-	self.addFile = function(file,callback) {
+	this.addFile = function(file,callback) {
 		this._files[this._files.length] = {
 				'callback' : callback,
 				'file' : file
@@ -3991,7 +4030,7 @@ function vboxLoader(name) {
 	 * @param {jQueryObject}
 	 *            elm - element to append file to
 	 */
-	self.addFileToDOM = function(file,elm) {
+	this.addFileToDOM = function(file,elm) {
 		if(elm === undefined) elm = $('body').children('div').first();
 		var callback = function(f){elm.append(f);};
 		self.addFile(file,callback);
@@ -4001,7 +4040,7 @@ function vboxLoader(name) {
 	 * Show loading screen
 	 * 
 	 */
-	self.showLoading = function() {
+	this.showLoading = function() {
 		
 		var div = $('<div />').attr({'id':'vboxLoaderDialog'+self.name,'title':'','style':'display: none;','class':'vboxLoaderDialog'});
 		
@@ -4033,7 +4072,7 @@ function vboxLoader(name) {
 	/**
 	 * Hide loading screen
 	 */
-	self.removeLoading = function() {
+	this.removeLoading = function() {
 		$('#vboxLoaderDialog'+self.name).empty().remove();
 	};
 	
@@ -4043,7 +4082,7 @@ function vboxLoader(name) {
 	 * @memberOf vboxLoader
 	 * @return null
 	 */
-	self.run = function() {
+	this.run = function() {
 
 		if(!self.noLoadingScreen) {
 			self.showLoading();
@@ -4070,7 +4109,7 @@ function vboxLoader(name) {
 	 * 
 	 * @memberOf vboxLoader
 	 */
-	self._stop = function() {
+	this._stop = function() {
 
 		if(self.onLoad) self.onLoad(self);
 

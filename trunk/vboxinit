@@ -27,6 +27,11 @@ if [ "${VBOXWEB_USER}" == "" ]; then
 	exit 0
 fi
 
+# Check for VirtualBox path
+if [ "$VBOX_PATH" != "" ]; then
+   PATH = "$PATH:$VBOX_PATH";
+fi
+
 start()
 {
 	# Get all autostart machines

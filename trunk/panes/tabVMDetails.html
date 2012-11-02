@@ -105,7 +105,7 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 		
 		// Remove any that aren't in list
 		$(lastSelectionList).not(vboxChooser.selectedVMs).each(function(idx,vmid){
-			$('#vboxDetailsGeneralTable-'+vmid).empty().remove();
+			$('#vboxVMDetails .vboxVMDetailsBox-vm-'+vmid).empty().remove();
 		});
 		
 		// Placeholders so vms are listed in order			
@@ -244,6 +244,9 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 		// Get and show details and runtime data again	
 		$.when(vboxVMDataMediator.getVMDataCombined(vmid)).then(function(d) {
 			
+			// Do nothing if VM is no longer selected
+			if(!vboxChooser.isVMSelected(d.id)) return;
+			
 			// if there's only one, we'll have to remove existing data
 			if(vboxChooser.selectedVMs.length == 1) {
 				targetDiv.children().empty().remove();
@@ -264,7 +267,10 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 		
 		// Get and show details and runtime data again	
 		$.when(vboxVMDataMediator.getVMDataCombined(vmid),vmRedrawSections[vmid]).then(function(d,sections) {
-			
+
+			// Do nothing if VM is no longer selected
+			if(!vboxChooser.isVMSelected(d.id)) return;
+
 			// Redraw each section in list
 			for(var s in sections) {
 				
@@ -287,7 +293,10 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 
 		if(typeof(vmid) != 'string') continue;
 		if(vmRedrawDetails[vmid]) continue; // already redrew entire details
-		
+
+		// Do nothing if VM is no longer selected
+		if(!vboxChooser.isVMSelected(vmid)) return;
+
 		for(var s in vmTriggerEventSection[vmid]) {
 			
 			if(typeof(s) != 'string') continue;
@@ -601,7 +610,9 @@ function __vboxDisplayDetailsData(data, multiSelect, targetDiv, skipTable) {
 	if(data.state == 'Inaccessible') {
 
 		
-		var reasonDiv = $('<div />').html('<div style="width: 50%">'+trans('The selected virtual machine is <i>inaccessible</i>. Please inspect the error message shown below and press the <b>Refresh</b> button if you want to repeat the accessibility check:','UIDetailsPagePrivate')+'</div>');
+		var reasonDiv = $('<div />')
+			.attr({'class':'vboxVMDetailsBox-vm-'+data.id})
+			.html('<div style="width: 50%">'+trans('The selected virtual machine is <i>inaccessible</i>. Please inspect the error message shown below and press the <b>Refresh</b> button if you want to repeat the accessibility check:','UIDetailsPagePrivate')+'</div>');
 		
 		// Details Table
 		$('<table />').attr({'style':'width: 50%','class':'vboxDetailsTable vboxDetailsTableError vboxVMDetailsBox-vm-'+data.id}).append(__vboxDetailRow(trans("VirtualBox - Error",'UIMessageCenter'), data.accessError['text'])).append(__vboxDetailRow(trans('Result Code: ','UIMessageCenter'), data.accessError['resultCode'])).append(__vboxDetailRow(trans("Component: ",'UIMessageCenter'), data.accessError['component'])).appendTo(targetDiv);

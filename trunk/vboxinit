@@ -27,9 +27,9 @@ if [ "${VBOXWEB_USER}" == "" ]; then
 	exit 0
 fi
 
-# Check for VirtualBox path
-if [ "$VBOX_PATH" != "" ]; then
-   PATH = "$PATH:$VBOX_PATH";
+# Check for VirtualBox binary path
+if [ "$VBOX_BIN_PATH" != "" ]; then
+   PATH = "$PATH:$VBOX_BIN_PATH";
 fi
 
 start()

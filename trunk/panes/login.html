@@ -2,7 +2,7 @@
 Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
 -->
 <div id='vboxLogin'>
-<form onSubmit='return vboxLoginSubmit()'>
+<form>
 <table class='vboxVertical' style='margin:0px;'>
 <tr>
 	<th><span class='translate'>Username</span>:</th>
@@ -12,7 +12,7 @@ Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
 	<th><span class='translate'>Password</span>:</th>
 	<td><input type='password' name='password' class='vboxText' /></td>
 </tr>
-<tr id='vboxLoginBtnRow' style='display:none;padding:0px;margin:0px;border:0px'>
+<tr id='vboxLoginBtnRow' style='display:none;padding:0px;margin:0px;border:0px;'>
 	<th style='padding:0px;margin:0px;border:0px'></th>
 	<td style='padding:0px;margin:0px;border:0px'><input type='submit' value='' style='border:0px;margin:0px;display:inline;background:#fff;text:#fff;padding:0px;height:1px;' /></td>
 </tr>
@@ -24,8 +24,10 @@ Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
 $('#vboxLogin').find(".translate").html(function(i,h){return trans(h,'UIUsers');}).removeClass('translate');
 
 if($.browser.msie || $.browser.webkit) $('#vboxLoginBtnRow').css({'display':''});
-function vboxLoginSubmit() {
+$('#vboxLogin form').on('submit', function(e) {
 	$('#vboxLogin').dialog( "option", "buttons" )[trans('Log in','UIUsers')]();
+	e.stopPropagation();
+	e.preventDefault();
 	return false;
-}
+});
 </script>

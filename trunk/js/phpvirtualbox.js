@@ -1637,11 +1637,7 @@ var vboxVMActions = {
 		icon_16:'vm_clone',
 		icon_disabled:'vm_clone_disabled',
 		click:function(){
-			$.when(new vboxWizardCloneVMDialog({vm:vboxChooser.getSingleSelected()}).run()).then(function(){
-				console.log('ok');
-			},function(){
-				console.log('no');
-			});
+			new vboxWizardCloneVMDialog({vm:vboxChooser.getSingleSelected()}).run();
 		},
 		enabled: function () {
 			return (vboxChooser.selectionMode == vboxSelectionModeSingleVM && vboxChooser.isSelectedInState('PoweredOff'));

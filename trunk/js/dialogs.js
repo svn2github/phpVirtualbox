@@ -769,12 +769,16 @@ function vboxWizardNewHDDialog(suggested) {
 			// just a name
 			if(self.suggested.path) {
 				if($('#vboxPane').data('vboxConfig').enforceVMOwnership==true){
-					file = self.suggested.path + $('#vboxPane').data('vboxSession').user + "_" + file;	
-				}else{ file = self.suggested.path + file; }
+					file = self.suggested.path + $('#vboxPane').data('vboxConfig').DSEP + $('#vboxPane').data('vboxSession').user + "_" + file;	
+				} else {
+					file = self.suggested.path + $('#vboxPane').data('vboxConfig').DSEP + file;
+				}
 			} else{
 				if($('#vboxPane').data('vboxConfig').enforceVMOwnership==true){
 					file = $('#vboxPane').data('vboxSystemProperties').homeFolder + $('#vboxPane').data('vboxConfig').DSEP + $('#vboxPane').data('vboxSession').user + "_" + file;
-				}else{ file = $('#vboxPane').data('vboxSystemProperties').homeFolder + $('#vboxPane').data('vboxConfig').DSEP + file; }
+				} else {
+					file = $('#vboxPane').data('vboxSystemProperties').homeFolder + $('#vboxPane').data('vboxConfig').DSEP + file;
+				}
 			}
 		
 		// Enforce VM ownership
@@ -800,6 +804,9 @@ function vboxWizardNewHDDialog(suggested) {
 		if(jQuery.inArray(file.substring(file.lastIndexOf('.')+1).toLowerCase(),formatOpts.extensions) < 0) {
 			file += '.'+formatOpts.extensions[0];
 		}
+		
+		// Normalize file
+		file = file.replace($('#vboxPane').data('vboxConfig').DSEP+$('#vboxPane').data('vboxConfig').DSEP,$('#vboxPane').data('vboxConfig').DSEP);
 		
 		/* Check to see if file exists */
 		var fileExists = false;

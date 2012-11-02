@@ -2,7 +2,7 @@
 Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
 -->
 <div id='vboxUserEdit'>
-<form onsubmit='return vboxUserFormSubmit()'>
+<form>
 <table class='vboxVertical'>
 <tr class='addUser'>
 	<th><span class='translate'>Username</span>:</th>
@@ -49,9 +49,12 @@ $('#vboxUserEdit').bind('setMode',function(e,mode) {
 });
 
 if($.browser.msie || $.browser.webkit) $('#vboxUserBtnRow').css({'display':''});
-function vboxUserFormSubmit() {
+
+$('#vboxUserEdit form').on("submit",function(e) {
 	$('#vboxUserEdit').parent().find('span:contains("'+trans('OK','QIMessageBox')+'")').trigger('click');
+	e.stopPropagation();
+	e.preventDefault();
 	return false;
-}
+});
 
 </script>

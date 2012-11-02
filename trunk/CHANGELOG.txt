@@ -1,5 +1,5 @@
 -------------------------------------
-	4.2-4
+	4.2-4	2012-11-02
 -------------------------------------
 Fixed details pane redraws when VM selection list changes while VM
 data is still loading
@@ -39,13 +39,16 @@ main window toolbar
 
 Cleaned up wizards to perform expected actions when pressing Enter
 
-vboxinit now reads VBOX_PATH if set in /etc/default/virtualbox and
-adds it to $PATH
+vboxinit now reads VBOX_BIN_PATH if set in /etc/default/virtualbox
+and adds it to the PATH environment variable
 http://code.google.com/p/phpvirtualbox/issues/detail?id=616
 
 If multiple servers are configured, progress operation rows now
-contain the server's name
+contain the server's name on which the operation was performed
 http://code.google.com/p/phpvirtualbox/issues/detail?id=617
+
+Fixed bug in IE8 that would prevent opening a detached console
+window for any VM that has a space in its name
 
 -------------------------------------
 	4.2-3b	2012-10-21

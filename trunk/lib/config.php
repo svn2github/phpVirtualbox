@@ -211,6 +211,12 @@ class phpVBoxConfigClass {
 		$this->auth = new $alib(@$this->authConfig);
 		$this->authCapabilities = $this->auth->capabilities;
 		
+		/* Sanity checks */
+		if(!@$this->nicMax)
+			$this->nicMax = 4;
+		
+		$this->previewUpdateInterval = max(3, @$this->previewUpdateInterval);
+		
 		error_reporting($ep);
 	}
 	

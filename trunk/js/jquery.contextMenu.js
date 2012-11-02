@@ -177,12 +177,15 @@ if(jQuery)( function() {
 					// Detect mouse position
 					var d = {};
 					
+					var x = null;
+					var y = null;
+					
 					if(mode == 'menu') {
-				 		var x = $(srcElement).offset().left;
-			 			var y = $(srcElement).offset().top + $(srcElement).outerHeight();		
+				 		x = $(srcElement).offset().left;
+			 			y = $(srcElement).offset().top + $(srcElement).outerHeight();		
 					} else if(mode == 'submenu') {
-						var y = $(srcElement).offset().top;									
-				 		var x = $(srcElement).offset().left + $(srcElement).outerWidth();
+						y = $(srcElement).offset().top;									
+				 		x = $(srcElement).offset().left + $(srcElement).outerWidth();
 					} else {
 						
 						if( self.innerHeight ) {
@@ -237,7 +240,7 @@ if(jQuery)( function() {
 						
 						// New menu returned?
 						if(m) {
-							$(m).addClass('contextSubMenu contextMenuLevel' + ($(menu).data('level')+1)).data('level',($(menu).data('level')+1))
+							$(m).addClass('contextSubMenu contextMenuLevel' + ($(menu).data('level')+1)).data('level',($(menu).data('level')+1));
 							// Hide menus trigger
 							$('#vboxPane').bind('contextMenuShowLevel',function(e,c){
 								if($(m).data('level') >= c.level && $(m).attr('id') != c.id) $(m).hide();
@@ -257,7 +260,7 @@ if(jQuery)( function() {
 					$(menu).css({ top: y, left: x}).show();//.fadeIn(o.inSpeed);
 					
 					
-				}
+				};
 				
 				// Setup menu 
 				menuItems(menu, el, 0);

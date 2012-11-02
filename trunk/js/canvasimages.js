@@ -131,6 +131,8 @@ function vboxDrawPreviewCanvas(can, imageObj, text, width, height) {
 	width += ((margin+screenMargin)*2);
 	
 	// Does canvas still exist?
+	// VM selection can change while this function is running
+	// in which case the canvas goes away
 	if(!can) return;
 	
 	// Set canvas values
@@ -231,12 +233,13 @@ function vboxDrawPreviewCanvas(can, imageObj, text, width, height) {
 		cachedCtx.stroke();
 		cachedCtx.restore();
 		
-	    /* Gloss */
+		var cvs = document.createElement('canvas');
+
+		/* Gloss */
 		if($.browser.opera && $.browser.version.substring(0,2) < 12) {
 
 			// Opera before 12 does not get this right. Just
-			// create a blank canvas
-			var cvs = document.createElement('canvas');
+			// leave a blank canvas
 			cvs.width = rectWidth;
 			cvs.height = rectHeight;
 
@@ -247,7 +250,6 @@ function vboxDrawPreviewCanvas(can, imageObj, text, width, height) {
 			var rectWidth = width-(margin+screenMargin)*2;
 			var rectHeight = height-(margin+screenMargin)*2;
 			
-			var cvs = document.createElement('canvas');
 			cvs.width = rectWidth;
 			cvs.height = rectHeight;
 			
@@ -408,7 +410,7 @@ var fitTextToCanvas = function(can, text, fontSize) {
     }
     return can;
 
-}
+};
 
 /*
 
@@ -527,7 +529,6 @@ var stackBlurCanvasRGBA = function( canvas, top_x, top_y, width, height, radius 
 	pr, pg, pb, pa, rbs;
 			
 	var div = radius + radius + 1;
-	var w4 = width << 2;
 	var widthMinus1  = width - 1;
 	var heightMinus1 = height - 1;
 	var radiusPlus1  = radius + 1;
@@ -752,7 +753,7 @@ var stackBlurCanvasRGBA = function( canvas, top_x, top_y, width, height, radius 
 	
 	context.putImageData( imageData, top_x, top_y );
 	
-}
+};
 
 
 
@@ -763,4 +764,4 @@ var BlurStack = function()
 	this.b = 0;
 	this.a = 0;
 	this.next = null;
-}
+};

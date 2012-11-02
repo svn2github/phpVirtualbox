@@ -1628,7 +1628,7 @@ var vboxChooser = {
 				vboxChooser._anchor.find('div.vboxVMGroupSelected').removeClass('vboxVMGroupSelected')
 					.each(function(idx,gelm){
 						vboxChooser._deselectGroup(gelm);
-					})
+					});
 				
 				// Select current VM
 				$(item).addClass('vboxListItemSelected').removeClass('vboxHover');
@@ -1845,7 +1845,7 @@ var vboxChooser = {
 								},
 								queue: true
 							});							
-						}
+						};
 						
 					// Span rotation
 					} else if(!($.browser.msie && $.browser.version.substring(0,1) < 9)){
@@ -1880,7 +1880,7 @@ var vboxChooser = {
 										}
 									
 									});
-						}
+						};
 					}
 
 					

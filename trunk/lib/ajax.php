@@ -69,26 +69,20 @@ try {
 		case 'getConfig':
 			
 			$settings = new phpVBoxConfigClass();
-			$data = get_object_vars($settings);
-			$data['host'] = parse_url($data['location']);
-			$data['host'] = $data['host']['host'];
-			$data['phpvboxver'] = @constant('PHPVBOX_VER');
+			$response['data']['responseData'] = get_object_vars($settings);
+			$response['data']['responseData']['host'] = parse_url($data['location']);
+			$response['data']['responseData']['host'] = $data['host']['host'];
+			$response['data']['responseData']['phpvboxver'] = @constant('PHPVBOX_VER');
 			
 			// Session
 			session_init();
 			
 			// Hide credentials
-			unset($data['username']);
-			unset($data['password']);
-			foreach($data['servers'] as $k => $v)
-				$data['servers'][$k] = array('name'=>$v['name']);
-			
-	
-			if(!$data['nicMax']) $data['nicMax'] = 4;
-	
-			// Update interval
-			$data['previewUpdateInterval'] = max(3,intval(@$data['previewUpdateInterval']));
-			
+			unset($response['data']['responseData']['username']);
+			unset($response['data']['responseData']['password']);
+			foreach($response['data']['responseData']['servers'] as $k => $v)
+				$response['data']['responseData']['servers'][$k] = array('name'=>$v['name']);
+						
 			// Are default settings being used?
 			if(@$settings->warnDefault) {
 				throw new Exception("No configuration found. Rename the file <b>config.php-example</b> in phpVirtualBox's folder to <b>config.php</b> and edit as needed.<p>For more detailed instructions, please see the installation wiki on phpVirtualBox's web site. <p><a href='http://code.google.com/p/phpvirtualbox/w/list' target=_blank>http://code.google.com/p/phpvirtualbox/w/list</a>.</p>",vboxconnector::PHPVB_ERRNO_FATAL);
@@ -96,12 +90,10 @@ try {
 			
 			// Vbox version			
 			$vbox = new vboxconnector();
-			$data['version'] = $vbox->getVersion();
-			$data['hostOS'] = $vbox->vbox->host->operatingSystem;
-			$data['DSEP'] = $vbox->getDsep();
-			$data['groupDefinitionKey'] = ($settings->phpVboxGroups ? vboxconnector::phpVboxGroupKey : 'GUI/GroupDefinitions');
-			
-			$response['data']['responseData'] = $data;
+			$response['data']['responseData']['version'] = $vbox->getVersion();
+			$response['data']['responseData']['hostOS'] = $vbox->vbox->host->operatingSystem;
+			$response['data']['responseData']['DSEP'] = $vbox->getDsep();
+			$response['data']['responseData']['groupDefinitionKey'] = ($settings->phpVboxGroups ? vboxconnector::phpVboxGroupKey : 'GUI/GroupDefinitions');
 			
 			$response['data']['success'] = 1;
 			

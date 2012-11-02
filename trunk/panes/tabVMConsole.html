@@ -9,7 +9,7 @@
 <div id='vboxTabVMConsole' class='vboxTabContent' style='display:none;'>
   <div id='vboxTabVMUnavailable' style='display: none' class='translate'>Virtual machine is not running or is not configured to accept RDP connections.</div>
   <div id='vboxRDPFormContainer'  style='padding-top: 8px; display: none'>
-	<form name="vboxRDPForm" onsubmit="return false;">
+	<form name="vboxRDPForm" id="vboxRDPForm">
 		<div class='vboxInvisible' id='vboxRDPConnParams'>
 		
 			<span id='vboxConsoleLoginInfo'>
@@ -30,7 +30,7 @@
 	  		<input type='text' id='vboxConsoleAddr' name='serverAddress' class='vboxRDPSet' value='' />
 	  		<!-- and hardcore web dev guys across the world frown ... //-->
 	  		&nbsp; &nbsp; &nbsp;
-	 		<input name=cadButton id='vboxConsoleCADButton' style='display: none' type=button value="Ctrl-Alt-Del" onClick="return vboxRDPsendCAD()" />
+	 		<input name=cadButton id='vboxConsoleCADButton' style='display: none' type=button value="Ctrl-Alt-Del" onClick="vboxRDPsendCAD()" />
 	 		<input id='vboxVRDPDetachBtn' style='display: none' name='detach' type='button' value='Detach' onClick="vboxRDPDetach();" />
 		   <span id='vboxRDPStatus'></span>
 	  	</p>
@@ -48,6 +48,11 @@ var fFlashLoaded = false;
 var FlashVersion = "";
 var vboxConsoleDetached = false;
 
+$('#vboxRDPForm').on('submit',function(e){
+	e.stopPropagation();
+	e.preventDefault();
+	return false;
+});
 
 // Custom resolutions
 if($("#vboxPane").data('vboxConfig').consoleResolutions) {
@@ -392,10 +397,11 @@ function vboxRDPConnect() {
 
 	var flash = RDPWebClient.getFlashById("FlashRDP");
 
+	var wh = null;
 	if(vboxConsoleDetached) {
-		var wh = [ $(document).width()-2, $(document).height()-2 ];
+		wh = [ $(document).width()-2, $(document).height()-2 ];
 	} else {
-	    var wh = $('#vboxRDPSize').val().split('x');
+	    wh = $('#vboxRDPSize').val().split('x');
 	}
 	$(flash).css({'height':wh[1]+'px','width':wh[0]+'px'});
 	flash.setProperty("displayWidth", wh[0]);
@@ -440,14 +446,14 @@ function vboxRDPDetach() {
 	vboxRDPDisconnect();
 
 	var wh = $('#vboxRDPSize').val().split('x');
-	var newwin = window.open('about:blank','vboxConsoleDetachedWin'+$('#vboxTabVMConsole').data('vmname'),'toolbar=0,menubar=0,location=0,directories=0,status=true,resize=true,width='+(parseInt(wh[0])+20)+',height='+(parseInt(wh[1])+20)+'');
+	var newwin = window.open('about:blank','vboxConsoleDetachedWin'+$('#vboxTabVMConsole').data('vmname').replace(/[^a-zA-Z0-9]/g,'_'),'toolbar=0,menubar=0,location=0,directories=0,status=true,resize=true,width='+(parseInt(wh[0])+20)+',height='+(parseInt(wh[1])+20)+'');
 
 	newwin.document.open();	
 	newwin.document.write('<html><head><title>'+$('#vboxTabVMConsole').data('vmname') + ' - ' + trans('Console','UIVMDesktop')+'</title></head><body style="margin: 0px; border: 0px; padding: 0px; overflow: hidden;"><div style="margin: 0px; border: 0px; padding: 0px" id="vboxPane"><img src="images/spinner.gif" /></div></body></html>');
 	newwin.document.close();
 	newwin.trans = function(t) { return t; };
 	var newHead = newwin.document.getElementsByTagName('HEAD')[0];
-	
+
 	var headTags = document.getElementsByTagName('HEAD')[0].getElementsByTagName('SCRIPT');
 	for(var i = 0; i < headTags.length; i++) {
 		

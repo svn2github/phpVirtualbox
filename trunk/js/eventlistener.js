@@ -31,8 +31,9 @@ var vboxEventListener = {
 		lastRun : 0,
 		timer : window.setInterval(function() {
 			if(vboxEventListener._running && 
-					((new Date().getTime()/1000) - vboxEventListener._watchdog.lastRun > 20000)) {
-				phpVirtualBoxFailure();
+					((new Date().getTime()/1000) - vboxEventListener._watchdog.lastRun > 20)) {
+				phpVirtualBoxFailure(' (EventListener watchdog failure)');
+				vboxEventListener.stop();
 				window.clearInterval(vboxEventListener._watchdog.timer);
 			} 
 		}, 20000) // 20 seconds
@@ -44,6 +45,11 @@ var vboxEventListener = {
 		
 		requests : [],
 		running: false,
+		
+		// run timer
+		timer : window.setInterval(function(){
+			vboxEventListener._requestQueue.run();
+		}, 5000), // 5 seconds
 		
 		// Add a request to the queue
 		addReq : function(q) {
@@ -73,6 +79,7 @@ var vboxEventListener = {
 			if(r) {
 				$.when(r.request())
 					.done(r.deferred.resolve)
+					.fail(r.deferred.reject)
 					.always(vboxEventListener._requestQueue.runReq);
 			} else {
 				vboxEventListener._requestQueue.running = false;
@@ -165,7 +172,7 @@ var vboxEventListener = {
 				if(!vboxEventListener._running) return;
 				
 				// Check for valid result
-				if(!d.success) {
+				if(!d || !d.success) {
 					if(vboxEventListener._running)
 						phpVirtualBoxFailure();
 					return;
@@ -200,8 +207,13 @@ var vboxEventListener = {
 				
 				// Wait at most 3 seconds
 				var wait = 3000 - ((new Date().getTime()) - lastTime);
-				if(wait <= 0) vboxEventListener._getEvents();
-				else vboxEventListener._running = window.setTimeout(vboxEventListener._getEvents, wait);
+				if(wait <= 0) {
+					vboxEventListener._running = true;
+					vboxEventListener._getEvents();
+				} 
+				else { 
+					vboxEventListener._running = window.setTimeout(vboxEventListener._getEvents, wait);
+				}
 				
 			});
 

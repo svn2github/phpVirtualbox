@@ -73,7 +73,7 @@ function vboxAjaxRequest(fn,params) {
 	
 		// Run on error
 		.error(function(d,etext,xlr) {
-			
+
 			// Fatal error previously occurred
 			if($('#vboxPane').data('vboxFatalError')) return;
 
@@ -88,6 +88,9 @@ function vboxAjaxRequest(fn,params) {
 					window.console.log(etext + ': '+ d.responseText);
 				
 				vboxAlert({'error':'Ajax error: ' + etext,'details':d.responseText},{'width':'400px'});
+
+			} else {
+				phpVirtualBoxFailure(' (General communication failure)');
 			}
 			
 		// Filter out data and display error messages
@@ -160,17 +163,17 @@ function vboxAjaxRequest(fn,params) {
 }
 
 /**
- * Return VRDE address (host) of VM
+ * Return VRDE host address of VM
  * @param {Object} vm - virtual machine object
  * @return {String} VRDE host for VM
  */
-function vboxGetVRDEAddress(vm) {
+function vboxGetVRDEHost(vm) {
 	var chost = ($('#vboxPane').data('vboxConfig').consoleHost ? $('#vboxPane').data('vboxConfig').consoleHost : (vm && vm.VRDEServer && vm.VRDEServer.netAddress ? vm.VRDEServer.netAddress : null));
 	if(!chost) {
 		// Set to host
 		chost = $('#vboxPane').data('vboxConfig').host;
 		// Check for localhost / 127.0.0.1
-		if(chost == 'localhost' || chost == '127.0.0.1')
+		if(!chost || chost == 'localhost' || chost == '127.0.0.1')
 			chost = location.hostname;
 	}
 	return chost;
@@ -1095,13 +1098,14 @@ function vboxParseCookies() {
 
 /**
  * General application failure
+ * @param {String} msg - Optional extra message appended to error
  */
-function phpVirtualBoxFailure() {
+function phpVirtualBoxFailure(msg) {
 	if($('#vboxPane').data('vboxFatalError')) return;
 	$('#vboxPane').data('vboxFatalError', 1);
 	$('#vboxPane').css({'display':'none'});
 	$('#vboxPane').trigger('phpVirtualBoxFailure');
-	vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox'));
+	vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox')+(msg ? msg : ''));
 }
 
 /**

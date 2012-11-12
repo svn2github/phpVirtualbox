@@ -125,7 +125,7 @@ $('#vboxPane').bind('vmSelectionListChanged', function(){
 		$('#vboxTabVMUnavailable').css({'display':'none'});
 
 		
-		var chost = vboxGetVRDEAddress(selVM);
+		var chost = vboxGetVRDEHost(selVM);
 		chost+=':'+VRDEServerInfo.port;
 		
 		if($(document.vboxRDPForm.serverAddress).val() != chost) {
@@ -220,7 +220,7 @@ $('#vboxTabVMConsole').bind('show',function(){
 		$("#vboxRDPStatus").html('');
 		if(vboxConsoleDetached) window.status = $("#vboxRDPStatus").text();
 		
-		var chost = vboxGetVRDEAddress(detailsData);
+		var chost = vboxGetVRDEHost(detailsData);
 		chost+=':'+runtimeData.VRDEServerInfo.port;
 		$(document.vboxRDPForm.serverAddress).val(chost);
 	

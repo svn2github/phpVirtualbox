@@ -260,8 +260,10 @@ $(bootList).children('li').each(function(){
 	bootItems[$(this).attr('id')] = $(this).detach();
 });
 for(var i in $('#vboxSettingsDialog').data('vboxMachineData').bootOrder) {
-	$(bootList).append(bootItems[$('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]]);
-	document.forms['frmVboxSettings'].elements['vboxSettingsBoot' + $('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]].checked = true;
+	if(!isNaN(i)) {
+		$(bootList).append(bootItems[$('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]]);
+		document.forms['frmVboxSettings'].elements['vboxSettingsBoot' + $('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]].checked = true;
+	}
 	delete bootItems[$('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]];
 }
 for(var i in bootItems) {

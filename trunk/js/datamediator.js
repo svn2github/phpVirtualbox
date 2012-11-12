@@ -174,7 +174,8 @@ var vboxVMDataMediator = {
 
 			$.when(vboxAjaxRequest('machineGetRuntimeData',{vm:vmid})).done(function(d){
 				vboxVMDataMediator.vmRuntimeData[d.responseData.id] = d.responseData;
-				vboxVMDataMediator.promises.getVMRuntimeData[vmid].resolve(d.responseData);
+				if(vboxVMDataMediator.promises.getVMRuntimeData[vmid])
+					vboxVMDataMediator.promises.getVMRuntimeData[vmid].resolve(d.responseData);
 			}).fail(function(){
 				vboxVMDataMediator.promises.getVMRuntimeData[vmid].reject();
 				vboxVMDataMediator.promises.getVMRuntimeData[vmid] = null;

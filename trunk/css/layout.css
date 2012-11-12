@@ -30,7 +30,7 @@ html,body,#vboxPane,#vboxTableMain {
 	margin: 0px;
 	padding: 0px;
 }
-body { overflow-y: hidden; } /* avoid scrollbars */
+body { overflow-y: hidden; } /* avoid scroll bars */
 /* left-margins */
 div.vboxMenuBar { padding-left: 4px; }
 #vboxPaneToolbar { margin-left: 4px; }
@@ -430,7 +430,7 @@ div.vboxWizard table td.vboxApplianceHeader { border-style: solid; border-color:
 	border: 1px solid transparent;
 	list-style: none;
 	text-align: right;
-	margin: 4px;
+	margin: 0px 4px 0px 0px;
 	display: inline-block;
 	padding: 3px 12px 3px 8px;
 } 

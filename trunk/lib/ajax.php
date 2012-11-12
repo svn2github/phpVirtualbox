@@ -70,8 +70,8 @@ try {
 			
 			$settings = new phpVBoxConfigClass();
 			$response['data']['responseData'] = get_object_vars($settings);
-			$response['data']['responseData']['host'] = parse_url($data['location']);
-			$response['data']['responseData']['host'] = $data['host']['host'];
+			$response['data']['responseData']['host'] = parse_url($response['data']['responseData']['location']);
+			$response['data']['responseData']['host'] = $response['data']['responseData']['host']['host'];
 			$response['data']['responseData']['phpvboxver'] = @constant('PHPVBOX_VER');
 			
 			// Session
@@ -139,21 +139,24 @@ try {
 		 */
 		case 'getSession':
 			
-			session_init(true);
-
 			$settings = new phpVBoxConfigClass();
 			if(method_exists($settings->auth,'autoLoginHook'))
 			{
 				// Session
-				
+				session_init(true);			
+					
 				$settings->auth->autoLoginHook();
 				
+				// We're done writing to session
+				if(function_exists('session_write_close'))
+					@session_write_close();
 			
+			} else {
+				
+				session_init();
+				
 			}
 
-			// We're done writing to session
-			if(function_exists('session_write_close'))
-				@session_write_close();
 
 			$response['data']['responseData'] = $_SESSION;
 			$response['data']['success'] = 1;

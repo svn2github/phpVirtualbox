@@ -6,6 +6,18 @@ while VM data is still loading
 
 Fixed multiple IE8 bugs that affected selecting and removing VMs
 
+Fixed bug that would incorrectly set the VRDE host to null if no
+consoleHost was configured in config.php
+http://code.google.com/p/phpvirtualbox/issues/detail?id=620
+
+Added workaround for VirtualBox bug that generates an error when
+taking or restoring snapshots.
+http://code.google.com/p/phpvirtualbox/issues/detail?id=614
+
+Fixed bug that would not allow starting VMs if
+$vmMemoryStartLimitWarn was enabled in config.php
+http://code.google.com/p/phpvirtualbox/issues/detail?id=619
+
 -------------------------------------
 	4.2-4	2012-11-02
 -------------------------------------

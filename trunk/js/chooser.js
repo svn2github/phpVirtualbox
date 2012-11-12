@@ -1186,7 +1186,7 @@ var vboxChooser = {
 		var vmList = vboxVMDataMediator.getVMList();
 		for(var i = 0; i < vmList.length; i++) {
 			
-			if(vmList[i].id == 'host') continue;
+			if(!vmList[i] || vmList[i].id == 'host') continue;
 
 			/* If a VM's groups have changed, add it to the list */
 			var eGroups = vmList[i].groups;
@@ -1195,8 +1195,8 @@ var vboxChooser = {
 			if($(nGroups).not(eGroups).length || $(eGroups).not(nGroups).length) {
 			
 				vms[vms.length] = {
-						'id' : vmList[i].id,
-						'groups' : nGroups
+					'id' : vmList[i].id,
+					'groups' : nGroups
 				};				
 			}
 		}

@@ -674,8 +674,20 @@ var vboxVMDetailsSections = {
 					var baseStr = 'vboxDetailsGeneralTable-'+vmid;
 					if(this.height <= 1) {
 						
-						$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'none'}).attr('src','images/vbox/blank.gif');
+
+						// IE uses filter
+						if($.browser.msie) {
+							$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'none',"filter":""})
+								.attr({'src':'images/vbox/blank.gif'}).parent().css({'background':'#000'});
+						} else {
+							$('#'+baseStr+' img.vboxDetailsPreviewImg').css({'display':'none'}).attr('src','images/vbox/blank.gif');							
+						}
+						
 						$('#'+baseStr+' div.vboxDetailsPreviewVMName').css('display','');
+
+						// Resize name?
+						$('#vboxDetailsGeneralTable-'+vmid+ ' div.vboxDetailsPreviewVMName span.textFill').textFill({maxFontPixels:20,'height':(height),'width':(width)});
+						
 
 					} else {
 						
@@ -711,13 +723,9 @@ var vboxVMDetailsSections = {
 					}
 					
 					
-					// Resize name?
-					$('#vboxDetailsGeneralTable-'+vmid+ ' div.vboxDetailsPreviewVMName span.textFill').textFill({maxFontPixels:20,'height':(height),'width':(width)});
-
 					$('#'+baseStr+' div.vboxDetailsPreviewWrap').css({'height':height+'px','width':width+'px'});
 					$('#'+baseStr+' img.vboxPreviewMonitor').css('width',width+'px');
 					$('#'+baseStr+' img.vboxPreviewMonitorSide').css('height',height+'px');
-
 
 					
 				}
@@ -918,7 +926,7 @@ var vboxVMDetailsSections = {
 			   title: trans('Remote Desktop Server Port'),
 			   callback: function(d) {
 				   
-				   var chost = vboxGetVRDEAddress(d);
+				   var chost = vboxGetVRDEHost(d);
 				
 				   // Get ports
 				   var rowStr = d['VRDEServer']['ports'];
@@ -1568,15 +1576,14 @@ var vboxVMActions = {
 					// First result is host memory info
 					freeMem = arguments[0].responseData;
 					
-					
 					// Add memory of each VM
 					for(var i = 1; i < arguments.length; i++) {
 				
 						// Paused VMs are already using their memory
-						if(vboxVMStates.isPaused(arguments[i].responseData)) continue;
+						if(vboxVMStates.isPaused(arguments[i])) continue;
 						
 						// memory + a little bit of overhead
-						baseMem += (arguments[i].responseData.memorySize + 50);
+						baseMem += (arguments[i].memorySize + 50);
 					}
 
 					// subtract offset
@@ -3670,8 +3677,7 @@ function vboxMenu(name, id, menuItems) {
 		
 		for(var i in m) {
 			
-			if(typeof i == 'function') continue;
-
+			if(typeof m[i] == 'function') continue;
 			
 			// get menu item
 			var item = self.menuItem(m[i]);
@@ -3771,11 +3777,7 @@ function vboxMenu(name, id, menuItems) {
 	this.update = function(testObj) {
 		
 		for(var i in self.menuItems) {
-			
-			
-			if(typeof i != 'string') continue;
-			
-			
+						
 			// If enabled function doesn't exist, there's nothing to do
 			if(!self.menuItems[i].enabled) continue;
 			

@@ -782,7 +782,12 @@ class vboxconnector {
 			case 'OnSnapshotDeleted':
 			case 'OnSnapshotChanged':
 				$data['machineId'] = $eventDataObject->machineId;
-				$data['snapshotId'] = $eventDataObject->snapshotId;
+				// This fails sometimes for seemingly no reason at all
+				try {
+					$data['snapshotId'] = $eventDataObject->snapshotId;
+				} catch (Exception $e) {
+					$data['snapshotId'] = '';
+				}
 				$data['dedupId'] .= '-'. $data['machineId'] .'-' . $data['snapshotId'];
 		        break;
 		        

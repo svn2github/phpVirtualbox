@@ -604,6 +604,9 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 	height: 16px;
 	overflow: hidden;
 }
+#vboxChooserPane div.vboxVMGroupCollapsed > div.vboxChooserGroupHeader {
+	height: 14px;
+}
 #vboxChooserPane div.vboxChooserGroupHeader span {
 	cursor: default;
 	vertical-align: top;

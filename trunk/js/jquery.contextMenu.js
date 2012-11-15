@@ -45,6 +45,7 @@ if(jQuery)( function() {
 				$(this).mousedown( function(e) {
 					
 					if( $(el).hasClass('disabled') ) return true;
+					
 					if(!( e.button == o.button || (o.button == 0 && e.button == 1 && $.browser.msie))) return;
 					if(o.clickthrough) $(el).trigger('click');
 					var evt = e;
@@ -52,10 +53,13 @@ if(jQuery)( function() {
 					
 					$(this).mouseup( function(e) {
 						
+						if( $(this).hasClass('disabled') ) return true;
+
 						e.stopPropagation();
 						
 						var srcElement = $(this);
 						$(this).unbind('mouseup');
+						
 						
 						if( evt.button == o.button || (o.button == 0 && evt.button == 1 && $.browser.msie)) {
 						

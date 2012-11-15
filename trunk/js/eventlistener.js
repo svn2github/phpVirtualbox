@@ -33,6 +33,9 @@ var vboxEventListener = {
 			if(vboxEventListener._running && 
 					((new Date().getTime()/1000) - vboxEventListener._watchdog.lastRun > 20)) {
 				phpVirtualBoxFailure(' (EventListener watchdog failure)');
+				window.console.log(vboxEventListener._requestQueue.running);
+				window.console.log(vboxEventListener._requestQueue.requests);
+				window.console.log(new Date().toLocaleTimeString() + ' ' + new Date(vboxEventListener._watchdog.lastRun*1000).toLocaleTimeString());
 				vboxEventListener.stop();
 				window.clearInterval(vboxEventListener._watchdog.timer);
 			} 
@@ -128,7 +131,7 @@ var vboxEventListener = {
 			
 			if(!vboxEventListener._subscribeList.length) return;
 			
-			var vms = vboxEventListener._subscribeList;
+			var vms = vboxEventListener._subscribeList.concat();
 			vboxEventListener._subscribeList = [];
 			
 			return vboxAjaxRequest('machineSubscribeEvents', {'vms':vms,'_persist':vboxEventListener._persist});
@@ -206,7 +209,7 @@ var vboxEventListener = {
 				}
 				
 				// Wait at most 3 seconds
-				var wait = 3000 - ((new Date().getTime()) - lastTime);
+				var wait = Math.min(3000,3000 - ((new Date().getTime()) - lastTime));
 				if(wait <= 0) {
 					vboxEventListener._running = true;
 					vboxEventListener._getEvents();

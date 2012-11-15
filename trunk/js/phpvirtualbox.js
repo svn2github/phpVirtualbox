@@ -2807,7 +2807,7 @@ function vboxToolbar(buttons) {
 	 *            b - button to enable
 	 */
 	this.enableButton = function(b) {
-		$('#vboxToolbarButton-'+self.id+'-'+b.name).addClass('vboxEnabled').removeClass('vboxDisabled').children('img.vboxToolbarImg').attr('src','images/vbox/'+b.icon+'_'+self.size+'px.png');
+		$('#vboxToolbarButton-'+self.id+'-'+b.name).addClass('vboxEnabled').removeClass('vboxDisabled disabled').children('img.vboxToolbarImg').attr('src','images/vbox/'+b.icon+'_'+self.size+'px.png');
 	};
 
 	/**
@@ -2818,7 +2818,7 @@ function vboxToolbar(buttons) {
 	 *            b - button to disable
 	 */
 	this.disableButton = function(b) {
-		$('#vboxToolbarButton-'+self.id+'-'+b.name).addClass('vboxDisabled').removeClass('vboxEnabled').children('img.vboxToolbarImg').attr('src','images/vbox/'+b.icon+'_disabled_'+self.size+'px.png');
+		$('#vboxToolbarButton-'+self.id+'-'+b.name).addClass('vboxDisabled disabled').removeClass('vboxEnabled').children('img.vboxToolbarImg').attr('src','images/vbox/'+b.icon+'_disabled_'+self.size+'px.png');
 	};
 
 	/**

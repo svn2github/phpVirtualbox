@@ -98,11 +98,18 @@ l.onLoad = function() {
 				
 				
 			}).addClass('vboxListItem');
+			
+			if(vboxChooser.isVMSelected(vms[i].id))
+				$(li).addClass('vboxListItemSelected');
+			
 		}
 		$(li).html("<img style='width: 16px; height: 16px;' src='images/vbox/" + vboxGuestOSTypeIcon(vms[i].OSTypeId) + "' /> " + vms[i].name);
 		$(vmlist).append(li);
 	}
 	vboxColorRows(vmlist);
+	vboxWizardExportApplianceUpdateList();
+	vboxWizardExportApplianceOVFName();
+
 };
 l.run();
 
@@ -115,8 +122,9 @@ function wizardExportApplianceStepResizeList() {
 	
 	$('#wizardExportApplianceStep1').css({'height':($('#wizardExportApplianceStep1').parent().height()-8)+'px'}).show();
 	$('#vboxExportAppVMListContainer').css({'height':($('#vboxExportAppVMListContainer').parent().height()-16)+'px'}).show();
-	$('#vboxExportPropsContainer').css({'height':$('#vboxExportAppVMListContainer').css('height')}).show();
-
+	$('#vboxExportPropsContainer').css({'height':$('#vboxExportAppVMListContainer').css('height'),
+		'width':$('#vboxExportAppVMListContainer').parent().width()}).show();
+	
 }
 
 // Resize panes when wizard is resized

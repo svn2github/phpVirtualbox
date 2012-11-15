@@ -18,6 +18,10 @@ Fixed bug that would not allow starting VMs if
 $vmMemoryStartLimitWarn was enabled in config.php
 http://code.google.com/p/phpvirtualbox/issues/detail?id=619
 
+VMs that are selected in the VM list are now selected by default
+in the Export Appliance Wizard
+http://code.google.com/p/phpvirtualbox/issues/detail?id=629
+
 -------------------------------------
 	4.2-4	2012-11-02
 -------------------------------------

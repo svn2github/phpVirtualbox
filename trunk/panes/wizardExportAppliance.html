@@ -91,6 +91,8 @@ l.onLoad = function() {
 			$(li).addClass('vboxDisabled disabled');
 		} else {
 			$(li).click(function(){$(this).toggleClass('vboxListItemSelected');}).addClass('vboxListItem');
+			if(vboxChooser.isVMSelected(vms[i].id))
+				$(li).addClass('vboxListItemSelected');
 		}
 		$(li).html("<img style='width: 16px; height: 16px;' src='images/vbox/" + vboxGuestOSTypeIcon(vms[i].OSTypeId) + "' /> " + vms[i].name)
 			.data('vboxVMName', vms[i].name);

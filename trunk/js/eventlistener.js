@@ -33,9 +33,6 @@ var vboxEventListener = {
 			if(vboxEventListener._running && 
 					((new Date().getTime()/1000) - vboxEventListener._watchdog.lastRun > 20)) {
 				phpVirtualBoxFailure(' (EventListener watchdog failure)');
-				window.console.log(vboxEventListener._requestQueue.running);
-				window.console.log(vboxEventListener._requestQueue.requests);
-				window.console.log(new Date().toLocaleTimeString() + ' ' + new Date(vboxEventListener._watchdog.lastRun*1000).toLocaleTimeString());
 				vboxEventListener.stop();
 				window.clearInterval(vboxEventListener._watchdog.timer);
 			} 

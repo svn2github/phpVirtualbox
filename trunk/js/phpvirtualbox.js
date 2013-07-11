@@ -1884,7 +1884,7 @@ var vboxVMActions = {
 		icon: 'poweroff',
 		stop_action: true,
 		enabled: function() {
-			return (vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Paused'));
+			return (vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Paused') || vboxChooser.isSelectedInState('Stuck'));
 		},
 		click: function() {
 			
@@ -1894,7 +1894,7 @@ var vboxVMActions = {
 				
 				var vms = vboxChooser.getSelectedVMsData();
 				for(var i = 0; i < vms.length; i++) {
-					if(vboxVMStates.isRunning(vms[i]) || vboxVMStates.isPaused(vms[i]))
+					if(vboxVMStates.isRunning(vms[i]) || vboxVMStates.isPaused(vms[i]) || vboxVMStates.isStuck(vms[i]))
 						vboxVMActions.powerAction('powerdown','Power off the selected virtual machines', vms[i]);
 				}
 			};
@@ -1963,7 +1963,6 @@ var vboxVMActions = {
 	/** Stop a VM */
 	stop: {
 		name: 'stop',
-//		label: trans('Close','UIActionPool'),
 		label: trans('Stop','VBoxSelectorWnd'),
 		icon: 'acpi',
 		icon_disabled:'acpi_disabled',
@@ -2360,6 +2359,9 @@ function vboxWizard() {
 	/* Deferred object resolved when complete */
 	this.completed = $.Deferred();
 	
+	/* Function to be run on cancel */
+	this.onCancel = null;
+	
 	/* Function to run on finish */
 	this.onFinish = function() {
 		
@@ -2567,7 +2569,7 @@ function vboxWizard() {
 				buttons[self.backArrow + ' '+self.backText] = self.displayPrev;
 			
 			buttons[(self.steps > 1 ? self.nextText +' '+self.nextArrow : self.finishText)] = self.displayNext;
-			buttons[self.cancelText] = self.close;
+			buttons[self.cancelText] = self.cancel;
 			
 			// Translations
 			vboxInitDisplay(self.name+'Content',self.context);
@@ -2627,12 +2629,17 @@ function vboxWizard() {
 	};
 	
 	/**
-	 * Close wizard
+	 * Cancel wizard
 	 * 
 	 * @memberOf vboxWizard
 	 */
-	this.close = function() {
+	this.cancel = function() {
 
+		// Check for onCancel function
+		if(self.onCancel) {
+			self.onCancel();
+		}
+		
 		// Reject if still pending
 		if(self.completed.state() == 'pending')
 			self.completed.reject();
@@ -4400,6 +4407,11 @@ var vboxVMStates = {
 	/* Return whether or not vm is running */
 	isRunning: function(vm) {
 		return (vm && jQuery.inArray(vm.state, ['Running','LiveSnapshotting','Teleporting']) > -1);
+	},
+	
+	/* Return whether or not a vm is stuck */
+	isStuck: function (vm) {
+		return (vm && vm.state == 'Stuck');
 	},
 	
 	/* Whether or not a vm is paused */

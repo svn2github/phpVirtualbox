@@ -56,7 +56,7 @@ class phpvbAuthLDAP implements phpvbAuth {
 		
 		ldap_set_option($auth,LDAP_OPT_PROTOCOL_VERSION, 3);
 		
-		if(!@ldap_bind($auth, sprintf($config['bind_dn'], $username), $password))
+		if(!@ldap_bind($auth, sprintf($this->config['bind_dn'], $username), $password))
 			return false;
 		
 		

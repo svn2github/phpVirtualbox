@@ -100,7 +100,7 @@ function vboxAjaxRequest(fn,params) {
 			if($('#vboxPane').data('vboxFatalError')) return;
 
 			// Append debug output to console
-			if(d.messages && window.console && window.console.log) {
+			if(d && d.messages && window.console && window.console.log) {
 				for(var i = 0; i < d.messages.length; i++) {
 					window.console.log(d.messages[i]);
 				}
@@ -1057,7 +1057,7 @@ function vboxValidateNum(k) {
  * @return {Boolean}
  */
 function vboxValidateIP(k) {
-	return (vboxValidateNum(k) || k == 190); 
+	return (vboxValidateNum(k) || k == 190 || k == 110 || k == 59 || k==78);
 }
 /**
  * Return true if k param is a valid control code (shift, backspace, etc..)

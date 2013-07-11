@@ -1152,6 +1152,11 @@ function vboxWizardFirstRunDialog(vm) {
 	this.noAdvanced = true;
 	this.args = vm;
 	
+	// This still resolves on cancel
+	this.onCancel = function () {
+		self.completed.resolve();
+	}
+	
 	this.onFinish = function() {
 		
 		var med = vboxMedia.getMediumById($('#wizardFirstRunMedia').find(":selected").attr('value'));

@@ -143,6 +143,8 @@ class phpVBoxConfigClass {
 	function __construct() {
 		
 		@include_once(dirname(dirname(__FILE__)).'/config.php');
+		
+		$ep = error_reporting(0);
 	
 		/* Apply object vars of configuration class to this class */
 		if(class_exists('phpVBoxConfig')) {

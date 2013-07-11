@@ -127,7 +127,7 @@ class phpvbAuthActiveDirectory implements phpvbAuth {
 		
 		// Admin user explicitly set?
 		if(!$_SESSION['admin'] && $this->config['adminUser']) {
-			$_SESSION['admin'] = (strtolower($this->config['adminUser']) == strtolower($_SESSION['user']));
+			$_SESSION['admin'] = (strtolower($this->config['adminUser']) == strtolower($username));
 			// Admin is ok
 			$_SESSION['valid'] = ($_SESSION['admin'] || $_SESSION['valid']);
 		}
@@ -150,7 +150,7 @@ class phpvbAuthActiveDirectory implements phpvbAuth {
 
 		// Admin user explicitly set?
 		if(!$_SESSION['admin'] && $this->config['adminUser']) {
-			$_SESSION['admin'] = (strtolower($this->config['adminUser']) == strtolower($_SESSION['user']));
+			$_SESSION['admin'] = (strtolower($this->config['adminUser']) == strtolower($username));
 		}
 
 		// No admin information specified makes everyone an admin

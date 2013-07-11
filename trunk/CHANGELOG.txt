@@ -1,5 +1,5 @@
 -------------------------------------
-	4.2-5
+	4.2-5	2013-07-11
 -------------------------------------
 More details pane redraw fixes when VM selection list changes
 while VM data is still loading
@@ -21,6 +21,23 @@ http://code.google.com/p/phpvirtualbox/issues/detail?id=619
 VMs that are selected in the VM list are now selected by default
 in the Export Appliance Wizard
 http://code.google.com/p/phpvirtualbox/issues/detail?id=629
+
+Fixed bug in ActiveDirectory authentication module that would not
+correctly recognize the adminUser setting.
+https://code.google.com/p/phpvirtualbox/issues/detail?id=649
+
+Fixed bug that would not allow 'Stuck' VMs to be powered off.
+https://code.google.com/p/phpvirtualbox/issues/detail?id=651
+
+Fixed bug that would not allow "." to be entered in an IP address
+text box in some cases.
+https://code.google.com/p/phpvirtualbox/issues/detail?id=653
+
+Fixed bug in LDAP authentication module that would not allow users
+to log in.
+https://code.google.com/p/phpvirtualbox/issues/detail?id=687
+
+Canceling the 'First Run' wizard now resumes starting the VM.
 
 -------------------------------------
 	4.2-4	2012-11-02

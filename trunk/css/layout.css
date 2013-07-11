@@ -929,7 +929,7 @@ div.vboxDetailsSectionCollapsed table.vboxDetailsTableBox tr.vboxDetailsHead th.
 table.vboxDetailsTableBox tr.vboxDetailsHead th { padding: 6px; padding-left: 8px; }
 table.vboxDetailsTableBox tr.vboxDetailsHead img { padding-right: 4px; }
 /* same as th.vboxDetailName */
-table.vboxDetailsTable td.vboxDetailDescriptionCell { padding-left: 20px; }
+table.vboxDetailsTable td.vboxDetailDescriptionCell { padding-left: 20px; white-space: pre-wrap; }
 
 /* menus */
 #vboxDetailsShowMenu li, #vboxDetailsShowMenu li span { cursor: default; }

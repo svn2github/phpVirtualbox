@@ -229,7 +229,7 @@
 			$('#vboxPane').bind('hostChange',function(){
 				
 				var l = new vboxLoader();
-				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d.responseData);});
+				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d.responseData);$('#vboxPane').trigger('configLoaded');});
 				l.add('vboxGetGuestOSTypes',function(d){$('#vboxPane').data('vboxOSTypes',d.responseData);});
 				l.add('vboxSystemPropertiesGet',function(d){$('#vboxPane').data('vboxSystemProperties',d.responseData);});
 				l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
@@ -255,7 +255,7 @@
 				var l = new vboxLoader();
 				
 				// Get data and store it using data()
-				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d.responseData);});
+				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d.responseData);$('#vboxPane').trigger('configLoaded');});
 				l.add('vboxGetGuestOSTypes',function(d){$('#vboxPane').data('vboxOSTypes',d.responseData);});
 				l.add('vboxSystemPropertiesGet',function(d){$('#vboxPane').data('vboxSystemProperties',d.responseData);});
 				l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});

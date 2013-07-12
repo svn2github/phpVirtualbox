@@ -1179,7 +1179,7 @@ var vboxVMDetailsSections = {
 	serialports : {
 		icon: 'serial_port_16px.png',
 		title: trans('Serial Ports'),
-		settingsLink: 'SerialPorts',
+		settingsLink: 'Ports:0',
 		rows: function(d) {
 			
 			var rows = [];
@@ -1229,7 +1229,7 @@ var vboxVMDetailsSections = {
 	parallelports: {
 		icon: 'parallel_port_16px.png',
 		title: trans('Parallel Ports','UIDetailsPagePrivate'),
-		settingsLink: 'ParallelPorts',
+		settingsLink: 'Ports:1',
 		condition: function() { return $('#vboxPane').data('vboxConfig').enableLPTConfig; },
 		rows: function(d) {
 			
@@ -1271,7 +1271,7 @@ var vboxVMDetailsSections = {
 	usb : {
 		icon: 'usb_16px.png',
 		title: trans('USB'),
-		settingsLink: 'USB',
+		settingsLink: 'Ports:2',
 		rows: function(d) {
 			
 			var rows = [];

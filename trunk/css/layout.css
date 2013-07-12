@@ -90,6 +90,9 @@ div.ui-widget-overlay { padding: 0px; margin: 0px; border: 0px; width: 100%; hei
 div.ui-tabs ul.ui-tabs-nav { margin: 0px; padding: 0px; border: 0px;}
 div.ui-dialog .vboxDialogTitleIcon { height: 16px; width: 16px; }
 
+/* Tabs with images */
+div.ui-tabs ul.ui-tabs-nav a img { margin-right:4px; }
+
 /* sliders and slider Scales */
 div.slider { margin-left: 8px; margin-right: 8px; }
 div.slider .ui-state-default { background: #ff8; border: 1px solid #000; }

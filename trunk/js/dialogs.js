@@ -1079,9 +1079,7 @@ function vboxVMsettingsDialog(vm,pane) {
 			{'name':'Storage','label':'Storage','icon':'attachment','context':'UIMachineSettingsStorage'},
 			{'name':'Audio','label':'Audio','icon':'sound','context':'UIMachineSettingsAudio'},
 			{'name':'Network','label':'Network','icon':'nw','tabbed':true,'context':'UIMachineSettingsNetwork'},
-			{'name':'SerialPorts','label':'Serial Ports','icon':'serial_port','tabbed':true,'context':'UIMachineSettingsSerial'},
-			{'name':'ParallelPorts','label':'Parallel Ports','icon':'parallel_port','tabbed':true,'disabled':(!$('#vboxPane').data('vboxConfig').enableLPTConfig),'context':'UIMachineSettingsParallel'},
-			{'name':'USB','label':'USB','icon':'usb','context':'UIMachineSettingsUSB'},
+			{'name':'Ports','label':'Ports','icon':'serial_port','tabbed':true},
 			{'name':'SharedFolders','label':'Shared Folders','icon':'shared_folder','context':'UIMachineSettingsSF'}
 				
 		);
@@ -1375,7 +1373,9 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 	    if(i >= panes.length) i = 0;
 	    $('#vboxSettingsMenuList').children('li:eq('+i+')').first().click().each(function(){
 	    	if(tab !== undefined) {
-	    		$('#vboxSettingsPane-'+$(this).data('name')).tabs('select', parseInt(tab));
+	    		// Check for out of scope tab
+	    		tab = Math.min(($('#vboxSettingsPane-'+$(this).data('name')).tabs('length')-1), parseInt(tab));
+	    		$('#vboxSettingsPane-'+$(this).data('name')).tabs('select', tab);
 	    	}
 	    	
 	    });

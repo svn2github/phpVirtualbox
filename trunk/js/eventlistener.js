@@ -203,6 +203,8 @@ var vboxEventListener = {
 					// Trigger event list queue
 					$('#vboxPane').trigger('vboxEvents', [d.responseData]);
 					
+					//console.log(d.responseData);
+					
 				}
 				
 				// Wait at most 3 seconds

@@ -2224,10 +2224,12 @@ $(document).ready(function(){
 					
 				/////////////////////////////////
 				//
-				// Snapshot taken
+				// Snapshot taken / deleted
 				//
 				/////////////////////////////////
+				case 'OnSnapshotDeleted':
 				case 'OnSnapshotTaken':
+				case 'OnSnapshotChanged':
 					redrawVMs[redrawVMs.length] = eventList[i].machineId;
 					break;
 				

@@ -93,23 +93,18 @@ $('#wizardNewVMStep1').find('table.vboxOSTypeOptions').find('span.translate').ht
 }).removeClass('translate');
 
 
-var sButtons = new Array(
-		{
-			/* Add Attachment Button */
-			'name' : 'mselecthdbtn',
-			'label' : trans('Choose a virtual hard disk file...','UIWizardNewVM'),
-			'icon' : 'select_file',
-			'click' : function () {
-				vboxMedia.actions.choose(null,'HardDisk',function(med){
-					if(med) vmNewFillExistingDisks(med.base);
-				});
-			}
-		}		
-);
-
-var wizardNewVMToolbar = new vboxToolbarSmall(sButtons);
-wizardNewVMToolbar.disabledString = 'dis';
-wizardNewVMToolbar.addButtons('newVMDiskVMM');		
+var wizardNewVMToolbar = new vboxToolbarSingle({
+	/* Add Attachment Button */
+	'name' : 'mselecthdbtn',
+	'label' : trans('Choose a virtual hard disk file...','UIWizardNewVM'),
+	'icon' : 'select_file',
+	'click' : function () {
+		vboxMedia.actions.choose(null,'HardDisk',function(med){
+			if(med) vmNewFillExistingDisks(med.base);
+		});
+	}
+});
+wizardNewVMToolbar.renderTo('newVMDiskVMM');		
 
 /* Toggle new / existing */
 function newVMToggleNewDisk(dis) {

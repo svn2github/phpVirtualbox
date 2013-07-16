@@ -894,7 +894,7 @@ function vboxProgressUpdate(prequest,d,modal) {
 	if(!d || !d.responseData || !d.responseData['progress'] || !d.responseData['info'] || d.responseData['info']['completed'] || d.responseData['info']['canceled']) {
 		
 		if(d && d.responseData['info'] && d.responseData['info']['canceled'])
-			vboxAlert(trans('Operation Canceled','phpVirtualBox'),{'width':'100px','height':'auto'});
+			vboxAlert(trans('Operation Canceled','phpVirtualBox'),{'width':'300px','height':'auto'});
 		
 		var callback = $("#vboxProgress"+pid).data('vboxCallback');
 		

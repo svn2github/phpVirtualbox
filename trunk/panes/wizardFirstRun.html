@@ -53,24 +53,19 @@ $('#wizardFirstRunStep1').bind('show',function(e,wiz){
 	
 	wizardFirstRunFillMedia();
 	
-	var sButtons = new Array(
-		{
-			/* Add Attachment Button */
-			'name' : 'mselecthdbtnd',
-			'label' : trans('Choose a virtual optical disk file...','UIWizardFirstRun'),
-			'icon' : 'select_file',
-			'click' : function () {
-				vboxMedia.actions.choose(null,'DVD',function(med){
-					if(!med) return;
-					wizardFirstRunFillMedia(med.id);
-				});
-			}
-		}		
-	);
-
-	var wizardFirstRunBar = new vboxToolbarSmall(sButtons);
-	wizardFirstRunBar.disabledString = 'dis';
-	wizardFirstRunBar.addButtons('wizardFirstRunChoose');		
+	var wizardFirstRunBar = new vboxToolbarSingle({
+		/* Add Attachment Button */
+		'name' : 'mselecthdbtnd',
+		'label' : trans('Choose a virtual optical disk file...','UIWizardFirstRun'),
+		'icon' : 'select_file',
+		'click' : function () {
+			vboxMedia.actions.choose(null,'DVD',function(med){
+				if(!med) return;
+				wizardFirstRunFillMedia(med.id);
+			});
+		}
+	});
+	wizardFirstRunBar.renderTo('wizardFirstRunChoose');		
 
 	$('#wizardFirstRunMedia').hide();
 	var w = $('#wizardFirstRunMedia').parent().innerWidth();

@@ -118,11 +118,20 @@
 				$(sel).data('origId', $(this).attr('id'));
 				$(sel).attr('id',$(this).attr('id')+'-mediumselect');
 				$(sel).attr('class','vboxMediumSelect');
+				$(sel).bind('click',function(){
+					if($('#'+$(this).data('origId')+'-table').hasClass('vboxDisabled')) return;
+					return showList(this);
+				});
+
 				$(this).hide();
 				
 				var img = document.createElement('div');
 				img.setAttribute('id',$(this).attr('id')+'-mediumselectimg');
 				img.setAttribute('class','vboxMediumSelectImg');
+				$(img).click(function(e){
+					$(e.target).closest('table').find('div.vboxMediumSelect').trigger('click');
+					return false;
+				});
 				
 				var tbl = document.createElement('table');
 				$(tbl).attr('id',$(this).attr('id')+'-table');
@@ -135,10 +144,6 @@
 				$(tr).append(td);
 				var td = document.createElement('td');
 				$(td).attr({'class':'vboxMediumSelectTableRight'}).css({'padding':'0px','margin':'0px','width':'auto'});
-				$(td).click(function(){
-					$(this).closest('table').find('div.vboxMediumSelect').first().trigger('click');
-				});
-				
 				$(td).append(img);
 				$(tr).append(td);
 				$(tbl).append(tr);
@@ -152,10 +157,6 @@
 				
 				$(this).before(tbl);
 				
-				$(sel).bind('click',function(){
-					if($('#'+$(this).data('origId')+'-table').hasClass('vboxDisabled')) return;
-					return showList(this);
-				});
 				
 				var list = document.createElement('ul');
 				$(list).attr('id',$(this).attr('id')+'-mediumselect-list');

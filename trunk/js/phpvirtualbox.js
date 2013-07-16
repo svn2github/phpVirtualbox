@@ -2902,13 +2902,13 @@ function vboxToolbar(buttons) {
 	};
 
 	/**
-	 * Add buttons to HTML node where id = id param
+	 * Render buttons to HTML node where id = id param
 	 * 
 	 * @memberOf vboxToolbar
 	 * @param {String}
 	 *            id - HTMLNode id to add buttons to
 	 */
-	this.addButtons = function(id) {
+	this.renderTo = function(id) {
 		
 		self.id = id;
 		self.height = self.size + self.addHeight; 
@@ -2938,6 +2938,8 @@ function vboxToolbar(buttons) {
 				self.disableButton(self.buttons[i]);
 			}
 		}
+		
+		return this;
 	};
 
 	/**
@@ -2969,6 +2971,37 @@ function vboxToolbar(buttons) {
 		return b.click(btn);
 	};
 		
+}
+
+/**
+ * Toolbar class for single button
+ *
+ * @constructor
+ * @class vboxToolbarSmall
+ * @super vboxToolbar
+ * @param {Object} buttons - button for toolbar
+*/
+function vboxToolbarSingle(button) {
+
+	var self = this;
+	this.parentClass = vboxToolbarSmall;
+	this.parentClass();
+	this.buttons = [ button ];
+	this.disabledString = 'dis'
+	this._buttonElement = this.buttonElement; /* copy orig */
+	
+	/**
+	 * Generate HTML element for button
+	 * 
+	 * @memberOf vboxToolbarSingle
+	 * @param {Object}
+	 *            b - button object containing various button parameters
+	 * @return {HTMLNode} button element
+	 */
+	this.buttonElement = function(b) {
+		return this._buttonElement(b).attr({'title':String(b.toolbar_label ? b.toolbar_label : b.label)});
+	}
+	
 }
 
 /**
@@ -3073,14 +3106,14 @@ function vboxToolbarSmall(buttons) {
 	};
 
 	/**
-	 * Add buttons to HTML node where id = id param
+	 * Render buttons to HTML node where id = id param
 	 * 
 	 * @memberOf vboxToolbarSmall
 	 * @param {String}
 	 *            id - HTMLNode id to add buttons to
 	 * @return null
 	 */
-	this.addButtons = function(id) {
+	this.renderTo = function(id) {
 		
 		self.id = id;
 		
@@ -3100,6 +3133,8 @@ function vboxToolbarSmall(buttons) {
 		}
 
 		$(targetElm).attr({'name':self.name}).addClass('vboxToolbarSmall vboxEnablerTrigger vboxToolbarSmall'+self.size).bind('disable',self.disable).bind('enable',self.enable);
+
+		return this;
 		
 	};
 	

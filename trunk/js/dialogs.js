@@ -175,10 +175,10 @@ function vboxWizardExportApplianceDialog() {
 			   // Remove export VM properties
 			   $('#vboxExportProps').children().remove();
 			   // Re-trigger adding them
-			   if(vbw.mode == 'advanced')
+			   if(self.mode == 'advanced')
 				   vboxWizardExportApplianceUpdateList();
 			   else
-				   $('#wizardExportApplianceStep4').trigger('show',e,vbw);
+				   $('#wizardExportApplianceStep4').trigger('show',e,self);
 		   }
 	   }
 	];

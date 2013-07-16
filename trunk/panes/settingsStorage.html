@@ -439,7 +439,7 @@ for(var i=0;i<imgsToLoad.length;i++){
  );
 
 var scToolbar = new vboxToolbarSmall(vboxSettingsStorageButtons);
-scToolbar.addButtons('vboxSettingsControllersButtons');
+scToolbar.renderTo('vboxSettingsControllersButtons');
 
 // disable toolbar if VM is running
 if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
@@ -1158,7 +1158,7 @@ function vboxSettingsAddController(con,list) {
    		var tb = new vboxToolbarSmall([b]);
 	   	tb.buttonStyle = 'margin:0px;padding:0px;border:0px;background-repeat:no-repeat;background-position:0px 0px;';
 	   	tb.noHover = true;
-	   	tb.addButtons('vboxSettingsController' + con.bus + 'BtnDrive');
+	   	tb.renderTo('vboxSettingsController' + con.bus + 'BtnDrive');
    		tb.disable();
    		
    		

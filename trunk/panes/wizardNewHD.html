@@ -68,9 +68,7 @@
 					<td style='width: 100%; white-space: nowrap'>
 						<input type='text' class='vboxText' name='wizardNewHDLocation' style='width: 100%'/>
 					</td>
-					<td style='width: auto; white-space: nowrap;' class='vboxFileFolderInput'>
-						<input type="button" class="vboxImgButton" style="background-image: url(images/vbox/select_file_16px.png)" onClick="wizardHDBrowseLocation()" />
-					</td>
+					<td style='width: 1%;' id='wizardHDBrowseLocationButton'></td>
 				</tr>
 			</table>
 		</div>	
@@ -119,6 +117,20 @@ vboxHDTypesTbl.find('input[value='+$('#vboxPane').data('vboxSystemProperties').d
  * Translations
  */
 $('#wizardNewHDStep2').find('span.translatevar').html(function(i,h){return trans(h,'UIWizardNewVDPageVariant');});
+
+/*
+ * Location button
+ */
+ /* Choose location of new file button */
+ new vboxToolbarSingle({
+ 	'name' : 'mselecthdbtn',
+ 	'label' : trans('Choose a location for new virtual hard drive file...','UIWizardNewVD'),
+ 	'icon' : 'select_file',
+ 	'click' : function () {
+ 		wizardHDBrowseLocation();
+ 	}
+ }).renderTo('wizardHDBrowseLocationButton');		
+
  
 /* Browse for new VDI location */
 function wizardHDBrowseLocation() {

@@ -12,12 +12,12 @@
 	<span class='translate'>&lt;p&gt;VirtualBox currently supports importing appliances saved in the Open Virtualization Format (OVF). To continue, select the file to import below.&lt;/p&gt;</span>
 	
 	<div class='vboxOptions'>
-		<table style='width: 100%;' class='vboxInvisible'>
+		<table style='width: 100%;' class='vboxOptions'>
 			<tr>
 				<td style='width: 100%; white-space: nowrap' class='vboxFileFolderInput'>
-					<input type='text' class='vboxText' name='wizardImportApplianceLocation' />
-					<input type="button" class="vboxImgButton" style="background-image: url(images/vbox/select_file_16px.png)" onClick="wizardImportApplianceBrowseLocation()" />
+					<input type='text' class='vboxText' name='wizardImportApplianceLocation' style='width: 100%'/>
 				</td>
+				<td style='width:1%' id='wizardImportApplianceLocationButton'></td>
 			</tr>
 		</table>
 	</div>
@@ -51,6 +51,15 @@
 </div>
 <script type='text/javascript'>
 
+/* Draw button */
+new vboxToolbarSingle({
+	'name' : 'mselecthdbtn',
+	'label' : trans('Open appliance...','UIWizardImportApp'),
+	'icon' : 'select_file',
+	'click' : function () {
+		wizardImportApplianceBrowseLocation()
+	}
+}).renderTo('wizardImportApplianceLocationButton');
 
 $('#wizardImportApplianceStep2').find('span.translateglob').html(function(i,h){
 	return trans(h,'UIApplianceEditorWidget');

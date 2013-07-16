@@ -4,6 +4,10 @@
 Fixed bug where deleting or renaming a VM snapshot may not cause
 the chooser to refresh VM data.
 
+Minor translation bug fixes.
+
+Fixed "Restore Defaults" button in Appliance Export Wizard.
+
 -------------------------------------
 	4.2-5	2013-07-11
 -------------------------------------

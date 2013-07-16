@@ -207,7 +207,7 @@ var sButtons = new Array(
 );
 
 var netToolbar = new vboxToolbarSmall(sButtons);
-netToolbar.addButtons('vboxSettingsGlobalNetToolbar');
+netToolbar.renderTo('vboxSettingsGlobalNetToolbar');
 
 $('#vboxSettingsGlobalNetList').bind('select',function(e,i){
 	netToolbar.update(i);

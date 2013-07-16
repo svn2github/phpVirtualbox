@@ -35,7 +35,7 @@ var tButtons = [
 /* Append Top Toolbar */
 var vboxChooserToolbarTop = new vboxToolbar(tButtons);
 vboxChooserToolbarTop.size = 32;
-vboxChooserToolbarTop.addButtons('vboxPaneToolbar');
+vboxChooserToolbarTop.renderTo('vboxPaneToolbar');
 
 /* Stop button menu and actions */
 var ul = $('<ul />').attr({'class':'contextMenu','style':'display: none','id':'vboxStopMenu'});

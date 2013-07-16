@@ -136,7 +136,7 @@ var sButtons = new Array(
  );
 
 var sfToolbar = new vboxToolbarSmall(sButtons);
-sfToolbar.addButtons('vboxSettingsSFButtons');
+sfToolbar.renderTo('vboxSettingsSFButtons');
 
 $('#vboxSettingsSharedFoldersList').bind('select',function(e,el){sfToolbar.update(el);});
 

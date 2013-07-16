@@ -663,7 +663,7 @@ $('#vboxSettingsDialog').bind('save',function(){
  );
 
 var usbToolbar = new vboxToolbarSmall(sButtons);
-usbToolbar.addButtons('vboxSettingsUSBButtons');
+usbToolbar.renderTo('vboxSettingsUSBButtons');
 
 $('#vboxSettingsUSBFilterList').bind('select',function(e,el){usbToolbar.update(el);});
 

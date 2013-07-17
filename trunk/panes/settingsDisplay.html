@@ -115,12 +115,11 @@
 
 /* Display */
 
-/* auth method translatiosn */
+/* auth method translations */
 $('#vboxSettingsDisplayRDPAuthID').find('option').html(function(i,h){return trans(h,'VBoxGlobal');});
 
 $('#vboxSettingsDisplayMemory').data('form','frmVboxSettings');
 $('#vboxSettingsDisplayMemory').slider({'min':parseInt($('#vboxPane').data('vboxSystemProperties').minGuestVRAM),'max':parseInt($('#vboxPane').data('vboxSystemProperties').maxGuestVRAM)});
-$('#vboxSettingsDisplayMemory').slider('value',parseInt($('#vboxSettingsDialog').data('vboxMachineData').VRAMSize));
 
 /* Unsupported at this time 
 
@@ -132,48 +131,63 @@ document.forms['frmVboxSettings'].vboxSettingsDisplay3d.checked = ($('#vboxSetti
 document.forms['frmVboxSettings'].vboxSettingsDisplay2d.checked = ($('#vboxSettingsDialog').data('vboxMachineData').accelerate2DVideoEnabled);
 */
 
-/*
- * No VRDE?
- *
- */
-if(!($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer && $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.VRDEExtPack)) {
-	
-	$('#vboxSettingsTabDisplayRemote').remove();
-	$('#vboxSettingsTabDisplayVideo').prev().children('li:eq(1)').remove();
 
-	
-} else {
-	
-	document.forms['frmVboxSettings'].vboxSettingsDisplayRDPPort.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.ports;
-	if(!document.forms['frmVboxSettings'].vboxSettingsDisplayRDPPort.value)
-		document.forms['frmVboxSettings'].vboxSettingsDisplayRDPPort.value = '3389-4000';
-	document.forms['frmVboxSettings'].vboxSettingsDisplayRDPAuth.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.authType;
-	document.forms['frmVboxSettings'].vboxSettingsDisplayRDPAuthTimeout.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.authTimeout;
-	document.forms['frmVboxSettings'].vboxSettingsDisplayRDPAddr.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.netAddress;
-	
-	if(($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.enabled)) {
-		document.forms['frmVboxSettings'].vboxSettingsDisplayRDPEnabled.checked = true;
-	}
+/* CHange values when data is loaded */
+$('#vboxSettingsDialog').bind('dataLoaded', function(){
 
-	if(($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.allowMultiConnection)) {
-		document.forms['frmVboxSettings'].vboxSettingsDisplayRDPMulti.checked = true;
-	}
-	
-	if(!$('#vboxPane').data('vboxConfig').enableAdvancedConfig)
-		$('#vboxSettingsDisplayRDPAddrRow').css('display','none');
-}
 
-/* Disable non-editable items when VM is running */
-$('#vboxSettingsDialog').one('show',function(){
+	$('#vboxSettingsDisplayMemory').slider('value',parseInt($('#vboxSettingsDialog').data('vboxMachineData').VRAMSize));
 	
+	var p = $('#vboxSettingsTabDisplayVideo').parent().children('div'); 
 	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
-		
-		var p = $('#vboxSettingsTabDisplayVideo').parent().children('div'); 
 		$(p).find('tr:not(.vboxRunningEnabled)').find('span').addClass('disabled');
 		$(p).find('tr:not(.vboxRunningEnabled)').find('input,select,textarea').addClass('disabled').prop('disabled',true);
 		$('#vboxSettingsDisplayMemory').slider('disable');
-
+	} else {
+		$(p).find('tr:not(.vboxRunningEnabled)').find('span').removeClass('disabled');
+		$(p).find('tr:not(.vboxRunningEnabled)').find('input,select,textarea').removeClass('disabled').prop('disabled',false);
+		$('#vboxSettingsDisplayMemory').slider('enable');
+		
 	}
+
+
+	/*
+	 * No VRDE?
+	 *
+	 */
+	if(!($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer && $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.VRDEExtPack)) {
+		
+		$('#vboxSettingsTabDisplayVideo').parent().tabs('disable',1);
+
+		
+	} else {
+
+		$('#vboxSettingsTabDisplayVideo').parent().tabs('enable',1);
+
+		document.forms['frmVboxSettings'].vboxSettingsDisplayRDPPort.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.ports;
+		if(!document.forms['frmVboxSettings'].vboxSettingsDisplayRDPPort.value)
+			document.forms['frmVboxSettings'].vboxSettingsDisplayRDPPort.value = '3389-4000';
+		document.forms['frmVboxSettings'].vboxSettingsDisplayRDPAuth.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.authType;
+		document.forms['frmVboxSettings'].vboxSettingsDisplayRDPAuthTimeout.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.authTimeout;
+		document.forms['frmVboxSettings'].vboxSettingsDisplayRDPAddr.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.netAddress;
+		
+		if(($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.enabled)) {
+			document.forms['frmVboxSettings'].vboxSettingsDisplayRDPEnabled.checked = true;
+		} else {
+			document.forms['frmVboxSettings'].vboxSettingsDisplayRDPEnabled.checked = false;
+		}
+
+		if(($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.allowMultiConnection)) {
+			document.forms['frmVboxSettings'].vboxSettingsDisplayRDPMulti.checked = true;
+		} else {
+			document.forms['frmVboxSettings'].vboxSettingsDisplayRDPMulti.checked = false;
+		}
+		
+		if(!$('#vboxPane').data('vboxConfig').enableAdvancedConfig)
+			$('#vboxSettingsDisplayRDPAddrRow').css('display','none');
+		
+	}
+
 
 });
 

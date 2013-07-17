@@ -1069,10 +1069,107 @@ function vboxVMsettingsDialog(vm,pane) {
 	if(typeof(vm) == 'string')
 		vm = vboxVMDataMediator.getVMData(vm);
 	
+	// Handler for when VM settings have changed
+	/////////////////////////////////////////////
+	var machineSettingsChanged = function(e, eventList) {
+		
+		for(var i = 0; i < eventList.length; i++) {
+			
+			////////////////////////////////
+			//
+			// Machine data changed.. 
+			//
+			////////////////////////////////
+			switch(eventList[i].eventType) {
+
+				case 'OnMachineDataChanged':
+					
+					if(eventList[i].machineId != vm.id) break;
+				
+					var buttons = {};
+					buttons[trans('Reload settings')] = function() {
+						
+						// Display loading screen
+						var l = new vboxLoader();
+						l.showLoading();
+						
+						$(this).empty().remove();
+						
+						/*
+						 * Data to be reloaded
+						 */
+						var reload = [
+			              vboxAjaxRequest('vboxGetMedia',{}).then(function(d){$('#vboxPane').data('vboxMedia',d.responseData);}),
+			              
+			              vboxAjaxRequest('hostGetNetworking',{}).then(function(d){$('#vboxSettingsDialog').data('vboxHostNetworking',d.responseData);}),
+			              
+			              vboxAjaxRequest('vboxRecentMediaGet',{}).then(function(d){$('#vboxPane').data('vboxRecentMedia',d.responseData);}),
+			              
+			              vboxAjaxRequest('consoleGetSharedFolders',{'vm':vm.id}).then(function(d){$('#vboxSettingsDialog').data('vboxTransientSharedFolders',d.responseData);}),
+			              
+			              $.when(vboxVMDataMediator.getVMDataCombined(vm.id)).then(function(vmData) {
+			            	  
+			            	  // data received from deferred object
+			            	  $('#vboxSettingsDialog').data('vboxMachineData',vmData);
+			            	  $('#vboxSettingsDialog').data('vboxFullEdit', (vboxVMStates.isPoweredOff(vmData) && !vboxVMStates.isSaved(vmData)));
+			            	  
+			              	})
+			              ];
+						
+						// Only when all of these are done
+						$.when.apply($, reload).then(function(){
+
+							/* Tell dialog that data is loaded */
+							$('#vboxSettingsDialog').trigger('dataLoaded');
+
+							l.removeLoading();
+						});
+						
+						
+					};
+					
+					vboxConfirm("<p>The machine settings were changed while you were editing them. You currently have unsaved setting changes.</p><p>Would you like to reload the changed settings or to keep your own changes?</p>",
+							buttons,
+							trans('Keep changes'));
+					
+					return;
+				
+			}
+		}
+	}
+	
+	// Watch for changed VM settings
+	$('#vboxPane').bind('vboxEvents',machineSettingsChanged);
+	
 	$.when(vboxVMDataMediator.getVMDataCombined(vm.id)).then(function(vmData) {
 		
+
+		/*
+		 * Settings dialog data
+		 */
+		var dataList = new Array(
+			{'fn':'vboxGetMedia','callback':function(d){
+			
+				$('#vboxPane').data('vboxMedia',d.responseData);
+
+				// data received from deferred object
+				$('#vboxSettingsDialog').data('vboxMachineData',vmData);
+				$('#vboxSettingsDialog').data('vboxFullEdit', (vboxVMStates.isPoweredOff(vmData) && !vboxVMStates.isSaved(vmData)));
+			
+			}},
+			{'fn':'hostGetNetworking','callback':function(d){$('#vboxSettingsDialog').data('vboxHostNetworking',d.responseData);}},
+			{'fn':'hostGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxHostDetails',d.responseData);}},
+			{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxNetworkAdapterTypes',d.responseData);},'args':{'class':'NetworkAdapterType'}},
+			{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxAudioControllerTypes',d.responseData);},'args':{'class':'AudioControllerType'}},
+			{'fn':'vboxRecentMediaGet','callback':function(d){$('#vboxPane').data('vboxRecentMedia',d.responseData);}},
+			{'fn':'consoleGetSharedFolders','callback':function(d){$('#vboxSettingsDialog').data('vboxTransientSharedFolders',d.responseData);},'args':{'vm':vm.id}}
+		);
+
+		/*
+		 * Settings dialog panes
+		 */
 		var panes = new Array(
-		
+				
 			{'name':'General','label':'General','icon':'machine','tabbed':true,'context':'UIMachineSettingsGeneral'},
 			{'name':'System','label':'System','icon':'chipset','tabbed':true,'context':'UIMachineSettingsSystem'},
 			{'name':'Display','label':'Display','icon':'vrdp','tabbed':true,'context':'UIMachineSettingsDisplay'},
@@ -1081,29 +1178,22 @@ function vboxVMsettingsDialog(vm,pane) {
 			{'name':'Network','label':'Network','icon':'nw','tabbed':true,'context':'UIMachineSettingsNetwork'},
 			{'name':'Ports','label':'Ports','icon':'serial_port','tabbed':true},
 			{'name':'SharedFolders','label':'Shared Folders','icon':'shared_folder','context':'UIMachineSettingsSF'}
-				
+
 		);
 		
-		var data = new Array(
-			{'fn':'vboxGetMedia','callback':function(d){
-				$('#vboxPane').data('vboxMedia',d.responseData);
-				
-				// data received from deferred object
-				$('#vboxSettingsDialog').data('vboxMachineData',vmData);
-				$('#vboxSettingsDialog').data('vboxFullEdit', (vboxVMStates.isPoweredOff(vmData) && !vboxVMStates.isSaved(vmData)));
-				
-			}},
-			{'fn':'hostGetNetworking','callback':function(d){$('#vboxSettingsDialog').data('vboxHostNetworking',d.responseData);}},
-			{'fn':'hostGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxHostDetails',d.responseData);}},
-			{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxNetworkAdapterTypes',d.responseData);},'args':{'class':'NetworkAdapterType'}},
-			{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxAudioControllerTypes',d.responseData);},'args':{'class':'AudioControllerType'}},
-			{'fn':'vboxRecentMediaGet','callback':function(d){$('#vboxPane').data('vboxRecentMedia',d.responseData);}},
-			{'fn':'consoleGetSharedFolders','callback':function(d){$('#vboxSettingsDialog').data('vboxTransientSharedFolders',d.responseData);},'args':{'vm':vm.id}}
-	
-		);
-	
-		$.when(vboxSettingsDialog(vmData.name + ' - ' + trans('Settings','UISettingsDialog'),panes,data,pane,'settings','UISettingsDialogMachine'))
 		
+
+		$.when(vboxSettingsDialog(vmData.name + ' - ' + trans('Settings','UISettingsDialog'),panes,dataList,pane,'settings','UISettingsDialogMachine'))
+		
+			// Always run this
+			.always(function(){
+
+				// No longer watch for changed VM settings
+				$('#vboxPane').unbind('vboxEvents',machineSettingsChanged);
+
+			})
+		
+			// Run this when "Save" is clicked
 			.done(function() {
 				var loader = new vboxLoader();
 				var sdata = $.extend($('#vboxSettingsDialog').data('vboxMachineData'),{'clientConfig':$('#vboxPane').data('vboxConfig')});
@@ -1271,7 +1361,7 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 	for(var i = 0; i < panes.length; i++) {
 		
 		if(panes[i].disabled) continue;
-		
+				
 		// Menu item
 		$('<li />').html('<div><img src="images/vbox/'+panes[i].icon+'_16px.png" /></div> <div>'+trans(panes[i].label,langContext)+'</div>').data(panes[i]).click(function(){
 			
@@ -1300,8 +1390,9 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 		loader.addFileToDOM('panes/settings'+panes[i].name+'.html',$('#vboxSettingsPane-'+panes[i].name));
 		
 	}
-
+	
 	loader.onLoad = function(){
+		
 		
 		/* Init UI Items */
 		for(var i = 0; i < panes.length; i++) {
@@ -1309,6 +1400,9 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 			if(panes[i].tabbed) $('#vboxSettingsPane-'+panes[i].name).tabs();
 		}
 		
+		/* Tell dialog that data is loaded */
+		$('#vboxSettingsDialog').trigger('dataLoaded');
+
 		// Opera hidden select box bug
 		////////////////////////////////
 		if($.browser.opera) {
@@ -1342,6 +1436,8 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 			$(document).trigger('click');
 		};
 
+		// Init with "nothing has changed yet"
+		$('#vboxSettingsDialog').data('formDataChanged', false);
 		
 		// Show dialog
 	    $('#vboxSettingsDialog').dialog({'closeOnEscape':true,'width':(panes.length > 1 ? 900 : 600),'height':(panes.length > 1 ? 500 : 450),'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxSettingsDialog vboxDialogContent','title':(icon ? '<img src="images/vbox/'+icon+'_16px.png" class="vboxDialogTitleIcon" /> ' : '') + title}).bind("dialogbeforeclose",function(){

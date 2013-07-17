@@ -127,10 +127,7 @@ if($('#vboxPane').data('vboxConfig').vboxAutostartConfig) {
 		if($(opt).val() == $('#vboxSettingsDialog').data('vboxMachineData').autostopType)
 			$(opt).prop('selected', true);
 	});
-	
-	document.forms['frmVboxSettings'].autostartEnabled.checked = ($('#vboxSettingsDialog').data('vboxMachineData').autostartEnabled);
-	document.forms['frmVboxSettings'].autostartDelay.value = $('#vboxSettingsDialog').data('vboxMachineData').autostartDelay;
-	
+		
 } else {
 	$('#vboxSettingsTabGeneralBasic .vboxAutostartConfig').empty().remove();
 }
@@ -149,10 +146,6 @@ if(!$('#vboxPane').data('vboxConfig').startStopConfig) {
 	
 	$('#vboxSettingsTabGeneralBasic').find('tr.vboxStartStopConfig').hide();
 	
-} else {
-	
-	document.forms['frmVboxSettings'].vboxStartStopConfigStartup.selectedIndex = ($('#vboxSettingsDialog').data('vboxMachineData').startupMode == 'auto' ? 0 : 1);
-
 }
 
 /*
@@ -162,19 +155,12 @@ if(!$('#vboxPane').data('vboxConfig').startStopConfig) {
 if(!$('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
 	$('#vboxSettingsTabGeneralInputTab').remove();
 	$('#vboxSettingsTabGeneralInput').remove();
-} else {
-	$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputKeyboard).val($('#vboxSettingsDialog').data('vboxMachineData').keyboardHIDType);
-	$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputMouse).val($('#vboxSettingsDialog').data('vboxMachineData').pointingHIDType);
 }
 
+/* Custom icons */
 if($('#vboxPane').data('vboxConfig').enableCustomIcons) {
 	
 	$('#vboxSettingsRowVMIcon').css('display','');
-	
-	if($('#vboxSettingsDialog').data('vboxMachineData').customIcon) {
-		$(document.forms['frmVboxSettings'].vboxSettingsGeneralIcon).val($('#vboxSettingsDialog').data('vboxMachineData').customIcon);
-		$('#vboxSettingsGeneralIconImg').attr('src',$('#vboxSettingsDialog').data('vboxMachineData').customIcon);
-	}
 	
 	$(document.forms['frmVboxSettings'].vboxSettingsGeneralIcon).blur(function(){
 		$('#vboxSettingsGeneralIconImg').attr('src',(this.value ? this.value : 'images/vbox/blank.gif'));
@@ -243,35 +229,85 @@ for(var i in vboxSettingsOSTypes) {
 document.getElementById('vboxSettingsGeneralOSFamily').setAttribute('onChange','vboxSettingsUpdateOSList(this.value)');
 document.getElementById('vboxSettingsGeneralOSType').setAttribute('onChange','document.images["vboxOSTypeImg"].src = "images/vbox/" + vboxGuestOSTypeIcon(this.value)');
 
-document.forms['frmVboxSettings'].vboxSettingsGeneralOSFamily.selectedIndex = dosfam;
-vboxSettingsUpdateOSList(document.forms['frmVboxSettings'].vboxSettingsGeneralOSFamily.value);
-document.forms['frmVboxSettings'].vboxSettingsGeneralOSType.selectedIndex = vboxDefaultOSTypeId;
 
 
 
 
-/* Defaults from machine */
-document.forms['frmVboxSettings'].vboxSettingsGeneralName.value = $('#vboxSettingsDialog').data('vboxMachineData').name;
-document.forms['frmVboxSettings'].vboxSettingsGeneralOSFamily.value = vboxSettingsOSTypesObj[$('#vboxSettingsDialog').data('vboxMachineData').OSTypeId].familyId;
-$(document.forms['frmVboxSettings'].vboxSettingsGeneralOSFamily).change();
-document.forms['frmVboxSettings'].vboxSettingsGeneralOSType.value = $('#vboxSettingsDialog').data('vboxMachineData').OSTypeId;
-$(document.forms['frmVboxSettings'].vboxSettingsGeneralOSType).change();
-document.forms['frmVboxSettings'].vboxSettingsGeneralSnapshotFolder.value = $('#vboxSettingsDialog').data('vboxMachineData').snapshotFolder;
-document.forms['frmVboxSettings'].vboxSettingsGeneralRemovableMedia.checked = ($('#vboxSettingsDialog').data('vboxMachineData').GUI.SaveMountedAtRuntime == 'yes');
-document.forms['frmVboxSettings'].vboxSettingsGeneralDescription.innerHTML = $('#vboxSettingsDialog').data('vboxMachineData').description;
 
-
-/* Disable non-editable items when VM is running */
-$('#vboxSettingsDialog').one('show',function(){
+/* Update settings when data is loaded */
+$('#vboxSettingsDialog').bind('dataLoaded', function(){
 	
+	/* Defaults from machine */
+	document.forms['frmVboxSettings'].vboxSettingsGeneralName.value = $('#vboxSettingsDialog').data('vboxMachineData').name;
+	document.forms['frmVboxSettings'].vboxSettingsGeneralOSFamily.value = vboxSettingsOSTypesObj[$('#vboxSettingsDialog').data('vboxMachineData').OSTypeId].familyId;
+	$(document.forms['frmVboxSettings'].vboxSettingsGeneralOSFamily).change();
+	document.forms['frmVboxSettings'].vboxSettingsGeneralOSType.value = $('#vboxSettingsDialog').data('vboxMachineData').OSTypeId;
+	$(document.forms['frmVboxSettings'].vboxSettingsGeneralOSType).change();
+	document.forms['frmVboxSettings'].vboxSettingsGeneralSnapshotFolder.value = $('#vboxSettingsDialog').data('vboxMachineData').snapshotFolder;
+	document.forms['frmVboxSettings'].vboxSettingsGeneralRemovableMedia.checked = ($('#vboxSettingsDialog').data('vboxMachineData').GUI.SaveMountedAtRuntime == 'yes');
+	document.forms['frmVboxSettings'].vboxSettingsGeneralDescription.innerHTML = $('#vboxSettingsDialog').data('vboxMachineData').description;
+
+	/* Advanced config options */
+	if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
+		$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputKeyboard).val($('#vboxSettingsDialog').data('vboxMachineData').keyboardHIDType);
+		$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralInputMouse).val($('#vboxSettingsDialog').data('vboxMachineData').pointingHIDType);
+	}
+	
+	/* OS Type */
+	
+	// shorthand
+	var vboxOSTypes = $('#vboxPane').data('vboxOSTypes');
+	for(var i = 0; i < vboxOSTypes.length; i++) {
+		if(vboxOSTypes[i].id == $('#vboxSettingsDialog').data('vboxMachineData').OSTypeId) {
+			// Set the family then os type
+			$(document.forms['frmVboxSettings'].vboxSettingsGeneralOSFamily).children('[value="'+vboxOSTypes[i].familyId+'"]').prop('selected',true);
+			$(document.forms['frmVboxSettings'].vboxSettingsGeneralOSFamily).trigger('change');
+			$(document.forms['frmVboxSettings'].vboxSettingsGeneralOSType).children('[value="'+vboxOSTypes[i].id+'"]').prop('selected',true);
+			$(document.forms['frmVboxSettings'].vboxSettingsGeneralOSType).trigger('change');
+			break;		
+		}	
+	}
+
+	/* Custom icons */
+	if($('#vboxPane').data('vboxConfig').enableCustomIcons) {
+		
+		if($('#vboxSettingsDialog').data('vboxMachineData').customIcon) {
+			$(document.forms['frmVboxSettings'].vboxSettingsGeneralIcon).val($('#vboxSettingsDialog').data('vboxMachineData').customIcon);
+			$('#vboxSettingsGeneralIconImg').attr('src',$('#vboxSettingsDialog').data('vboxMachineData').customIcon);
+		} else {
+			$(document.forms['frmVboxSettings'].vboxSettingsGeneralIcon).val('');
+			$('#vboxSettingsGeneralIconImg').attr('src','images/vbox/blank.gif');
+		}
+		
+	}
+
+	/* Autostart options */
+	if($('#vboxPane').data('vboxConfig').vboxAutostartConfig) {
+		document.forms['frmVboxSettings'].autostartEnabled.checked = ($('#vboxSettingsDialog').data('vboxMachineData').autostartEnabled);
+		document.forms['frmVboxSettings'].autostartDelay.value = $('#vboxSettingsDialog').data('vboxMachineData').autostartDelay;
+	}
+	
+	/* Start / stop config */
+	if($('#vboxPane').data('vboxConfig').startStopConfig) {		
+		document.forms['frmVboxSettings'].vboxStartStopConfigStartup.selectedIndex = ($('#vboxSettingsDialog').data('vboxMachineData').startupMode == 'auto' ? 0 : 1);
+	}
+	
+	/* Settings that are disabled / enabled depending on if VM is mutable */
+	var p = $('#vboxSettingsTabGeneralBasic').parent().children('div'); 
 	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
-		var p = $('#vboxSettingsTabGeneralBasic').parent().children('div'); 
 		$(p).find('tr:not(.vboxRunningEnabled)').find('span').addClass('disabled');
 		$(p).find('tr:not(.vboxRunningEnabled)').find('input,select,textarea').prop('disabled',true);
 		$('#vboxSettingsTabGeneralAdvanced').find('input.vboxImgButton').css('background-image','url(images/vbox/select_file_dis_16px.png)');
-		$(document.images["vboxOSTypeImg"]).css({'opacity':'.40','-ms-filter': "progid:DXImageTransform.Microsoft.Alpha(Opacity=40)",'filter':'alpha(opacity=40)'});
+		$(document.images["vboxOSTypeImg"]).addClass('vboxDisabled');
+	} else {
+		$(p).find('tr:not(.vboxRunningEnabled)').find('span').removeClass('disabled');
+		$(p).find('tr:not(.vboxRunningEnabled)').find('input,select,textarea').prop('disabled',false);
+		$('#vboxSettingsTabGeneralAdvanced').find('input.vboxImgButton').css('background-image','url(images/vbox/select_file_16px.png)');
+		$(document.images["vboxOSTypeImg"]).removeClass('vboxDisabled');
 	}
 
+
+	
 });
 
 /* Change general settings onSave() */

@@ -45,7 +45,7 @@ div.vboxMenuBar { padding-left: 4px; }
 input.vboxRadio, input.vboxCheckbox { padding: 0px; margin: 1px 1px 3px 2px; display: inline }
 #vboxPane th, div.vboxDialogContent th { white-space: nowrap; }
 #vboxPane .vboxDisabled, div.vboxDialogContent .vboxDisabled { color: #999; cursor: default; }
-#vboxPane img.vboxDisabled {
+#vboxPane img.vboxDisabled, div.vboxDialogContent img.vboxDisabled {
 	opacity: .5;
 	filter:alpha(opacity=50);
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";

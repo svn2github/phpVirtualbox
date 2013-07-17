@@ -203,34 +203,6 @@ $('#vboxSettingsSystemProcessor').slider({'min':1,'max':$('#vboxSettingsDialog')
 $('#vboxSettingsSystemProcessorCap').slider({'min':1,'max':100});
 
 
-/* System Default values from VM*/
-$('#vboxSettingsSystemMemory').slider('value', parseInt($('#vboxSettingsDialog').data('vboxMachineData').memorySize));
-document.forms['frmVboxSettings'].vboxSettingsSystemIOAPIC.checked = $('#vboxSettingsDialog').data('vboxMachineData').BIOSSettings.IOAPICEnabled;
-document.forms['frmVboxSettings'].vboxSettingsSystemEFI.checked = ($('#vboxSettingsDialog').data('vboxMachineData').firmwareType == 'EFI');
-document.forms['frmVboxSettings'].vboxSettingsSystemRTCUseUTC.checked = ($('#vboxSettingsDialog').data('vboxMachineData').RTCUseUTC);
-$('#vboxSettingsSystemProcessor').slider('value',parseInt($('#vboxSettingsDialog').data('vboxMachineData').CPUCount));
-$('#vboxSettingsSystemProcessorCap').slider('value',parseInt($('#vboxSettingsDialog').data('vboxMachineData').CPUExecutionCap));
-document.forms['frmVboxSettings'].vboxSettingsSystemPAE.checked = ($('#vboxSettingsDialog').data('vboxMachineData').CpuProperties.PAE);
-document.forms['frmVboxSettings'].settingsSystemVT.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled);
-document.forms['frmVboxSettings'].settingsSystemPaging.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.NestedPaging);
-
-/* Only if acceleration config is enabled */
-if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
-	
-	document.forms['frmVboxSettings'].vboxSettingsSystemHPET.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HPETEnabled);
-	document.forms['frmVboxSettings'].vboxSettingsSystemDisableHostTimeSync.checked = ($('#vboxSettingsDialog').data('vboxMachineData').disableHostTimeSync);
-	document.forms['frmVboxSettings'].settingsSystemLargePages.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.LargePages);
-	document.forms['frmVboxSettings'].settingsSystemExclusive.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Exclusive);
-	document.forms['frmVboxSettings'].settingsSystemVPID.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.VPID);
-	document.forms['frmVboxSettings'].vboxSettingsSystemPageFusion.checked = ($('#vboxSettingsDialog').data('vboxMachineData').pageFusionEnabled);
-	
-	
-/* Else, remove advanced settings */
-} else {
-	$('#vboxSettingsTabSystemMotherboard').find('tr.vboxSettingsSystemAdvancedOnly').css('display','none');
-	$('#vboxSettingsTabSystemAcceleration').find('tr.vboxSettingsSystemAdvancedOnly').css('display','none');
-}
-
 /* Disable PAE if it is unsupported */
 if(!$('#vboxSettingsDialog').data('vboxHostDetails').cpuFeatures.PAE) {
 	$('#vboxSettingsSystemPAERow span').addClass('disabled');
@@ -253,32 +225,7 @@ if(!$('#vboxSettingsDialog').data('vboxHostDetails').cpuFeatures['Long Mode (64-
 	$(document.forms['frmVboxSettings'].vboxSettingsSystemPageFusion).prop({'checked':false,'disabled':true}).siblings().addClass('disabled');
 }
 
-/* Boot Order */
-var bootItems = {};
-var bootList = $('#vboxVMBootOrderList');
-$(bootList).children('li').each(function(){
-	bootItems[$(this).attr('id')] = $(this).detach();
-});
-for(var i in $('#vboxSettingsDialog').data('vboxMachineData').bootOrder) {
-	if(!isNaN(i)) {
-		$(bootList).append(bootItems[$('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]]);
-		document.forms['frmVboxSettings'].elements['vboxSettingsBoot' + $('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]].checked = true;
-	}
-	delete bootItems[$('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]];
-}
-for(var i in bootItems) {
-	if(typeof i == 'function') continue;
-	$(bootList).append(bootItems[i]);
-	delete bootItems[i];
-}
-$(bootList).children().hover(function(){$(this).addClass('vboxHover');},function(){$(this).removeClass('vboxHover');});
 
-/* Hide Chipset selection if we didn't get one, or VirtualBox version is 4.0.0 A safeguard */
-if(!$('#vboxSettingsDialog').data('vboxMachineData').chipsetType) {
-	$('#vboxSettingsSystemChipsetRow').css('display','none');
-} else {
-	$(document.forms['frmVboxSettings'].vboxSettingsSystemChipset).val($('#vboxSettingsDialog').data('vboxMachineData').chipsetType);
-}
 /*
  * 
  * Ordered lists (Boot order)
@@ -325,26 +272,104 @@ var b = new Image();
 b.src = "images/vbox/list_moveup_16px.png";
 
 
-/* Disable non-editable items when VM is running */
-$('#vboxSettingsDialog').one('show',function(){
+/* Update values when data is loaded */
+$('#vboxSettingsDialog').bind('dataLoaded',function(){
 	
+	/* System Default values from VM*/
+	$('#vboxSettingsSystemMemory').slider('value', parseInt($('#vboxSettingsDialog').data('vboxMachineData').memorySize));
+	document.forms['frmVboxSettings'].vboxSettingsSystemIOAPIC.checked = $('#vboxSettingsDialog').data('vboxMachineData').BIOSSettings.IOAPICEnabled;
+	document.forms['frmVboxSettings'].vboxSettingsSystemEFI.checked = ($('#vboxSettingsDialog').data('vboxMachineData').firmwareType == 'EFI');
+	document.forms['frmVboxSettings'].vboxSettingsSystemRTCUseUTC.checked = ($('#vboxSettingsDialog').data('vboxMachineData').RTCUseUTC);
+	$('#vboxSettingsSystemProcessor').slider('value',parseInt($('#vboxSettingsDialog').data('vboxMachineData').CPUCount));
+	$('#vboxSettingsSystemProcessorCap').slider('value',parseInt($('#vboxSettingsDialog').data('vboxMachineData').CPUExecutionCap));
+	document.forms['frmVboxSettings'].vboxSettingsSystemPAE.checked = ($('#vboxSettingsDialog').data('vboxMachineData').CpuProperties.PAE);
+	document.forms['frmVboxSettings'].settingsSystemVT.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled);
+	document.forms['frmVboxSettings'].settingsSystemPaging.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.NestedPaging);
+
+
+	/* Only if acceleration config is enabled */
+	if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
+		
+		document.forms['frmVboxSettings'].vboxSettingsSystemHPET.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HPETEnabled);
+		document.forms['frmVboxSettings'].vboxSettingsSystemDisableHostTimeSync.checked = ($('#vboxSettingsDialog').data('vboxMachineData').disableHostTimeSync);
+		document.forms['frmVboxSettings'].settingsSystemLargePages.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.LargePages);
+		document.forms['frmVboxSettings'].settingsSystemExclusive.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Exclusive);
+		document.forms['frmVboxSettings'].settingsSystemVPID.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.VPID);
+		document.forms['frmVboxSettings'].vboxSettingsSystemPageFusion.checked = ($('#vboxSettingsDialog').data('vboxMachineData').pageFusionEnabled);
+		
+		$('#vboxSettingsTabSystemMotherboard').find('tr.vboxSettingsSystemAdvancedOnly').css('display','');
+		$('#vboxSettingsTabSystemAcceleration').find('tr.vboxSettingsSystemAdvancedOnly').css('display','');
+		
+		
+	/* Else, remove advanced settings */
+	} else {
+		$('#vboxSettingsTabSystemMotherboard').find('tr.vboxSettingsSystemAdvancedOnly').css('display','none');
+		$('#vboxSettingsTabSystemAcceleration').find('tr.vboxSettingsSystemAdvancedOnly').css('display','none');
+	}
+
+	/* Boot Order */
+	var bootItems = {};
+	var bootList = $('#vboxVMBootOrderList');
+	$(bootList).children('li').each(function(){
+		bootItems[$(this).attr('id')] = $(this).detach();
+	});
+	for(var i in $('#vboxSettingsDialog').data('vboxMachineData').bootOrder) {
+		if(!isNaN(i)) {
+			$(bootList).append(bootItems[$('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]]);
+			document.forms['frmVboxSettings'].elements['vboxSettingsBoot' + $('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]].checked = true;
+		}
+		delete bootItems[$('#vboxSettingsDialog').data('vboxMachineData').bootOrder[i]];
+	}
+	for(var i in bootItems) {
+		if(typeof i == 'function') continue;
+		$(bootList).append(bootItems[i]);
+		delete bootItems[i];
+	}
+	$(bootList).children().hover(function(){$(this).addClass('vboxHover');},function(){$(this).removeClass('vboxHover');});
+
+	
+	
+	/* Hide Chipset selection if we didn't get one, or VirtualBox version is 4.0.0 A safeguard */
+	if(!$('#vboxSettingsDialog').data('vboxMachineData').chipsetType) {
+		$('#vboxSettingsSystemChipsetRow').css('display','none');
+	} else {
+		$('#vboxSettingsSystemChipsetRow').css('display','');
+		$(document.forms['frmVboxSettings'].vboxSettingsSystemChipset).val($('#vboxSettingsDialog').data('vboxMachineData').chipsetType);
+	}
+
+	
+	// Full editing not enabled
+	var p = $('#vboxSettingsTabSystemMotherboard').parent().children('div'); 
+	var t = $('#vboxVMBootOrder');
+
 	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 		
-		var p = $('#vboxSettingsTabSystemMotherboard').parent().children('div'); 
 		$(p).find('tr:not(.vboxRunningEnabled)').find('span').addClass('disabled');
 		$(p).find('tr:not(.vboxRunningEnabled)').find('input,select,textarea').prop('disabled',true);
 		$('#vboxSettingsSystemMemory').slider('disable');
 		$('#vboxSettingsSystemProcessor').slider('disable');
 		
-		var t = $('#vboxVMBootOrder');
 		t.find('input.imgMvUp').css('background-image', 'url(images/vbox/list_moveup_disabled_16px.png)');
 		t.find('input.imgMvDn').css('background-image', 'url(images/vbox/list_movedown_disabled_16px.png)');
 		t.find('img').each(function(){
 			$(this).prop('src',$(this).prop('src').replace('_16','_disabled_16'));
 		});
 		
+		$("#vboxVMBootOrderList").children("li").unbind('click');
+		
 	} else {
 		
+		$(p).find('tr:not(.vboxRunningEnabled)').find('span').removeClass('disabled');
+		$(p).find('tr:not(.vboxRunningEnabled)').find('input,select,textarea').prop('disabled',false);
+		$('#vboxSettingsSystemMemory').slider('enable');
+		$('#vboxSettingsSystemProcessor').slider('enable');
+		
+		t.find('input.imgMvUp').css('background-image', 'url(images/vbox/list_moveup_16px.png)');
+		t.find('input.imgMvDn').css('background-image', 'url(images/vbox/list_movedown_16px.png)');
+		t.find('img').each(function(){
+			$(this).prop('src',$(this).prop('src').replace('_disabled_16','_16'));
+		});
+
 		$("#vboxVMBootOrderList").children("li").click(function() {
 
 			// Update class
@@ -361,6 +386,11 @@ $('#vboxSettingsDialog').one('show',function(){
 		}).first().trigger('click');
 		
 	}
+	
+});
+
+/* Disable non-editable items when VM is running */
+$('#vboxSettingsDialog').one('show',function(){
 	
 	// Are virtualExtensions supported by the cpu?
 	if(!$('#vboxSettingsDialog').data('vboxHostDetails').cpuFeatures.HWVirtEx && !$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && !$('#vboxPane').data('vboxConfig').enableAdvancedConfig) {

@@ -415,6 +415,9 @@ function vboxAlert(e,xtraOpts) {
 	
 	if(typeof e == 'object' && e.details) {
 		
+		// Details can contain HTML entities
+		e.details = $('<div />').html(e.details).text();
+		
 		var p = $('<p />').attr({'style':'text-align: center'});
 		$('<a />').attr({'href':'#'}).html(trans('Details','QIMessageBox')).click(function(){
 			$(this).parent().parent().dialog('option',{'height':400,'position':'center'});

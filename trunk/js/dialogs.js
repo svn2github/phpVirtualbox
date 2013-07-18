@@ -1082,12 +1082,44 @@ function vboxVMsettingsDialog(vm,pane) {
 			////////////////////////////////
 			switch(eventList[i].eventType) {
 
-				case 'OnMachineDataChanged':
+				case 'OnMachineStateChanged':
+				
+					if(!eventList[i].machineId || eventList[i].machineId != vm.id) break;
 					
-					if(eventList[i].machineId != vm.id) break;
+					// Display loading screen
+					var l = new vboxLoader();
+					l.showLoading();
+					
+					$.when(vboxVMDataMediator.getVMDataCombined(vm.id)).then(function(vmData) {
+		            	// data received from deferred object
+		            	$('#vboxSettingsDialog').data('vboxMachineData',vmData);
+		            	$('#vboxSettingsDialog').data('vboxFullEdit', (vboxVMStates.isPoweredOff(vmData) && !vboxVMStates.isSaved(vmData)));
+		            	$('#vboxSettingsDialog').trigger('dataLoaded');
+		            	l.removeLoading();
+	              	})
+
+					break;
+					
+				case 'OnMachineDataChanged':
+				case 'OnNetworkAdapterChanged':
+				case 'OnVRDEServerChanged':
+				case 'OnVRDEServerInfoChanged':
+				case 'OnCPUChanged':
+				case 'OnNetworkAdapterChanged':
+				case 'OnStorageControllerChanged':
+				case 'OnMediumChanged':
+				case 'OnVRDEServerChanged':
+				case 'OnUSBControllerChanged':
+				case 'OnSharedFolderChanged':
+				case 'OnVRDEServerInfoChanged':
+				case 'OnCPUExecutionCapChanged':
+				case 'OnStorageDeviceChanged':
+
+					
+					if(!eventList[i].machineId || eventList[i].machineId != vm.id) break;
 				
 					var buttons = {};
-					buttons[trans('Reload settings')] = function() {
+					buttons[trans('Reload settings','UIMessageCenter')] = function() {
 						
 						// Display loading screen
 						var l = new vboxLoader();
@@ -1119,8 +1151,9 @@ function vboxVMsettingsDialog(vm,pane) {
 						// Only when all of these are done
 						$.when.apply($, reload).then(function(){
 
-							/* Tell dialog that data is loaded */
-							$('#vboxSettingsDialog').trigger('dataLoaded');
+							/* Change title and tell dialog that data is loaded */
+							$('#vboxSettingsDialog').trigger('dataLoaded').dialog('option','title','<img src="images/vbox/settings_16px.png" class="vboxDialogTitleIcon" /> ' + 
+									$('<div />').text($('#vboxSettingsDialog').data('vboxMachineData').name).html() + ' - ' + trans('Settings','UISettingsDialog'));
 
 							l.removeLoading();
 						});
@@ -1128,9 +1161,9 @@ function vboxVMsettingsDialog(vm,pane) {
 						
 					};
 					
-					vboxConfirm("<p>The machine settings were changed while you were editing them. You currently have unsaved setting changes.</p><p>Would you like to reload the changed settings or to keep your own changes?</p>",
+					vboxConfirm(trans("<p>The machine settings were changed while you were editing them. You currently have unsaved setting changes.</p><p>Would you like to reload the changed settings or to keep your own changes?</p>",'UIMessageCenter'),
 							buttons,
-							trans('Keep changes'));
+							trans('Keep changes', 'UIMessageCenter'));
 					
 					return;
 				

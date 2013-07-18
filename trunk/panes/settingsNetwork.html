@@ -317,7 +317,7 @@ function vboxSettingsUpdateNetworkOptions(sel) {
 }
 
 /* Change settings onShow() when VM is running */
-$('#vboxSettingsDialog').one('dataLoaded',function(){
+$('#vboxSettingsDialog').bind('dataLoaded',function(){
 	
 	
 	/* Net values */
@@ -421,7 +421,9 @@ $('#vboxSettingsDialog').one('dataLoaded',function(){
 			
 		}
 		// Expand all advanced settings
-		$('#vboxSettingsDialog').find('input.netImgAdvanced').trigger('click');
+		$('#vboxSettingsDialog').find('input.netImgAdvanced').each(function(){
+			if(!$(this).data('vboxAdvancedEnabled')) $(this).trigger('click');
+		});
 
 		// Disable mac address generation
 		$('#vboxSettingsDialog').find('input.vboxSettingsNetMacGen').prop('disabled',true);

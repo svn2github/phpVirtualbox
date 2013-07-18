@@ -184,7 +184,7 @@ function vboxChooserToolbarMediumMount(medium) {
 	
 	// Ajax request to mount medium
 	var mount = new vboxLoader('mediumMount');
-	mount.add('mediumMount',function(){
+	mount.add('mediumMount',function(d){
 		var l = new vboxLoader('getMedia');
 		l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 		l.run();		
@@ -195,6 +195,7 @@ var vboxToolbarMediaMenuDVD = new vboxMediaMenu('DVD',vboxChooserToolbarMediumMo
 var vboxToolbarMediaMenuFD = new vboxMediaMenu('Floppy',vboxChooserToolbarMediumMount,'');
 
 function vboxChooserToolbarStorageUpdate(menu) {
+
 	vboxToolbarMediaLast = $(menu).data('storage');
 	if(vboxToolbarMediaLast.type == 'DVD') {
 		vboxToolbarMediaMenuDVD.menuUpdateRemoveMedia((vboxToolbarMediaLast.medium && vboxToolbarMediaLast.medium.id));

@@ -401,7 +401,7 @@ function vboxSettingsUpdatePPortOptions(sel) {
  */
 if($('#vboxPane').data('vboxConfig').enableLPTConfig) {
 	
-	$('#vboxSettingsDialog').one('dataLoaded',function(){
+	$('#vboxSettingsDialog').bind('dataLoaded',function(){
 		
 		/* Port values */
 		for(var i = 0; i < parseInt($('#vboxSettingsDialog').data('vboxMachineData').parallelPorts.length); i++) {

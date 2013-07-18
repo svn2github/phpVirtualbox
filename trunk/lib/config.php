@@ -240,7 +240,7 @@ class phpVBoxConfigClass {
 	 * Generate a key for current server settings and populate $this->key
 	 */
 	function setKey() {
-		$this->key = md5($this->location.$this->username);
+		$this->key = md5($this->location);
 	}
 	
 	/**

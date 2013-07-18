@@ -8,6 +8,17 @@ Minor translation bug fixes.
 
 Fixed "Restore Defaults" button in Appliance Export Wizard.
 
+VM settings dialog now prompts for reload if settings change while
+the dialog is open.
+
+VM settings dialog is now aware of VM state changes while the
+dialog is open and updates VM editability accordingly.
+
+Fixed XSS vulnerability
+
+Fixed bug that would not subscribe to events of machines that were
+powered on while phpVirtualBox is opened.
+
 -------------------------------------
 	4.2-5	2013-07-11
 -------------------------------------

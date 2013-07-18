@@ -131,8 +131,14 @@ var vboxEventListener = {
 			var vms = vboxEventListener._subscribeList.concat();
 			vboxEventListener._subscribeList = [];
 			
-			return vboxAjaxRequest('machineSubscribeEvents', {'vms':vms,'_persist':vboxEventListener._persist});
-			
+			var vmEvents = $.Deferred();
+			$.when(vboxAjaxRequest('machineSubscribeEvents', {'vms':vms,'_persist':vboxEventListener._persist})).done(function(d){
+				// Always set persistent request data
+				vboxEventListener._persist = d.persist;
+			}).always(function(){
+				vmEvents.resolve();
+			})
+			return vmEvents.promise();
 		});
 		
 	},
@@ -202,8 +208,6 @@ var vboxEventListener = {
 					
 					// Trigger event list queue
 					$('#vboxPane').trigger('vboxEvents', [d.responseData]);
-					
-					//console.log(d.responseData);
 					
 				}
 				

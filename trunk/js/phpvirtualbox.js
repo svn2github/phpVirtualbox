@@ -1025,7 +1025,7 @@ var vboxVMDetailsSections = {
 						
 						if(!d._isSnapshot) {
 							portDesc = '<a href="javascript:vboxVMDetailsSections.storage._refreshVMMedia(\''+
-							d.id+"','"+d['storageControllers'][a]['mediumAttachments'][b].medium.id+"');return false;\">"+trans('Refresh','UIVMLogViewer')+"</a>";							
+							d.id+"','"+d['storageControllers'][a]['mediumAttachments'][b].medium.id+"');\">"+trans('Refresh','UIVMLogViewer')+"</a>";							
 
 						} else {
 							portDesk = trans('Refresh','UIVMLogViewer');

@@ -353,11 +353,11 @@ if($vbox && $vbox->errors) {
 		if($e->getCode() == vboxconnector::PHPVB_ERRNO_CONNECT && isset($vbox->settings))
 			$d .= "\n\nLocation:" . $vbox->settings->location;
 		
-		$response['messages'][] = $e->getMessage().' ' . $details;
+		$response['messages'][] = htmlentities($e->getMessage()).' ' . htmlentities($details);
 		
 		$response['errors'][] = array(
-			'error'=>$e->getMessage(),
-			'details'=>$d,
+			'error'=>htmlentities($e->getMessage()),
+			'details'=>htmlentities($d),
 			'errno'=>$e->getCode(),
 			// Fatal errors halt all processing
 			'fatal'=>($e->getCode()==vboxconnector::PHPVB_ERRNO_FATAL),

@@ -76,6 +76,8 @@ function __vbx_stripslash(&$a) { $a = stripslashes($a); }
 function clean_request($r = null) {
 	if(!$r) $r = array_merge($_GET,$_POST);
 	if(function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) {array_walk_recursive($r,'__vbx_stripslash');}
+	// Prevent XSS by using htmlentities()
+	if($r['fn']) $r['fn'] = htmlentities($r['fn']);
 	return $r;
 }
 

@@ -17,7 +17,11 @@ dialog is open and updates VM editability accordingly.
 Fixed XSS vulnerability
 
 Fixed bug that would not subscribe to events of machines that were
-powered on while phpVirtualBox is opened.
+powered on while phpVirtualBox is open.
+
+Added icons from VirtualBox source for Windows 8.1 and 2012.
+
+Updated language files from latest VirtualBox release (4.2.16)
 
 -------------------------------------
 	4.2-5	2013-07-11

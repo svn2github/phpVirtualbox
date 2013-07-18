@@ -91,16 +91,16 @@ $('#vboxSettingsDialog').bind('dataLoaded',function(){
 	$(document.forms['frmVboxSettings'].vboxSettingsAudioDriver).val($('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.audioDriver);
 	$(document.forms['frmVboxSettings'].vboxSettingsAudioController).val($('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.audioController);
 	
-	$(document.forms['frmVboxSettings'].vboxSettingsAudioEnabled).prop('checked',$('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.enabled).click();
 
 	var p = $(document.forms['frmVboxSettings'].vboxSettingsAudioController).closest('table'); 
 	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
+		$(document.forms['frmVboxSettings'].vboxSettingsAudioEnabled).prop('checked',$('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.enabled).click();
 		$(p).find('span').addClass('disabled');
 		$(p).find('input,select,textarea').prop('disabled',true);
 	} else {
 		$(p).find('span').removeClass('disabled');
 		$(p).find('input,select,textarea').prop('disabled',false);
-		
+		$(document.forms['frmVboxSettings'].vboxSettingsAudioEnabled).prop('checked',$('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.enabled).click();		
 	}
 });
 	

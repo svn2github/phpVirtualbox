@@ -621,7 +621,7 @@ $("#vboxToolbarButton-vboxSettingsControllersButtons-addcontroller").contextMenu
  	function(action, el, pos) {
 
  		var bus = action.substring(3);
-		var c = {'name':trans(bus+' Controller','UIMachineSettingsStorage'),'bus':bus,'mediumAttachments':[],'controllerType':vboxStorage[bus].types[0],'useHostIOCache':1,
+		var c = {'name':trans(bus,'UIMachineSettingsStorage'),'bus':bus,'mediumAttachments':[],'controllerType':vboxStorage[bus].types[0],'useHostIOCache':1,
 				'maxPortCount':vboxStorage[bus]['maxPortCount'],'maxDevicesPerPortCount':vboxStorage[bus]['maxDevicesPerPortCount']};
 
 		vboxSettingsAddController(c, $('#vboxSettingsStorageTree').children('ul').first());
@@ -1122,7 +1122,7 @@ function vboxSettingsAddController(con,list) {
     ).appendTo(tr);
 
     // Controller name
-    $(tr).append($('<td />').html('<span class="vboxSettingsControllerTitle vboxRunningEnabled">'+$('<div/>').text(con.name).html()+"</span>"));
+    $(tr).append($('<td />').html(trans('Controller: %1','UIMachineSettingsStorage').replace('%1','<span class="vboxSettingsControllerTitle vboxRunningEnabled">'+$('<div/>').text(con.name).html())+"</span>"));
     
     // Buttons
     $(tr).append($('<td />').attr({'id':'vboxSettingsController' + con.bus + 'BtnDrive','style':'width: 22px;','class':'vboxControllerAttachmentButton'}));

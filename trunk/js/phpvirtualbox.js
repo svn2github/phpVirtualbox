@@ -1007,7 +1007,7 @@ var vboxVMDetailsSections = {
 				
 				// Controller name
 				rows[rows.length] = {
-						title: $('<div />').text(con.name).html() + ((con.bus == 'SATA' && advancedView) ? ' (' + con.portCount + ')' : ''),
+						title: trans('Controller: %1','UIMachineSettingsStorage').replace('%1',$('<div />').text(con.name).html() + ((con.bus == 'SATA' && advancedView) ? ' (' + con.portCount + ')' : '')),
 						callback: function(){return'';}
 				};
 						

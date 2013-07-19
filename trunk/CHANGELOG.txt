@@ -1,5 +1,5 @@
 -------------------------------------
-	4.2-6
+	4.2-6	2013-07-19
 -------------------------------------
 Fixed bug where deleting or renaming a VM snapshot may not cause
 the chooser to refresh VM data.
@@ -24,6 +24,9 @@ Added icons from VirtualBox source for Windows 8.1 and 2012.
 Updated language files from latest VirtualBox release (4.2.16).
 
 Added running VM count to VM Group tool tips.
+
+Removing a copy of a VM in the chooser now removes it from the
+interface rather than unregistering it.
 
 -------------------------------------
 	4.2-5	2013-07-11

@@ -483,7 +483,41 @@ var vboxChooser = {
 	},
 	
 
+	/*
+	 * Returns true if there are VMs with ID vmid that are not selected
+	 */
+	vmHasUnselectedCopy : function (vmid) {
+		return ($(vboxChooser._anchor).find('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+vmid+':not(.vboxListItemSelected)').length > 0);
+	},
+	
+	/*
+	 * Remove selected VMs from the list and rewrite group definitions
+	 * this assumes that there are other copies of these VMs that are not
+	 * selected.
+	 */
+	removeVMs : function(vmids) {
+		
+		for(var i = 0; i < vmids.length; i++) {
+			$(vboxChooser._anchor).find('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+vmids[i]+'.vboxListItemSelected').remove();		
+		}
+				
+		// Update selection list
+		vboxChooser._selectedList = vboxChooser._selectedList.filter(function(v){
+			return (v.type == 'group' || (jQuery.inArray(v.id, vmids) == -1));
+		});
 
+		// Tell interface that selection list has changed
+		vboxChooser.selectionListChanged(vboxChooser._selectedList);
+
+		// compose and save group definitions
+		vboxChooser.composeGroupDef(true);
+		
+		
+		// Possible resize needed
+		vboxChooser._resizeElements(true);
+
+	},
+	
 	/*
 	 * Generate HTML from VM definition
 	 */
@@ -687,6 +721,7 @@ var vboxChooser = {
 		
 	},
 
+	
 	/*
 	 * VM Group Dropped
 	 */
@@ -1195,7 +1230,8 @@ var vboxChooser = {
 		if(!save) return;
 		
 		vboxChooser._groupDefs = allGroups;
-		vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups});		
+		$.when(vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups})).always(function(){
+		});	
 		
 		// Save machine groups and trigger change
 		var vms = [];
@@ -2309,7 +2345,7 @@ $(document).ready(function(){
 				case 'OnExtraDataChanged':
 					
 					if(!eventList[i].machineId && eventList[i].key.indexOf(vboxChooser._groupDefinitionKey) === 0) {
-						
+												
 						var path = eventList[i].key.substring(vboxChooser._groupDefinitionKey.length);
 						if(!path) path = "/";
 						var name = path.substring(path.lastIndexOf('/')+1);

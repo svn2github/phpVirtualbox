@@ -1096,6 +1096,8 @@ function vboxVMsettingsDialog(vm,pane) {
 		            	$('#vboxSettingsDialog').data('vboxFullEdit', (vboxVMStates.isPoweredOff(vmData) && !vboxVMStates.isSaved(vmData)));
 		            	$('#vboxSettingsDialog').trigger('dataLoaded');
 		            	l.removeLoading();
+		            	if(vboxVMStates.isRunning(vmData))
+		            		vboxAlert(trans('The virtual machine that you are changing has been started. Only certain settings can be changed while a machine is running. All other changes will be lost if you close this window now.','UIMessageCenter'));
 	              	})
 
 					break;

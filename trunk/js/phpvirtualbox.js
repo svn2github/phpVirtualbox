@@ -1677,57 +1677,104 @@ var vboxVMActions = {
 		icon:'delete',
 		click:function(){
 
-			
-			var removeVMs = function(keepFiles) {
-
+			///////////////////
+			// Remove VMs
+			//////////////////
+			var removeCopies = function() {
+				
+				var vmList = [];
+				var vmNames = [];
 				var vms = vboxChooser.getSelectedVMsData();
-				
 				for(var i = 0; i < vms.length; i++) {
-					
-					if(vboxVMStates.isPoweredOff(vms[i])) {
-
-						// Remove each selected vm
-						$.when(vms[i].name, vboxAjaxRequest('machineRemove',
-								{'vm':vms[i].id,'delete':(keepFiles ? '0' : '1')}))
-							.then(function(vmname, d){
-								// check for progress operation
-								if(d && d.responseData && d.responseData.progress) {
-									vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){return;},'progress_delete_90px.png',
-											trans('Remove the selected virtual machines', 'UIActionPool'), vmname);
-								}
-						});						
+					if(vboxVMStates.isPoweredOff(vms[i]) && vboxChooser.vmHasUnselectedCopy(vms[i].id)) {
+						vmList[vmList.length] = vms[i].id;
+						vmNames[vmNames.length] = vms[i].name;
 					}
-				}				
-			};
-			
-			var buttons = {};
-			buttons[trans('Delete all files','UIMessageCenter')] = function(){
-				$(this).empty().remove();
-				removeVMs(false);
-			};
-			buttons[trans('Remove only','UIMessageCenter')] = function(){
-				$(this).empty().remove();
-				removeVMs(true);
-			};
-			
-			
-			var vmNames = [];
-			var vms = vboxChooser.getSelectedVMsData();
-			for(var i = 0; i < vms.length; i++) {
-				if(vboxVMStates.isPoweredOff(vms[i])) {
-					vmNames[vmNames.length] = vms[i].name;
 				}
-			}
-			
-			if(vmNames.length) {
 
-				vmNames = '<b>'+vmNames.join('</b>, <b>')+'</b>';
-				var q = trans('<p>You are about to remove following virtual machines from the machine list:</p><p>%1</p><p>Would you like to delete the files containing the virtual machine from your hard disk as well? Doing this will also remove the files containing the machine\'s virtual hard disks if they are not in use by another machine.</p>','UIMessageCenter').replace('%1',vmNames);
+				if(vmList.length) {
+
+					var rcDef = $.Deferred();
+					
+					var buttons = {};
+					buttons[trans('Remove', 'UIMessageCenter')] = function() {
+						$(this).empty().remove();
+						vboxChooser.removeVMs(vmList);
+						rcDef.resolve();
+					}
+					
+					vmNames = '<b>'+vmNames.join('</b>, <b>')+'</b>';
+					var q = trans('<p>You are about to remove following virtual machine items from the machine list:</p><p><b>%1</b></p><p>Do you wish to proceed?</p>','UIMessageCenter').replace('%1',vmNames);
+					
+					vboxConfirm(q,buttons,undefined,function(){
+						rcDef.resolve();
+					});
+
+					
+					return rcDef.promise();					
+				}
 				
-				vboxConfirm(q,buttons);
-				
+				return true;
+
 			}
 			
+			//////////////////
+			// Unregister VMs
+			///////////////////
+			$.when(removeCopies()).done(function() {
+			
+				var unregisterVMs = function(keepFiles, vms) {
+	
+					return;
+					
+					var vms = vboxChooser.getSelectedVMsData();
+					
+					for(var i = 0; i < vms.length; i++) {
+						
+						if(vboxVMStates.isPoweredOff(vms[i])) {
+	
+							// Remove each selected vm
+							$.when(vms[i].name, vboxAjaxRequest('machineRemove',
+									{'vm':vms[i].id,'delete':(keepFiles ? '0' : '1')}))
+								.then(function(vmname, d){
+									// check for progress operation
+									if(d && d.responseData && d.responseData.progress) {
+										vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){return;},'progress_delete_90px.png',
+												trans('Remove the selected virtual machines', 'UIActionPool'), vmname);
+									}
+							});						
+						}
+					}				
+				};
+				var buttons = {};
+				buttons[trans('Delete all files','UIMessageCenter')] = function(){
+					$(this).empty().remove();
+					unregisterVMs(false);
+				};
+				buttons[trans('Remove only','UIMessageCenter')] = function(){
+					$(this).empty().remove();
+					unregisterVMs(true);
+				};
+				
+				
+				var vmNames = [];
+				var vms = vboxChooser.getSelectedVMsData();
+				for(var i = 0; i < vms.length; i++) {
+					if(vboxVMStates.isPoweredOff(vms[i]) && !vboxChooser.vmHasUnselectedCopy(vms[i].id)) {
+						vmNames[vmNames.length] = vms[i].name;
+					}
+				}
+				
+				if(vmNames.length) {
+	
+					vmNames = '<b>'+vmNames.join('</b>, <b>')+'</b>';
+					var q = trans('<p>You are about to remove following virtual machines from the machine list:</p><p>%1</p><p>Would you like to delete the files containing the virtual machine from your hard disk as well? Doing this will also remove the files containing the machine\'s virtual hard disks if they are not in use by another machine.</p>','UIMessageCenter').replace('%1',vmNames);
+					
+					vboxConfirm(q,buttons);
+					
+				}
+				
+			});
     	
     	},
     	enabled: function () {

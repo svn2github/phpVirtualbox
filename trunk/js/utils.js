@@ -460,16 +460,17 @@ function vboxAlert(e,xtraOpts) {
  * @param {String} q - question to ask
  * @param {Object} buttons -buttons to display on confirmation dialog
  * @param {String} cancelText - string displayed on Cancel button. Defaults to 'Cancel'
+ * @param {Function} onCancel - function to run onCancel
  * @return {HTMLNode}
  * @see jQuery.dialog()
  */
-function vboxConfirm(q,buttons,cancelText) {
+function vboxConfirm(q,buttons,cancelText,onCancel) {
 
 	var div = $('<div />').attr({'class':'vboxDialogContent','style':'display: none; width: 500px;'}).html('<img src="images/50px-Question_icon.svg.png" style="height: 50px; width: 50px; float: left; padding: 10px;" />'+q);
 	
 	if(!cancelText) cancelText = trans('Cancel','QIMessageBox');
 	
-	buttons[cancelText] = function() { $(this).remove(); };
+	buttons[cancelText] = function() { $(this).remove(); if(onCancel) { onCancel(); }};
 	
     $(div).dialog({'closeOnEscape':false,'width':500,'height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'});			
 	

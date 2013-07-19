@@ -21,7 +21,9 @@ powered on while phpVirtualBox is open.
 
 Added icons from VirtualBox source for Windows 8.1 and 2012.
 
-Updated language files from latest VirtualBox release (4.2.16)
+Updated language files from latest VirtualBox release (4.2.16).
+
+Added running VM count to VM Group tool tips.
 
 -------------------------------------
 	4.2-5	2013-07-11

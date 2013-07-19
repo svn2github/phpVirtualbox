@@ -1161,9 +1161,25 @@ var vboxChooser = {
 				$(elm).children('div.vboxChooserGroupVMs').css({'display':(vmList.length || $(elm).data('vmGroupPath') == '/' ? '' : 'none')})
 					.siblings('div.vboxChooserGroupHeader')
 					.each(function(hidx,header) {
-						$(header).tipped({'source':'<strong>'+$(header).siblings('div.vboxChooserGroupIdentifier').attr('title')+'</strong>'+
-								(gList.length ? ('<br />' + trans('%n group(s)','UIGChooserItemGroup',gList.length).replace('%n',gList.length)) : '') +
-								(vmList.length ? ('<br />' + trans('%n machine(s)','UIGChooserItemGroup',vmList.length).replace('%n',vmList.length)) : '')
+						
+						var staticTip = '<strong>'+$(header).siblings('div.vboxChooserGroupIdentifier').attr('title')+'</strong>'+
+							(gList.length ? ('<br />' + trans('%n group(s)','UIGChooserItemGroup',gList.length).replace('%n',gList.length)) : '') +
+							(vmList.length ? ('<br />' + trans('%n machine(s)','UIGChooserItemGroup',vmList.length).replace('%n',vmList.length)) : '');
+
+						$(header).tipped({'source':function() {
+									
+							// find number of running VMs
+							var runningVMs = 0;
+							
+							if(vmList.length) {
+								$(header).siblings('div.vboxChooserGroupVMs').find('td.vboxVMSessionOpen').each(function(idx,elm3) {
+									if(vboxVMStates.isRunning(vboxVMDataMediator.getVMData($(elm3).closest('table').data('vmid'))))
+										runningVMs++;
+								});								
+							}
+							
+							return staticTip + (runningVMs > 0 ? ' ' + trans('(%n running)','UIGChooserItemGroup',runningVMs).replace('%n', runningVMs) : '');
+						}
 							,'position':'mouse','delay':1500});
 					})
 						.children('span.vboxChooserGroupInfo')

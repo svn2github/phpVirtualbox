@@ -1,5 +1,5 @@
 -------------------------------------
-	4.2-6	2013-07-19
+	4.2-6
 -------------------------------------
 Fixed bug where deleting or renaming a VM snapshot may not cause
 the chooser to refresh VM data.
@@ -27,6 +27,10 @@ Added running VM count to VM Group tool tips.
 
 Removing a copy of a VM in the chooser now removes it from the
 interface rather than unregistering it.
+
+Improved VM Group saving logic. Some items are no longer editable
+or draggable while VM group definitions are being saved to
+VirtualBox.
 
 -------------------------------------
 	4.2-5	2013-07-11

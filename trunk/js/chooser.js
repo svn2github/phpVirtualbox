@@ -57,6 +57,11 @@ var vboxChooser = {
 	 */
 	_versionChecked : false,
 	
+	/* Some items are not editable while vmGroup
+	 * definitions are being written
+	 */
+	_editable : true,
+	
 	/* Context menus */
 	_vmContextMenuObj : null,
 	_vmGroupContextMenuObj : null,
@@ -541,6 +546,8 @@ var vboxChooser = {
 			// drag start
 			},'start':function(e) {
 							
+				if(!vboxChooser._editable) return false;
+				
 				$(vboxChooser._anchor).disableSelection();
 				vboxChooser._dragging = vmn.id;
 				$(vboxChooser._anchor).find('table.vboxHover').removeClass('vboxHover');
@@ -727,13 +734,15 @@ var vboxChooser = {
 	 */
 	vmGroupDropped : function(e, droppedGroup) {
 		
+		
 		$(vboxChooser._anchor).enableSelection();
+
 		
-		var vmGroupPath = vboxChooser._draggingGroup;
-		
+		var vmGroupPath = vboxChooser._draggingGroup;		
 		vboxChooser._draggingGroup = false;
-		
 		$(droppedGroup).removeClass('vboxHover');
+		
+		if(!vboxChooser._editable) return false;		
 		
 		// Cannot drag a group that contains a VM without
 		// an unlocked session state if it will modify VM
@@ -869,9 +878,12 @@ var vboxChooser = {
 	 */
 	vmDropped : function (e, droppedVM){
 		
+		
 		$(vboxChooser._anchor).enableSelection();
 		vboxChooser._dragging = null;
 		
+		if(!vboxChooser._editable) return false;
+
 		// Cannot drag if this VM's session is not open
 		var thisSessionLocked = false;
 		var vmData = vboxVMDataMediator.getVMData($(droppedVM).data('vmid'));
@@ -1229,9 +1241,11 @@ var vboxChooser = {
 		// Save GUI group definition?
 		if(!save) return;
 		
+		
+		// Tell the interface we're about to save groups
+		$('#vboxPane').trigger('vmGroupDefsSaving');
+		
 		vboxChooser._groupDefs = allGroups;
-		$.when(vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups})).always(function(){
-		});	
 		
 		// Save machine groups and trigger change
 		var vms = [];
@@ -1282,10 +1296,19 @@ var vboxChooser = {
 				
 				if(res.responseData.errored) {
 					reloadAll();
+					$('#vboxPane').trigger('vmGroupDefsSaved');
+				} else {
+					$.when(vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups})).always(function(){
+						$('#vboxPane').trigger('vmGroupDefsSaved');
+					});
 				}
 				
 			}).fail(reloadAll);
 			
+		} else {
+			$.when(vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups})).always(function(){
+				$('#vboxPane').trigger('vmGroupDefsSaved');
+			});
 		}
 		
 		
@@ -2063,6 +2086,8 @@ var vboxChooser = {
 										
 					if(!$('#vboxPane').data('vboxSession').admin) return false;
 					
+					if(!vboxChooser._editable) return false;
+					
 					vboxChooser._draggingGroup = $(this).data('vmGroupPath');
 					$(vboxChooser._anchor).disableSelection();
 				
@@ -2194,6 +2219,12 @@ $(document).ready(function(){
 	
 		vboxChooser.start();
 		
+	// Editability is disabled while groups are being saved
+	}).bind('vmGroupDefsSaving', function() {
+		vboxChooser._editable = false;
+	}).bind('vmGroupDefsSaved', function () {		
+		vboxChooser._editable = true;
+		
 	// Event list queue
 	}).bind('vboxEvents',function(e, eventList) {
 
@@ -2256,9 +2287,9 @@ $(document).ready(function(){
 								continue;
 							
 							$(gElm).children('div.vboxChooserGroupVMs')
-							.append(								
-									vboxChooser.vmHTML(data)
-							);
+								.append(								
+										vboxChooser.vmHTML(data)
+								);
 							
 							selectedChanged = (selectedChanged || $(gElm).children('div.vboxChooserGroupVMs').closest('div.vboxVMGroupSelected').length);
 							

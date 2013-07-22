@@ -1380,6 +1380,7 @@ var vboxVMGroupActions = {
 		icon: 'name',
 		enabled: function() {
 			if(!$('#vboxPane').data('vboxSession').admin) return false;
+			if(!vboxChooser._editable) return false;
 			var gElm = vboxChooser.getSelectedGroupElements()[0];
 			if(!gElm) return false;
 			if($('#vboxPane').data('vboxConfig')['phpVboxGroups']) return true;
@@ -1395,6 +1396,7 @@ var vboxVMGroupActions = {
 		label: trans('Ungroup...','UIActionPool'),
 		icon: 'delete',
 		enabled: function() {
+			if(!vboxChooser._editable) return false;
 			if(!$('#vboxPane').data('vboxSession').admin) return false;
 			var gElm = vboxChooser.getSelectedGroupElements()[0];
 			if(!gElm) return false;
@@ -1415,6 +1417,7 @@ var vboxVMGroupActions = {
 			vboxChooser.sortSelectedGroup();
 		},
 		enabled: function() {
+			if(!vboxChooser._editable) return false;
 			return $('#vboxPane').data('vboxSession').admin;
 		}
 	}
@@ -1725,8 +1728,6 @@ var vboxVMActions = {
 			
 				var unregisterVMs = function(keepFiles, vms) {
 	
-					return;
-					
 					var vms = vboxChooser.getSelectedVMsData();
 					
 					for(var i = 0; i < vms.length; i++) {
@@ -1778,6 +1779,7 @@ var vboxVMActions = {
     	
     	},
     	enabled: function () {
+    		if(!vboxChooser._editable) return false;
     		return (vboxChooser.isSelectedInState('PoweredOff'));
     	}
     },
@@ -1797,6 +1799,8 @@ var vboxVMActions = {
     		
     		if (!vboxChooser || (vboxChooser.getSingleSelectedId() == 'host'))
     			return false;
+    		
+    		if(!vboxChooser._editable) return false;
     		
     		return vboxChooser.isSelectedInState('Editable');
     		

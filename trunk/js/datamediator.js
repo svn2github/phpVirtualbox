@@ -270,6 +270,8 @@ $(document).ready(function(){
 		
 		if(vboxVMDataMediator.vmData[eventData.machineId] && eventData.enrichmentData) {
 			$.extend(true, vboxVMDataMediator.vmData[eventData.machineId], eventData.enrichmentData);
+			// $.extend doesn't seem to handle this for some reason
+			vboxVMDataMediator.vmData[eventData.machineId].groups = eventData.enrichmentData.groups; 
 		}
 	
 	// Machine state change

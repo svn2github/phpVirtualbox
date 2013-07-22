@@ -618,8 +618,8 @@ $('#vboxSettingsDialog').bind('save',function(){
 			// determine next target
 			var target = $(item).next();
 			if(!$(target).length) target = $(item).prev();
-			if(!$(target).length) target = $('#vboxSettingsUSBFilterList').children().first();
-			$(item).remove();
+			if(!$(target).length) target = null;
+			$(item).empty().remove();
 
 			if(!$(target).trigger('click').length) {
 				$('#vboxSettingsUSBFilterList').trigger('select',null);
@@ -754,7 +754,7 @@ $('#vboxSettingsDialog').bind('dataLoaded',function(){
 
 	// clear list
 	var list = $('#vboxSettingsUSBFilterList');
-	$(list).children().remove();
+	$(list).empty().children().remove();
 
 	// add filters
 	for(var i = 0; i < $('#vboxSettingsDialog').data('vboxMachineData').USBController.deviceFilters.length; i++) {

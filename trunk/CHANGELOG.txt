@@ -14,7 +14,7 @@ the dialog is open.
 VM settings dialog is now aware of VM state changes while the
 dialog is open and updates VM editability accordingly.
 
-Fixed XSS vulnerability
+Fixed XSS vulnerability.
 
 Fixed bug that would not subscribe to events of machines that were
 powered on while phpVirtualBox is open.
@@ -31,6 +31,11 @@ interface rather than unregistering it.
 Improved VM Group saving logic. Some items are no longer editable
 or draggable while VM group definitions are being saved to
 VirtualBox.
+
+Minor UI changes.
+
+Fixed bug that would not allow VMs to be dropped / copied into the
+root VM group.
 
 -------------------------------------
 	4.2-5	2013-07-11

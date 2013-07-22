@@ -1009,7 +1009,6 @@ var vboxChooser = {
 					if(!$(dropTarget)[0])
 						dropTarget = vboxChooser._anchor.children('div.vboxChooserGroup');					
 
-				
 					// Already in this list?
 					if(dropTarget.children('div.vboxChooserGroupVMs').children('table.vboxChooserItem-'+vboxChooser._anchorid+'-'+$(droppedVM).data('vmid'))[0]) {
 						return true;
@@ -1018,7 +1017,7 @@ var vboxChooser = {
 					if(!e.ctrlKey && !e.metaKey) {
 						$(droppedVM).detach().appendTo(dropTarget.children('div.vboxChooserGroupVMs').first());
 					} else {
-						vboxChooser.vmHTML(vmData).appendTo(dropTarget.children('div.vboxChooserGroup').children('div.vboxChooserGroupVMs').first());
+						vboxChooser.vmHTML(vmData).appendTo(dropTarget.children('div.vboxChooserGroupVMs').first());
 					}
 
 				}
@@ -1243,6 +1242,7 @@ var vboxChooser = {
 		
 		
 		// Tell the interface we're about to save groups
+		vboxChooser._editable = false;
 		$('#vboxPane').trigger('vmGroupDefsSaving');
 		
 		vboxChooser._groupDefs = allGroups;
@@ -1296,9 +1296,11 @@ var vboxChooser = {
 				
 				if(res.responseData.errored) {
 					reloadAll();
+					vboxChooser._editable = true;
 					$('#vboxPane').trigger('vmGroupDefsSaved');
 				} else {
 					$.when(vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups})).always(function(){
+						vboxChooser._editable = true;
 						$('#vboxPane').trigger('vmGroupDefsSaved');
 					});
 				}
@@ -1307,6 +1309,7 @@ var vboxChooser = {
 			
 		} else {
 			$.when(vboxAjaxRequest('vboxGroupDefinitionsSet',{'groupDefinitions':allGroups})).always(function(){
+				vboxChooser._editable = true;
 				$('#vboxPane').trigger('vmGroupDefsSaved');
 			});
 		}
@@ -2221,9 +2224,20 @@ $(document).ready(function(){
 		
 	// Editability is disabled while groups are being saved
 	}).bind('vmGroupDefsSaving', function() {
-		vboxChooser._editable = false;
+		
+		if(vboxChooser._vmGroupContextMenuObj)
+			vboxChooser._vmGroupContextMenuObj.update(vboxChooser);		
+		if(vboxChooser._vmContextMenuObj)
+			vboxChooser._vmContextMenuObj.update(vboxChooser);
+
+	
 	}).bind('vmGroupDefsSaved', function () {		
-		vboxChooser._editable = true;
+
+		if(vboxChooser._vmGroupContextMenuObj)
+			vboxChooser._vmGroupContextMenuObj.update(vboxChooser);		
+		if(vboxChooser._vmContextMenuObj)
+			vboxChooser._vmContextMenuObj.update(vboxChooser);
+
 		
 	// Event list queue
 	}).bind('vboxEvents',function(e, eventList) {

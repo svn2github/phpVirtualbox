@@ -30,8 +30,8 @@
 						<option value='COM4'>COM4</option>
 						<option value='User-defined' class='translate'>User-defined</option>	
 					</select>
-					<span class='vboxEnablerListen'><span class='translate'>IRQ:</span></span> <input type='text' name='vboxSettingsSPortIRQ' size='2' disabled='disabled' />
-					<span class='vboxEnablerListen'><span class='translate'>I/O Port:</span></span> <input type='text' name='vboxSettingsSPortIO' size='5' disabled='disabled' />
+					<span class='vboxEnablerListen'><span class='translate'>IRQ:</span></span> <input type='text' name='vboxSettingsSPortIRQ' size='2' />
+					<span class='vboxEnablerListen'><span class='translate'>I/O Port:</span></span> <input type='text' name='vboxSettingsSPortIO' size='5' />
 		        </td>
 			</tr>
 			<tr>
@@ -82,8 +82,8 @@
 						<option value='LPT3'>LPT3</option>
 						<option value='User-defined' class='translate'>User-defined</option>	
 					</select>
-					<span class='translate'>IRQ:</span> <input type='text' name='vboxSettingsPPortIRQ' size='2' disabled='disabled' />
-					<span class='translate'>I/O Port:</span> <input type='text' name='vboxSettingsPPortIO' size='5' disabled='disabled' />
+					<span class='vboxEnablerListen translate'>IRQ:</span> <input type='text' name='vboxSettingsPPortIRQ' size='2' />
+					<span class='vboxEnablerListen translate'>I/O Port:</span> <input type='text' name='vboxSettingsPPortIO' size='5' />
 		        </td>
 			</tr>
 			<tr>
@@ -257,23 +257,24 @@ $('#vboxSettingsDialog').bind('dataLoaded',function(){
 		$(document.forms['frmVboxSettings'].elements['vboxSettingsPortMode'+a]).change();
 
 		// Create pipe 
-		$(document.forms['frmVboxSettings'].elements['vboxSettingsSPortCreatePipe'+a]).prop('checked',($('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].server ? true : false)).trigger('click');
+		$(document.forms['frmVboxSettings'].elements['vboxSettingsSPortCreatePipe'+a]).prop('checked',($('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].server ? true : false)).trigger('syntheticClick');
 		
 		// Path
 		$(document.forms['frmVboxSettings'].elements['vboxSettingsSPortPath'+a]).val($('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].path);
 		
-		// Enabled port
-		$(document.forms['frmVboxSettings'].elements['vboxSettingsSPortEnabled'+a]).prop('checked', ($('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].enabled)).click();
 
 	}
 
 	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
-		vboxSettingsSPortContainer.find('span').addClass('disabled');
+		vboxSettingsSPortContainer.find('input.vboxEnablerCheckbox').trigger('syntheticClick');
+		vboxSettingsSPortContainer.children(':not(ul)').find('span').addClass('disabled');
 		vboxSettingsSPortContainer.find('input,select,textarea').prop('disabled',true);
 	} else {
 		vboxSettingsSPortContainer.find('span').removeClass('disabled');
 		vboxSettingsSPortContainer.find('input,select,textarea').prop('disabled',false);
+		vboxSettingsSPortContainer.find('input.vboxEnablerCheckbox').trigger('syntheticClick');
 	}
+	
 });
 
 /* Change settings onSave() */
@@ -423,17 +424,18 @@ if($('#vboxPane').data('vboxConfig').enableLPTConfig) {
 			$(document.forms['frmVboxSettings'].elements['vboxSettingsPPortPath'+a]).val($('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].path);
 			
 			// Enabled port
-			$(document.forms['frmVboxSettings'].elements['vboxSettingsPPortEnabled'+a]).prop('checked',$('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].enabled).click(); 
+			$(document.forms['frmVboxSettings'].elements['vboxSettingsPPortEnabled'+a]).prop('checked',$('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].enabled).trigger('syntheticClick'); 
 		
 		}
 
-		
-		if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {			
-			vboxSettingsPPortContainer.find('span').addClass('disabled');
+		if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
+			vboxSettingsPPortContainer.find('input.vboxEnablerCheckbox').trigger('syntheticClick');
+			vboxSettingsPPortContainer.children(':not(ul)').find('span').addClass('disabled');
 			vboxSettingsPPortContainer.find('input,select,textarea').prop('disabled',true);
 		} else {
 			vboxSettingsPPortContainer.find('span').removeClass('disabled');
 			vboxSettingsPPortContainer.find('input,select,textarea').prop('disabled',false);
+			vboxSettingsPPortContainer.find('input.vboxEnablerCheckbox').trigger('syntheticClick');
 		}
 	});
 }
@@ -603,7 +605,7 @@ $('#vboxSettingsDialog').bind('save',function(){
 			buttons[trans('Cancel','QIMessageBox')] = function() { $('#vboxSettingsUSBFilterEdit').remove(); };
 
 			                  			
-          	$('#vboxSettingsUSBFilterEdit').dialog({'buttons':buttons,'closeOnEscape':false,'width':400,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent vboxNonTabbed','title':'<img src="images/vbox/usb_16px.png" class="vboxDialogTitleIcon" /> '+trans('USB Filter Details','UIMachineSettingsUSBFilterDetails')});
+          	$('#vboxSettingsUSBFilterEdit').dialog({'buttons':buttons,'closeOnEscape':false,'width':400,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent vboxNonTabbed','title':'<img src="images/vbox/usb_16px.png" class="vboxDialogTitleIcon" /> '+trans('USB Filter Details','UIMachineSettingsUSBFilterDetails')});
 			
 		}		
 	},
@@ -695,7 +697,7 @@ function vboxSettingsAddUSBFilter(f,noColor) {
 		}).dblclick(function(e){
 			e.preventDefault();
 			usbToolbar.click('usbedit');
-		}).hover(function(){$(this).addClass('vboxHover');},function(){$(this).removeClass('vboxHover');}).disableSelection();
+		}).hoverClass('vboxHover').disableSelection();
 	}
 	
 	$('<input />').attr({'type':'checkbox'}).prop('checked',(f.active ? true : false)).appendTo(li);
@@ -749,7 +751,7 @@ $("#vboxSettingsUSBAddDeviceClick").contextMenu({
 $('#vboxSettingsDialog').bind('dataLoaded',function(){
 	
 	// set checkboxes for USB and EHCI
-	$(document.forms['frmVboxSettings'].vboxSettingsUSBEnabled).prop('checked',($('#vboxSettingsDialog').data('vboxMachineData').USBController.enabled)).click();
+	$(document.forms['frmVboxSettings'].vboxSettingsUSBEnabled).prop('checked',($('#vboxSettingsDialog').data('vboxMachineData').USBController.enabled)).trigger('syntheticClick');
 	document.forms['frmVboxSettings'].vboxSettingsUSBEnabledEHCI.checked = ($('#vboxSettingsDialog').data('vboxMachineData').USBController.enabledEHCI);
 
 	// clear list

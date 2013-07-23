@@ -451,13 +451,13 @@ vboxSettingsMAMenu.addMenu([vboxSettingsStorageButtons[1]]);
  * Medium menu buttons
  */
 var mAttachToolbarHD = new vboxButtonMediaMenu('HardDisk',vboxSettingsControllerAttach);
-mAttachToolbarHD.addButton('vboxSettingsAddAttachmentsMenuHDDiv');
+mAttachToolbarHD.renderTo('vboxSettingsAddAttachmentsMenuHDDiv');
 
 var mAttachToolbarCD = new vboxButtonMediaMenu('DVD',vboxSettingsControllerAttach);
-mAttachToolbarCD.addButton('vboxSettingsAddAttachmentsMenuCDDiv');
+mAttachToolbarCD.renderTo('vboxSettingsAddAttachmentsMenuCDDiv');
 
 var mAttachToolbarFD = new vboxButtonMediaMenu('Floppy',vboxSettingsControllerAttach);
-mAttachToolbarFD.addButton('vboxSettingsAddAttachmentsMenuFDDiv');
+mAttachToolbarFD.renderTo('vboxSettingsAddAttachmentsMenuFDDiv');
 
 
 /* Storage Obj */
@@ -1075,7 +1075,7 @@ function vboxSettingsStorageAddMedium(bus, type) {
 	};
     $('<div />').attr({'id':'vboxSettingsStorageUnavailable','style':'display: none'}).html(
     		'<div><img src="images/50px-Question_icon.svg.png" style="float: left; padding: 10px; " />'+msg+'</div>'
-    ).dialog({'closeOnEscape':false,'width':600,'height':200,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'});			
+    ).dialog({'closeOnEscape':false,'width':600,'height':200,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'});			
 		
 
 }
@@ -1107,19 +1107,28 @@ function vboxSettingsAddController(con,list) {
     
     var tr = $('<tr />');
 
-    $('<td />').attr({'class':'vboxSettingsStorageTypeIcon vboxSettingsController' + con.bus + 'Expanded','style':'width: 22px;'}).html(' ').toggle(
-            function() {
-                var n = $(this).closest('li');
-                $(n).children('ul').addClass('vboxHidden').css('display','none');
-                $(this).removeClass($(n).attr('id')+'Expanded').addClass($(n).attr('id'));
-            },
-            function() {
-                var n = $(this).closest('li');
-                $(n).children('ul').removeClass('vboxHidden').css('display','');
-                $(this).removeClass($(n).attr('id')).addClass($(n).attr('id')+'Expanded');                  
-            }
+    $('<td />').attr({'class':'vboxSettingsStorageTypeIcon vboxSettingsController' + con.bus + 'Expanded','style':'width: 22px;'}).html(' ').click(function(){
+
+		if(!$(this).data('toggleClicked')) {
+			
+			$(this).data('toggleClicked', true);
+
+            var n = $(this).closest('li');
+            $(n).children('ul').addClass('vboxHidden').css('display','none');
+            $(this).removeClass($(n).attr('id')+'Expanded').addClass($(n).attr('id'));
             
-    ).appendTo(tr);
+        } else {
+        	
+        	$(this).data('toggleClicked', false);
+            var n = $(this).closest('li');
+            $(n).children('ul').removeClass('vboxHidden').css('display','');
+            $(this).removeClass($(n).attr('id')).addClass($(n).attr('id')+'Expanded');                  
+        	
+        }
+		
+		return false;
+            
+    }).appendTo(tr);
 
     // Controller name
     $(tr).append($('<td />').html(trans('Controller: %1','UIMachineSettingsStorage').replace('%1','<span class="vboxSettingsControllerTitle vboxRunningEnabled">'+$('<div/>').text(con.name).html())+"</span>"));

@@ -64,7 +64,7 @@ function vboxShowLogsInit(vm) {
 	$('#vboxVMLogTabs').prepend(ul);
 	
 	$('#vboxVMLogTabs').tabs({'show':function(e,i){
-		$('#vboxVMLogTabs').children('div:eq('+$('#vboxVMLogTabs').tabs('option','selected')+')').trigger('show');
+		$('#vboxVMLogTabs').children('div:eq('+$('#vboxVMLogTabs').tabs('option','active')+')').trigger('show');
 	}});
 	
 	// Move tabs to table

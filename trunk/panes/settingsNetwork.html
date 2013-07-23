@@ -154,18 +154,24 @@ var vboxSettingsNetContainer = $(vboxSettingsNetTemplate).parent();
  
 
 /* Network advanced show / hide */
-$('#vboxSettingsTabNetAdapter').find('input.netImgAdvanced').toggle(
-		function() {
+$('#vboxSettingsTabNetAdapter').find('input.netImgAdvanced').click(function(){
+		
+		if(!$(this).data('toggleClicked')) {
+			
+			$(this).data('toggleClicked', true);
 			$(this).data('vboxAdvancedEnabled',true);
 			$(this).closest('table').find('.vboxSettingsNetToggleAdvanced:not(.vboxForceHide)').css('display','');
 			$(this).css('background-image','url(images/downArrow.png)');
-		},
-		function() {
+			
+		} else {
+			
+			$(this).data('toggleClicked', false);
 			$(this).data('vboxAdvancedEnabled',false);
 			$(this).closest('table').find('.vboxSettingsNetToggleAdvanced').css('display','none');
 			$(this).css('background-image','url(images/rightArrow.png)');
+			
 		}
-);
+});
 
 /* Mac address generator */
 $('#vboxSettingsTabNetAdapter').find('input.vboxSettingsNetMacGen').click(function(){
@@ -365,7 +371,7 @@ $('#vboxSettingsDialog').bind('dataLoaded',function(){
 		document.forms['frmVboxSettings'].elements['vboxSettingsNetGenericProps'+a].innerHTML = $('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].properties;
 			
 		// Enabled adapter
-		$(document.forms['frmVboxSettings'].elements['vboxSettingsNetEnabled'+a]).prop('checked',$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].enabled).trigger('click');
+		$(document.forms['frmVboxSettings'].elements['vboxSettingsNetEnabled'+a]).prop('checked',$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].enabled).trigger('syntheticClick');;
 
 		
 		$(document.forms['frmVboxSettings'].elements['vboxSettingsNetPF'+a]).unbind('click');

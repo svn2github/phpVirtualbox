@@ -342,7 +342,7 @@ function vboxFileBrowser(root,fn,foldersonly,title,icon,strictFiles) {
     	buttons[trans('OK','QIMessageBox')](f);
     }).appendTo(d1);
 	
-    $(d1).dialog({'closeOnEscape':true,'width':400,'height':600,'buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="'+(icon ? icon : 'images/jqueryFileTree/'+(foldersonly ? 'folder_open' : 'file')+'.png') + '" class="vboxDialogTitleIcon" /> ' + (title ? title : trans((foldersonly ? 'Select Folder' : 'Select File')))}).bind("dialogbeforeclose",function(){
+    $(d1).dialog({'closeOnEscape':true,'width':400,'height':600,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="'+(icon ? icon : 'images/jqueryFileTree/'+(foldersonly ? 'folder_open' : 'file')+'.png') + '" class="vboxDialogTitleIcon" /> ' + (title ? title : trans((foldersonly ? 'Select Folder' : 'Select File')))}).bind("dialogbeforeclose",function(){
     	$(this).parent().find('span:contains("'+trans('Cancel','QIMessageBox')+'")').trigger('click');
     });			
 
@@ -413,7 +413,7 @@ function vboxAlert(e,xtraOpts) {
 	// Convert to <p>
 	if(msg[0] != '<') msg = '<p>'+msg+'</p>';
 	
-	var div = $('<div />').attr({'class':'vboxDialogContent vboxAlert'}).html('<img src="images/50px-Warning_icon.svg.png" style="float: left; padding: 10px; height: 50px; width: 50px;" />'+msg);
+	var div = $('<div />').attr({'class':'vboxDialogContent vboxAlert'}).html('<img src="images/50px-Warning_icon.svg.png" style="float: left; padding: 10px; height: 50px; width: 50px;" height="50" width="50" />'+msg);
 	
 	
 	if(typeof e == 'object' && e.details) {
@@ -442,7 +442,7 @@ function vboxAlert(e,xtraOpts) {
 	var buttons = { };
 	buttons[trans('OK','QIMessageBox')] = function(f) {$(this).trigger('close').empty().remove();};
 
-	var dialogOpts = {'closeOnEscape':false,'width':600,'height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'};
+	var dialogOpts = {'closeOnEscape':false,'width':600,'height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'};
 
 	if(typeof xtraOpts == "object") {
 		for(var i in xtraOpts) {
@@ -466,13 +466,13 @@ function vboxAlert(e,xtraOpts) {
  */
 function vboxConfirm(q,buttons,cancelText,onCancel) {
 
-	var div = $('<div />').attr({'class':'vboxDialogContent','style':'display: none; width: 500px;'}).html('<img src="images/50px-Question_icon.svg.png" style="height: 50px; width: 50px; float: left; padding: 10px;" />'+q);
+	var div = $('<div />').attr({'class':'vboxDialogContent','style':'display: none; width: 500px;'}).html('<img src="images/50px-Question_icon.svg.png" style="height: 50px; width: 50px; float: left; padding: 10px;" height="50" width="50" />'+q);
 	
 	if(!cancelText) cancelText = trans('Cancel','QIMessageBox');
 	
 	buttons[cancelText] = function() { $(this).remove(); if(onCancel) { onCancel(); }};
 	
-    $(div).dialog({'closeOnEscape':false,'width':500,'height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'});			
+    $(div).dialog({'closeOnEscape':false,'width':500,'height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'});			
 	
     return $(div);
 }
@@ -582,12 +582,12 @@ function vboxInitDisplay(root,context) {
 	 * 
 	 */
 	
-	$(root).find('input.vboxEnablerCheckbox').click(function(e,first) {
+	$(root).find('input.vboxEnablerCheckbox').on('click syntheticClick', function(e) {
 	
 			var roottbl = $(this).closest('table');
 			
-			$(roottbl).find('input:not(.vboxEnablerCheckbox,.disabled)').prop('disabled',!this.checked);
-			$(roottbl).find('select:not(.disabled)').prop('disabled',!this.checked);
+			$(roottbl).find('input:not(.vboxEnablerCheckbox)').prop('disabled',!this.checked);
+			$(roottbl).find('select').prop('disabled',!this.checked);
 			(this.checked ? $(roottbl).find('th').removeClass('vboxDisabled') : $(roottbl).find('th:not(.vboxEnablerIgnore)').addClass('vboxDisabled'));
 			(this.checked ? $(roottbl).find('.vboxEnablerListen').removeClass('vboxDisabled') : $(roottbl).find('.vboxEnablerListen').addClass('vboxDisabled'));
 	
@@ -595,7 +595,7 @@ function vboxInitDisplay(root,context) {
 			$(roottbl).find('.vboxEnablerTrigger').trigger(this.checked ? 'enable' : 'disable');
 			
 			
-	}).trigger('click',true);
+	});
 	
 	
 	/*

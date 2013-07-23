@@ -1028,7 +1028,7 @@ div.vboxSettingsDialog div.ui-dialog-buttonpane {
 /* settings general tabs and panes */
 #vboxSettingsPane .vboxSettingsPaneSection { background: #999; }
 #vboxSettingsPane .vboxSettingsPaneSection .ui-state-default { background: #c1c1c1; }
-#vboxSettingsPane .vboxSettingsPaneSection .ui-tabs-selected,
+#vboxSettingsPane .vboxSettingsPaneSection .ui-tabs-active,
 	#vboxSettingsPane .vboxNonTabbed,
 	#vboxSettingsPane .vboxSettingsPaneSection .ui-tabs-panel { background: #eee; }
 #vboxSettingsPane .vboxSettingsPaneSection .vboxNonTabbed .vboxNonTabbed { background: #aaa; }

@@ -285,6 +285,8 @@ $('#vboxSettingsDialog').bind('dataLoaded',function(){
 	document.forms['frmVboxSettings'].vboxSettingsSystemPAE.checked = ($('#vboxSettingsDialog').data('vboxMachineData').CpuProperties.PAE);
 	document.forms['frmVboxSettings'].settingsSystemVT.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled);
 	document.forms['frmVboxSettings'].settingsSystemPaging.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.NestedPaging);
+	
+	$(document.forms['frmVboxSettings'].settingsSystemVT).trigger('syntheticClick');
 
 
 	/* Only if acceleration config is enabled */
@@ -325,7 +327,7 @@ $('#vboxSettingsDialog').bind('dataLoaded',function(){
 		$(bootList).append(bootItems[i]);
 		delete bootItems[i];
 	}
-	$(bootList).children().hover(function(){$(this).addClass('vboxHover');},function(){$(this).removeClass('vboxHover');});
+	$(bootList).children().hoverClass('vboxHover');
 
 	
 	

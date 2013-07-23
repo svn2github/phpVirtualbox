@@ -20,30 +20,24 @@
 	
 	<!--  Style sheets -->
     <link rel="stylesheet" type="text/css" href="css/jquery-ui.css"/>
-    <link rel="stylesheet" type="text/css" href="css/jquery.contextMenu.css"/>
+    <link rel="stylesheet" type="text/css" href="css/jquery.projectPlugins.css"/>
 	<link rel="stylesheet" type="text/css" href="css/tipped.css" />
-	<link rel="stylesheet" type="text/css" href="css/jqueryFileTree.css" />
-	<link rel="stylesheet" type="text/css" href="css/mediumselect.css"/>       
     <link rel="stylesheet" type="text/css" href="css/layout.css"/>
 
-    <!-- External scripts -->
-    <script type="text/javascript" src="js/jquery-1.8.2-min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui-1.8.23-min.js"></script>
-    <script type="text/javascript" src="js/jquery.contextMenu.js"></script>
+    <!-- External or jQuery related scripts -->
+    <script type="text/javascript" src="js/jquery-1.10.2-min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui-1.10.3-min.js"></script>
 	<script type="text/javascript" src="js/jquery.tipped-2.1b.min.js"></script>
-	<script type="text/javascript" src="js/jqueryFileTree.js"></script>		
 	<script type="text/javascript" src="js/jquery.scrollTo-min.js"></script>
-	<script type="text/javascript" src="js/jquery.textFill.js"></script>
 	<script type="text/javascript" src="js/jquery.jec-1.3.1.js"></script>
 	
 	<!-- Oracle RDP Control -->
 	<script type="text/javascript" src="rdpweb/webclient.js"></script>
 	<script type="text/javascript" src="rdpweb/swfobject.js"></script>
 	
-	<!-- Internal Scripts -->
+	<!-- Internal / project related scripts -->
+    <script type="text/javascript" src="js/jquery.projectPlugins.js"></script>
     <script type="text/javascript" src="js/language.php"></script>
-	<script type="text/javascript" src="js/jquery.vbtree.js"></script>		
-   	<script type="text/javascript" src="js/jquery.mediumselect.js"></script>
    	<script type="text/javascript" src="js/phpvirtualbox.js"></script>
     <script type="text/javascript" src="js/utils.js"></script>
     <script type="text/javascript" src="js/eventlistener.js"></script>
@@ -351,16 +345,14 @@
 				// Create but do not open dialog
 				if($.browser.webkit) heightadd = 5;
 				else heightadd = 0;
-				$('#vboxLogin').dialog({'closeOnEscape':false,'width':300,'height':'auto','buttons':buttons,'modal':true,'autoOpen':false,'stack':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox :: ' + trans('Log in','UIUsers')});
+				$('#vboxLogin').dialog({'closeOnEscape':false,'width':300,'height':'auto','buttons':buttons,'modal':true,'autoOpen':false,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox :: ' + trans('Log in','UIUsers')});
 				$('#vboxLogin').find('input[name=username]').first().focus();
 				
 				// Trick loader into not showing root pane again
 				loader.hideRoot = false;
 				
-				
 				// Login form is loaded, run check for valid session
 				vboxCheckSession();
-				
 				
 			};
 			login.hideRoot = true;

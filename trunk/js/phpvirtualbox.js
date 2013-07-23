@@ -457,7 +457,7 @@ var vboxVMDetailsSections = {
 
 			// Menu item to disable update
 			$('<li />')
-				.hover(function(){$(this).addClass('hover');},function(){$(this).removeClass('hover');})
+				.hoverClass('hover')
 				.append(
 
 					$('<label />').append(
@@ -540,10 +540,7 @@ var vboxVMDetailsSections = {
 				).appendTo(ul);
 			
 			/* Hover */
-			$(ul).children().hover(
-				function(){$(this).addClass('hover');},
-				function(){$(this).removeClass('hover');}
-			);
+			$(ul).children().hoverClass('hover');
 
 						
 			$(document).click(function(e){if(e.button!=2)$(ul).hide();});
@@ -2876,7 +2873,7 @@ function vboxToolbar(buttons) {
 	 *            b - button to disable
 	 */
 	this.disableButton = function(b) {
-		$('#vboxToolbarButton-'+self.id+'-'+b.name).addClass('vboxDisabled disabled').removeClass('vboxEnabled').children('img.vboxToolbarImg').attr('src','images/vbox/'+b.icon+'_disabled_'+self.size+'px.png');
+		$('#vboxToolbarButton-'+self.id+'-'+b.name).addClass('vboxDisabled disabled').removeClass('vboxEnabled').children('img.vboxToolbarImg').attr('src','images/vbox/'+b.icon+'_disabled_'+self.size+'px.png').trigger('mouseleave');
 	};
 
 	/**
@@ -3102,9 +3099,9 @@ function vboxToolbarSmall(buttons) {
 	 */
 	this.disableButton = function(b) {
 		if(b.noDisabledIcon)
-			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('display','none').prop('disabled',false).removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton');
+			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('display','none').prop('disabled',false).removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton').trigger('mouseleave');
 		else
-			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + (b.icon_exact ? b.icon_disabled : b.icon + '_'+self.disabledString+'_'+self.size)+'px.png)').prop('disabled',true).removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton');
+			$('#vboxToolbarButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + (b.icon_exact ? b.icon_disabled : b.icon + '_'+self.disabledString+'_'+self.size)+'px.png)').prop('disabled',true).removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton').trigger('mouseleave');
 	};
 
 	/**
@@ -3287,7 +3284,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	 */
 	this.disableButton = function() {
 		var b = self.button;
-		$('#vboxButtonMenuButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + b.icon + '_'+self.disabledString+'_'+self.size+'px.png)').removeClass('vboxToolbarSmallButtonHover').addClass('vboxDisabled').html('');
+		$('#vboxButtonMenuButton-' + self.id + '-' + b.name).css('background-image','url(images/vbox/' + b.icon + '_'+self.disabledString+'_'+self.size+'px.png)').removeClass('vboxToolbarSmallButtonHover').addClass('vboxDisabled').html('').trigger('mouseleave');
 	};
 
 	/**
@@ -3365,13 +3362,13 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	};
 
 	/**
-	 * Add button to element with id
+	 * Render button to element with id
 	 * 
 	 * @memberOf vboxButtonMediaMenu
 	 * @param {String}
 	 *            id - HTMLNode id to add button to
 	 */
-	this.addButton = function(id) {
+	this.renderTo = function(id) {
 		
 		self.id = id;
 		
@@ -3977,13 +3974,13 @@ function vboxMenuBar(name) {
 	};
 
 	/**
-	 * Add menu bar to element identified by ID
+	 * Render menu bar to element identified by ID
 	 * 
 	 * @memberOf vboxMenuBar
 	 * @param {String}
 	 *            id - HTMLNode id of node to add menu bar to
 	 */
-	this.addMenuBar = function(id) {
+	this.renderTo = function(id) {
 		
 		$('#'+id).prepend($('<div />').attr({'class':'vboxMenuBar','id':self.name+'MenuBar'}));
 		
@@ -4214,10 +4211,9 @@ function vboxLoader(name) {
 }
 
 /**
- * Serial port object
+ * Serial port namespace
  * 
- * @constructor
- * @class vboxSerialPorts
+ * @namespace vboxSerialPorts
  */
 var vboxSerialPorts = {
 	
@@ -4248,10 +4244,9 @@ var vboxSerialPorts = {
 };
 
 /**
- * LPT port object
+ * LPT port namespace
  * 
- * @constructor
- * @class vboxParallelPorts
+ * @namespace vboxParallelPorts
  */
 var vboxParallelPorts = {
 	
@@ -4282,7 +4277,7 @@ var vboxParallelPorts = {
 
 
 /**
- * Common VM storage / controller object
+ * Common VM storage / controller namespace
  * 
  * @namespace vboxStorage
  */
@@ -4487,6 +4482,8 @@ function vboxDevice(d) {
 
 /**
  * VM State functions namespace
+ * 
+ * @namespace vboxVMStates
  */
 var vboxVMStates = {
 	

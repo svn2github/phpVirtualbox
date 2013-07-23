@@ -1,6 +1,13 @@
 -------------------------------------
 	4.2-7
 -------------------------------------
+Upgraded jQuery from 1.8.2 to 1.10.2. Updated code to reflect
+library changes.
+
+Upgraded jQuery-UI from 1.8.23 to 1.10.3. Updated code to reflect
+library changes.
+
+Consolidated some JavaScript, and CSS files where possible.
 
 -------------------------------------
 	4.2-6	2013-07-22

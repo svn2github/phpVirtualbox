@@ -249,15 +249,13 @@ $('div.vmmTableBody table').click(function(){$(this).focus();}).keydown(function
 /*
  * Setup Tabs
  */
-$("#vboxVMMTabs").tabs().bind("tabsshow",function(ev,el){
+$("#vboxVMMTabs").tabs().on("tabsactivate",function(ev,ui){
 	
-	var elm = $('#'+el.panel.id);
-
 	// Resize table
-	vboxVMMSizeTable(elm);
+	vboxVMMSizeTable(ui.newPanel);
 	
 	// Medium selection
-	if(!$(elm).find('tbody').children('tr.vboxListItemSelected').first().children().first().click().length) {
+	if(!$(ui.newPanel).find('tbody').children('tr.vboxListItemSelected').first().children().first().click().length) {
 		$('#vboxVirtualMediaManager').trigger('mediumselect',[null]);
 	}	
 });

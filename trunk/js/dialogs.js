@@ -1155,7 +1155,7 @@ function vboxVMsettingsDialog(vm,pane) {
 
 							/* Change title and tell dialog that data is loaded */
 							$('#vboxSettingsDialog').trigger('dataLoaded').dialog('option','title','<img src="images/vbox/settings_16px.png" class="vboxDialogTitleIcon" /> ' + 
-									$('<div />').text($('#vboxSettingsDialog').data('vboxMachineData').name).html() + ' - ' + trans('Settings','UISettingsDialog'));
+									$('<div />').text($('#vboxSettingsDialog').data('vboxMachineData').name).text() + ' - ' + trans('Settings','UISettingsDialog'));
 
 							l.removeLoading();
 						});

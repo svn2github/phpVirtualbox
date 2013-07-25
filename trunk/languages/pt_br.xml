@@ -54,6 +54,10 @@
 			<translation>Logged in as %1</translation>
 		</message>
 		<message>
+			<source>Stop</source>
+			<translation>Parar</translation>
+		</message>
+		<message>
 			<source>VirtualBox User Manual</source>
 			<translation>Manual de Usuário do VirtualBox</translation>
 		</message>	

@@ -457,7 +457,7 @@ var vboxVMDetailsSections = {
 
 			// Menu item to disable update
 			$('<li />')
-				.hoverClass('hover')
+				.hoverClass('vboxHover')
 				.append(
 
 					$('<label />').append(
@@ -540,7 +540,7 @@ var vboxVMDetailsSections = {
 				).appendTo(ul);
 			
 			/* Hover */
-			$(ul).children().hoverClass('hover');
+			$(ul).children().hoverClass('vboxHover');
 
 						
 			$(document).click(function(e){if(e.button!=2)$(ul).hide();});
@@ -3173,7 +3173,7 @@ function vboxToolbarSmall(buttons) {
 		for(var i = 0; i < self.buttons.length; i++) {
 			
 			if(self.buttons[i].separator) {
-				$(targetElm).append($('<hr />').attr({'style':'display: inline','class':'vboxToolbarSmall vboxSeperatorLine'}));
+				$(targetElm).append($('<hr />').attr({'style':'display: inline','class':'vboxToolbarSmall vboxSeparatorLine'}));
 			}
 
 			$(targetElm).append(self.buttonElement(self.buttons[i])); 

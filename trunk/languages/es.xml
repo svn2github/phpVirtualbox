@@ -54,6 +54,10 @@
 			<translation>Usario %1</translation>
 		</message>
 		<message>
+			<source>Stop</source>
+			<translation>Detener</translation>
+		</message>
+		<message>
 			<source>VirtualBox User Manual</source>
 			<translation>Manual de uso de VirtualBox</translation>
 		</message>	

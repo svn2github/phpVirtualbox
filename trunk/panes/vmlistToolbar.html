@@ -39,9 +39,11 @@ vboxChooserToolbarTop.renderTo('vboxPaneToolbar');
 
 /* Stop button menu and actions */
 var ul = $('<ul />').attr({'class':'contextMenu','style':'display: none','id':'vboxStopMenu'});
+$(ul).append($('<li />').html("<a href='#" + 'pause' + "' style='background-image: url(images/vbox/" + vboxVMActions['pause'].icon +"_16px.png);' >"+vboxVMActions['pause'].label+"</a>"));
+$(ul).append($('<li />').html("<a href='#" + 'reset' + "' style='background-image: url(images/vbox/" + vboxVMActions['reset'].icon +"_16px.png);' >"+vboxVMActions['reset'].label+"</a>"));
 for(var i = 0; i < vboxVMActions.stop_actions.length; i++) {
 	var n = vboxVMActions.stop_actions[i];
-	$(ul).append($('<li />').html("<a href='#" + n + "' style='background-image: url(images/vbox/" + vboxVMActions[n].icon +"_16px.png);' >"+vboxVMActions[n].label+"</a>"));
+	$(ul).append($('<li />').addClass((i==0 ? 'separator' : '')).html("<a href='#" + n + "' style='background-image: url(images/vbox/" + vboxVMActions[n].icon +"_16px.png);' >"+vboxVMActions[n].label+"</a>"));
 }
 
 /* Append 'Stop' button Menu */

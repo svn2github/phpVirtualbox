@@ -551,7 +551,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 			}
 
 			return false;
-		}).hoverClass('hover').disableSelection().data({'sectionName':sectionName});
+		}).hoverClass('vboxHover').disableSelection().data({'sectionName':sectionName});
 
 	if(vboxGetLocalDataItem("vboxSectionCollapse"+sectionName)) {
 		vboxDetailsSection.addClass('vboxDetailsSectionCollapsed');

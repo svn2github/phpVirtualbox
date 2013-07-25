@@ -662,17 +662,17 @@ if(jQuery)( function() {
 								{'level':$(this).parent().data('level'), 'id':$(this).parent().attr('id')}
 						);
 
-						$(menu).find('LI.hover').removeClass('hover');
+						$(menu).find('LI.vboxHover').removeClass('vboxHover');
 						if($(this).hasClass('disabled')) return;
 							
-						$(this).addClass('hover');
+						$(this).addClass('vboxHover');
 						
 						var subMenuId = $(this).data('subId');
 						if(subMenuId) showMenu($(this),$('#'+subMenuId),'submenu',e);
 						
 					}).on("mouseleave",function() {
 						
-						$(menu).find('LI.hover').removeClass('hover');
+						$(menu).find('LI.vboxHover').removeClass('vboxHover');
 						
 					}).children('a').unbind('click').bind('click',function(e){
 						e.preventDefault();

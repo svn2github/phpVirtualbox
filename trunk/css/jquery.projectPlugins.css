@@ -176,7 +176,7 @@ ul.contextMenuNoBG A {
 	padding-left: 2px;
 }
 
-ul.contextMenu LI.hover {
+ul.contextMenu LI.vboxHover {
 	background-color: #f0f8ff;
 	border: 1px solid #aaaaaa;
 }
@@ -185,12 +185,12 @@ ul.contextMenu LI.hover {
 	display: none;
 }
 
-.contextMenu LI.hover.disabled, .contextMenu LI.disabled A, .contextMenu LI.disabled SPAN {
+.contextMenu LI.vboxHover.disabled, .contextMenu LI.disabled A, .contextMenu LI.disabled SPAN {
 	color: #AAA;
 	cursor: default;
 }
 
-.contextMenu LI.hover.disabled, .contextMenu LI.hover.disabled A {
+.contextMenu LI.vboxHover.disabled, .contextMenu LI.vboxHover.disabled A {
 	background-color: transparent;
 }
 

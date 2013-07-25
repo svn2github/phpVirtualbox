@@ -9,6 +9,10 @@ library changes.
 
 Consolidated some JavaScript, and CSS files where possible.
 
+Changed all instances of 'hover' CSS class to vboxHover.
+
+Minor translation fixes.
+
 -------------------------------------
 	4.2-6	2013-07-22
 -------------------------------------

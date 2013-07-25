@@ -1345,9 +1345,10 @@ class vboxconnector {
 	 * Save running VM settings. Called from machineSave method if the requested VM is running.
 	 *
 	 * @param array $args array of machine configuration items.
+	 * @param string $state state of virtual machine.
 	 * @return boolean true on success
 	 */
-	private function _machineSaveRunning($args) {
+	private function _machineSaveRunning($args, $state) {
 
 		// Client and server must agree on advanced config setting
 		$this->settings->enableAdvancedConfig = (@$this->settings->enableAdvancedConfig && @$args['clientConfig']['enableAdvancedConfig']);
@@ -1387,91 +1388,94 @@ class vboxconnector {
 		} catch (Exception $e) {
 		}
 
-		// Storage Controllers
-		$scs = $m->storageControllers;
-		$attachedEx = $attachedNew = array();
-		foreach($scs as $sc) { /* @var $sc IStorageController */
-			$mas = $m->getMediumAttachmentsOfController($sc->name);
-			foreach($mas as $ma) { /* @var $ma IMediumAttachment */
-				$attachedEx[$sc->name.$ma->port.$ma->device] = (($ma->medium->handle && $ma->medium->id) ? $ma->medium->id : null);
+		// Storage Controllers if machine is in a valid state
+		if($state != 'Saved') {
+			
+			$scs = $m->storageControllers;
+			$attachedEx = $attachedNew = array();
+			foreach($scs as $sc) { /* @var $sc IStorageController */
+				$mas = $m->getMediumAttachmentsOfController($sc->name);
+				foreach($mas as $ma) { /* @var $ma IMediumAttachment */
+					$attachedEx[$sc->name.$ma->port.$ma->device] = (($ma->medium->handle && $ma->medium->id) ? $ma->medium->id : null);
+				}
 			}
-		}
-
-		// Incoming list
-		foreach($args['storageControllers'] as $sc) {
-
-			$sc['name'] = trim($sc['name']);
-			$name = ($sc['name'] ? $sc['name'] : $sc['bus'].' Controller');
-
-			// Medium attachments
-			foreach($sc['mediumAttachments'] as $ma) {
-
-				if($ma['medium'] == 'null') $ma['medium'] = null;
-
-				$attachedNew[$name.$ma['port'].$ma['device']] = $ma['medium']['id'];
-
-				// Compare incoming list with existing
-				if($ma['type'] != 'HardDisk' && $attachedNew[$name.$ma['port'].$ma['device']] != $attachedEx[$name.$ma['port'].$ma['device']]) {
-
-					if(is_array($ma['medium']) && $ma['medium']['id'] && $ma['type']) {
-
-						// Host drive
-						if(strtolower($ma['medium']['hostDrive']) == 'true' || $ma['medium']['hostDrive'] === true) {
-							// CD / DVD Drive
-							if($ma['type'] == 'DVD') {
-								$drives = $this->vbox->host->DVDDrives;
-							// floppy drives
-							} else {
-								$drives = $this->vbox->host->floppyDrives;
-							}
-							foreach($drives as $md) {
-								if($md->id == $ma['medium']['id']) {
-									$med = &$md;
-									break;
+	
+			// Incoming list
+			foreach($args['storageControllers'] as $sc) {
+	
+				$sc['name'] = trim($sc['name']);
+				$name = ($sc['name'] ? $sc['name'] : $sc['bus'].' Controller');
+	
+				// Medium attachments
+				foreach($sc['mediumAttachments'] as $ma) {
+	
+					if($ma['medium'] == 'null') $ma['medium'] = null;
+	
+					$attachedNew[$name.$ma['port'].$ma['device']] = $ma['medium']['id'];
+	
+					// Compare incoming list with existing
+					if($ma['type'] != 'HardDisk' && $attachedNew[$name.$ma['port'].$ma['device']] != $attachedEx[$name.$ma['port'].$ma['device']]) {
+	
+						if(is_array($ma['medium']) && $ma['medium']['id'] && $ma['type']) {
+	
+							// Host drive
+							if(strtolower($ma['medium']['hostDrive']) == 'true' || $ma['medium']['hostDrive'] === true) {
+								// CD / DVD Drive
+								if($ma['type'] == 'DVD') {
+									$drives = $this->vbox->host->DVDDrives;
+								// floppy drives
+								} else {
+									$drives = $this->vbox->host->floppyDrives;
 								}
-								$md->releaseRemote();
+								foreach($drives as $md) {
+									if($md->id == $ma['medium']['id']) {
+										$med = &$md;
+										break;
+									}
+									$md->releaseRemote();
+								}
+							} else {
+								$med = $this->vbox->openMedium($ma['medium']['location'],$ma['type']);
 							}
 						} else {
-							$med = $this->vbox->openMedium($ma['medium']['location'],$ma['type']);
+							$med = null;
 						}
-					} else {
-						$med = null;
+						$m->mountMedium($name,$ma['port'],$ma['device'],(is_object($med) ? $med->handle : null),true);
+						if(is_object($med)) $med->releaseRemote();
 					}
-					$m->mountMedium($name,$ma['port'],$ma['device'],(is_object($med) ? $med->handle : null),true);
-					if(is_object($med)) $med->releaseRemote();
-				}
-
-				// Set Live CD/DVD
-				if($ma['type'] == 'DVD') {
-					if((strtolower($ma['medium']['hostDrive']) != 'true' && $ma['medium']['hostDrive'] !== true))
-						$m->temporaryEjectDevice($name,$ma['port'],$ma['device'],(intval($ma['temporaryEject']) ? true : false));
-
-				// Set IgnoreFlush
-				} elseif($ma['type'] == 'HardDisk') {
-
-					// Remove IgnoreFlush key?
-					if($this->settings->enableHDFlushConfig) {
-
-						$xtra = $this->_util_getIgnoreFlushKey($ma['port'], $ma['device'], $sc['controllerType']);
-
-						if($xtra) {
-							if(intval($ma['ignoreFlush']) == 0) {
-								$m->setExtraData($xtra, '0');
-							} else {
-								$m->setExtraData($xtra, '');
+	
+					// Set Live CD/DVD
+					if($ma['type'] == 'DVD') {
+						if((strtolower($ma['medium']['hostDrive']) != 'true' && $ma['medium']['hostDrive'] !== true))
+							$m->temporaryEjectDevice($name,$ma['port'],$ma['device'],(intval($ma['temporaryEject']) ? true : false));
+	
+					// Set IgnoreFlush
+					} elseif($ma['type'] == 'HardDisk') {
+	
+						// Remove IgnoreFlush key?
+						if($this->settings->enableHDFlushConfig) {
+	
+							$xtra = $this->_util_getIgnoreFlushKey($ma['port'], $ma['device'], $sc['controllerType']);
+	
+							if($xtra) {
+								if(intval($ma['ignoreFlush']) == 0) {
+									$m->setExtraData($xtra, '0');
+								} else {
+									$m->setExtraData($xtra, '');
+								}
 							}
 						}
+	
+	
 					}
-
-
 				}
+	
 			}
-
 		}
 
 
 		/* Networking */
-		$netprops = array('enabled','attachmentType','bridgedInterface','hostOnlyInterface','internalNetwork','NATNetwork','cableConnected','promiscModePolicy','genericDriver');
+		$netprops = array('enabled','attachmentType','bridgedInterface','hostOnlyInterface','internalNetwork','NATNetwork','promiscModePolicy','genericDriver');
 		if(@$this->settings->enableVDE) $netprops[] = 'VDENetwork';
 
 		for($i = 0; $i < count($args['networkAdapters']); $i++) {
@@ -1496,27 +1500,35 @@ class vboxconnector {
 				}
 			}
 
-			// Network properties
-			$eprops = $n->getProperties();
-			$eprops = array_combine($eprops[1],$eprops[0]);
-			$iprops = array_map(create_function('$a','$b=explode("=",$a); return array($b[0]=>$b[1]);'),preg_split('/[\r|\n]+/',$args['networkAdapters'][$i]['properties']));
-			$inprops = array();
-			foreach($iprops as $a) {
-				foreach($a as $k=>$v)
-				$inprops[$k] = $v;
+			/// Not if in "Saved" state
+			if($state != 'Saved') {
+				
+				// Network properties
+				$eprops = $n->getProperties();
+				$eprops = array_combine($eprops[1],$eprops[0]);
+				$iprops = array_map(create_function('$a','$b=explode("=",$a); return array($b[0]=>$b[1]);'),preg_split('/[\r|\n]+/',$args['networkAdapters'][$i]['properties']));
+				$inprops = array();
+				foreach($iprops as $a) {
+					foreach($a as $k=>$v)
+					$inprops[$k] = $v;
+				}
+				
+				// Remove any props that are in the existing properties array
+				// but not in the incoming properties array
+				foreach(array_diff(array_keys($eprops),array_keys($inprops)) as $dk) {
+					$n->setProperty($dk, '');
+				}
+								
+				// Set remaining properties
+				foreach($inprops as $k => $v) {
+					if(!$k) continue;
+					$n->setProperty($k, $v);
+				}
+					
+				if(intval($n->cableConnected) != intval($args['networkAdapters'][$i]['cableConnected']))
+					$n->cableConnected = intval($args['networkAdapters'][$i]['cableConnected']);
+				
 			}
-			
-			// Remove any props that are in the existing properties array
-			// but not in the incoming properties array
-			foreach(array_diff(array_keys($eprops),array_keys($inprops)) as $dk)
-				$n->setProperty($dk, '');
-				
-			// Set remaining properties
-			foreach($inprops as $k => $v)
-				$n->setProperty($k, $v);
-				
-			if(intval($n->cableConnected) != intval($args['networkAdapters'][$i]['cableConnected']))
-				$n->cableConnected = intval($args['networkAdapters'][$i]['cableConnected']);
 
 			if($args['networkAdapters'][$i]['attachmentType'] == 'NAT') {
 
@@ -1531,7 +1543,7 @@ class vboxconnector {
 				}
 
 				// Advanced NAT settings
-				if(@$this->settings->enableAdvancedConfig) {
+				if($state != 'Saved' && @$this->settings->enableAdvancedConfig) {
 					$aliasMode = $n->NATEngine->aliasMode & 1;
 					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 2)) $aliasMode |= 2;
 					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 4)) $aliasMode |= 4;
@@ -1621,7 +1633,7 @@ class vboxconnector {
 
 		$usbc = $this->_machineGetUSBController($this->session->machine);
 
-		if($usbc['enabled']) {
+		if($state != 'Saved' && $usbc['enabled']) {
 
 			// filters
 			if(!is_array($args['USBController']['deviceFilters'])) $args['USBController']['deviceFilters'] = array();
@@ -1699,13 +1711,13 @@ class vboxconnector {
 		$machine = $this->vbox->findMachine($args['id']);
 		
 		$vmState = (string)$machine->state;
-		$vmRunning = ($vmState == 'Running' || $vmState == 'Paused');
+		$vmRunning = ($vmState == 'Running' || $vmState == 'Paused' || $vmState == 'Saved');
 		$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 		$machine->lockMachine($this->session->handle, ($vmRunning ? 'Shared' : 'Write'));
 
 		// Switch to machineSaveRunning()?
 		if($vmRunning) {
-			return $this->_machineSaveRunning($args);
+			return $this->_machineSaveRunning($args, $vmState);
 		}
 
 

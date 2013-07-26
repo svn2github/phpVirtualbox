@@ -15,6 +15,10 @@ Minor translation fixes.
 
 Some VM properties are now editable when a VM is in a Saved state.
 
+Fixed bug when selecting a medium by location where it would have
+to be selected twice.
+http://code.google.com/p/phpvirtualbox/issues/detail?id=641
+
 -------------------------------------
 	4.2-6	2013-07-22
 -------------------------------------

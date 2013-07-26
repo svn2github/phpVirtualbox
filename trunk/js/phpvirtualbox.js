@@ -45,7 +45,7 @@ var vboxHostDetailsSections = {
 			   }
 		   },{
 			   title: '',
-			   data: '<span id="vboxHostMemUsed"><div style="background-color:#a33" id="vboxHostMemUsedPct"><div style="background-color:#a93;float:right;" id="vboxHostMemResPct"></div></div><div style="width:100%;position:relative;top:-14px;left:0px;z-index:2;text-align:center;"><span id="vboxHostMemUsedLblPct" style="float:left" /><span id="vboxHostMemFreeLbl" style="float:right" /></div></span>'
+			   data: '<span id="vboxHostMemUsed"><div style="background-color:#a33" id="vboxHostMemUsedPct"><div style="background-color:#a93;float:right;" id="vboxHostMemResPct"></div></div><div style="width:100%;position:relative;top:-14px;left:0px;text-align:center;"><span id="vboxHostMemUsedLblPct" style="float:left" /><span id="vboxHostMemFreeLbl" style="float:right" /></div></span>'
 		   },{
 			   title: trans("Processor(s)",'VBoxGlobal'),
 			   callback: function(d) {
@@ -2318,7 +2318,7 @@ var vboxMedia = {
 							l.add('vboxGetMedia',function(dret){$('#vboxPane').data('vboxMedia',dret.responseData);});
 					}
 					l.onLoad = function() {
-						if(ret && ret.id) {
+						if(ret && ret.responseData.id) {
 							var med = vboxMedia.getMediumById(ret.responseData.id);
 							if(med && med.deviceType == type) {
 								vboxMedia.updateRecent(med);

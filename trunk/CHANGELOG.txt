@@ -19,6 +19,8 @@ Fixed bug when selecting a medium by location where it would have
 to be selected twice.
 http://code.google.com/p/phpvirtualbox/issues/detail?id=641
 
+Minor UI enhancements.
+
 -------------------------------------
 	4.2-6	2013-07-22
 -------------------------------------

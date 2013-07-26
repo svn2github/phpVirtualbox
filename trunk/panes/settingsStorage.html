@@ -64,7 +64,7 @@
 						<tr>
 							<th><span class='translate'>Name:</span></th>
 							<td style='width: 100%'><input type='text' class='vboxText'
-								name='vboxSettingsStorageItemName' style='width: 100%' /></td>
+								name='vboxSettingsStorageItemName' style='width: 99%' /></td>
 						</tr>
 						<tr>
 							<th><span class='translate'>Type:</span></th>
@@ -579,10 +579,16 @@ $('#vboxSettingsStorageTree').bind('itemselect',function(e,item){
 	    $('#vboxSettingsController').css('display','none');
 	    $('#vboxSettingsMediaInfo').css('display','none');
 	    $('#vboxSettingsStorageAttachment').css('display','none');
+		// Update label widths
+		vboxStorageResizeTreeItemLabels();
 	    return;
 	}
 	
-	if(!$(item).data('attachment')) return;
+	if(!$(item).data('attachment')) {
+		// Update label widths
+		vboxStorageResizeTreeItemLabels();
+		return;
+	}
 	
 	switch($(item).data('attachment').type) {
 		case 'HardDisk':
@@ -608,6 +614,12 @@ $('#vboxSettingsStorageTree').bind('itemselect',function(e,item){
 			}			
 			$('#vboxSettingsAddAttachmentsMenuCDDiv').show();
 	}
+	
+	// Update label widths
+	vboxStorageResizeTreeItemLabels();
+	
+	
+	
 });
 
 
@@ -1131,7 +1143,7 @@ function vboxSettingsAddController(con,list) {
     }).appendTo(tr);
 
     // Controller name
-    $(tr).append($('<td />').html(trans('Controller: %1','UIMachineSettingsStorage').replace('%1','<span class="vboxSettingsControllerTitle vboxRunningEnabled">'+$('<div/>').text(con.name).html())+"</span>"));
+    $(tr).append($('<td />').html('<div class="vboxFitToContainer">'+trans('Controller: %1','UIMachineSettingsStorage').replace('%1','<span class="vboxSettingsControllerTitle vboxRunningEnabled">'+$('<div/>').text(con.name).html())+"</span>"+"</div>"));
     
     // Buttons
     $(tr).append($('<td />').attr({'id':'vboxSettingsController' + con.bus + 'BtnDrive','style':'width: 22px;','class':'vboxControllerAttachmentButton'}));
@@ -1246,7 +1258,7 @@ function vboxSettingsAddAttachment(d,bus) {
     $(tr).append($('<td />').attr({'class':'vboxSettingsStorageTypeIcon vboxSettingsMediaType' + d.type}).html('<img src="images/vbox/blank.gif" />'));
     
     // Medium name
-    $(tr).append($('<td />').attr({'class':'vboxSettingsStorageMediumName'}).html(vboxMedia.getName(vboxMedia.getMediumById((m && m.base ? m.base : (m && m.id ? m.id : null))))));
+    $(tr).append($('<td />').append($('<div />').attr({'class':'vboxSettingsStorageMediumName vboxFitToContainer'}).html(vboxMedia.getName(vboxMedia.getMediumById((m && m.base ? m.base : (m && m.id ? m.id : null)))))));
     
     
     $(tbl).append(tr).appendTo(li);
@@ -1463,8 +1475,23 @@ function vboxSettingsStorageResize() {
 	
 	$('#vboxSettingsStorageTree').height(h).css({'display':''});
 	
-
+	vboxStorageResizeTreeItemLabels();
+	
 }
+
+/*
+ * Resize controller labels
+ */
+function vboxStorageResizeTreeItemLabels() {
+	
+	$('#vboxSettingsStorageTree div.vboxFitToContainer').each(function(){
+		$(this).css({'display':'none'})
+		var w = $(this).parent().innerWidth() - 2;
+		$(this).css({'width':w+'px','display':''});
+	});
+	
+	
+};
 
 /*
  * Set pane sizes and resize bar
@@ -1507,6 +1534,9 @@ $('#vboxSettingsStorageTableWrapper').one('show',function(){
 	// Don't allow selection of text in storage tree. This looks funny when dragging the resize bar
 	$('#vboxSettingsStorageTree').disableSelection();
 	
+	// Resize
+	vboxSettingsStorageResize();
+	
 	// Draggable resize bar
 	$('#vboxStorageResizeBar').draggable({cursor:(jQuery.browser.opera ? 'e-resize' : 'col-resize'),axis:'x',zIndex:99,helper:function(){
 		
@@ -1519,6 +1549,7 @@ $('#vboxSettingsStorageTableWrapper').one('show',function(){
 		$('#vboxResizeOverlay').remove();
 		$('body').disableSelection().css({'cursor':(jQuery.browser.opera ? 'e-resize' : 'col-resize')});
 		$('#vboxSettingsDialog').append($('<div />').attr({'id':'vboxResizeOverlay','style':'width:99%;height:99%;border:0px;margin:0px;padding:0px;position:absolute;top:0px;left:0px;cursor:'+(jQuery.browser.opera ? 'e-resize' : 'col-resize')}));
+		
 		
 	},'drag':function(e){
 
@@ -1563,6 +1594,7 @@ $('#vboxSettingsStorageTableWrapper').one('show',function(){
 				$('#vboxStoragePaneRight').css({'width':(rWidth - sWidth)+'px','display':''});
 			}
 		
+			
 		// Right to left
 		} else {
 
@@ -1598,7 +1630,15 @@ $('#vboxSettingsStorageTableWrapper').one('show',function(){
 		
 		$('#vboxStorageResizeBar').data('vboxX',e.pageX);
 		
+		// resize labels
+		vboxStorageResizeTreeItemLabels();
+
+		
 	},'stop':function(e) {
+
+		// resize labels
+		vboxStorageResizeTreeItemLabels();
+
 		$('body').enableSelection().css({'cursor':'default'});
 		$('#vboxResizeOverlay').remove();
 	}}).css({'cursor':(jQuery.browser.opera ? 'e-resize' : 'col-resize'),'height':'98%'});

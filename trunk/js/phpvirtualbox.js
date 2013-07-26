@@ -4135,7 +4135,7 @@ function vboxLoader(name) {
 		var tbl = $('<table />');
 		var tr = $('<tr />');
 
-		$('<td />').attr('class', 'vboxLoaderSpinner').html('<img src="images/spinner.gif" />').appendTo(tr);
+		$('<td />').attr('class', 'vboxLoaderSpinner').html('<img src="images/spinner.gif" width="36" height="39" />').appendTo(tr);
 		
 		$('<td />').attr('class','vboxLoaderText').html(trans('Loading ...','UIVMDesktop')).appendTo(tr);
 

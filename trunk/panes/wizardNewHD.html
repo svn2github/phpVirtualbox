@@ -169,13 +169,13 @@ function wizardHDBrowseLocation() {
 }
 
 /* Keep suggested options */
-$('#wizardNewHDStep1').bind('show',function(e,wiz){
+$('#wizardNewHDStep1').on('show',function(e,wiz){
 
 	$('#wizardNewHDStep1').data('wizSuggested', (wiz.suggested ? wiz.suggested : {}));
 });
 
 /* WHen showing step 2, show / hide split option */
-$('#wizardNewHDStep2').bind('show',function(e,wiz){
+$('#wizardNewHDStep2').on('show',function(e,wiz){
 	
 	var caps = 0;
 	for(var i = 0; i < document.forms['frmwizardNewHD'].newHardDiskFileType.length; i++) {
@@ -203,7 +203,7 @@ $('#wizardNewHDStep2').bind('show',function(e,wiz){
 	
 });
 /* When last list of options */
-$('#wizardNewHDStep3').bind('show',function(e,wiz){
+$('#wizardNewHDStep3').on('show',function(e,wiz){
 		
 	var format = document.forms['frmwizardNewHD'].elements['newHardDiskFileType'];
 	var formatOpts = {};
@@ -265,7 +265,7 @@ $('#wizardNewHDMin').html(vboxMbytesConvert(min));
 $('#wizardNewHDMax').html(vboxMbytesConvert(max));
 
  /* Suggested Data exists */
-$('#wizardNewHDStep1').bind('show',function(e,wiz){
+$('#wizardNewHDStep1').on('show',function(e,wiz){
 
 	// Already initialized?
 	if($('#wizardNewHDStep1').data('init') || !wiz || !wiz.suggested) return;

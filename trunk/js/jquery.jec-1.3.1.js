@@ -508,24 +508,24 @@ useExistingOptions, val, value, valueIsEditable*/
                             elem.append(editableOption);
                         }
 
-                        elem.bind('keydown', EventHandlers.keyDown);
-                        elem.bind('keypress', EventHandlers.keyPress);
-                        elem.bind('keyup', EventHandlers.keyUp);
-                        elem.bind('change', EventHandlers.change);
-                        elem.bind('focus', EventHandlers.focus);
-                        elem.bind('blur', EventHandlers.blur);
-                        elem.bind('click', EventHandlers.click);
+                        elem.on('keydown', EventHandlers.keyDown);
+                        elem.on('keypress', EventHandlers.keyPress);
+                        elem.on('keyup', EventHandlers.keyUp);
+                        elem.on('change', EventHandlers.change);
+                        elem.on('focus', EventHandlers.focus);
+                        elem.on('blur', EventHandlers.blur);
+                        elem.on('click', EventHandlers.click);
                     },
 
                     destroy: function (elem) {
                         elem.find('option.' + pluginClass).remove();
-                        elem.unbind('keydown', EventHandlers.keyDown);
-                        elem.unbind('keypress', EventHandlers.keyPress);
-                        elem.unbind('keyup', EventHandlers.keyUp);
-                        elem.unbind('change', EventHandlers.change);
-                        elem.unbind('focus', EventHandlers.focus);
-                        elem.unbind('blur', EventHandlers.blur);
-                        elem.unbind('click', EventHandlers.click);
+                        elem.off('keydown', EventHandlers.keyDown);
+                        elem.off('keypress', EventHandlers.keyPress);
+                        elem.off('keyup', EventHandlers.keyUp);
+                        elem.off('change', EventHandlers.change);
+                        elem.off('focus', EventHandlers.focus);
+                        elem.off('blur', EventHandlers.blur);
+                        elem.off('click', EventHandlers.click);
                     }
                 };
             }());

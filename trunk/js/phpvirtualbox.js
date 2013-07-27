@@ -438,10 +438,10 @@ var vboxVMDetailsSections = {
 			var ul = $('<ul />')
 				.attr({'class':'contextMenu contextMenuNoBG','style':'display: none','id':'vboxDetailsPreviewMenu'})
 				.click(function(){$(this).hide();})
-				.bind('contextmenu', function() { return false; })
+				.on('contextmenu', function() { return false; })
 				
 				// Menu setup for "open in new window"
-				.bind('beforeshow', function(e, vmid) {
+				.on('beforeshow', function(e, vmid) {
 					
 					var d = vboxVMDataMediator.getVMData(vmid);
 					
@@ -1176,7 +1176,7 @@ var vboxVMDetailsSections = {
 	serialports : {
 		icon: 'serial_port_16px.png',
 		title: trans('Serial Ports'),
-		settingsLink: 'Ports:0',
+		settingsLink: 'SerialPorts',
 		rows: function(d) {
 			
 			var rows = [];
@@ -1226,7 +1226,7 @@ var vboxVMDetailsSections = {
 	parallelports: {
 		icon: 'parallel_port_16px.png',
 		title: trans('Parallel Ports','UIDetailsPagePrivate'),
-		settingsLink: 'Ports:1',
+		settingsLink: 'ParallelPorts',
 		condition: function() { return $('#vboxPane').data('vboxConfig').enableLPTConfig; },
 		rows: function(d) {
 			
@@ -1268,7 +1268,7 @@ var vboxVMDetailsSections = {
 	usb : {
 		icon: 'usb_16px.png',
 		title: trans('USB'),
-		settingsLink: 'Ports:2',
+		settingsLink: 'USB',
 		rows: function(d) {
 			
 			var rows = [];
@@ -2472,9 +2472,9 @@ function vboxWizard() {
 			// Opera hidden select box bug
 			// //////////////////////////////
 			if($.browser.opera) {
-				$('#'+self.name+'Content').find('select').bind('change',function(){
+				$('#'+self.name+'Content').find('select').on('change',function(){
 					$(this).data('vboxSelected',$(this).val());
-				}).bind('show',function(){
+				}).on('show',function(){
 					$(this).val($(this).data('vboxSelected'));
 				}).each(function(){
 					$(this).data('vboxSelected',$(this).val());
@@ -2491,7 +2491,7 @@ function vboxWizard() {
 					click: function() {
 						
 						// Unbind any old resize handlers
-						$('#'+self.name+'Dialog').unbind('dialogresizestop');
+						$('#'+self.name+'Dialog').off('dialogresizestop');
 						
 						// Check mode
 						if(self.mode != 'advanced') {
@@ -2636,7 +2636,7 @@ function vboxWizard() {
 				},
 				'title':(self.icon ? '<img src="images/vbox/'+self.icon+ ( (self.icon.indexOf('.png') == -1) ? '_16px.png' : '') +'" class="vboxDialogTitleIcon" /> ' : '') + self.title
 			
-			}).bind('dialogclose', function(){
+			}).on('dialogclose', function(){
 
 				// Reject if still pending
 				if(self.completed.state() == 'pending')
@@ -2644,7 +2644,7 @@ function vboxWizard() {
 
 				$(this).empty().remove();
 				
-			}).bind('keyup',function(e) {
+			}).on('keyup',function(e) {
 			    
 				if (e.keyCode == 13) {
 			    	
@@ -2920,7 +2920,7 @@ function vboxToolbar(buttons) {
 		var td = $('<td />').attr({'id':'vboxToolbarButton-' + self.id + '-' + b.name,
 			'class':'vboxToolbarButton ui-corner-all vboxEnabled vboxToolbarButton'+self.size,
 			'style':self.buttonStyle+'; min-width: '+(self.size+12)+'px;'
-		}).html('<img src="images/vbox/'+b.icon+'_'+self.size+'px.png" class="vboxToolbarImg" style="height:'+self.size+'px;width:'+self.size+'px;"/><br /><span class="vboxToolbarButtonLabel">' + String(b.toolbar_label ? b.toolbar_label : b.label).replace(/\.+$/g,'')+'</span>').bind('click',function(){
+		}).html('<img src="images/vbox/'+b.icon+'_'+self.size+'px.png" class="vboxToolbarImg" style="height:'+self.size+'px;width:'+self.size+'px;"/><br /><span class="vboxToolbarButtonLabel">' + String(b.toolbar_label ? b.toolbar_label : b.label).replace(/\.+$/g,'')+'</span>').on('click',function(){
 			if($(this).hasClass('vboxDisabled')) return;
 			$(this).data('toolbar').click($(this).data('name'));
 		// store data
@@ -2978,7 +2978,7 @@ function vboxToolbar(buttons) {
 		}
 
 		$(tbl).append(tr);
-		$('#'+id).append(tbl).addClass('vboxToolbar vboxToolbar'+this.size).bind('disable',self.disable).bind('enable',self.enable);
+		$('#'+id).append(tbl).addClass('vboxToolbar vboxToolbar'+this.size).on('disable',self.disable).on('enable',self.enable);
 		
 		// If button can be enabled / disabled, disable by default
 		for(var i = 0; i < self.buttons.length; i++) {
@@ -3180,7 +3180,7 @@ function vboxToolbarSmall(buttons) {
 				
 		}
 
-		$(targetElm).attr({'name':self.name}).addClass('vboxToolbarSmall vboxEnablerTrigger vboxToolbarSmall'+self.size).bind('disable',self.disable).bind('enable',self.enable);
+		$(targetElm).attr({'name':self.name}).addClass('vboxToolbarSmall vboxEnablerTrigger vboxToolbarSmall'+self.size).on('disable',self.disable).on('enable',self.enable);
 
 		return this;
 		
@@ -3380,7 +3380,7 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 		var tbl = $('<table />').attr({'style':'border:0px;margin:0px;padding:0px;'+self.buttonStyle});
 		$('<tr />').css({'vertical-align':'bottom'}).append(self.buttonElement()).appendTo(tbl);
 		
-		$(targetElm).attr({'name':self.name}).addClass('vboxToolbarSmall vboxButtonMenu vboxEnablerTrigger').bind('disable',self.disable).bind('enable',self.enable).append(tbl);
+		$(targetElm).attr({'name':self.name}).addClass('vboxToolbarSmall vboxButtonMenu vboxEnablerTrigger').on('disable',self.disable).on('enable',self.enable).append(tbl);
 		
 		// Generate and attach menu
 		self.mediaMenu.menuElement();

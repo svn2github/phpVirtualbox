@@ -272,12 +272,12 @@ newVMUpdateOS(document.forms['frmwizardNewVM'].newVMOSType.options[document.form
  * END OS TYPES
  */
 
-$('#wizardNewVMStep1').bind('show',function(e,wiz){
+$('#wizardNewVMStep1').on('show',function(e,wiz){
 	$(document.forms['frmwizardNewVM'].newVMName).focus();	 
 });
  
 /* When going to step2, make sure a name is entered */
-$('#wizardNewVMStep2').bind('show',function(e,wiz){
+$('#wizardNewVMStep2').on('show',function(e,wiz){
 
 	document.forms['frmwizardNewVM'].newVMName.value = jQuery.trim(document.forms['frmwizardNewVM'].newVMName.value);
 
@@ -325,7 +325,7 @@ $('#wizardNewVMStep2').bind('show',function(e,wiz){
 });
 
 /* When hard disk is enabled / disabled */
-$('#newVMHDTriggerBind').bind('enable',function(){
+$('#newVMHDTriggerBind').on('enable',function(){
 
 	// Update disabled / enabled items
 	if(document.forms['frmwizardNewVM'].newVMDisk[0].checked) {
@@ -334,7 +334,7 @@ $('#newVMHDTriggerBind').bind('enable',function(){
 		$(document.forms['frmwizardNewVM'].newVMDisk[1]).trigger('click');
 	}
 	
-}).bind('disable',function(){
+}).on('disable',function(){
 	newVMToggleNewDisk(true);
 });
 

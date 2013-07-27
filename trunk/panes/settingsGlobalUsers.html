@@ -226,7 +226,7 @@ var sButtons = new Array(
 var userToolbar = new vboxToolbarSmall(sButtons);
 userToolbar.disabledString = 'dis';
 userToolbar.renderTo('vboxSettingsGlobalUsersToolbar');
-$('#vboxSettingsUserList').bind('select', function(e,el){userToolbar.update(el);});
+$('#vboxSettingsUserList').on('select', function(e,el){userToolbar.update(el);});
 
 /*
  *
@@ -262,14 +262,14 @@ $('#vboxSettingsUserList').trigger('select',null);
  * Update Data onSave() 
  * 
  */
-$('#vboxSettingsDialog').bind('save',function(){
+$('#vboxSettingsDialog').on('save',function(){
 	return;
 });
 
 /*
  * Remove dialogs on close
  */
-$('#vboxSettingsDialog').bind('close',function(){
+$('#vboxSettingsDialog').on('close',function(){
 	return;
 });
  

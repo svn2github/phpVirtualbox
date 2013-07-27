@@ -69,7 +69,7 @@
 <script type='text/javascript'>
 
 // On keypress, mark this as changed
-$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).bind('keyup',function(){
+$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).on('keyup',function(){
 	$(this).data('vboxChanged', true);
 });
 
@@ -126,7 +126,7 @@ function wizardExportApplianceStepResizeList() {
 	
 }
 
-$('#wizardExportApplianceStep1').bind('show',function(e,wiz){
+$('#wizardExportApplianceStep1').on('show',function(e,wiz){
 	
 	wizardExportApplianceStepResizeList();
 
@@ -135,7 +135,7 @@ $('#wizardExportApplianceStep1').bind('show',function(e,wiz){
 
 });
 
-$('#wizardExportApplianceDialog').bind('dialogresizestop',wizardExportApplianceStepResizeList);
+$('#wizardExportApplianceDialog').on('dialogresizestop',wizardExportApplianceStepResizeList);
 
 /*
  * 
@@ -180,7 +180,7 @@ function wizardExportApplianceBrowseLocation() {
 }
 
 /* Skip step 2 */
-$('#wizardExportApplianceStep2').bind('show',function(e,wiz){
+$('#wizardExportApplianceStep2').on('show',function(e,wiz){
 	if($('#wizardExportApplianceStep2').data('fromStep') == 3)
 		wiz.displayStep(1);
 	else
@@ -188,7 +188,7 @@ $('#wizardExportApplianceStep2').bind('show',function(e,wiz){
 });
 
 /* When going to step3, determine default OVF name */
-$('#wizardExportApplianceStep3').bind('show',function(e,wiz){
+$('#wizardExportApplianceStep3').on('show',function(e,wiz){
 
 	// Keep track of where we were
 	$('#wizardExportApplianceStep2').data('fromStep',3);
@@ -218,7 +218,7 @@ $('#wizardExportApplianceStep3').bind('show',function(e,wiz){
 	$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val(name);
 });
 
-$('#wizardExportApplianceStep4').bind('show',function(e,wiz){
+$('#wizardExportApplianceStep4').on('show',function(e,wiz){
 
 	var vms = $('#vboxExportAppVMList').children('li');
 	

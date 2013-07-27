@@ -209,7 +209,7 @@ var sButtons = new Array(
 var netToolbar = new vboxToolbarSmall(sButtons);
 netToolbar.renderTo('vboxSettingsGlobalNetToolbar');
 
-$('#vboxSettingsGlobalNetList').bind('select',function(e,i){
+$('#vboxSettingsGlobalNetList').on('select',function(e,i){
 	netToolbar.update(i);
 	if(i) {
 		$('#vboxSettingsGlobalNetAdapterLabel').html($(i).data('interface').DHCPEnabled ? trans('Automatically configured','UIGlobalSettingsNetwork') : trans('Manually configured','UIGlobalSettingsNetwork'));
@@ -347,7 +347,7 @@ function vboxSettingsGlobalNetEditDialog() {
  * Update Data onSave() 
  * 
  */
-$('#vboxSettingsDialog').bind('save',function(){
+$('#vboxSettingsDialog').on('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces = new Array();
 
@@ -359,7 +359,7 @@ $('#vboxSettingsDialog').bind('save',function(){
 /*
  * Remove dialogs on close
  */
-$('#vboxSettingsDialog').bind('close',function(){
+$('#vboxSettingsDialog').on('close',function(){
 	$('#vboxSettingsGlobalNetEditDialog').remove();
 });
  

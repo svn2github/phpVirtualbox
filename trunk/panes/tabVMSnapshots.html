@@ -468,7 +468,7 @@ vboxSnapshotContextMenuCurrent.addMenu([vboxSnapshotButtons[0],vboxSnapshotButto
 
 
 /* Toolbar and menu updates*/
-$('#vboxSnapshotList').bind('select',function(e,item) {
+$('#vboxSnapshotList').on('select',function(e,item) {
 	
 	// Update toolbar
 	vboxSnapshotToolbar.update(item);
@@ -490,7 +490,7 @@ vboxSnapshotToolbar._timeSpans.sort(function(a,b){return (a > b ? -1 : 1);});
 
 
 /* Selected VM changed */
-$('#vboxPane').bind('vmSelectionListChanged',function(){
+$('#vboxPane').on('vmSelectionListChanged',function(){
 	
 	$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop'));
 
@@ -539,7 +539,7 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
  * VBOX event list triggered
  *
  */
-}).bind('vboxEvents',function(e,eventList) {
+}).on('vboxEvents',function(e,eventList) {
 	
 	var redrawCurrent = false;
 	
@@ -619,7 +619,7 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 });
 
 // Load snapshots on show
-$('#vboxTabVMSnapshots').bind('show',function(e){
+$('#vboxTabVMSnapshots').on('show',function(e){
 
 	$('#vboxTabVMSnapshots').data('vboxShowing', 1);
 	
@@ -642,7 +642,7 @@ $('#vboxTabVMSnapshots').bind('show',function(e){
 	$.when(vboxAjaxRequest('machineGetSnapshots',{'vm':vm.id})).done(__vboxTabSnapshotsFill);
 
 	
-}).bind('hide',function(e) {
+}).on('hide',function(e) {
 	$('#vboxTabVMSnapshots').data('vboxShowing', 0);
 });
 

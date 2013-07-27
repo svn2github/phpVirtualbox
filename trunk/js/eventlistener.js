@@ -229,7 +229,7 @@ var vboxEventListener = {
 
 // Stop event listener on window unload
 $(document).ready(function() {
-	$(window).bind('unload',function() {
+	$(window).on('unload',function() {
 		vboxEventListener.stop();
 	});	
 });

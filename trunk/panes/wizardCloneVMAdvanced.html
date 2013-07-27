@@ -56,7 +56,7 @@
 
 <script type='text/javascript'>
 
-$('#wizardCloneVMStep1').bind('show',function(e,wiz){
+$('#wizardCloneVMStep1').on('show',function(e,wiz){
 
 	// Already initialized?
 	if($('#wizardCloneVMStep1').data('init') || !wiz.args) return;

@@ -89,9 +89,9 @@ tabLoader.onLoad = function(){
 	});
 	
 	// Watch for tabs asking to be enabled / disabled
-	$('#tabMainContent').bind('enableTab',function(e,tabName) {
+	$('#tabMainContent').on('enableTab',function(e,tabName) {
 		tabsMain.enableTab(tabsMain.getTabByName(tabName));
-	}).bind('disableTab',function(e,tabName) {
+	}).on('disableTab',function(e,tabName) {
 		tabsMain.disableTab(tabsMain.getTabByName(tabName));
 	});
 

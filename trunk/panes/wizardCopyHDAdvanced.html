@@ -170,7 +170,7 @@ function wizardCopyHDUpdateName(sel) {
 }
 
  /* Suggested Data exists */
-$('#wizardCopyHDStep1').bind('show',function(e,wiz){
+$('#wizardCopyHDStep1').on('show',function(e,wiz){
 
 	// Already initialized?
 	if($('#wizardCopyHDStep1').data('init')) return;

@@ -75,7 +75,7 @@ $("#vboxRDPStatus").html(trans("Loading ...",'UIVMDesktop'));
 if(vboxConsoleDetached) window.status = $("#vboxRDPStatus").text();
 
 // Disable / enable tab on selection list changes
-$('#vboxPane').bind('vmSelectionListChanged', function(){
+$('#vboxPane').on('vmSelectionListChanged', function(){
 
 	var vm = vboxChooser.getSingleSelected();
 	
@@ -107,7 +107,7 @@ $('#vboxPane').bind('vmSelectionListChanged', function(){
 	
 
 // Update on console info change
-}).bind('vboxOnVRDEServerInfoChanged',function(e,eventData) {
+}).on('vboxOnVRDEServerInfoChanged',function(e,eventData) {
 	
 	// Shorthand
 	var vmid = eventData.machineId;
@@ -141,7 +141,7 @@ $('#vboxPane').bind('vmSelectionListChanged', function(){
 	}
 
 // Update tab on machine state change
-}).bind('vboxOnMachineStateChanged', function(e, eventData){
+}).on('vboxOnMachineStateChanged', function(e, eventData){
 
 	var selVMId = vboxChooser.getSingleSelectedId();	    		
 	var enabled = (selVMId == eventData.machineId && vboxVMStates.isRunning({'state':eventData.state}));
@@ -168,7 +168,7 @@ $('#vboxPane').bind('vmSelectionListChanged', function(){
 	}
 
 // Clean up local data storage when a machine is unregistered
-}).bind('vboxMachineRegistered', function(e, eventData) {
+}).on('vboxMachineRegistered', function(e, eventData) {
 
 	if(!eventData.registered) {
 		vboxSetLocalDataItem('vbox'+eventData.machineId+'ConsoleSize','',true);
@@ -180,7 +180,7 @@ $('#vboxPane').bind('vmSelectionListChanged', function(){
  * Populate console info values when this tab is shown
  */
 
-$('#vboxTabVMConsole').bind('show',function(){
+$('#vboxTabVMConsole').on('show',function(){
 
 	var vm = vboxChooser.getSingleSelected();
 	
@@ -311,7 +311,7 @@ function RDPWebEventLoaded(flashid) {
 	    $('#vboxRDPFormContainer').find(".vboxRDPSet").each(function(){
 		    $(this).val(window.opener.document.forms['vboxRDPForm'][$(this).attr('name')].value);
 	    });
-	    $(window).bind('resize',function(){
+	    $(window).on('resize',function(){
 	    	var flash = RDPWebClient.getFlashById("FlashRDP");
     		var wh = [ $(window).width()-2, $(window).height()-2 ];
 	    	$(flash).css({'height':wh[1]+'px','width':wh[0]+'px'});

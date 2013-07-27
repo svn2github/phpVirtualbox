@@ -718,7 +718,7 @@ function vboxVMMMediaInfo(med) {
 }
 
 // Update items on mediumselect
-$('#vboxVirtualMediaManager').bind('mediumselect',function(e,m){
+$('#vboxVirtualMediaManager').on('mediumselect',function(e,m){
 	vmmToolbar.update(m);
 	vboxVMMMediaInfo(m);
 	vmmMenu.update(m);
@@ -819,7 +819,7 @@ function vboxVMMAddMedium(d,depth,hideDiff,topLevelParent) {
 	$('<td />').addClass('vboxHoverLast').append($('<div />').html(vboxBytesConvert(d.size))).appendTo(tr);
 
 	/* Show / hide children of this medium */
-	$(tr).bind('showChildren',function(e,first){
+	$(tr).on('showChildren',function(e,first){
 
 		var thisid = $(this).data('medium');
 		var trTarget = this;
@@ -831,7 +831,7 @@ function vboxVMMAddMedium(d,depth,hideDiff,topLevelParent) {
 		// Only set by original button click
 		if(first) { vboxColorRows($('#vboxVMMHDList')); vboxVMMTableHeaderSetup($('#vmmDisks')); }
 		
-	}).bind('hideChildren',function(e,first){
+	}).on('hideChildren',function(e,first){
 
 		if(!$(this).hasClass('vboxVMMParent')) return;
 	
@@ -1028,12 +1028,12 @@ function vboxVMMInit(hideDiff,vmPath) {
 
 	// SEVERE hack-fooery ensues..
 	/////////////////////////////////
-	$('#vboxVirtualMediaManager').parent().bind( "dialogresizestart",function(e){
+	$('#vboxVirtualMediaManager').parent().on( "dialogresizestart",function(e){
 				
 		$('#vboxVMMTabs').css({'height':'auto'});
 		$('#vboxVMMContainer').css({'height':'auto'});
 		
-	}).bind("dialogresizestop",function(e){
+	}).on("dialogresizestop",function(e){
 
 		$('#vmmDisks .vmmTableBody').css({'display':'none'});
 		$('#vmmCDs .vmmTableBody').css({'display':'none'});

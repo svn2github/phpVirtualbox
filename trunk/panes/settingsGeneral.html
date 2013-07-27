@@ -235,7 +235,7 @@ document.getElementById('vboxSettingsGeneralOSType').setAttribute('onChange','do
 
 
 /* Update settings when data is loaded */
-$('#vboxSettingsDialog').bind('dataLoaded', function(){
+$('#vboxSettingsDialog').on('dataLoaded', function(){
 	
 	/* Defaults from machine */
 	document.forms['frmVboxSettings'].vboxSettingsGeneralName.value = $('#vboxSettingsDialog').data('vboxMachineData').name;
@@ -311,7 +311,7 @@ $('#vboxSettingsDialog').bind('dataLoaded', function(){
 });
 
 /* Change general settings onSave() */
-$('#vboxSettingsDialog').bind('save',function(){
+$('#vboxSettingsDialog').on('save',function(){
 
 	// Start / stop config
 	if($('#vboxPane').data('vboxConfig').startStopConfig) {

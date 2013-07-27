@@ -273,7 +273,7 @@ b.src = "images/vbox/list_moveup_16px.png";
 
 
 /* Update values when data is loaded */
-$('#vboxSettingsDialog').bind('dataLoaded',function(){
+$('#vboxSettingsDialog').on('dataLoaded',function(){
 	
 	/* System Default values from VM*/
 	$('#vboxSettingsSystemMemory').slider('value', parseInt($('#vboxSettingsDialog').data('vboxMachineData').memorySize));
@@ -404,7 +404,7 @@ $('#vboxSettingsDialog').one('show',function(){
 
 
 /* Change general settings onSave() */
-$('#vboxSettingsDialog').bind('save',function(){
+$('#vboxSettingsDialog').on('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxMachineData').memorySize = parseInt(document.forms['frmVboxSettings'].vboxSettingsSystemMemoryValue.value);
 	$('#vboxSettingsDialog').data('vboxMachineData').BIOSSettings.IOAPICEnabled = (document.forms['frmVboxSettings'].vboxSettingsSystemIOAPIC.checked ? 1 : 0);

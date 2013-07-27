@@ -70,7 +70,7 @@
 
 <script type='text/javascript'>
 
-$('#wizardCloneVMStep1').bind('show',function(e,wiz){
+$('#wizardCloneVMStep1').on('show',function(e,wiz){
 
 	// Already initialized?
 	if($('#wizardCloneVMStep1').data('init') || !wiz.args) return;
@@ -100,7 +100,7 @@ $('#wizardCloneVMStep1').bind('show',function(e,wiz){
 });
 
 /* When going to step2, make sure a name is entered */
-$('#wizardCloneVMStep2').bind('show',function(e,wiz){
+$('#wizardCloneVMStep2').on('show',function(e,wiz){
 
 	document.forms['frmwizardCloneVM'].elements.machineCloneName.value = jQuery.trim(document.forms['frmwizardCloneVM'].elements.machineCloneName.value);
 

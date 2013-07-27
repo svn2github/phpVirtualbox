@@ -96,7 +96,7 @@ var vboxApplianceImportProps = {
 			});
 			
 		},'display':function(val){
-			return $('<span />').append('<img class="vboxApplianceOSIcon" src="images/vbox/'+vboxGuestOSTypeIcon(val)+'" style="height: 16px; width: 16px; float: left; margin-top: 2px; margin-right: 4px; " /> <span class="vboxApplianceOSTitle">' + vboxSettingsOSTypesObj[val].description +'</span>').disableSelection().bind('selectstart',function(e){e.preventDefault();return false;});
+			return $('<span />').append('<img class="vboxApplianceOSIcon" src="images/vbox/'+vboxGuestOSTypeIcon(val)+'" style="height: 16px; width: 16px; float: left; margin-top: 2px; margin-right: 4px; " /> <span class="vboxApplianceOSTitle">' + vboxSettingsOSTypesObj[val].description +'</span>').disableSelection().on('selectstart',function(e){e.preventDefault();return false;});
 		}},
 		'CPU' : {'label':'CPU','icon':'cpu','edit':'text','postEdit':function(val,old){
 			val = parseInt(val);
@@ -226,7 +226,7 @@ function wizardImportApplianceBrowseLocation() {
 /* When going to step2, make sure a file is selected and
  * appliance file was parsed
  */
-$('#wizardImportApplianceStep2').bind('show',function(e,wiz){
+$('#wizardImportApplianceStep2').on('show',function(e,wiz){
 
 	if(!$(document.forms['frmwizardImportAppliance'].elements.wizardImportApplianceLocation).val()) {
 		$(document.forms['frmwizardImportAppliance'].elements.wizardImportApplianceLocation).addClass('vboxRequired');
@@ -263,7 +263,7 @@ function wizardImportAppResize(){
 	$('#vboxImportPropsContainer').width($('#vboxImportPropsContainer').parent().innerWidth()).height(h-4).show();
 	
 }
-$('#wizardImportApplianceDialog').bind('dialogresizestop',wizardImportAppResize);
+$('#wizardImportApplianceDialog').on('dialogresizestop',wizardImportAppResize);
 
 /* After appliance file is parsed */
 function wizardImportApplianceParsed(d) {

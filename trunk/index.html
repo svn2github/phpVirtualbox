@@ -220,7 +220,7 @@
 			/*
 			 * Refresh data when host changes
 			 */
-			$('#vboxPane').bind('hostChange',function(){
+			$('#vboxPane').on('hostChange',function(){
 				
 				var l = new vboxLoader();
 				l.add('getConfig',function(d){$('#vboxPane').data('vboxConfig',d.responseData);$('#vboxPane').trigger('configLoaded');});
@@ -244,7 +244,7 @@
 			/*
 			 * Load panes all and data after valid login
 			 */
-			$('#vboxPane').bind('login', function() {
+			$('#vboxPane').on('login', function() {
 				
 				var l = new vboxLoader();
 				

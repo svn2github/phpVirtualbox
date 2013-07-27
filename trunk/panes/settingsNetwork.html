@@ -203,7 +203,7 @@ for(var i = 0; i < parseInt($('#vboxPane').data('vboxConfig').nicMax); i++) {
 
 	/* tab content */
 	var newTab = $("#vboxSettingsTabNetAdapter").clone(true);
-	newTab.attr({'id':vboxSettingsNetTemplate.id + (i + 1)}).css({'display':'block'}).find('.vboxEnablerTrigger').bind('enable',function(){
+	newTab.attr({'id':vboxSettingsNetTemplate.id + (i + 1)}).css({'display':'block'}).find('.vboxEnablerTrigger').on('enable',function(){
 		$(this).children('select').first().trigger('change');
 	});
 	newTab.appendTo(vboxSettingsNetContainer);
@@ -323,7 +323,7 @@ function vboxSettingsUpdateNetworkOptions(sel) {
 }
 
 /* Change settings onShow() when VM is running */
-$('#vboxSettingsDialog').bind('dataLoaded',function(){
+$('#vboxSettingsDialog').on('dataLoaded',function(){
 	
 	
 	/* Net values */
@@ -459,7 +459,7 @@ $('#vboxSettingsDialog').bind('dataLoaded',function(){
 	}
 	
 /* Change settings onSave() */
-}).bind('save',function(){
+}).on('save',function(){
 
 	/* Net */
 	for(var i = 0; i < parseInt($('#vboxPane').data('vboxConfig').nicMax); i++) {

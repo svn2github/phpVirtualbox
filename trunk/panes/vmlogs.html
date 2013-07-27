@@ -77,7 +77,7 @@ function vboxShowLogsInit(vm) {
 	$('#vboxVMLogTabs').css({'padding':'0px 2px 2px 2px','margin':'0px','display':''}).height($('#vboxVMLogTabsContainer').css({'padding':'0px','margin':'0px'}).innerHeight()-6);
 	
 	// Resize dialog resizes these elemtns
-	$('#vboxVMLogContainer').parent().bind("dialogresizestop",function(e){
+	$('#vboxVMLogContainer').parent().on("dialogresizestop",function(e){
 
 		// Set height
 		$('#vboxVMLogTabs').css({'display':'none'});

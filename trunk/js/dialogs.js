@@ -317,9 +317,9 @@ function vboxPortForwardConfigDialog(rules) {
 			$(this).trigger('close').empty().remove();
 		};
 		
-		$('#vboxSettingsPortForwarding').dialog({'closeOnEscape':true,'width':600,'height':400,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/nw_16px.png" class="vboxDialogTitleIcon" /> ' + trans('Port Forwarding Rules','UIMachineSettingsPortForwardingDlg')}).bind("dialogbeforeclose",function(){
+		$('#vboxSettingsPortForwarding').dialog({'closeOnEscape':true,'width':600,'height':400,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/nw_16px.png" class="vboxDialogTitleIcon" /> ' + trans('Port Forwarding Rules','UIMachineSettingsPortForwardingDlg')}).on("dialogbeforeclose",function(){
 	    	$(this).parent().find('span:contains("'+trans('Cancel','QIMessageBox')+'")').trigger('click');
-	    }).bind('dialogresizestop',resizeTable);
+	    }).on('dialogresizestop',resizeTable);
 		
 		resizeTable();
 	};
@@ -628,7 +628,7 @@ function vboxShowLogsDialogInit(vm) {
 			l.run();
 		};
 		buttons[trans('Close','UIVMLogViewer')] = function(){$(this).trigger('close').empty().remove();};
-		$('#vboxVMLogsDialog').dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_logs_16px.png" class="vboxDialogTitleIcon" /> '+ trans('%1 - VirtualBox Log Viewer','UIVMLogViewer').replace('%1',vm.name)}).bind("dialogbeforeclose",function(){
+		$('#vboxVMLogsDialog').dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_logs_16px.png" class="vboxDialogTitleIcon" /> '+ trans('%1 - VirtualBox Log Viewer','UIVMLogViewer').replace('%1',vm.name)}).on("dialogbeforeclose",function(){
 	    	$(this).parent().find('span:contains("'+trans('Close','UIVMLogViewer')+'")').trigger('click');
 	    });
 		vboxShowLogsInit(vm);
@@ -683,7 +683,7 @@ function vboxVMMDialog(select,type,hideDiff,mPath) {
 			results.reject();
 		};
 
-		$("#vboxVMMDialog").dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent vboxVMMDialog','title':'<img src="images/vbox/diskimage_16px.png" class="vboxDialogTitleIcon" /> '+trans('Virtual Media Manager','VBoxMediaManagerDlg')}).bind("dialogbeforeclose",function(){
+		$("#vboxVMMDialog").dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent vboxVMMDialog','title':'<img src="images/vbox/diskimage_16px.png" class="vboxDialogTitleIcon" /> '+trans('Virtual Media Manager','VBoxMediaManagerDlg')}).on("dialogbeforeclose",function(){
 	    	$(this).parent().find('span:contains("'+trans('Close','VBoxMediaManagerDlg')+'")').trigger('click');
 	    });
 		
@@ -993,7 +993,7 @@ function vboxGuestNetworkAdaptersDialogInit(vm) {
 		
 		var buttons = {};
 		buttons[trans('Close','UIVMLogViewer')] = function() {$('#vboxGuestNetworkDialog').trigger('close').empty().remove();};
-		$('#vboxGuestNetworkDialog').dialog({'closeOnEscape':true,'width':500,'height':250,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/nw_16px.png" class="vboxDialogTitleIcon" /> ' + trans('Guest Network Adapters','VBoxGlobal')}).bind("dialogbeforeclose",function(){
+		$('#vboxGuestNetworkDialog').dialog({'closeOnEscape':true,'width':500,'height':250,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/nw_16px.png" class="vboxDialogTitleIcon" /> ' + trans('Guest Network Adapters','VBoxGlobal')}).on("dialogbeforeclose",function(){
 	    	$(this).parent().find('span:contains("'+trans('Close','UIVMLogViewer')+'")').trigger('click');
 	    });
 		
@@ -1171,7 +1171,7 @@ function vboxVMsettingsDialog(vm,pane) {
 	}
 	
 	// Watch for changed VM settings
-	$('#vboxPane').bind('vboxEvents',machineSettingsChanged);
+	$('#vboxPane').on('vboxEvents',machineSettingsChanged);
 	
 	$.when(vboxVMDataMediator.getVMDataCombined(vm.id)).then(function(vmData) {
 		
@@ -1208,7 +1208,9 @@ function vboxVMsettingsDialog(vm,pane) {
 			{'name':'Storage','label':'Storage','icon':'attachment','context':'UIMachineSettingsStorage'},
 			{'name':'Audio','label':'Audio','icon':'sound','context':'UIMachineSettingsAudio'},
 			{'name':'Network','label':'Network','icon':'nw','tabbed':true,'context':'UIMachineSettingsNetwork'},
-			{'name':'Ports','label':'Ports','icon':'serial_port','tabbed':true},
+			{'name':'SerialPorts','label':'Serial Ports','icon':'serial_port','tabbed':true,'context':'UIMachineSettingsSerial'},
+			{'name':'ParallelPorts','label':'Parallel Ports','icon':'parallel_port','tabbed':true,'disabled':(!$('#vboxPane').data('vboxConfig').enableLPTConfig),'context':'UIMachineSettingsParallel'},
+			{'name':'USB','label':'USB','icon':'usb','context':'UIMachineSettingsUSB'},
 			{'name':'SharedFolders','label':'Shared Folders','icon':'shared_folder','context':'UIMachineSettingsSF'}
 
 		);
@@ -1438,9 +1440,9 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 		// Opera hidden select box bug
 		////////////////////////////////
 		if($.browser.opera) {
-			$('#vboxSettingsPane').find('select').bind('change',function(){
+			$('#vboxSettingsPane').find('select').on('change',function(){
 				$(this).data('vboxSelected',$(this).val());
-			}).bind('show',function(){
+			}).on('show',function(){
 				$(this).val($(this).data('vboxSelected'));
 			}).each(function(){
 				$(this).data('vboxSelected',$(this).val());
@@ -1472,7 +1474,7 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 		$('#vboxSettingsDialog').data('formDataChanged', false);
 		
 		// Show dialog
-	    $('#vboxSettingsDialog').dialog({'closeOnEscape':true,'width':(panes.length > 1 ? 900 : 600),'height':(panes.length > 1 ? 500 : 450),'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxSettingsDialog vboxDialogContent','title':(icon ? '<img src="images/vbox/'+icon+'_16px.png" class="vboxDialogTitleIcon" /> ' : '') + title}).bind("dialogbeforeclose",function(){
+	    $('#vboxSettingsDialog').dialog({'closeOnEscape':true,'width':(panes.length > 1 ? 900 : 600),'height':(panes.length > 1 ? 500 : 450),'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxSettingsDialog vboxDialogContent','title':(icon ? '<img src="images/vbox/'+icon+'_16px.png" class="vboxDialogTitleIcon" /> ' : '') + title}).on("dialogbeforeclose",function(){
 	    	$(this).parent().find('span:contains("'+trans('Cancel','QIMessageBox')+'")').trigger('click');
 	    });
 
@@ -1480,7 +1482,7 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 	    $('#vboxSettingsList').height($('#vboxSettingsList').parent().innerHeight()-8).css({'overflow':'auto','padding':'0px','margin-top':'8px','border':'0px','border-spacing':'0px'});
 	    
 	    // Resizing dialog, resizes this too
-	    $('#vboxSettingsDialog').bind('dialogresizestop',function(){
+	    $('#vboxSettingsDialog').on('dialogresizestop',function(){
 	    	var h = $('#vboxSettingsList').css({'display':'none'}).parent().innerHeight();
 	    	$('#vboxSettingsList').height(h-8).css({'display':''});	    	
 	    });

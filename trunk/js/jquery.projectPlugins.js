@@ -36,7 +36,7 @@ $.fn.extend({
 	},
 
 	enableSelection: function() {
-		return this.unbind( ".ui-disableSelection" );
+		return this.off( ".ui-disableSelection" );
 	}
 });
 
@@ -352,7 +352,7 @@ if ( !jQuery.browser ) {
 				$(sel).data('origId', $(this).attr('id'));
 				$(sel).attr('id',$(this).attr('id')+'-mediumselect');
 				$(sel).attr('class','vboxMediumSelect');
-				$(sel).bind('click',function(){
+				$(sel).on('click',function(){
 					if($('#'+$(this).data('origId')+'-table').hasClass('vboxDisabled')) return;
 					return showList(this);
 				});
@@ -383,9 +383,9 @@ if ( !jQuery.browser ) {
 				$(tbl).append(tr);
 				
 				// Handle enabled / disabled
-				$(tbl).bind('enable',function(){
+				$(tbl).on('enable',function(){
 					$(this).removeClass('vboxDisabled');
-				}).bind('disable',function(){
+				}).on('disable',function(){
 					$(this).addClass('vboxDisabled');
 				});
 				
@@ -508,7 +508,7 @@ if(jQuery) (function($){
 				}
 				
 				function bindTree(t) {
-					$(t).find('LI A').bind('dblclick', function(e) {
+					$(t).find('LI A').on('dblclick', function(e) {
 						e.preventDefault();
 						if( $(this).parent().hasClass('directory') ) {
 							if( $(this).parent().hasClass('collapsed') ) {
@@ -530,7 +530,7 @@ if(jQuery) (function($){
 						}
 						return false;
 						
-					}).bind('click', function() {
+					}).on('click', function() {
 						$(top).find('.vboxListItemSelected').removeClass('vboxListItemSelected');
 						$(this).addClass('vboxListItemSelected');
 						return false;
@@ -608,7 +608,7 @@ if(jQuery)( function() {
 						e.stopPropagation();
 						
 						var srcElement = $(this);
-						$(this).unbind('mouseup');
+						$(this).off('mouseup');
 						
 						
 						if( evt.button == o.button || (o.button == 0 && evt.button == 1 && $.browser.msie)) {
@@ -637,7 +637,7 @@ if(jQuery)( function() {
 				var menuItems = function(menu, srcElement, level) {
 					
 					// When items are selected
-					$(menu).addClass('contextMenu').data({'level':level}).disableSelection().children('li').unbind('mouseup').bind('mouseup', function(e) {
+					$(menu).addClass('contextMenu').data({'level':level}).disableSelection().children('li').off('mouseup').on('mouseup', function(e) {
 						
 						if($(this).hasClass('disabled')) {
 							return;							
@@ -674,7 +674,7 @@ if(jQuery)( function() {
 						
 						$(menu).find('LI.vboxHover').removeClass('vboxHover');
 						
-					}).children('a').unbind('click').bind('click',function(e){
+					}).children('a').off('click').on('click',function(e){
 						e.preventDefault();
 						return false;
 					});
@@ -695,7 +695,7 @@ if(jQuery)( function() {
 						
 						// Hide menus trigger
 						var smenu = this;
-						$('#vboxPane').bind('contextMenuShowLevel',function(e,c){
+						$('#vboxPane').on('contextMenuShowLevel',function(e,c){
 							if($(smenu).data('level') >= c.level && $(smenu).attr('id') != c.id)
 								$(smenu).hide();
 						});
@@ -796,7 +796,7 @@ if(jQuery)( function() {
 						if(m) {
 							$(m).addClass('contextSubMenu contextMenuLevel' + ($(menu).data('level')+1)).data('level',($(menu).data('level')+1));
 							// Hide menus trigger
-							$('#vboxPane').bind('contextMenuShowLevel',function(e,c){
+							$('#vboxPane').on('contextMenuShowLevel',function(e,c){
 								if($(m).data('level') >= c.level && $(m).attr('id') != c.id) $(m).hide();
 							});
 					
@@ -821,7 +821,7 @@ if(jQuery)( function() {
 				
 				
 				// Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
-				$(el).add($('UL.contextMenu')).bind('contextmenu', function() { return false; });
+				$(el).add($('UL.contextMenu')).on('contextmenu', function() { return false; });
 				
 			});
 			return $(this);
@@ -886,7 +886,7 @@ if(jQuery)( function() {
 			// Destroy specified context menus
 			$(this).each( function() {
 				// Disable action
-				$(this).unbind('mousedown').unbind('mouseup');
+				$(this).off('mousedown').off('mouseup');
 			});
 			return( $(this) );
 		}

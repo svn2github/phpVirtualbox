@@ -529,7 +529,7 @@ var vboxChooser = {
 	vmHTML : function (vmn) {
 		
 		var tbl = $('<table />').attr({'class':'vboxChooserItem-'+vboxChooser._anchorid+'-'+vmn.id + " vboxChooserVM"})
-			.bind('mousedown',vboxChooser.selectItem)
+			.on('mousedown',vboxChooser.selectItem)
 			.hover(function(){
 				$(this).addClass('vboxHover');
 				},function(){$(this).removeClass('vboxHover');
@@ -1545,9 +1545,9 @@ var vboxChooser = {
 		$(el).children('div.vboxChooserGroupHeader').append(
 			
 			$('<form />').append(
-				$('<input />').attr({'type':'text','value':$(el).children('div.vboxChooserGroupIdentifier').attr('title')}).css({'width':'90%','padding':'0px','margin':'0px'}).bind('keypress',function(e){
+				$('<input />').attr({'type':'text','value':$(el).children('div.vboxChooserGroupIdentifier').attr('title')}).css({'width':'90%','padding':'0px','margin':'0px'}).on('keypress',function(e){
 					if (e.which == 13) {
-						$(this).unbind('blur', renameGroup);
+						$(this).off('blur', renameGroup);
 						renameGroup(e,this);
 						e.stopPropagation();
 						e.preventDefault();
@@ -2074,7 +2074,7 @@ var vboxChooser = {
 					if(!$(this).parent().hasClass('vboxChooserGroupRoot'))
 						$(this).children('span.vboxChooserGroupName').css({'max-width':''});
 					
-				}).bind('mousedown',vboxChooser.selectItem)				
+				}).on('mousedown',vboxChooser.selectItem)				
 
 			).addClass((first ? 'vboxChooserGroupRoot vboxChooserGroupRootLevel ' : (collapsed ? 'vboxVMGroupCollapsed ' : '')) + 'vboxChooserGroup')
 			.data({'vmGroupPath':gpath})
@@ -2213,34 +2213,26 @@ $(document).ready(function(){
 	vboxChooser._scrollbarWidth = getScrollbarWidth();
 	
 	// "Stop" chooser
-	$('#vboxPane').bind('hostChange',function(){
+	$('#vboxPane').on('hostChange',function(){
 	
 		vboxChooser.stop();
 		
-	}).bind('hostChanged',function(){
+	}).on('hostChanged',function(){
 	
 	
 		vboxChooser.start();
 		
-	// Editability is disabled while groups are being saved
-	}).bind('vmGroupDefsSaving', function() {
+	// Refresh menus
+	}).on('vmGroupDefsSaving vmGroupDefsSaved vmSelectionListChanged', function() {
 		
 		if(vboxChooser._vmGroupContextMenuObj)
 			vboxChooser._vmGroupContextMenuObj.update(vboxChooser);		
 		if(vboxChooser._vmContextMenuObj)
 			vboxChooser._vmContextMenuObj.update(vboxChooser);
 
-	
-	}).bind('vmGroupDefsSaved', function () {		
-
-		if(vboxChooser._vmGroupContextMenuObj)
-			vboxChooser._vmGroupContextMenuObj.update(vboxChooser);		
-		if(vboxChooser._vmContextMenuObj)
-			vboxChooser._vmContextMenuObj.update(vboxChooser);
-
-		
+			
 	// Event list queue
-	}).bind('vboxEvents',function(e, eventList) {
+	}).on('vboxEvents',function(e, eventList) {
 
 		var redrawVMs = [];
 		var sortGroups = [];
@@ -2499,19 +2491,7 @@ $(document).ready(function(){
 
 		
 
-	// Update menus on selection list change
-	}).bind('vmSelectionListChanged',function(){
-		
-		if(vboxChooser._vmGroupContextMenuObj)
-			vboxChooser._vmGroupContextMenuObj.update(vboxChooser);
-	
-		
-		if(vboxChooser._vmContextMenuObj)
-			vboxChooser._vmContextMenuObj.update(vboxChooser);
-		
-	
 	});
-	
 	
 	
 

@@ -255,7 +255,7 @@ newVMUpdateOS(document.forms['frmwizardNewVM'].newVMOSType.options[document.form
  */
 
 /* When hard disk is enabled / disabled */
-$('#newVMHDTriggerBind').bind('enable',function(){
+$('#newVMHDTriggerBind').on('enable',function(){
 
 	// Update disabled / enabled items
 	if(document.forms['frmwizardNewVM'].newVMDisk[0].checked) {
@@ -264,11 +264,11 @@ $('#newVMHDTriggerBind').bind('enable',function(){
 		$(document.forms['frmwizardNewVM'].newVMDisk[1]).trigger('click');
 	}
 	
-}).bind('disable',function(){
+}).on('disable',function(){
 	newVMToggleNewDisk(true);
 }).trigger('disable');
 
-$('#wizardNewVMStep1').bind('show',function() {
+$('#wizardNewVMStep1').on('show',function() {
 	$(document.forms['frmwizardNewVM'].newVMName).focus();
 });
 

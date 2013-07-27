@@ -209,7 +209,7 @@ function vboxChooserToolbarStorageUpdate(menu) {
 
 // Update host drives and recent media on host change.
 // Just recreate the menus
-$('#vboxPane').bind('hostChanged',function(){
+$('#vboxPane').on('hostChanged',function(){
 	vboxToolbarMediaMenuDVD = new vboxMediaMenu('DVD',vboxChooserToolbarMediumMount,''); 
 	vboxToolbarMediaMenuFD = new vboxMediaMenu('Floppy',vboxChooserToolbarMediumMount,'');	
 });
@@ -250,7 +250,7 @@ function vboxChooserToolbarUSBUpdate(menu) {
 			dname += ' [' + hostUSB[i].revision + ']';
 			var capt = (hostUSB[i].state == 'Captured' && guestUSB[hostUSB[i].id]);
 			var avail = (capt || (hostUSB[i].state != 'NotSupported' && hostUSB[i].state != 'Unavailable' && hostUSB[i].state != 'Captured'));
-			var cbox = $('<input />').attr({'type':'checkbox','class':'vboxCheckbox'}).prop({'checked':(capt ? true : false),'disabled':(avail ? false : true)}).bind('click',function(e){
+			var cbox = $('<input />').attr({'type':'checkbox','class':'vboxCheckbox'}).prop({'checked':(capt ? true : false),'disabled':(avail ? false : true)}).on('click',function(e){
 				e.stopPropagation();
 				if($(this).prop('disabled')) return;
 				
@@ -422,7 +422,7 @@ function vboxUpdateSettingsMenu(vm) {
  */
 
 // Selection list changed
-$('#vboxPane').bind('vmSelectionListChanged',function(e) {
+$('#vboxPane').on('vmSelectionListChanged',function(e) {
 	
 	vboxChooserToolbarTop.update(vboxChooser);
 	vboxUpdateSettingsMenu();
@@ -442,7 +442,7 @@ $('#vboxPane').bind('vmSelectionListChanged',function(e) {
 	}
 
 // Update menus on these events
-}).bind('vboxEvents', function(e, eventList) {
+}).on('vboxEvents', function(e, eventList) {
 
 	var updateToolbar = false;
 	var updateSettingsMenu = false;

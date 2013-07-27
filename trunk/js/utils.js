@@ -342,7 +342,7 @@ function vboxFileBrowser(root,fn,foldersonly,title,icon,strictFiles) {
     	buttons[trans('OK','QIMessageBox')](f);
     }).appendTo(d1);
 	
-    $(d1).dialog({'closeOnEscape':true,'width':400,'height':600,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="'+(icon ? icon : 'images/jqueryFileTree/'+(foldersonly ? 'folder_open' : 'file')+'.png') + '" class="vboxDialogTitleIcon" /> ' + (title ? title : trans((foldersonly ? 'Select Folder' : 'Select File')))}).bind("dialogbeforeclose",function(){
+    $(d1).dialog({'closeOnEscape':true,'width':400,'height':600,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="'+(icon ? icon : 'images/jqueryFileTree/'+(foldersonly ? 'folder_open' : 'file')+'.png') + '" class="vboxDialogTitleIcon" /> ' + (title ? title : trans((foldersonly ? 'Select Folder' : 'Select File')))}).on("dialogbeforeclose",function(){
     	$(this).parent().find('span:contains("'+trans('Cancel','QIMessageBox')+'")').trigger('click');
     });			
 
@@ -558,7 +558,7 @@ function vboxInitDisplay(root,context) {
 	/* Image buttons */
 	if(!jQuery.browser.msie) {
 		
-		$(root).find('input.vboxImgButton').bind('mousedown',function(){
+		$(root).find('input.vboxImgButton').on('mousedown',function(){
 	
 			var xy = $(this).css('backgroundPosition').split(' ');
 	

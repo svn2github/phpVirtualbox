@@ -84,7 +84,7 @@ function vboxSettingsBrowseVRDPAuthLibrary(btn) {
  * Update Data onSave() 
  * 
  */
-$('#vboxSettingsDialog').bind('save',function(){
+$('#vboxSettingsDialog').on('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxSystemProperties').defaultMachineFolder = document.frmVboxSettings.vboxSettingsDefaultMachineFolder.value;
 	$('#vboxSettingsDialog').data('vboxSystemProperties').VRDEAuthLibrary = document.frmVboxSettings.vboxSettingsVRDEAuthLibrary.value;

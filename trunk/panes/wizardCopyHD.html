@@ -190,7 +190,7 @@ function wizardCopyHDUpdateName(sel) {
 }
 
  /* Suggested Data exists */
-$('#wizardCopyHDStep1').bind('show',function(e,wiz){
+$('#wizardCopyHDStep1').on('show',function(e,wiz){
 
 	// Already initialized?
 	if($('#wizardCopyHDStep1').data('init')) return;
@@ -203,15 +203,15 @@ $('#wizardCopyHDStep1').bind('show',function(e,wiz){
 	
 });
 
-$('#wizardCopyHDStep2').bind('show',function(e,wiz){
+$('#wizardCopyHDStep2').on('show',function(e,wiz){
 	wiz._lastStep = 2;
 });
-$('#wizardCopyHDStep4').bind('show',function(e,wiz){
+$('#wizardCopyHDStep4').on('show',function(e,wiz){
 	wiz._lastStep = 4;
 });
 
 /* WHen showing step 3, show / hide split option */
-$('#wizardCopyHDStep3').bind('show',function(e,wiz){
+$('#wizardCopyHDStep3').on('show',function(e,wiz){
 		
 	var caps = new Array();
 	for(var i = 0; i < document.forms['frmwizardCopyHD'].copyHDFileType.length; i++) {

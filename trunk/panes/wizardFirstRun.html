@@ -23,7 +23,7 @@
 
 <script type='text/javascript'>
 
-$('#wizardFirstRunStep1').bind('show',function(e,wiz){
+$('#wizardFirstRunStep1').on('show',function(e,wiz){
 
 	var hdFound = false;
 	for(var i = 0; i < wiz.args.storageControllers.length; i++) {

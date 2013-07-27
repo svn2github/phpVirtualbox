@@ -35,7 +35,7 @@ $('#vboxTabVMDetails').data('vboxLastSelectionList',[]);
 
 // Listen for events
 /////////////////////////////
-$('#vboxPane').bind('vmSelectionListChanged',function(){
+$('#vboxPane').on('vmSelectionListChanged',function(){
 
 	// No VMs?
 	if(!vboxChooser || vboxChooser.selectionMode == vboxSelectionModeNone) {
@@ -168,7 +168,7 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 // Redraw section logic
 //
 //////////////////////////////////
-}).bind('vboxEvents', function(e, eventList) {
+}).on('vboxEvents', function(e, eventList) {
 	
 	// Multiple vms selected
 	var multiSelect = (vboxChooser.selectedVMs.length > 1);
@@ -316,7 +316,7 @@ $('#vboxPane').bind('vmSelectionListChanged',function(){
 });
 
 // Hide context menus when hiding tab
-$('#vboxTabVMDetails').bind('hide',function(){
+$('#vboxTabVMDetails').on('hide',function(){
 	$('ul.contextMenu').hide();
 });
 
@@ -588,8 +588,8 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 		});
 		
 		$(vboxDetailsSection)
-			.bind('contextmenu', function() { return false; })
-			.bind('click',function(e){return e.button!=2;});
+			.on('contextmenu', function() { return false; })
+			.on('click',function(e){return e.button!=2;});
 
 	}
 	return vboxDetailsSection.append(vboxDetailsTable);
@@ -720,7 +720,7 @@ function __vboxDisplayHostDetailsData(data, targetDiv) {
  */
 var ul = $('<ul />')
 	.attr({'class':'contextMenu contextMenuNoBG','style':'display: none','id':'vboxDetailsShowMenu'})
-	.bind('contextmenu', function() { return false; });
+	.on('contextmenu', function() { return false; });
 	
 for(var i in vboxVMDetailsSections) {
 
@@ -783,8 +783,8 @@ $("#vboxVMDetails").mouseup( function(e) {
 	}
 	
 
-}).bind('contextmenu', function() { return false; })
-	.bind('click',function(e){return e.button!=2;});
+}).on('contextmenu', function() { return false; })
+	.on('click',function(e){return e.button!=2;});
 
 //Display Welcome div
 $('#vboxTabVMDetails').css({'display':'table','width':'100%'}).children().hide();

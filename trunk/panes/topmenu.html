@@ -266,7 +266,7 @@ vboxTopMenuBar.renderTo('vboxMenu');
 $('#vboxPane').on('vmSelectionListChanged vmGroupDefsSaving vmGroupDefsSaved',function(e){
 		vboxTopMenuBar.update(vboxChooser);
 
-}).bind('vboxEvents', function(e, eventList) {
+}).on('vboxEvents', function(e, eventList) {
 
 	var updateMenuBar = false;
 	for(var i = 0; i < eventList.length && !updateMenuBar; i++) {

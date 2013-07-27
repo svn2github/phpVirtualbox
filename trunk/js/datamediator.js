@@ -262,7 +262,7 @@ $(document).ready(function(){
 	 */
 	
 	// Raw event to data handlers
-	$('#vboxPane').bind('vboxOnMachineDataChanged',function(e, eventData) {
+	$('#vboxPane').on('vboxOnMachineDataChanged',function(e, eventData) {
 		
 		
 		vboxVMDataMediator.expireVMDetails(eventData.machineId);
@@ -275,7 +275,7 @@ $(document).ready(function(){
 		}
 	
 	// Machine state change
-	}).bind('vboxOnMachineStateChanged', function(e, eventData) {
+	}).on('vboxOnMachineStateChanged', function(e, eventData) {
 
 		// Only care about it if its in our list
 		if(vboxVMDataMediator.vmData[eventData.machineId]) {
@@ -300,7 +300,7 @@ $(document).ready(function(){
 		}
 		
 	// Session state change
-	}).bind('vboxOnSessionStateChanged', function(e, eventData) {
+	}).on('vboxOnSessionStateChanged', function(e, eventData) {
 		
 		if(vboxVMDataMediator.vmData[eventData.machineId])
 			vboxVMDataMediator.vmData[eventData.machineId].sessionState = eventData.state;
@@ -322,7 +322,7 @@ $(document).ready(function(){
 			vboxVMDataMediator.vmDetailsData[eventData.machineId].snapshotCount = eventData.enrichmentData.snapshotCount;
 		
 	// Expire all data for a VM when machine is unregistered
-	}).bind('vboxOnMachineRegistered', function(e, eventData) {
+	}).on('vboxOnMachineRegistered', function(e, eventData) {
 		
 		if(!eventData.registered) {
 			vboxVMDataMediator.expireVMDetails(eventData.machineId);
@@ -340,7 +340,7 @@ $(document).ready(function(){
 
 		}
 
-	}).bind('vboxOnCPUChanged', function(e, vmid) {
+	//}).on('vboxOnCPUChanged', function(e, vmid) {
 	
 		/*
 		case 'OnCPUChanged':
@@ -350,7 +350,7 @@ $(document).ready(function(){
 			break;
 		*/
 
-	}).bind('vboxOnNetworkAdapterChanged', function(e, eventData) {
+	}).on('vboxOnNetworkAdapterChanged', function(e, eventData) {
 		
 		if(vboxVMDataMediator.vmRuntimeData[eventData.machineId]) {
 			$.extend(vboxVMDataMediator.vmRuntimeData[eventData.machineId].networkAdapters[eventData.networkAdapterSlot], eventData.enrichmentData);
@@ -358,7 +358,7 @@ $(document).ready(function(){
 		
 
 	/* Storage controller of VM changed */
-	}).bind('vboxOnStorageControllerChanged', function() {
+	//}).on('vboxOnStorageControllerChanged', function() {
 		/*
         case 'OnStorageControllerChanged':
         	$data['machineId'] = $eventDataObject->machineId;
@@ -366,7 +366,7 @@ $(document).ready(function(){
         	break;
         */
 		
-	}).bind('vboxOnMediumChanged', function(e, eventData) {
+	}).on('vboxOnMediumChanged', function(e, eventData) {
 		
 		/* Medium attachment changed */
 		if(vboxVMDataMediator.vmRuntimeData[eventData.machineId]) {
@@ -386,10 +386,10 @@ $(document).ready(function(){
 		}
 		
 	/* Shared folders changed */
-	}).bind('vboxOnSharedFolderChanged', function() {
+	//}).on('vboxOnSharedFolderChanged', function() {
 
 	// VRDE runtime info
-	}).bind('vboxOnVRDEServerChanged', function(e, eventData) {
+	}).on('vboxOnVRDEServerChanged', function(e, eventData) {
 
 		if(vboxVMDataMediator.vmRuntimeData[eventData.machineId]) {
 			$.extend(true,vboxVMDataMediator.vmRuntimeData[eventData.machineId].VRDEServer, eventData.enrichmentData);
@@ -397,7 +397,7 @@ $(document).ready(function(){
 
 	
 	// This only fires when it is enabled
-	}).bind('vboxOnVRDEServerInfoChanged', function(e, eventData) {
+	}).on('vboxOnVRDEServerInfoChanged', function(e, eventData) {
 
 		if(vboxVMDataMediator.vmRuntimeData[eventData.machineId]) {
 			vboxVMDataMediator.vmRuntimeData[eventData.machineId].VRDEServerInfo.port = eventData.enrichmentData.port;
@@ -406,14 +406,14 @@ $(document).ready(function(){
 
 		
 	// Execution cap
-	}).bind('vboxOnCPUExecutionCapChanged', function(e, eventData) {
+	}).on('vboxOnCPUExecutionCapChanged', function(e, eventData) {
 		
 		if(vboxVMDataMediator.vmRuntimeData[eventData.machineId]) {
 			vboxVMDataMediator.vmRuntimeData[eventData.machineId].CPUExecutionCap = eventData.executionCap;
 		}
 
 	// Special cases for where phpvirtualbox keeps its extra data
-	}).bind('vboxOnOnExtraDataChanged', function(e, eventData) {
+	}).on('vboxOnOnExtraDataChanged', function(e, eventData) {
 		
 		// No vm id is a global change
 		if(!eventData.machineId || !vboxVMDataMediator.vmData[eventData.machineId]) return;
@@ -462,7 +462,7 @@ $(document).ready(function(){
 	 */
 		
 	// Expire everything when host changes
-	}).bind('hostChange',function(){
+	}).on('hostChange',function(){
 		vboxVMDataMediator.expireAll();
 	
 	});

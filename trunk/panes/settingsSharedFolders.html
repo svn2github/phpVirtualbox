@@ -138,13 +138,13 @@ var sButtons = new Array(
 var sfToolbar = new vboxToolbarSmall(sButtons);
 sfToolbar.renderTo('vboxSettingsSFButtons');
 
-$('#vboxSettingsSharedFoldersList').bind('select',function(e,el){sfToolbar.update(el);});
+$('#vboxSettingsSharedFoldersList').on('select',function(e,el){sfToolbar.update(el);});
 
 /* Add Shared Folder to list */
 
 function vboxSettingsAddSharedFolder(f, noColor) {
 	
-	var tr = $('<tr />').attr({'class':'vboxListItem'}).addClass(f.type == 'machine' ? 'vboxSFMachine' : 'vboxSFTransient').bind('refresh',function(){
+	var tr = $('<tr />').attr({'class':'vboxListItem'}).addClass(f.type == 'machine' ? 'vboxSFMachine' : 'vboxSFTransient').on('refresh',function(){
 	
 		// bind refresh
 		$(this).children('td.vboxSettingsSFNameCell').children('span').first().html($('<div/>').text($(this).data('name')).html());
@@ -208,7 +208,7 @@ function vboxSettingsAddSharedFolder(f, noColor) {
  *
  */
 
- $('#vboxSettingsDialog').bind('dataLoaded',function(){
+ $('#vboxSettingsDialog').on('dataLoaded',function(){
 
 	/* Shared Folders */
 	var sfh = $('#vboxSettingsSharedFoldersList');
@@ -345,7 +345,7 @@ function vboxSettingsSFEditDialog() {
 
 
 /* Change settings onSave() */
-$('#vboxSettingsDialog').bind('save',function(){
+$('#vboxSettingsDialog').on('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxMachineData').sharedFolders = new Array();
 

@@ -49,7 +49,7 @@ var vboxSettingsAudioDrivers = {
 
 
 /* Disable non-editable items when VM is running */
-$('#vboxSettingsDialog').bind('dataLoaded',function(){
+$('#vboxSettingsDialog').on('dataLoaded',function(){
 	
 	/*
 	 * Load audio controller types
@@ -105,7 +105,7 @@ $('#vboxSettingsDialog').bind('dataLoaded',function(){
 });
 	
 /* Change settings onSave() */
-$('#vboxSettingsDialog').bind('save',function(){
+$('#vboxSettingsDialog').on('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.audioDriver = document.forms['frmVboxSettings'].vboxSettingsAudioDriver.value;
 	$('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.audioController = document.forms['frmVboxSettings'].vboxSettingsAudioController.value;

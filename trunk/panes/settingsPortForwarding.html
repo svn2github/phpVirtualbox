@@ -73,7 +73,7 @@ var pfToolbar = new vboxToolbarSmall(sButtons);
 pfToolbar.renderTo('vboxSettingsPortForwardingToolbar');
 
 
-$('#vboxSettingsPortForwardingList').bind('select',function(e,el){pfToolbar.update(el);});
+$('#vboxSettingsPortForwardingList').on('select',function(e,el){pfToolbar.update(el);});
 $('#vboxSettingsPortForwardingList').trigger('select');
 
 /* Edit rule element */

@@ -128,9 +128,9 @@ function wizardExportApplianceStepResizeList() {
 }
 
 // Resize panes when wizard is resized
-$('#wizardExportApplianceDialog').bind('dialogresizestop',wizardExportApplianceStepResizeList);
+$('#wizardExportApplianceDialog').on('dialogresizestop',wizardExportApplianceStepResizeList);
 //Resize panes after this div is shown
-$('#wizardExportApplianceStep1').bind('show', wizardExportApplianceStepResizeList);
+$('#wizardExportApplianceStep1').on('show', wizardExportApplianceStepResizeList);
 
 
 /*

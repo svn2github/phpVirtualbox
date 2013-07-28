@@ -1,7 +1,7 @@
 <!-- $Id$
 Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
 -->
-<table id='vboxVMLogContainer' style='border:0px;margin:0px;padding:0px;width:100%;border-spacing:0px;border-width:0px;height:100%'>
+<table id='vboxVMLogContainer' class='vboxInvisible' style='border:0px;margin:0px;padding:0px;width:100%;border-spacing:0px;border-width:0px;height:100%'>
 	<tr style='vertical-align:top'>
 		<td style='height: 1%; margin:0px; padding:0px;' id='vboxVMLogsTabsList'></td>
 	</tr>
@@ -63,7 +63,7 @@ function vboxShowLogsInit(vm) {
 	}
 	$('#vboxVMLogTabs').prepend(ul);
 	
-	$('#vboxVMLogTabs').tabs({'show':function(e,i){
+	$('#vboxVMLogTabs').tabs({'activate':function(e,i){
 		$('#vboxVMLogTabs').children('div:eq('+$('#vboxVMLogTabs').tabs('option','active')+')').trigger('show');
 	}});
 	
@@ -90,9 +90,9 @@ function vboxShowLogsInit(vm) {
 		
 		
 		
-		
-		
 	});
+	
+	$('#vboxVMLogTabs').children('div:eq(0)').trigger('show');
 	
 	
 	

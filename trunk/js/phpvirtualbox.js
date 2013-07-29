@@ -2,7 +2,7 @@
  * @fileOverview Common classes and objects used
  * @author Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
- * @copyright Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
+ * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
  */
 
 

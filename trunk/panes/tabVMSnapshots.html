@@ -1,7 +1,7 @@
 <!-- 
 
 	VM Snapshots Pane
-	Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
+	Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
 	
 	$Id$
 
@@ -25,7 +25,7 @@
 		<table class='vboxVertical'>
 			<tr style='vertical-align: top'>
 				<th>
-					<img id='vboxSnapshotNewImg' src='images/vbox/os_other.png' />
+					<img id='vboxSnapshotNewImg' src='images/vbox/os_other.png' height='32' width='32' />
 				</th>
 				<td>
 					<div style='height: 100%'>
@@ -196,7 +196,7 @@ var vboxSnapshotButtons = [
   			};
   			buttons[trans('Cancel','QIMessageBox')] = function() { $(this).dialog('close'); };
   			
-  			$('#vboxSnapshotNew').dialog({'closeOnEscape':false,'width':'400px','height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/take_snapshot_16px.png" class="vboxDialogTitleIcon" /> ' + trans('Take Snapshot of Virtual Machine','VBoxTakeSnapshotDlg')});
+  			$('#vboxSnapshotNew').dialog({'closeOnEscape':false,'width':'400px','height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/take_snapshot_16px.png" class="vboxDialogTitleIcon" height="16" width="16" /> ' + trans('Take Snapshot of Virtual Machine','VBoxTakeSnapshotDlg')});
   			
   	  	}
   	},
@@ -402,7 +402,7 @@ var vboxSnapshotButtons = [
 		  	  		
 			  	  	$('<tr />').attr({'class':'vboxDetailsHead'}).append(
 			  	  		$('<th />').attr({'class':'vboxDetailsSection','colspan':'2'}).disableSelection()
-			  	  			.html("<img style='float:left; margin-right: 3px; ' src='images/vbox/" + section.icon + "' /> ")
+			  	  			.html("<img style='float:left; margin-right: 3px; ' src='images/vbox/" + section.icon + "' height='16' width='16' /> ")
 			  	  			.append(
 			  	  				$('<span />').css({'float':'left'}).append(document.createTextNode(section.title +' '))
 			  	  			)
@@ -746,7 +746,7 @@ function __vboxTabSnapshot(s, currentId) {
 	$(li).append(' ').append(
 	
 	   $('<div />').attr({'class':'vboxListItem'})
-	   	  .html('<img src="images/vbox/'+(s.online ? 'online' : 'offline')+'_snapshot_16px.png" /> ' + 
+	   	  .html('<img src="images/vbox/'+(s.online ? 'online' : 'offline')+'_snapshot_16px.png" height="16" width="16" /> ' + 
 	   			  $('<div />').text(s.name).html())
 	   	   .append($('<span />').attr({'class':'timestamp'}).data({'vboxTimestamp':s.timeStamp}).text(ts))
 	   			  
@@ -790,7 +790,7 @@ function __vboxTabSnapshotCurrent(vm) {
 	return $('<li />').data('vboxSnapshot',{'state':'current','name':trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')}).html(' ')
 		.addClass('last vboxSnapshotCurrent vboxSnapshotCurrentState')
 		.append(
-				$('<div />').attr({'class':'vboxListItem'}).html('<img src="images/vbox/'+vboxMachineStateIcon(vm.state)+'" /> ' + $('<div />').text(trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')).html())
+				$('<div />').attr({'class':'vboxListItem'}).html('<img src="images/vbox/'+vboxMachineStateIcon(vm.state)+'" height="16" width="16" /> ' + $('<div />').text(trans((vm.currentStateModified ? 'Current State (changed)' : 'Current State'),'VBoxSnapshotsWgt')).html())
 				.contextMenu({
 						menu: vboxSnapshotContextMenuCurrent.menuId(),
 						clickthrough : true

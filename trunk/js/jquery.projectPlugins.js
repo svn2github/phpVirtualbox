@@ -237,7 +237,7 @@ if ( !jQuery.browser ) {
  * 
  * phpVirtualBox medium (disk / CD image etc.) select box
  * 
- * Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
+ * Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
  * 
  */
 

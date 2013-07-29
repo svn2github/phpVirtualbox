@@ -3,7 +3,7 @@
  * @fileOverview Chooser (vm list) singleton
  * @author Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
- * @copyright Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
+ * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
  *
  */
 
@@ -283,7 +283,7 @@ var vboxChooser = {
 		
 		// Render root group
 		vboxChooser._anchor.append(vboxChooser.groupHTML("/"));
-		
+				
 		// Enforce VM ownership
         if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin) {
         	d.vmlist = jQuery.grep(vmlist,function(vm,i){
@@ -378,9 +378,11 @@ var vboxChooser = {
 		var path = ['div.vboxChooserGroupRootLevel'];
 		
 		// Special case for root level VM list
-		styleRules[styleRules.length] = 'div.vboxChooserGroupRootLevel > div.vboxChooserGroupVMs td.vboxVMTitle > div { width: ' + vmTitleWidth + 'px; }';
+		styleRules[styleRules.length] = 'div.vboxChooserGroupRootLevel > div.vboxChooserGroupVMs table.vboxChooserVM div.vboxFitToContainer { width: ' + vmTitleWidth + 'px; }';
+		
 		// Special case for group header when only showing one group
 		styleRules[styleRules.length] = 'div.vboxChooserGroupShowOnly.vboxChooserGroupRootLevel > div.vboxChooserGroupHeader span.vboxChooserGroupName { max-width: ' + (groupTitleWidth - 4) + 'px; }';
+		
 		// Bottom group resize bars
 		styleRules[styleRules.length] = 'div.vboxChooserGroupRootLevel > div.vboxChooserDropTargetBottom { width: ' + (groupTitleWidth) + 30 + 'px; }';
 
@@ -390,7 +392,7 @@ var vboxChooser = {
 			styleRules[styleRules.length] = path.join(' > ') + ' > div.vboxChooserGroup > div.vboxChooserGroupHeader span.vboxChooserGroupName { max-width: ' + (groupTitleWidth - (i*groupLevelOffset)) + 'px; }';
 			
 			// VM titles at this level
-			styleRules[styleRules.length] = path.join(' > ') + ' > div.vboxChooserGroup > div.vboxChooserGroupVMs td.vboxVMTitle > div { width: ' + (vmTitleWidth - (i*(groupLevelOffset))) + 'px; }';
+			styleRules[styleRules.length] = path.join(' > ') + ' > div.vboxChooserGroup > div.vboxChooserGroupVMs table.vboxChooserVM div.vboxFitToContainer { width: ' + (vmTitleWidth - (i*(groupLevelOffset))) + 'px; }';
 
 			// Bottom group resize bars
 			styleRules[styleRules.length] = path.join(' > ') +' > div.vboxChooserGroup > div.vboxChooserDropTargetBottom { width: ' + (groupTitleWidth + 30 - (i*groupLevelOffset)) + 'px; }';
@@ -400,7 +402,7 @@ var vboxChooser = {
 		$('head').append('<style type="text/css" id="vboxChooserStyle">' + styleRules.join("\n") + '</style>');
 		
 	},
-	
+		
 	/*
 	 * Get group element by path
 	 */
@@ -530,10 +532,7 @@ var vboxChooser = {
 		
 		var tbl = $('<table />').attr({'class':'vboxChooserItem-'+vboxChooser._anchorid+'-'+vmn.id + " vboxChooserVM"})
 			.on('mousedown',vboxChooser.selectItem)
-			.hover(function(){
-				$(this).addClass('vboxHover');
-				},function(){$(this).removeClass('vboxHover');
-			}).data('vmid',vmn.id);
+			.hoverClass('vboxHover').data('vmid',vmn.id);
 		
 		
 		// Drag-and-drop functionality
@@ -655,7 +654,7 @@ var vboxChooser = {
 		// Not rendering host
 		} else {
 			
-			$(td).append('<div class="vboxFitToContainer"><span class="vboxVMName">'+$('<span />').text(vmn.name).html()+'</span>'+ (vmn.currentSnapshotName ? ' (' + $('<span />').text(vmn.currentSnapshotName).html() + ')' : '')+'</div>');
+			$(td).append('<div class="vboxFitToContainer"><span class="vboxVMName">'+$('<span />').text(vmn.name).html()+'</span>'+ (vmn.currentSnapshotName ? '<span class="vboxVMChooserSnapshotName"> (' + $('<span />').text(vmn.currentSnapshotName).html() + ')</span>' : '')+'</div>');
 			
 
 			// Table gets tool tips
@@ -671,7 +670,7 @@ var vboxChooser = {
 		
 		// VM state row
 		var tr = $('<tr />');
-		var td = $('<td />').attr({'class':(vmn.id != 'host' && vmn.sessionState != 'Unlocked' ? 'vboxVMSessionOpen' : '')}).html("<img src='images/vbox/" + vboxMachineStateIcon(vmn.state) +"' /><span class='vboxVMState'>" + trans(vboxVMStates.convert(vmn.state),'VBoxGlobal') + '</span>');
+		var td = $('<td />').attr({'class':(vmn.id != 'host' && vmn.sessionState != 'Unlocked' ? 'vboxVMSessionOpen' : '')}).html("<div class='vboxFitToContainer'><img src='images/vbox/" + vboxMachineStateIcon(vmn.state) +"' /><span class='vboxVMState'>" + trans(vboxVMStates.convert(vmn.state),'VBoxGlobal') + '</span></div>');
 
 		// Add VirtualBox version if hosting
 		if(vmn.id == 'host') {
@@ -2161,8 +2160,9 @@ var vboxChooser = {
 		// Where are we drawn?
 		if(anchorid) {
 			vboxChooser._anchorid = anchorid;
-			vboxChooser._anchor = $('#'+anchorid);			
+			vboxChooser._anchor = $('#'+anchorid);
 		}
+		
 		
 		// Set group definition key
 		vboxChooser._groupDefinitionKey = $('#vboxPane').data('vboxConfig')['groupDefinitionKey'];

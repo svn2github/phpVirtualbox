@@ -21,6 +21,9 @@ http://code.google.com/p/phpvirtualbox/issues/detail?id=641
 
 Minor UI enhancements.
 
+EHCI is no longer enabled by default on USB controller when
+creating a new VM.
+
 Moved USB, Serial, and Parallel port settings back into their own
 sections.
 

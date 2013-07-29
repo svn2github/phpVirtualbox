@@ -4,7 +4,7 @@
  * Connects to vboxwebsrv, calls SOAP methods, and returns data.
  *
  * @author Ian Moore (imoore76 at yahoo dot com)
- * @copyright Copyright (C) 2010-2012 Ian Moore (imoore76 at yahoo dot com)
+ * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
  * @package phpVirtualBox
  *
@@ -3599,7 +3599,10 @@ class vboxconnector {
 
 			try {
 				$this->session->machine->USBController->enabled = true;
-				$this->session->machine->USBController->enabledEHCI = true;
+				
+				// This causes problems if the extpack isn't installed
+				// $this->session->machine->USBController->enabledEHCI = true;
+				
 			} catch (Exception $e) {
 				// Ignore
 			}

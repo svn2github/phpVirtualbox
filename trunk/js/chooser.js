@@ -670,12 +670,12 @@ var vboxChooser = {
 		
 		// VM state row
 		var tr = $('<tr />');
-		var td = $('<td />').attr({'class':(vmn.id != 'host' && vmn.sessionState != 'Unlocked' ? 'vboxVMSessionOpen' : '')}).html("<div class='vboxFitToContainer'><img src='images/vbox/" + vboxMachineStateIcon(vmn.state) +"' /><span class='vboxVMState'>" + trans(vboxVMStates.convert(vmn.state),'VBoxGlobal') + '</span></div>');
+		var td = $('<td />').attr({'class':(vmn.id != 'host' && vmn.sessionState != 'Unlocked' ? 'vboxVMSessionOpen' : '')});
 
 		// Add VirtualBox version if hosting
 		if(vmn.id == 'host') {
 			
-			$(td).append(' - ' + $('#vboxPane').data('vboxConfig').version.string);
+			$(td).html("<div class='vboxFitToContainer'><img src='images/vbox/" + vboxMachineStateIcon(vmn.state) +"' /><span class='vboxVMState'>" + trans(vboxVMStates.convert(vmn.state),'VBoxGlobal') + ' - ' + $('#vboxPane').data('vboxConfig').version.string+'</span></div>');
 			
 			// Check for version mismatches?
 			if(!vboxChooser._versionChecked) {
@@ -686,6 +686,8 @@ var vboxChooser = {
 					vboxAlert('This version of phpVirtualBox ('+$('#vboxPane').data('vboxConfig').phpvboxver+') is incompatible with VirtualBox ' + $('#vboxPane').data('vboxConfig').version.string + ". You probably need to <a href='http://code.google.com/p/phpvirtualbox/downloads/list?q=phpvirtualbox-"+vers[0]+'.'+vers[1]+"' target=_blank>download the latest phpVirtualBox " + vers[0]+'.'+vers[1] + "-x</a>.<p>See the Versioning section <a href='http://code.google.com/p/phpvirtualbox/downloads/detail?name=README.txt' target=_blank>here</a> for more information</p>",{'width':'auto'});
 				}
 			}			
+		} else {
+			$(td).html("<div class='vboxFitToContainer'><img src='images/vbox/" + vboxMachineStateIcon(vmn.state) +"' /><span class='vboxVMState'>" + trans(vboxVMStates.convert(vmn.state),'VBoxGlobal') + '</span></div>');
 		}
 		
 		$(tr).append(td).appendTo(tbl);
@@ -1229,8 +1231,8 @@ var vboxChooser = {
 					})
 						.children('span.vboxChooserGroupInfo')
 						.children('span.vboxChooserGroupCounts').html(
-							(gList.length ? ('<img src="images/vbox/nw_16px.png" />'+gList.length) : '') +
-							(vmList.length ? ('<img src="images/vbox/fullscreen_16px.png" />'+vmList.length) : '')
+							(gList.length ? ('<span style="background-image:url(images/vbox/nw_16px.png);" />'+gList.length) : '') +
+							(vmList.length ? ('<span style="background-image:url(images/vbox/fullscreen_16px.png);" />'+vmList.length) : '')
 				);
 			});
 			

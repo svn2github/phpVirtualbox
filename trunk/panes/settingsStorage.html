@@ -1119,7 +1119,7 @@ function vboxSettingsAddController(con,list) {
     
     var tr = $('<tr />');
 
-    $('<td />').attr({'class':'vboxSettingsStorageTypeIcon vboxSettingsController' + con.bus + 'Expanded','style':'width: 22px;'}).html(' ').click(function(){
+    $('<td />').attr({'class':'vboxSettingsStorageTypeIcon vboxSettingsController' + con.bus + 'Expanded','style':'width:22px'}).html('<div style="width:22px" />').click(function(){
 
 		if(!$(this).data('toggleClicked')) {
 			
@@ -1143,7 +1143,7 @@ function vboxSettingsAddController(con,list) {
     }).appendTo(tr);
 
     // Controller name
-    $(tr).append($('<td />').html('<div class="vboxFitToContainer">'+trans('Controller: %1','UIMachineSettingsStorage').replace('%1','<span class="vboxSettingsControllerTitle vboxRunningEnabled">'+$('<div/>').text(con.name).html())+"</span>"+"</div>"));
+    $(tr).append($('<td />').css({'width':'100%'}).html('<div class="vboxFitToContainer">'+trans('Controller: %1','UIMachineSettingsStorage').replace('%1','<span class="vboxSettingsControllerTitle vboxRunningEnabled">'+$('<div/>').text(con.name).html())+"</span>"+"</div>"));
     
     // Buttons
     $(tr).append($('<td />').attr({'id':'vboxSettingsController' + con.bus + 'BtnDrive','style':'width: 22px;','class':'vboxControllerAttachmentButton'}));
@@ -1255,10 +1255,10 @@ function vboxSettingsAddAttachment(d,bus) {
     var tr = $('<tr />');
 
     // Storage type icon
-    $(tr).append($('<td />').attr({'class':'vboxSettingsStorageTypeIcon vboxSettingsMediaType' + d.type}).html('<img src="images/vbox/blank.gif" />'));
+    $(tr).append($('<td />').attr({'class':'vboxSettingsStorageTypeIcon vboxSettingsMediaType' + d.type,'style':'width:22px'}).html('<img src="images/vbox/blank.gif" style="width:22px" />'));
     
     // Medium name
-    $(tr).append($('<td />').append($('<div />').attr({'class':'vboxSettingsStorageMediumName vboxFitToContainer'}).html(vboxMedia.getName(vboxMedia.getMediumById((m && m.base ? m.base : (m && m.id ? m.id : null)))))));
+    $(tr).append($('<td />').css({'width':'100%'}).append($('<div />').attr({'class':'vboxSettingsStorageMediumName vboxFitToContainer'}).html(vboxMedia.getName(vboxMedia.getMediumById((m && m.base ? m.base : (m && m.id ? m.id : null)))))));
     
     
     $(tbl).append(tr).appendTo(li);
@@ -1485,7 +1485,7 @@ function vboxSettingsStorageResize() {
 function vboxStorageResizeTreeItemLabels() {
 	
 	$('#vboxSettingsStorageTree div.vboxFitToContainer').each(function(){
-		$(this).css({'display':'none'})
+		$(this).css({'display':'none'});
 		var w = $(this).parent().innerWidth() - 2;
 		$(this).css({'width':w+'px','display':''});
 	});

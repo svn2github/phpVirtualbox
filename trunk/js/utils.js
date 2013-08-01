@@ -826,7 +826,44 @@ function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
 	// Shorthand
 	var pid = prequest.progress;
 	
-	var div = $('<div />').attr({'id':'vboxProgress'+pid,'style':'text-align: center'});
+	var div = $('<div />').attr({'id':'vboxProgress'+pid}).addClass('vboxProgressOpElement');
+
+	var divOpTitle = $('<div />').addClass('vboxProgressOpTitle');
+
+	if(icon) {
+		$('<img />').attr({'src':'images/vbox/'+icon,'height':'22','width':'22'}).appendTo(divOpTitle);
+	}
+
+	// Title
+	if($('#vboxPane').data('vboxConfig').servers.length) {
+		title = $('#vboxPane').data('vboxConfig').name + ': ' + title;		
+	}
+
+	$(divOpTitle).append(title + (target ? ' (' + target + ')' : '')).appendTo(div);
+
+	// Progress bar
+	$('<div />').addClass('vboxProgressBarContainer').append(
+			$('<div />').attr({'id':'vboxProgressBar'+pid}).progressbar({ value: 1 })
+	).appendTo(div);
+	
+	// Progress text
+	$('<div />').addClass('vboxProgressOpText').append(
+			$('<span />').attr({'id':'vboxProgressText'+pid}).html('<img src="images/spinner.gif" height=12 width=12/>')
+	).appendTo(div);
+	
+	// Cancel button
+	$('<div />').addClass('vboxProgressOpCancel').append(
+			$('<input />').attr({'id':'vboxProgressCancel'+pid,'type':'button'}).val(trans('Cancel','UIProgressDialog')).data({'pid':pid})
+				.click(function(){
+					this.disabled = 'disabled';
+					vboxAjaxRequest('progressCancel',prequest);
+				})
+				.css({'margin':'0px'})
+	).appendTo(div);
+	
+	$(div).data({'vboxCallback':callback}).insertAfter($('#vboxResizeBarProgressEW'));
+
+	return;
 	
 	var tbl = $('<table />').css({'width':'100%'});
 	var tr = $('<tr />').css({'vertical-align':'middle'});
@@ -866,7 +903,7 @@ function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
 	
 	$(tbl).append(tr).appendTo(div);
 	
-	$(div).data({'vboxCallback':callback}).prependTo($('#vboxProgressOps'));
+	$(div).data({'vboxCallback':callback}).insertAfter($('#vboxResizeBarProgressEW'));
 	
 	
 }

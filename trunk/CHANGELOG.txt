@@ -9,8 +9,6 @@ library changes.
 
 Consolidated some JavaScript, and CSS files where possible.
 
-Changed all instances of 'hover' CSS class to vboxHover.
-
 Minor translation fixes.
 
 Some VM properties are now editable when a VM is in a Saved state.
@@ -26,6 +24,8 @@ creating a new VM.
 
 Moved USB, Serial, and Parallel port settings back into their own
 sections.
+
+Progress operation text is now resizable.
 
 -------------------------------------
 	4.2-6	2013-07-22

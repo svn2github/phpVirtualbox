@@ -4147,7 +4147,7 @@ function vboxLoader(name) {
 		$(div).dialog({
 			'dialogClass' : 'vboxLoaderDialog',
 			'width' : 'auto',
-			'height' : 60,
+			'height' : 65,
 			'modal' : true,
 			'resizable' : false,
 			'draggable' : false,

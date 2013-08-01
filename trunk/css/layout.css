@@ -535,8 +535,26 @@ ul.vboxMenuBar li {
 
 /* Progress operation list */
 #vboxProgressOps { background: #fff;  border: 2px solid #bbb; margin: 0px 2px 2px 2px;}
+#vboxProgressOps div.vboxProgressOpElement { width: 100%; }
+#vboxProgressOps div.vboxProgressOpElement > div { display: inline-block; margin: auto; margin-right: 4px; vertical-align: middle; }
+#vboxProgressOps div.vboxProgressOpCancel { float: right; }
+#vboxProgressOps div.vboxProgressOpText { margin-left: 4px; }
+#vboxProgressOps div.vboxProgressOpElement div.vboxProgressBarContainer {
+	margin-left:4px;
+	text-align:'center';
+	padding:'2px';
+	width:'220px';
+	height: 100%;
+}
+#vboxProgressOps div.vboxProgressOpTitle {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow:ellipsis;	
+}
+#vboxProgressOps div.vboxProgressOpElement > * { display: inline-block; margin: auto; }
+#vboxProgressOps img { margin-right: 2px; height: 22px; width: 22px; }
 #vboxProgressOps div.ui-progressbar { height: 16px; width: 200px; }
-#vboxProgressOps table {
+#vboxProgressOps div.vboxProgressOpElement {
 	border-bottom: 1px solid #000;
 }
 #vboxProgressOps div.vboxProgressRunning {

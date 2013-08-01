@@ -611,6 +611,7 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 #vboxChooserDiv table.vboxChooserVM td.vboxVMTitle { width: 100%; }
 #vboxChooserPane img.vboxHostIcon { border: 1px solid #999; }
 #vboxChooserPane img.vboxVMIcon { height: 32px; width: 32px; margin: 0px 4px 0px 4px; padding: 0px; }
+#vboxChooserPane div.vboxChooserMini img.vboxVMIcon { height: 16px; width: 16px; margin: 0px 2px 0px 2px; padding: 0px; }
 #vboxChooserPane div.vboxChooserGroup {
 	border-radius: 8px;
 	-moz-border-radius: 8px;

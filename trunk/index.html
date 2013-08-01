@@ -314,9 +314,9 @@
 				l.add('vboxGetEnumerationMap',function(d){$('#vboxPane').data('vboxMediumVariants',d.responseData);},{'class':'MediumVariant','ValueMap':1});
 	
 				// Load HTML panes and append them to their respective locations
-				l.addFileToDOM('panes/vmlist.html',$('#vboxChooserPane'));
+				l.addFileToDOM('panes/chooser.html',$('#vboxChooserPane'));
 				l.addFileToDOM('panes/topmenu.html');
-				l.addFileToDOM('panes/vmlistToolbar.html');
+				l.addFileToDOM('panes/toolbar.html');
 				l.addFileToDOM('panes/tabs.html',$('#vboxPaneTabContent'));
 	
 				l.onLoad = function() {

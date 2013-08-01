@@ -72,6 +72,9 @@ var vboxChooser = {
 	/* Group definition extra value key */
 	_groupDefinitionKey : '',
 	
+	/* Whether chooser is in compact mode or not */
+	_compact : false,
+	
 	/**
 	 * Set anchor id to draw to
 	 */
@@ -88,7 +91,19 @@ var vboxChooser = {
 		});
 		
 		$(window).resize(function(){
+			
+			// Get anchor id and add / remove class
+			var w = parseInt($(vboxChooser._anchor).innerWidth());
+			if(w < 120) {
+				$(vboxChooser._anchor).addClass('vboxChooserMini');
+				vboxChooser._compact = true;
+			} else {
+				$(vboxChooser._anchor).removeClass('vboxChooserMini');
+				vboxChooser._compact = false;
+			}
+
 			vboxChooser._resizeElements(true);
+			
 		});
 	},
 	
@@ -365,10 +380,10 @@ var vboxChooser = {
 		
 		vboxChooser._scrollbarWasVisible = sbVisible;
 		
-		var groupTitleWidth = vboxChooser._anchor.width() - 32 - (sbVisible ? vboxChooser._scrollbarWidth : 0);
-		var vmTitleWidth = groupTitleWidth - 18; // (2px padding on .vboxChooserGroupVMs + 
+		var groupTitleWidth = vboxChooser._anchor.width() - (vboxChooser._compact ? 22 : 32) - (sbVisible ? vboxChooser._scrollbarWidth : 0);
+		var vmTitleWidth = groupTitleWidth - (vboxChooser._compact ? -12 : 18); // (2px padding on .vboxChooserGroupVMs + 
 			// 2px border on table + 4px margin on icon) * 2 
-		var groupLevelOffset = 8; // (2px margin + 2px border) * 2
+		var groupLevelOffset = (vboxChooser._compact ? 8 : 8); // (2px margin + 2px border) * 2
 		
 		
 		// Now that we have sizes, we can inject styles
@@ -399,7 +414,25 @@ var vboxChooser = {
 
 			path[path.length] = 'div.vboxChooserGroup';
 		}
-		$('head').append('<style type="text/css" id="vboxChooserStyle">' + styleRules.join("\n") + '</style>');
+	
+		// Style for minified vmlist
+		if(vboxChooser._compact) {
+			// Title moves left
+			styleRules[styleRules.length] = 'div.vboxChooserGroup > div.vboxChooserGroupVMs table.vboxChooserVM div.vboxVMName { position: relative; left: -20px; }';
+			// Icon moves down
+			styleRules[styleRules.length] = 'div.vboxChooserGroup > div.vboxChooserGroupVMs table.vboxChooserVM img.vboxVMIcon { position: relative; top: 8px; }';
+			// State text goes away
+			styleRules[styleRules.length] = 'div.vboxChooserGroup > div.vboxChooserGroupVMs table.vboxChooserVM span.vboxVMState { display: none; }';
+			// Less padding
+			styleRules[styleRules.length] = 'div.vboxChooserGroup > div.vboxChooserGroupVMs table.vboxChooserVM td { padding: 0px; }';
+			// Some group header items and drop targets go away
+			styleRules[styleRules.length] = 'div.vboxChooserGroup > div.vboxChooserGroupHeader > .vboxChooserGroupNameArrowCollapse, #' +vboxChooser._anchorid + ' div.vboxChooserGroup .vboxChooserDropTarget { display: none; }';
+			styleRules[styleRules.length] = 'div.vboxChooserGroup { overflow: hidden; }';
+			// host
+			styleRules[styleRules.length] = '#vboxChooserVMHost .vboxVMState { display: none; }';
+
+		}
+		$('head').append('<style type="text/css" id="vboxChooserStyle">#'+vboxChooser._anchorid + ' ' + styleRules.join("\n#"+vboxChooser._anchorid + " ") + '</style>');
 		
 	},
 		
@@ -654,7 +687,7 @@ var vboxChooser = {
 		// Not rendering host
 		} else {
 			
-			$(td).append('<div class="vboxFitToContainer"><span class="vboxVMName">'+$('<span />').text(vmn.name).html()+'</span>'+ (vmn.currentSnapshotName ? '<span class="vboxVMChooserSnapshotName"> (' + $('<span />').text(vmn.currentSnapshotName).html() + ')</span>' : '')+'</div>');
+			$(td).append('<div class="vboxFitToContainer vboxVMName"><span class="vboxVMName">'+$('<span />').text(vmn.name).html()+'</span>'+ (vmn.currentSnapshotName ? '<span class="vboxVMChooserSnapshotName"> (' + $('<span />').text(vmn.currentSnapshotName).html() + ')</span>' : '')+'</div>');
 			
 
 			// Table gets tool tips
@@ -675,7 +708,7 @@ var vboxChooser = {
 		// Add VirtualBox version if hosting
 		if(vmn.id == 'host') {
 			
-			$(td).html("<div class='vboxFitToContainer'><img src='images/vbox/" + vboxMachineStateIcon(vmn.state) +"' /><span class='vboxVMState'>" + trans(vboxVMStates.convert(vmn.state),'VBoxGlobal') + ' - ' + $('#vboxPane').data('vboxConfig').version.string+'</span></div>');
+			$(td).html("<div class='vboxFitToContainer vboxVMState'><img src='images/vbox/" + vboxMachineStateIcon(vmn.state) +"' /><span class='vboxVMState'>" + trans(vboxVMStates.convert(vmn.state),'VBoxGlobal') + ' - ' + $('#vboxPane').data('vboxConfig').version.string+'</span></div>');
 			
 			// Check for version mismatches?
 			if(!vboxChooser._versionChecked) {
@@ -687,7 +720,7 @@ var vboxChooser = {
 				}
 			}			
 		} else {
-			$(td).html("<div class='vboxFitToContainer'><img src='images/vbox/" + vboxMachineStateIcon(vmn.state) +"' /><span class='vboxVMState'>" + trans(vboxVMStates.convert(vmn.state),'VBoxGlobal') + '</span></div>');
+			$(td).html("<div class='vboxFitToContainer vboxVMState'><img src='images/vbox/" + vboxMachineStateIcon(vmn.state) +"' /><span class='vboxVMState'>" + trans(vboxVMStates.convert(vmn.state),'VBoxGlobal') + '</span></div>');
 		}
 		
 		$(tr).append(td).appendTo(tbl);
@@ -1835,7 +1868,7 @@ var vboxChooser = {
 						vboxChooser._resizeElements();
 						
 						// force redraw of these
-						$(gelm).find('.vboxFitToContainer').css({'display':'none'}).css({'width':'','display':'inline-block'});
+						$(gelm).find('.vboxFitToContainer').css({'display':'none'}).css({'width':'','display':''});
 						
 
 					});
@@ -1871,7 +1904,7 @@ var vboxChooser = {
 						vboxChooser._resizeElements();
 
 						// force redraw of these
-						vboxChooser._anchor.find('.vboxFitToContainer').css({'display':'none','width':''}).css({'display':'inline-block'});
+						vboxChooser._anchor.find('.vboxFitToContainer').css({'display':'none','width':''}).css({'display':''});
 					});
 			});
 		}
@@ -2052,6 +2085,8 @@ var vboxChooser = {
 
 				)
 				.hover(function(){
+					
+					if(vboxChooser._compact) return;
 					
 					$(this).addClass('vboxHover');
 

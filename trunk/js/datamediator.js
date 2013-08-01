@@ -264,7 +264,6 @@ $(document).ready(function(){
 	// Raw event to data handlers
 	$('#vboxPane').on('vboxOnMachineDataChanged',function(e, eventData) {
 		
-		
 		vboxVMDataMediator.expireVMDetails(eventData.machineId);
 		vboxVMDataMediator.expireVMRuntimeData(eventData.machineId);
 		
@@ -413,7 +412,7 @@ $(document).ready(function(){
 		}
 
 	// Special cases for where phpvirtualbox keeps its extra data
-	}).on('vboxOnOnExtraDataChanged', function(e, eventData) {
+	}).on('vboxOnExtraDataChanged', function(e, eventData) {
 		
 		// No vm id is a global change
 		if(!eventData.machineId || !vboxVMDataMediator.vmData[eventData.machineId]) return;
@@ -433,10 +432,12 @@ $(document).ready(function(){
 			
 			// Custom icon
 			case 'phpvb/icon':
-
+				
 				vboxVMDataMediator.vmData[eventData.machineId].customIcon = eventData.value;
+				
 				if(vboxVMDataMediator.vmDetailsData[eventData.machineId])
 					vboxVMDataMediator.vmDetailsData[eventData.machineId].customIcon = eventData.value;
+				
 				
 				break;
 			

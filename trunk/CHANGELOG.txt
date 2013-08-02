@@ -28,7 +28,10 @@ sections.
 Progress operation text is now resizable.
 
 Fixed bug that would not update VM display when a VM's custom icon
-was changed. 
+was changed.
+
+Fixed bug when refreshing VM data that would not cause redraws of
+certain sections. 
 
 -------------------------------------
 	4.2-6	2013-07-22

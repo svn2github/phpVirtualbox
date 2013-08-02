@@ -981,7 +981,7 @@ var vboxVMDetailsSections = {
 		_refreshVMMedia : function(vmid, mid) {
 			
 			// See if medium is there
-			var mRefresh = function() { return; };
+			var mRefresh = true;
 			if(!vboxMedia.getMediumById(mid)) {
 				mRefresh = vboxAjaxRequest('vboxGetMedia');
 			}
@@ -989,6 +989,7 @@ var vboxVMDetailsSections = {
 			l.showLoading();
 			$.when(mRefresh, vboxVMDataMediator.refreshVMData(vmid)).then(function(d){
 				if(d && d.responseData) $('#vboxPane').data('vboxMedia',d.responseData);
+			}).always(function(){
 				l.removeLoading();
 			});
 		},
@@ -1018,7 +1019,6 @@ var vboxVMDetailsSections = {
 					
 					// Do we need to reload media?
 					if(d['storageControllers'][a]['mediumAttachments'][b].medium && d['storageControllers'][a]['mediumAttachments'][b].medium.id && medium === null) {
-						
 						
 						if(!d._isSnapshot) {
 							portDesc = '<a href="javascript:vboxVMDetailsSections.storage._refreshVMMedia(\''+

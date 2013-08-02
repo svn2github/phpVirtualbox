@@ -182,8 +182,9 @@ $('#vboxPane').on('vmSelectionListChanged',function(){
 	for(var i = 0; i < eventList.length; i++) {
 		
 		// Nothing to do if VM is not selected
-		if(!vboxChooser.isVMSelected(eventList[i].machineId))
+		if(!eventList[i].machineId || !vboxChooser.isVMSelected(eventList[i].machineId))
 			continue;
+		
 		
 		
 		switch(eventList[i].eventType) {

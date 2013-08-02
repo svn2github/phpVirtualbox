@@ -241,8 +241,8 @@ var vboxVMDataMediator = {
 			vm = d.responseData[0];
 			vboxVMDataMediator.vmData[vm.id] = vm;
 			def.resolve();
-			$('#vboxPane').trigger('vboxOnMachineDataChanged', [{machineId:d.responseData.id,enrichmentData:d}]);
-			$('#vboxPane').trigger('vboxEvents', [[{eventType:'OnMachineDataChanged',machineId:d.responseData.id,enrichmentData:d}]]);
+			$('#vboxPane').trigger('vboxOnMachineDataChanged', [{machineId:vm.id,enrichmentData:vm}]);
+			$('#vboxPane').trigger('vboxEvents', [[{eventType:'OnMachineDataChanged',machineId:vm.id,enrichmentData:vm}]]);
 		}).fail(function(){
 			def.reject();
 		});

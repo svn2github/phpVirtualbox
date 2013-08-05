@@ -1,6 +1,6 @@
 <!-- 
 
-	Top Toolbar to manipulate virtual machines
+	Top (main) phpVirtualBox tool bar
 	Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
 	
 	$Id$
@@ -87,8 +87,8 @@ var vboxChooserSettingsMenu = {
 		'separator' : true
 	},	
 	'GuestAdditions' : {
-		'label' : trans('Install Guest Additions...','UIActionPool'),
-		'icon' : 'guesttools',
+		'label' : vboxVMActions['guestAdditionsInstall'].label,
+		'icon' : vboxVMActions['guestAdditionsInstall'].icon,
 		'separator' : true
 	}
 
@@ -139,7 +139,8 @@ vboxChooserToolbarTop.getButtonElement('settings').contextMenu({
 		switch(a) {
 		
 			case 'GuestAdditions':
-				vboxInstallGuestAdditions(vm.id);
+				
+				vboxVMActions['guestAdditionsInstall'].click();				
 				break;
 				
 			// Don't do anything for dvd, fd, or USB devices main menu item click

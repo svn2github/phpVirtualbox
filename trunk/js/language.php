@@ -1,5 +1,9 @@
 <?php
 /*
+ * Injects language translations into phpVirtualBox as a JavaScript object and
+ * provides interface translation logic
+ * Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
+ * 
  * $Id$
  */
 

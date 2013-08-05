@@ -1,6 +1,6 @@
 /**
  * 
- * @fileOverview Event listener singleton
+ * @fileOverview Event listener singleton. Provides vboxEventListener
  * @author Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
  * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
@@ -200,7 +200,7 @@ var vboxEventListener = {
 									
 					// Trigger each event individually
 					for(var i = 0; i < d.responseData.length; i++) {
-	
+						
 						// Trigger raw vbox events
 						$('#vboxPane').trigger('vbox' + d.responseData[i].eventType, [d.responseData[i]]);
 						

@@ -19,7 +19,9 @@
 	
 	<!-- Tabs for Media -->
 	<tr style='vertical-align: top;'>
-	<td style='padding:0px;margin:0px;border:0px;' id='vboxVMMContainer'><div id='vboxVMMTabs'>
+	<td style='padding:0px;margin:0px;border:0px;' id='vboxVMMContainer'>
+	
+	<div id='vboxVMMTabs'>
 
 		<ul id='vboxVMMTabList'>
 			<li><a href="#vmmDisks"><span><img id='vmmDisksIcon' style="height:16px;width:16px;vertical-align: middle" src="images/vbox/hd_16px.png" border="0" /> <span class='translate'>Hard drives</span></span></a></li>
@@ -999,7 +1001,7 @@ function vboxVMMSizeTable(elm) {
 	TB.css({'display':'none'});
 
 	// Get height
-	var cH = $('#vboxVMMTabs').innerHeight() - $(elm).outerHeight(true);
+	var cH = $(elm).parent().innerHeight() - $(elm).outerHeight(true);
 	
 	// Apply to difference in height to table body
 	TB.height(cH-4).css({'display':'','overflow':'auto'});

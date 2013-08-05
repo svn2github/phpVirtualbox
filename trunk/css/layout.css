@@ -296,6 +296,12 @@ div.vboxLoaderDialog div.ui-dialog-buttonpane, div.vboxLoaderDialog div.ui-dialo
 
 
 /* VM Logs and Ajax error text boxes*/
+#vboxVMLogContainer .ui-tabs {
+	background: #aaa;
+	border: 0px;
+	-moz-border-radius-topleft: 4px/*{cornerRadius}*/; -webkit-border-top-left-radius: 4px/*{cornerRadius}*/; border-top-left-radius: 4px/*{cornerRadius}*/; -moz-border-radius-topright: 4px/*{cornerRadius}*/; -webkit-border-top-right-radius: 4px/*{cornerRadius}*/; border-top-right-radius: 4px/*{cornerRadius}*/;	
+}
+
 #vboxVMLog { background: #aaa; }
 div.vboxVMLog form, div.vboxAlert form { height: 100%; margin: 0px; padding: 0px; border: 0px; display: block; }
 div.vboxVMLog form textarea, div.vboxAlert form textarea {
@@ -602,7 +608,7 @@ div.vboxChooserGroup > div.vboxChooserDropTargetBottom {
 	/* SVG as background image (IE9/Chrome/Safari/Opera) */ 
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc3MTkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGMEZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNDRkRGRkYiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c3MTkpIiAvPgo8L3N2Zz4=);	
 }
-#vboxChooserDiv { margin: 0px; margin-right: 2px; padding: 0px; border:0px; }
+#vboxChooserDiv { margin: 0px; margin-right: 2px; padding: 0px; border:0px; background: #fff; }
 #vboxChooserDiv table.vboxChooserVM td,
 #vboxChooserDiv table.vboxChooserVM span { white-space: nowrap; border: 0px; text-align: left;}
 #vboxChooserDiv table.vboxChooserVM span.vboxVMName { font-weight: bold; }
@@ -851,6 +857,7 @@ table.vboxToolbar td.vboxEnabled { cursor: pointer; }
 table.vboxToolbar td.vboxDisabled { color: #999; }
 
 /* Details Tab and Table */
+#vboxDetailsWelcome { background: #fff; } /* "Welcome" screen */
 #vboxTabVMDetails { font-size: 90%; }
 /* menus have normal font size */
 #vboxTabVMDetails ul.contextMenu { font-size: 110%; }

@@ -1,11 +1,11 @@
 /**
- * 
- * Misc jQuery plugins maintained by the phpVirtualBox project for 
- * the phpVirtualBox project. These are either solely authored by
- * the project or so heavily modified that they can no longer be
- * separately maintained
- * 
- * $Id$
+ * @fileOverview Misc jQuery plugins maintained by the phpVirtualBox project for 
+ *    the phpVirtualBox project. These are either solely authored by
+ *    the project or so heavily modified that they can no longer be
+ *    separately maintained
+ * @author Ian Moore (imoore76 at yahoo dot com)
+ * @version $Id$
+ * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
  * 
  */
 

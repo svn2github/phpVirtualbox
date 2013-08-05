@@ -471,12 +471,6 @@ for(var i = 1; i <= vboxStorage.SATA.maxPortCount; i++) {
 }
 $(sel).change(function(){
 	$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().data('controller').portCount = $(this).val();
-	// Check for 'Auto'
-	/* Disabled for now
-	if($(this).val() == 0) $('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount = 'yes';
-	else $('#vboxSettingsDialog').data('vboxMachineData').AutoSATAPortCount = 'no';
-	*/
-	
 });
 
                 

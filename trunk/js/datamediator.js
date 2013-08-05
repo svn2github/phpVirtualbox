@@ -1,5 +1,5 @@
 /**
- * @fileOverview Deferred data loader / cacher singleton
+ * @fileOverview Deferred data loader / cacher singleton. Provides vboxDataMediator
  * @author Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
  * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)

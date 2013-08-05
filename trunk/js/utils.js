@@ -1,7 +1,9 @@
 /**
- * $Id$
- * Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
- * 		except function strnatcasecmp
+ * @fileOverview Common utilities
+ * @author Ian Moore (imoore76 at yahoo dot com)
+ * @version $Id$
+ * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
+ * 		- unless otherwise noted in fuction
  */
 
 /**
@@ -10,24 +12,24 @@
  * 
  */
 $(document).ready(function(){
-        $(window).keydown(function(i){if(i.keyCode&&i.keyCode===27){
-                i.preventDefault();
-                try {
-                        var flash = RDPWebClient.getFlashById("FlashRDP");
-                        flash.keyboardSendScancodes('01');
-                } catch (e) {
-                        //alert(e.message);
-                }
-        }});
-        $(document).keydown(function(i){if(i.keyCode&&i.keyCode===27){
-                i.preventDefault();
-                try {
-                        var flash = RDPWebClient.getFlashById("FlashRDP");
-                        flash.keyboardSendScancodes('01');
-                } catch (e) {
-                        //alert(e.message);
-                }
-        }});
+    $(window).keydown(function(i){if(i.keyCode&&i.keyCode===27){
+        i.preventDefault();
+        try {
+                var flash = RDPWebClient.getFlashById("FlashRDP");
+                flash.keyboardSendScancodes('01');
+        } catch (e) {
+                //alert(e.message);
+        }
+    }});
+    $(document).keydown(function(i){if(i.keyCode&&i.keyCode===27){
+        i.preventDefault();
+        try {
+                var flash = RDPWebClient.getFlashById("FlashRDP");
+                flash.keyboardSendScancodes('01');
+        } catch (e) {
+                //alert(e.message);
+        }
+    }});
 });
 
 /**
@@ -645,73 +647,6 @@ function vboxDivOverflowHidden(p) {
 	return $('<div />').css({'width':(w-4)+'px','overflow':'hidden','padding':'0px','margin':'0px','border':'0px'});
 }
 
-/**
- * Install Guest Additions on VM
- * @param {String} vmid - uuid of virtual machine
- * @param {Boolean} mount_only - only mount the guest additions CD-ROM (used internally, do not set!!)
- */
-function vboxInstallGuestAdditions(vmid,mount_only) {
-
-	$.when(vboxAjaxRequest('consoleGuestAdditionsInstall',{'vm':vmid,'mount_only':(mount_only ? 1 : 0)})).then(function(d){
-		
-		// Progress operation returned. Guest Additions are being updated.
-		if(d && d.responseData && d.responseData.progress) {
-		
-			vboxProgress({'progress':d.responseData.progress,'persist':d.persist,'catcherrs':1},function(d){
-			
-				// Error updating guest additions
-				if(!d.responseData.result && d.responseData.error && d.responseData.error.err) {
-					if(d.responseData.error.err != 'VBOX_E_NOT_SUPPORTED') {
-						vboxAlert({'error':trans('Failed to update Guest Additions. The Guest Additions installation image will be mounted to provide a manual installation.','UIMessageCenter'),'details':d.responseData.error.err+"\n"+d.responseData.error.message});
-					}
-					vboxInstallGuestAdditions(vmid,true);
-					return;
-				}
-			},'progress_install_guest_additions_90px.png',trans('Install Guest Additions...','UIActionPool').replace(/\./g,''));
-			
-		// Media was mounted
-		} else if(d.responseData && d.responseData.result && d.responseData.result == 'mounted') {
-
-			// Media must be refreshed
-			var ml = new vboxLoader();
-			ml.add('vboxGetMedia',function(dat){$('#vboxPane').data('vboxMedia',dat.responseData);});
-			ml.run();
-			
-			if(d.responseData.errored)
-				vboxAlert(trans('Failed to update Guest Additions. The Guest Additions installation image will be mounted to provide a manual installation.','UIMessageCenter'));
-			
-		// There's no CDROM drive
-		} else if(d.responseData && d.responseData.result && d.responseData.result == 'nocdrom') {
-			
-			var vm = vboxVMDataMediator.getVMData(vmid);
-			vboxAlert(trans("<p>Could not insert the VirtualBox Guest Additions " +
-	                "installer CD image into the virtual machine <b>%1</b>, as the machine " +
-	                "has no CD/DVD-ROM drives. Please add a drive using the " +
-	                "storage page of the virtual machine settings dialog.</p>",'UIMessageCenter').replace('%1',vm.name));
-			
-		// Can't find guest additions
-		} else if (d.responseData && d.responseData.result && d.responseData.result == 'noadditions') {
-			
-			var s1 = '('+trans('None','VBoxGlobal')+')';
-			var s2 = s1;
-			
-			if(d.responseData.sources && d.responseData.sources.length) {
-				if(d.responseData.sources[0]) s1 = d.responseData.sources[0];
-				if(d.responseData.sources[1]) s2 = d.responseData.sources[1];
-			}
-			var q = trans('<p>Could not find the VirtualBox Guest Additions CD image file <nobr><b>%1</b></nobr> or <nobr><b>%2</b>.</nobr></p><p>Do you wish to download this CD image from the Internet?</p>','UIMessageCenter').replace('%1',s1).replace('%2',s2);
-			var b = {};
-			b[trans('Yes','QIMessageBox')] = function() {
-				var url = 'http://download.virtualbox.org/virtualbox/%1/VBoxGuestAdditions_%2.iso';
-				url = url.replace('%1',$('#vboxPane').data('vboxConfig').version.string.replace('_OSE',''));
-				url = url.replace('%2',$('#vboxPane').data('vboxConfig').version.string.replace('_OSE',''));
-				$(this).remove();
-				window.open(url);
-			};
-			vboxConfirm(q,b,trans('No','QIMessageBox'));
-		}
-	});
-}
 
 /**
  * Show progress dialog and periodically poll the progress' status

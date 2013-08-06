@@ -303,9 +303,9 @@ function vboxChooserToolbarUSBUpdate(menu) {
 function vboxUpdateSettingsMenu(vm) {
 
 	if(vboxVMStates.isRunning(vm) || vboxVMStates.isPaused(vm)) {
-		$("#vboxToolbarButton-vboxPaneToolbar-settings").enableContextMenu();
+		vboxChooserToolbarTop.getButtonElement("settings").enableContextMenu();
 	} else {
-		$("#vboxToolbarButton-vboxPaneToolbar-settings").disableContextMenu();
+		vboxChooserToolbarTop.getButtonElement("settings").disableContextMenu();
 		return;
 	}
 

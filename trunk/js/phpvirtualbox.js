@@ -2879,6 +2879,14 @@ function vboxToolbar(buttons) {
 	this.mutliSelect = false; // true if multiple items are selected
 
 	/**
+	 * Add buttons to this object
+	 * @param {Array} buttons - buttons to add to toolbar
+	 */
+	this.addButtons = function(buttons) {
+		this.buttons = buttons;
+	}
+	
+	/**
 	 * Update buttons to be enabled / disabled
 	 * 
 	 * @memberOf vboxToolbar
@@ -3026,12 +3034,17 @@ function vboxToolbar(buttons) {
 	 * Render buttons to HTML node where id = id param
 	 * 
 	 * @memberOf vboxToolbar
-	 * @param {String}
-	 *            id - HTMLNode id to add buttons to
+	 * @param {String|Object}
+	 *            node - HTMLNode or id to add buttons to
 	 */
-	this.renderTo = function(id) {
+	this.renderTo = function(node) {
 		
-		self.id = id;
+		if(typeof(node) == 'string') {
+			self.id = node;			
+		} else {
+			self.id = $(node).attr('id');
+		}
+		
 		self.height = self.size + self.addHeight; 
 		
 		// Create table
@@ -3051,7 +3064,7 @@ function vboxToolbar(buttons) {
 		}
 
 		$(tbl).append(tr);
-		$('#'+id).append(tbl).addClass('vboxToolbar vboxToolbar'+this.size).on('disable',self.disable).on('enable',self.enable);
+		$('#'+self.id).append(tbl).addClass('vboxToolbar vboxToolbar'+this.size).on('disable',self.disable).on('enable',self.enable);
 		
 		// If button can be enabled / disabled, disable by default
 		for(var i = 0; i < self.buttons.length; i++) {
@@ -3230,15 +3243,19 @@ function vboxToolbarSmall(buttons) {
 	 * Render buttons to HTML node where id = id param
 	 * 
 	 * @memberOf vboxToolbarSmall
-	 * @param {String}
-	 *            id - HTMLNode id to add buttons to
+	 * @param {String|Object}
+	 *            node - HTMLNode or id to add buttons to
 	 * @return null
 	 */
-	this.renderTo = function(id) {
+	this.renderTo = function(node) {
 		
-		self.id = id;
+		if(typeof(node) == 'string') {
+			self.id = node;			
+		} else {
+			self.id = $(node).attr('id');
+		}
 		
-		var targetElm = $('#'+id);
+		var targetElm = $('#'+self.id);
 		
 		if(!self.buttonStyle)
 			self.buttonStyle = 'height: ' + (self.size+8) + 'px; width: ' + (self.size+8) + 'px; ';
@@ -4375,6 +4392,7 @@ var vboxStorage = {
 	
 	IDE : {
 		maxPortCount : 2,
+		limitOneInstance : true,
 		maxDevicesPerPortCount : 2,
 		types :['PIIX3','PIIX4','ICH6' ],
 		ignoreFlush : true,
@@ -4427,17 +4445,6 @@ var vboxStorage = {
 						return s;				
 					}
 	},
-		
-	Floppy : {
-		maxPortCount : 1,
-		maxDevicesPerPortCount : 2,
-		types : ['I82078'],
-		driveTypes : ['floppy'],
-		slotName : function(p,d) { return trans('Floppy Device %1','VBoxGlobal').replace('%1',d); },
-		slots : function() { return { '0-0':trans('Floppy Device %1','VBoxGlobal').replace('%1','0'), '0-1' :trans('Floppy Device %1','VBoxGlobal').replace('%1','1') }; }
-	},
-
-	
 	SAS : {
 		maxPortCount : 8,
 		maxDevicesPerPortCount : 1,
@@ -4445,13 +4452,24 @@ var vboxStorage = {
 		driveTypes : ['disk'],
 		slotName : function(p,d) { return trans('SAS Port %1','VBoxGlobal').replace('%1',p); },
 		slots : function() {
-						var s = {};
-						for(var i = 0; i < 8; i++) {
-							s[i+'-0'] = trans('SAS Port %1','VBoxGlobal').replace('%1',i);
-						}
-						return s;				
-					},
+			var s = {};
+			for(var i = 0; i < 8; i++) {
+				s[i+'-0'] = trans('SAS Port %1','VBoxGlobal').replace('%1',i);
+			}
+			return s;				
+		},
 		displayInherit : 'SATA'
+	},
+		
+
+	Floppy : {
+		maxPortCount : 1,
+		limitOneInstance : true,
+		maxDevicesPerPortCount : 2,
+		types : ['I82078'],
+		driveTypes : ['floppy'],
+		slotName : function(p,d) { return trans('Floppy Device %1','VBoxGlobal').replace('%1',d); },
+		slots : function() { return { '0-0':trans('Floppy Device %1','VBoxGlobal').replace('%1','0'), '0-1' :trans('Floppy Device %1','VBoxGlobal').replace('%1','1') }; }	
 	}
 
 };

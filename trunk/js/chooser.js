@@ -430,6 +430,8 @@ var vboxChooser = {
 			styleRules[styleRules.length] = 'div.vboxChooserGroup { overflow: hidden; }';
 			// host
 			styleRules[styleRules.length] = '#vboxChooserVMHost .vboxVMState { display: none; }';
+			// group header 
+			styleRules[styleRules.length] = 'div.vboxChooserGroup div.vboxChooserGroupHeader { height: auto; padding: 2px; }';
 
 		}
 		$('head').append('<style type="text/css" id="vboxChooserStyle">#'+vboxChooser._anchorid + ' ' + styleRules.join("\n#"+vboxChooser._anchorid + " ") + '</style>');

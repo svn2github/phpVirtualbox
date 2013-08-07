@@ -143,9 +143,7 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 		$(document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEEnabled).attr('checked',
 				(!$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.enabled)).trigger('click');
 		
-		console.log($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer);
-
-		if(($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.allowMultiConnection)) {
+ú		if(($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.allowMultiConnection)) {
 			document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEMulti.checked = true;
 		} else {
 			document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEMulti.checked = false;

@@ -1404,7 +1404,7 @@ class vboxconnector {
 			foreach($args['storageControllers'] as $sc) {
 	
 				$sc['name'] = trim($sc['name']);
-				$name = ($sc['name'] ? $sc['name'] : $sc['bus'].' Controller');
+				$name = ($sc['name'] ? $sc['name'] : $sc['bus']);
 	
 				// Medium attachments
 				foreach($sc['mediumAttachments'] as $ma) {
@@ -1880,7 +1880,7 @@ class vboxconnector {
 		foreach($args['storageControllers'] as $sc) {
 
 			$sc['name'] = trim($sc['name']);
-			$name = ($sc['name'] ? $sc['name'] : $sc['bus'].' Controller');
+			$name = ($sc['name'] ? $sc['name'] : $sc['bus']);
 
 
 			$bust = new StorageBus(null,$sc['bus']);
@@ -1896,12 +1896,6 @@ class vboxconnector {
 				}
 				$c->portCount = min(intval($c->maxPortCount),max(count($sc['mediumAttachments']),$max));
 
-				// Check for "automatic" setting
-				/*
-				 Disabled for now
-				if(intval(@$sc['portCount']) == 0) $m->setExtraData('phpvb/AutoSATAPortCount','yes');
-				else $m->setExtraData('phpvb/AutoSATAPortCount','no');
-				*/
 			}
 			$c->releaseRemote();
 
@@ -3649,17 +3643,22 @@ class vboxconnector {
 				$HDconType = (string)$defaults->recommendedHDStorageController;
 
 				$bus = new StorageBus(null,$HDbusType);
-				$sc = $this->session->machine->addStorageController(trans($HDbusType.' Controller','UIMachineSettingsStorage'),(string)$bus);
+				$sc = $this->session->machine->addStorageController(trans($HDbusType,'UIMachineSettingsStorage'),(string)$bus);
 				$sc->controllerType = $HDconType;
 				$sc->useHostIOCache = (bool)$this->vbox->systemProperties->getDefaultIoCacheSettingForStorageController($HDconType);
+				
+				// Set port count?
+				if($HDbusType == 'SATA') {
+					$sc->portCount = (($HDbusType == $DVDbusType) ? 2 : 1);
+				} 
+				
 				$sc->releaseRemote();
 
 				$m = $this->vbox->openMedium($args['disk'],'HardDisk');
 
-				$this->session->machine->attachDevice(trans($HDbusType.' Controller','UIMachineSettingsStorage'),0,0,'HardDisk',$m->handle);
+				$this->session->machine->attachDevice(trans($HDbusType,'UIMachineSettingsStorage'),0,0,'HardDisk',$m->handle);
 
 				$m->releaseRemote();
-
 
 			}
 
@@ -3669,20 +3668,21 @@ class vboxconnector {
 				if(!$args['disk'] || ($HDbusType != $DVDbusType)) {
 
 					$bus = new StorageBus(null,$DVDbusType);
-					$sc = $this->session->machine->addStorageController(trans($DVDbusType.' Controller','UIMachineSettingsStorage'),(string)$bus);
+					$sc = $this->session->machine->addStorageController(trans($DVDbusType,'UIMachineSettingsStorage'),(string)$bus);
 					$sc->controllerType = $DVDconType;
 					$sc->useHostIOCache = (bool)$this->vbox->systemProperties->getDefaultIoCacheSettingForStorageController($DVDconType);
+					
+					// Set port count?
+					if($DVDbusType == 'SATA') {
+						$sc->portCount = ($args['disk'] ? 1 : 2);
+					}
+						
 					$sc->releaseRemote();
 				}
 
-				$this->session->machine->attachDevice(trans($DVDbusType.' Controller','UIMachineSettingsStorage'),1,0,'DVD',null);
+				$this->session->machine->attachDevice(trans($DVDbusType,'UIMachineSettingsStorage'),1,0,'DVD',null);
 
 			}
-
-			// Auto-sata port count
-			/* Disabled for now
-			$this->session->machine->setExtraData('phpvb/AutoSATAPortCount','yes');
-			*/
 
 			$this->session->machine->saveSettings();
 			$this->session->unlockMachine();
@@ -3990,7 +3990,6 @@ class vboxconnector {
 				'SaveMountedAtRuntime' => $m->getExtraData('GUI/SaveMountedAtRuntime'),
 				'FirstRun' => $m->getExtraData('GUI/FirstRun')
 			),
-			// Disabled for now 'AutoSATAPortCount' => $m->getExtraData('phpvb/AutoSATAPortCount'),
 			'customIcon' => (@$this->settings->enableCustomIcons ? $m->getExtraData('phpvb/icon') : ''),
 			'disableHostTimeSync' => intval($m->getExtraData("VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled")),
 			'CPUExecutionCap' => intval($m->CPUExecutionCap)

@@ -255,6 +255,7 @@ function vboxGuestOSTypeIcon(osTypeId) {
         case "NetBSD_64":       strIcon = "os_netbsd_64.png"; break;
         case "Solaris":         strIcon = "os_solaris.png"; break;
         case "Solaris_64":      strIcon = "os_solaris_64.png"; break;
+        case "Solaris11_64":      strIcon = "os_oraclesolaris_64.png"; break;
         case "OpenSolaris":     strIcon = "os_oraclesolaris.png"; break;
         case "OpenSolaris_64":  strIcon = "os_oraclesolaris_64.png"; break;
         case "QNX":             strIcon = "os_qnx.png"; break;

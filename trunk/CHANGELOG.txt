@@ -31,7 +31,15 @@ Fixed bug that would not update VM display when a VM's custom icon
 was changed.
 
 Fixed bug when refreshing VM data that would not cause redraws of
-certain sections. 
+certain sections.
+
+Fixed display of Acceleration properties in VM details view.
+
+Added ability to handle more than one instance of SATA, SAS, and
+SCSI controllers in VM settings. 
+
+Changed new controller names when creating a new VM to align with
+VirtualBox naming conventions.
 
 -------------------------------------
 	4.2-6	2013-07-22

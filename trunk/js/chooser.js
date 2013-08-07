@@ -646,7 +646,7 @@ var vboxChooser = {
 					function(a) {
 						
 						// Check for unfinished progress operations
-						if($('#vboxProgressOps').children('div:not(.vboxProgressComplete)').addClass('vboxProgressRunning').length) {
+						if($('#vboxProgressOps').children().first().siblings('div:not(.vboxProgressComplete)').addClass('vboxProgressRunning').length) {
 							vboxAlert('Cannot change servers while operations are in progress');
 							return;
 						}

@@ -478,6 +478,7 @@ class vboxconnector {
 								'enabled' => intval($vrde->enabled),
 								'ports' => $vrde->getVRDEProperty('TCP/Ports'),
 								'netAddress' => $vrde->getVRDEProperty('TCP/Address'),
+								'VNCPassword' => $vrde->getVRDEProperty('VNCPassword'),
 								'authType' => (string)$vrde->authType,
 								'authTimeout' => $vrde->authTimeout
 								)
@@ -1382,6 +1383,7 @@ class vboxconnector {
 			if($m->VRDEServer && $this->vbox->systemProperties->defaultVRDEExtPack) {
 				$m->VRDEServer->enabled = intval($args['VRDEServer']['enabled']);
 				$m->VRDEServer->setVRDEProperty('TCP/Ports',$args['VRDEServer']['ports']);
+				$m->VRDEServer->setVRDEProperty('VNCPassword',$args['VRDEServer']['VNCPassword'] ? $args['VRDEServer']['VNCPassword'] : null);
 				$m->VRDEServer->authType = ($args['VRDEServer']['authType'] ? $args['VRDEServer']['authType'] : null);
 				$m->VRDEServer->authTimeout = intval($args['VRDEServer']['authTimeout']);
 			}
@@ -1807,13 +1809,6 @@ class vboxconnector {
 
 		$m->VRAMSize = $args['VRAMSize'];
 		
-		/* Unsupported at this time
-		$m->monitorCount = max(1,intval($args['monitorCount']));
-		$m->accelerate3DEnabled = $args['accelerate3DEnabled'];
-		$m->accelerate2DVideoEnabled = $args['accelerate2DVideoEnabled'];
-		*/
-
-
 		$m->setExtraData('GUI/SaveMountedAtRuntime', ($args['GUI']['SaveMountedAtRuntime'] == 'no' ? 'no' : 'yes'));
 
 		// VRDE settings
@@ -1823,6 +1818,7 @@ class vboxconnector {
 				$m->VRDEServer->setVRDEProperty('TCP/Ports',$args['VRDEServer']['ports']);
 				if(@$this->settings->enableAdvancedConfig)
 					$m->VRDEServer->setVRDEProperty('TCP/Address',$args['VRDEServer']['netAddress']);
+				$m->VRDEServer->setVRDEProperty('VNCPassword',$args['VRDEServer']['VNCPassword'] ? $args['VRDEServer']['VNCPassword'] : null);
 				$m->VRDEServer->authType = ($args['VRDEServer']['authType'] ? $args['VRDEServer']['authType'] : null);
 				$m->VRDEServer->authTimeout = intval($args['VRDEServer']['authTimeout']);
 				$m->VRDEServer->allowMultiConnection = intval($args['VRDEServer']['allowMultiConnection']);
@@ -3417,6 +3413,7 @@ class vboxconnector {
 					'enabled' => intval($vrde->enabled),
 					'ports' => $vrde->getVRDEProperty('TCP/Ports'),
 					'netAddress' => $vrde->getVRDEProperty('TCP/Address'),
+					'VNCPassword' => $vrde->getVRDEProperty('VNCPassword'),
 					'authType' => (string)$vrde->authType,
 					'authTimeout' => $vrde->authTimeout,
 					'VRDEExtPack' => (string)$vrde->VRDEExtPack
@@ -3963,6 +3960,7 @@ class vboxconnector {
 				'enabled' => intval($m->VRDEServer->enabled),
 				'ports' => $m->VRDEServer->getVRDEProperty('TCP/Ports'),
 				'netAddress' => $m->VRDEServer->getVRDEProperty('TCP/Address'),
+				'VNCPassword' => $m->VRDEServer->getVRDEProperty('VNCPassword'),
 				'authType' => (string)$m->VRDEServer->authType,
 				'authTimeout' => $m->VRDEServer->authTimeout,
 				'allowMultiConnection' => intval($m->VRDEServer->allowMultiConnection),

@@ -104,7 +104,7 @@ var vboxEventListener = {
 		// Subscribe to events and start main loop
 		$.when(vboxAjaxRequest('subscribeEvents',{vms:vmlist})).done(function(d) {
 			vboxEventListener._persist = d.persist;
-			$.when(vboxEventListener._getEvents()).then(function(){
+			$.when(vboxEventListener._getEvents()).done(function(){
 				started.resolve();
 			});
 		});
@@ -172,7 +172,7 @@ var vboxEventListener = {
 		// Add to queue
 		return vboxEventListener._requestQueue.addReq(function(){
 			
-			return $.when(new Date().getTime(), vboxAjaxRequest('getEvents',{'_persist':vboxEventListener._persist})).then(function(lastTime,d) {
+			return $.when(new Date().getTime(), vboxAjaxRequest('getEvents',{'_persist':vboxEventListener._persist})).done(function(lastTime,d) {
 				
 				// Don't do anything if this is not running
 				if(!vboxEventListener._running) return;

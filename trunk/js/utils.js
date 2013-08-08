@@ -68,16 +68,22 @@ function vboxTraverse(tree,prop,val,all,children) {
  */
 function vboxAjaxRequest(fn,params) {
 	
-	// Fatal error previously occurred
-	if($('#vboxPane').data('vboxFatalError')) return;
+	// Promise for data
+	var def = $.Deferred();
 	
-	return $.post('lib/ajax.php', $.extend(true,{},(params ? params : {}),{'fn':fn}),undefined,"json")
+	// Fatal error previously occurred
+	if($('#vboxPane').data('vboxFatalError'))
+		return def.reject();
+	
+	$.when($.post('lib/ajax.php', $.extend(true,{},(params ? params : {}),{'fn':fn}),undefined,"json")
 	
 		// Run on error
-		.error(function(d,etext,xlr) {
+		.fail(function(d,etext,xlr,d2) {
 
 			// Fatal error previously occurred
-			if($('#vboxPane').data('vboxFatalError')) return;
+			if($('#vboxPane').data('vboxFatalError')) return null;
+			
+			console.log(d);
 
 			if(etext != 'error') {
 				
@@ -92,14 +98,30 @@ function vboxAjaxRequest(fn,params) {
 				vboxAlert({'error':'Ajax error: ' + etext,'details':d.responseText},{'width':'400px'});
 
 			} else {
-				phpVirtualBoxFailure(' (General communication failure)');
+				
+				// Check for error HTTP status
+				if(d && d.status && (String(d.status).substring(0,1) == '4' || String(d.status).substring(0,1) == '5')) {
+					var err = {error:'<div align="center">HTTP error: ' + d.status + ' ' + d.statusText+"</div>",details:''};
+					for(var i in d) {
+						if(typeof(d[i]) == 'function' || typeof(d[i]) == 'object') continue;
+						err.details += i + ': "' + d[i] + '"' + "\n";
+					}
+					phpVirtualBoxFailure(err);
+					
+				} else {
+					phpVirtualBoxFailure('<div align="center">(General communication failure)');					
+				}
 			}
+			
+			return null;
 			
 		// Filter out data and display error messages
 		}).pipe(function(d){
 
 			// Fatal error previously occurred
-			if($('#vboxPane').data('vboxFatalError')) return;
+			if($('#vboxPane').data('vboxFatalError')) {
+				return null;
+			}
 
 			// Append debug output to console
 			if(d && d.messages && window.console && window.console.log) {
@@ -161,7 +183,15 @@ function vboxAjaxRequest(fn,params) {
 				
 			return (d && d.data ? d.data : null);
 			
-		});
+		})
+	).done(function(d) {
+		if(d) def.resolve(d);
+		else def.reject();
+	}).fail(function(){
+		def.reject();
+	});
+	
+	return def.promise();
 }
 
 /**
@@ -680,16 +710,13 @@ function vboxProgress(prequest,callback,icon,title,target,blocking) {
 	
 		vboxProgressCreateListElement(prequest,icon,title,target,callback);
 		
-		$.when(prequest, vboxAjaxRequest('progressGet',prequest)).then(vboxProgressUpdate);
+		$.when(prequest, vboxAjaxRequest('progressGet',prequest)).done(vboxProgressUpdate);
 
 	} else {
 		
 		vboxProgressCreateDialog(prequest,icon,title,target,callback);
-		
-		// Don't unload while progress operation is .. in progress
-		window.onbeforeunload = vboxOpInProgress;
-		
-		$.when(prequest, vboxAjaxRequest('progressGet',prequest)).then(vboxProgressUpdateModal);
+				
+		$.when(prequest, vboxAjaxRequest('progressGet',prequest)).done(vboxProgressUpdateModal);
 	}
 	
 	
@@ -736,6 +763,9 @@ function vboxProgressCreateDialog(prequest,icon,title,target,callback) {
 	
 	
 	$(tbl).append($(tr).append(td)).appendTo(div);
+	
+	// Append placeholder for list element
+	$('#vboxProgressOps').append($('<div />').addClass('vboxProgressOpElement').css({'display':'none'}).attr({'id':'vboxProgressPlaceholder'+pid}));
 	
 	$(div).data({
 		'vboxCallback':callback,
@@ -797,50 +827,14 @@ function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
 				.css({'margin':'0px'})
 	).appendTo(div);
 	
-	$(div).data({'vboxCallback':callback}).insertAfter($('#vboxResizeBarProgressEW'));
+	$(div).data({'vboxCallback':callback})
+	
+	if($('#vboxProgressPlaceholder'+pid)[0]) {
+		$('#vboxProgressPlaceholder'+pid).replaceWith(div);
+	} else {
+		$(div).insertAfter($('#vboxResizeBarProgressEW'));		
+	}
 
-	return;
-	
-	var tbl = $('<table />').css({'width':'100%'});
-	var tr = $('<tr />').css({'vertical-align':'middle'});
-	
-	// Icon
-	var td = $('<td />').css({'padding':'0px','text-align':'center','width':'28px'});
-	if(icon) {
-		$('<img />').css({'height':'22px','width':'22px'}).attr({'src':'images/vbox/'+icon,'height':'22','width':'22'}).appendTo(td);
-	}
-	$(tr).append(td);
-	
-	// Title
-	if($('#vboxPane').data('vboxConfig').servers.length) {
-		title = $('#vboxPane').data('vboxConfig').name + ': ' + title;		
-	}
-	$('<td />').css({'padding':'0px','text-align':'left','width':'580px'}).html(title + (target ? ' (' + target + ')' : '')).appendTo(tr);
-	
-	// Progress bar
-	$('<td />').css({'text-align':'center','padding':'2px','width':'220px'}).append(
-			$('<div />').attr({'id':'vboxProgressBar'+pid}).progressbar({ value: 1 })
-	).appendTo(tr);
-	
-	// Progress text
-	$('<td />').css({'text-align':'left'}).append(
-			$('<div />').attr({'id':'vboxProgressText'+pid}).html('<img src="images/spinner.gif" height=12 width=12/>')
-	).appendTo(tr);
-	
-	// Cancel button
-	$('<td />').css({'width':'20px','text-align':'right','padding':'0px'}).append(
-			$('<input />').attr({'id':'vboxProgressCancel'+pid,'type':'button'}).val(trans('Cancel','UIProgressDialog')).data({'pid':pid})
-				.click(function(){
-					this.disabled = 'disabled';
-					vboxAjaxRequest('progressCancel',prequest);
-				})
-				.css({'margin':'0px'})
-	).appendTo(tr);
-	
-	$(tbl).append(tr).appendTo(div);
-	
-	$(div).data({'vboxCallback':callback}).insertAfter($('#vboxResizeBarProgressEW'));
-	
 	
 }
 
@@ -848,7 +842,11 @@ function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
  * OnUnload warning shown when an operation is in progress
  * @return {String} warning message indicating operation is in progress
  */
-function vboxOpInProgress() { return trans('Warning: A VirtualBox internal operation is in progress. Closing this window or navigating away from this web page may cause unexpected and undesirable results. Please wait for the operation to complete.','phpVirtualBox');}
+function vboxOpInProgressCheck() {
+	if($('#vboxProgressOps').children('div.vboxProgressOpElement:not(.vboxProgressComplete)').addClass('vboxProgressRunning').length) {
+		return trans('Warning: A VirtualBox internal operation is in progress. Closing this window or navigating away from this web page may cause unexpected and undesirable results. Please wait for the operation to complete.','phpVirtualBox');
+	}
+}
 
 /**
  * Update progress dialog box. Callback run from vboxAjaxRequest
@@ -892,8 +890,6 @@ function vboxProgressUpdate(prequest,d,modal) {
 			$("#vboxProgress"+pid).empty().remove();
 
 			if(callback) callback(d);
-			
-			window.onbeforeunload = null;
 			
 			// Now append to list
 			vboxProgressCreateListElement(prequest,icon,title,target);
@@ -947,7 +943,7 @@ function vboxProgressUpdate(prequest,d,modal) {
 	def.done(function(){
 		
 		$.when(prequest, vboxAjaxRequest('progressGet', prequest))
-			.then((modal ? vboxProgressUpdateModal : vboxProgressUpdate));
+			.done((modal ? vboxProgressUpdateModal : vboxProgressUpdate));
 		
 	});
 	window.setTimeout(def.resolve, 2000);
@@ -1081,14 +1077,20 @@ function vboxParseCookies() {
 
 /**
  * General application failure
- * @param {String} msg - Optional extra message appended to error
+ * @param {String|Object} msg - Optional extra message appended to error
+ * 		or error object passed to vboxAlert
  */
 function phpVirtualBoxFailure(msg) {
 	if($('#vboxPane').data('vboxFatalError')) return;
 	$('#vboxPane').data('vboxFatalError', 1);
 	$('#vboxPane').css({'display':'none'});
 	$('#vboxPane').trigger('phpVirtualBoxFailure');
-	vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox')+(msg ? msg : ''));
+	if(typeof(msg) == 'string') {
+		vboxAlert(trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox')+(msg ? msg : ''));
+	} else {
+		msg.error = trans('There was an error obtaining the list of registered virtual machines from VirtualBox. Make sure vboxwebsrv is running and that the settings in config.php are correct.<p>The list of virtual machines will not begin auto-refreshing again until this page is reloaded.</p>','phpVirtualBox') + msg.error;		
+		vboxAlert(msg);
+	}
 }
 
 /**
@@ -1354,3 +1356,9 @@ if (!Array.prototype.filter)
   };
 }
 
+$(document).ready(function() {
+
+	// Don't unload while progress operation is .. in progress
+	$(window).on('beforeunload',vboxOpInProgressCheck);
+
+});

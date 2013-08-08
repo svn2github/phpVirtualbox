@@ -195,7 +195,7 @@ var vboxVMDataMediator = {
 		// Special case for 'host'
 		if(vmid == 'host') {
 			var def = $.Deferred();
-			$.when(vboxVMDataMediator.getVMDetails(vmid)).then(function(d){
+			$.when(vboxVMDataMediator.getVMDetails(vmid)).done(function(d){
 				def.resolve(d);
 			}).fail(function(){
 				def.reject();
@@ -211,7 +211,7 @@ var vboxVMDataMediator = {
 		}
 		
 		var def = $.Deferred();
-		$.when(vboxVMDataMediator.getVMDetails(vmid), runtime, vboxVMDataMediator.getVMData(vmid)).then(function(d1,d2,d3){
+		$.when(vboxVMDataMediator.getVMDetails(vmid), runtime, vboxVMDataMediator.getVMData(vmid)).done(function(d1,d2,d3){
 			def.resolve($.extend(true,{},d1,d2,d3));
 		}).fail(function(){
 			def.reject();

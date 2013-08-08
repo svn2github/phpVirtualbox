@@ -125,7 +125,7 @@ if($('#vboxPane').data('vboxSession').user) {
 					vboxVMDataMediator.expireAll();
 
 					// Unsubscribe from events
-					$.when(vboxEventListener.stop()).then(function() {
+					$.when(vboxEventListener.stop()).done(function() {
 						
 						// remove loading screen
 						lm.removeLoading();

@@ -90,7 +90,7 @@ $('#vboxPane').on('vmSelectionListChanged', function(){
 	} else {
 		
 		// VM is running, get runtime data
-		$.when(vboxVMDataMediator.getVMRuntimeData(vm.id)).then(function(runtimeInfo) {
+		$.when(vboxVMDataMediator.getVMRuntimeData(vm.id)).done(function(runtimeInfo) {
 			
 			if(runtimeInfo.VRDEServerInfo && runtimeInfo.VRDEServerInfo.port > 0) {
 				
@@ -151,7 +151,7 @@ $('#vboxPane').on('vmSelectionListChanged', function(){
 	if(enabled) {
 		
 		// VM is running, get runtime data
-		$.when(vboxVMDataMediator.getVMRuntimeData(eventData.machineId)).then(function(vm) {
+		$.when(vboxVMDataMediator.getVMRuntimeData(eventData.machineId)).done(function(vm) {
 			
 			if(vm.VRDEServerInfo && vm.VRDEServerInfo.port > 0) {
 				
@@ -196,7 +196,7 @@ $('#vboxTabVMConsole').on('show',function(){
 	/* Load runtime data. This will tell us if the VRDE server is actually active */
 	/* And details. This will give us info about the VRDEServer configuration */
 	$.when(vboxVMDataMediator.getVMRuntimeData(vm.id),vboxVMDataMediator.getVMDetails(vm.id))
-		.then(function(runtimeData, detailsData) {
+		.done(function(runtimeData, detailsData) {
 		
 		/* Not active */
 		if(!(runtimeData.VRDEServerInfo && runtimeData.VRDEServerInfo.port > 0)) {

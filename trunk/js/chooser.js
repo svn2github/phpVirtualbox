@@ -646,13 +646,6 @@ var vboxChooser = {
 					function(a) {
 						
 						if(a == $('#vboxPane').data('vboxConfig').name) return;				
-
-						// Check for unfinished progress operations
-						if($('#vboxProgressOps').children().first().siblings('div:not(.vboxProgressComplete)').addClass('vboxProgressRunning').length) {
-							vboxAlert('Cannot change servers while operations are in progress');
-							return;
-						}
-						
 						
 						// Show loading screen
 						var l = new vboxLoader();
@@ -1859,7 +1852,7 @@ var vboxChooser = {
 				$(gelm).addClass('vboxChooserGroupShowOnly vboxChooserGroupRootLevel').siblings().addClass('vboxChooserGroupHide');
 
 				$.when(vboxChooser._anchor.show('slide', {direction: (back ? 'left' : 'right'), distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200))
-					.then(function(){
+					.done(function(){
 						
 						// Restore scrolling
 						vboxChooser._anchor.css({'overflow-y':'auto'});
@@ -1895,7 +1888,7 @@ var vboxChooser = {
 				vboxChooser._anchor.children('div.vboxChooserGroupRoot').addClass('vboxChooserGroupRootLevel');
 
 				$.when(vboxChooser._anchor.show('slide', {direction: 'left', distance: (vboxChooser._anchor.outerWidth()/1.5)}, 200))
-					.then(function(){
+					.done(function(){
 
 						// Restore scrolling
 						vboxChooser._anchor.css({'overflow-y':'auto'});

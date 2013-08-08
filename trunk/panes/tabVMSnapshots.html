@@ -504,7 +504,7 @@ $('#vboxPane').on('vmSelectionListChanged',function(){
 		// Enable tab
 		$('#vboxTabVMSnapshots').parent().trigger('enableTab', ['vboxTabVMSnapshots']);		
 
-		$.when(vboxVMDataMediator.getVMDetails(vm.id)).then(function(vm) {
+		$.when(vboxVMDataMediator.getVMDetails(vm.id)).done(function(vm) {
 			$('#vboxTabVMSnapshotsTitle').html(trans('Snapshots','UIVMDesktop') + (vm && vm.snapshotCount ? trans(' (%1)','VBoxSnapshotsWgt').replace('%1',vm.snapshotCount):''));
 		});
 		

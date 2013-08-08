@@ -276,7 +276,7 @@ var vmmButtons = new Array(
 		'icon' : 'hd_new',
 		'enabled' : function (item) { return(!$("#vboxVMMTabs").tabs('option','active')); },
 		'click' : function () {
-			$.when(new vboxWizardNewHDDialog({'path':$('#vboxVirtualMediaManager').data('vmPath')}).run()).then(function(id){
+			$.when(new vboxWizardNewHDDialog({'path':$('#vboxVirtualMediaManager').data('vmPath')}).run()).done(function(id){
 				vboxVMMFillMedia(id);				
 			});
 		}
@@ -389,7 +389,7 @@ var vmmButtons = new Array(
 					elm = $('#vboxVMMHDList');
 					break;
 			}
-			$.when(new vboxWizardCopyHDDialog({'medium':$(elm).find('tr.vboxListItemSelected').first().data('medium')}).run()).then(function(id){
+			$.when(new vboxWizardCopyHDDialog({'medium':$(elm).find('tr.vboxListItemSelected').first().data('medium')}).run()).done(function(id){
 				vboxVMMFillMedia(id);
 			}); 
 		}
@@ -426,7 +426,7 @@ var vmmButtons = new Array(
 					}
 				}
 
-				$.when(vboxAjaxRequest('mediumSetType',{'medium':med.location,'type':mtype})).then(function(ret){
+				$.when(vboxAjaxRequest('mediumSetType',{'medium':med.location,'type':mtype})).done(function(ret){
 					
 					if(ret && ret.success) {
 						var l = new vboxLoader();
@@ -520,7 +520,7 @@ var vmmButtons = new Array(
 						'untouched which makes it possible to add this hard disk to the list later again.</p>','UIMessageCenter').replace('%1',m.location);
 				
 				buttons[trans('Delete','UIMessageCenter')] = function(){
-					$.when(vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType,'delete':1})).then(function(ret){
+					$.when(vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType,'delete':1})).done(function(ret){
 						if(ret && ret.responseData && ret.responseData.progress) {
 							vboxProgress(ret.responseData,function(){
 								var l = new vboxLoader();
@@ -535,7 +535,7 @@ var vmmButtons = new Array(
 				};
 				
 				buttons[trans('Keep','UIMessageCenter')] = function(){
-					$.when(vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType})).then(function(ret){
+					$.when(vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType})).done(function(ret){
 						var l = new vboxLoader();
 						l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 						l.onLoad = function() {vboxVMMFillMedia(); };
@@ -551,7 +551,7 @@ var vmmButtons = new Array(
 				
 				buttons[trans('Remove','UIMessageCenter')] = function(){
 					var b = this;
-					$.when(vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType})).then(function(ret){
+					$.when(vboxAjaxRequest('mediumRemove',{'medium':m.location,'type':m.deviceType})).done(function(ret){
 						var l = new vboxLoader();
 						l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
 						l.onLoad = function() {vboxVMMFillMedia(); };
@@ -602,7 +602,7 @@ var vmmButtons = new Array(
 			var buttons = {};
 			buttons[trans('Release','UIMessageCenter')] = function(){
 				var b = this;
-				$.when(vboxAjaxRequest('mediumRelease',{'medium':m.location,'type':m.deviceType})).then(function(ret){
+				$.when(vboxAjaxRequest('mediumRelease',{'medium':m.location,'type':m.deviceType})).done(function(ret){
 					
 					var l = new vboxLoader();
 					l.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});

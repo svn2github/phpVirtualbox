@@ -82,7 +82,7 @@ $('#vboxPane').on('vmSelectionListChanged',function(){
 			
 			targetDiv.children().empty().remove();					
 
-			$.when(vboxVMDataMediator.getVMDetails('host')).then(function(d) {
+			$.when(vboxVMDataMediator.getVMDetails('host')).done(function(d) {
 
 				// Hide loading screen
 				targetDiv.siblings().hide();
@@ -137,7 +137,7 @@ $('#vboxPane').on('vmSelectionListChanged',function(){
 			    skipTable = true;
 			}
 			
-			$.when(vboxChooser.selectedVMs[i], vboxVMDataMediator.getVMDataCombined(vboxChooser.selectedVMs[i])).then(function(vmid, d) {
+			$.when(vboxChooser.selectedVMs[i], vboxVMDataMediator.getVMDataCombined(vboxChooser.selectedVMs[i])).done(function(vmid, d) {
 				
 				// Remove placeholder and don't draw
 				// if this vm is no longer selected
@@ -243,7 +243,7 @@ $('#vboxPane').on('vmSelectionListChanged',function(){
 		if(typeof(vmid) != 'string') continue;
 		
 		// Get and show details and runtime data again	
-		$.when(vboxVMDataMediator.getVMDataCombined(vmid)).then(function(d) {
+		$.when(vboxVMDataMediator.getVMDataCombined(vmid)).done(function(d) {
 			
 			// Do nothing if VM is no longer selected
 			if(!vboxChooser.isVMSelected(d.id)) return;
@@ -267,7 +267,7 @@ $('#vboxPane').on('vmSelectionListChanged',function(){
 		if(vmRedrawDetails[vmid]) continue; // already redrew entire details
 		
 		// Get and show details and runtime data again	
-		$.when(vboxVMDataMediator.getVMDataCombined(vmid),vmRedrawSections[vmid]).then(function(d,sections) {
+		$.when(vboxVMDataMediator.getVMDataCombined(vmid),vmRedrawSections[vmid]).done(function(d,sections) {
 
 			// Do nothing if VM is no longer selected
 			if(!vboxChooser.isVMSelected(d.id)) return;
@@ -488,7 +488,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 					$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
 						.toggleClass('vboxDetailsSectionCollapsed', 500)
 						
-				).then(function() {
+				).done(function() {
 					$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
 						.find('canvas').each(function(idx, can) {
 							var ctx = can.getContext('2d');
@@ -532,7 +532,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 								});
 							},
 							queue: true
-						})).then(function(){
+						})).done(function(){
 							
 							vboxArrowImage.css({
 								'transform':'',
@@ -626,7 +626,7 @@ function __vboxDisplayDetailsData(data, multiSelect, targetDiv, skipTable) {
 			
 			var l = new vboxLoader();
 			l.showLoading();
-			$.when(vboxVMDataMediator.refreshVMData(e.data.vmid)).then(function(){
+			$.when(vboxVMDataMediator.refreshVMData(e.data.vmid)).done(function(){
 				l.removeLoading();	
 			});
 			

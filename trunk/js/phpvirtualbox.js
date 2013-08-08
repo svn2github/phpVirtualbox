@@ -147,7 +147,7 @@ var vboxHostDetailsSections = {
 			}
 			
 			var vboxHostUpdateMeminfo = function() {
-				$.when(vboxAjaxRequest('hostGetMeminfo')).then(function(d){
+				$.when(vboxAjaxRequest('hostGetMeminfo')).done(function(d){
 					vboxHostShowMemInfo(d.responseData);		
 				});
 			};
@@ -975,7 +975,7 @@ var vboxVMDetailsSections = {
 			}
 			var l = new vboxLoader();
 			l.showLoading();
-			$.when(mRefresh, vboxVMDataMediator.refreshVMData(vmid)).then(function(d){
+			$.when(mRefresh, vboxVMDataMediator.refreshVMData(vmid)).done(function(d){
 				if(d && d.responseData) $('#vboxPane').data('vboxMedia',d.responseData);
 			}).always(function(){
 				l.removeLoading();
@@ -1462,7 +1462,7 @@ var vboxVMActions = {
 				
 				var frDef = $.Deferred();
 				
-				$.when(vboxVMDataMediator.getVMDetails(vm.id)).then(function(d) {
+				$.when(vboxVMDataMediator.getVMDetails(vm.id)).done(function(d) {
 
 					// Not first run?
 					if(d.GUI.FirstRun != 'yes') {
@@ -1491,7 +1491,7 @@ var vboxVMActions = {
 					}
 					
 					// First time run
-					$.when(d, new vboxWizardFirstRunDialog(d).run()).then(function(vm2start){
+					$.when(d, new vboxWizardFirstRunDialog(d).run()).done(function(vm2start){
 						frDef.resolve(vm2start);
 					});
 					
@@ -1515,9 +1515,9 @@ var vboxVMActions = {
 				
 				(function runVMsToStart(vms){
 					
-					(vms.length && $.when(firstRun(vms.shift())).then(function(vm){
+					(vms.length && $.when(firstRun(vms.shift())).done(function(vm){
 
-						$.when(vm,vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'})).then(function(evm,d){
+						$.when(vm,vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'})).done(function(evm,d){
 							// check for progress operation
 							if(d && d.responseData && d.responseData.progress) {
 								var icon = null;
@@ -1556,7 +1556,7 @@ var vboxVMActions = {
 				l.showLoading();
 				
 				// Load all needed data
-				$.when.apply($, loadData).then(function() {
+				$.when.apply($, loadData).done(function() {
 					
 					// Remove loading screen
 					l.removeLoading();
@@ -1651,7 +1651,7 @@ var vboxVMActions = {
 			
 			var l = new vboxLoader();
 			l.showLoading();
-			$.when(vboxVMDataMediator.refreshVMData(vmid)).then(function(){
+			$.when(vboxVMDataMediator.refreshVMData(vmid)).done(function(){
 				l.removeLoading();
 			});
 			
@@ -1722,7 +1722,7 @@ var vboxVMActions = {
 							// Remove each selected vm
 							$.when(vms[i].name, vboxAjaxRequest('machineRemove',
 									{'vm':vms[i].id,'delete':(keepFiles ? '0' : '1')}))
-								.then(function(vmname, d){
+								.done(function(vmname, d){
 									// check for progress operation
 									if(d && d.responseData && d.responseData.progress) {
 										vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){return;},'progress_delete_90px.png',
@@ -1839,7 +1839,7 @@ var vboxVMActions = {
     		if(!vmid)
     			vmid = vboxChooser.getSingleSelected().id;
     		
-			$.when(vboxAjaxRequest('consoleGuestAdditionsInstall',{'vm':vmid,'mount_only':(mount_only ? 1 : 0)})).then(function(d){
+			$.when(vboxAjaxRequest('consoleGuestAdditionsInstall',{'vm':vmid,'mount_only':(mount_only ? 1 : 0)})).done(function(d){
 				
 				// Progress operation returned. Guest Additions are being updated.
 				if(d && d.responseData && d.responseData.progress) {
@@ -2094,7 +2094,7 @@ var vboxVMActions = {
 			default: return;
 		}
 		
-		$.when(vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':fn})).then(function(d){
+		$.when(vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':fn})).done(function(d){
 			// check for progress operation
 			if(d && d.responseData && d.responseData.progress) {
 				vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){
@@ -2256,6 +2256,16 @@ var vboxMedia = {
 			p = p.replace('\\.','/.');
 		return vboxTraverse($('#vboxPane').data('vboxMedia'),'location',p,false,'children');
 	},
+	
+	/**
+	 * Return a medium by its Name
+	 * 
+	 * @static
+	 */
+	getMediumByName : function(name) {
+		return vboxTraverse($('#vboxPane').data('vboxMedia'),'name',name,false,'children');
+	},
+
 
 	/**
 	 * Return a medium by its ID
@@ -3714,7 +3724,7 @@ function vboxMediaMenu(type,callback,mediumPath) {
 			// Create hard disk
 			case 'createD':
 				$.when(new vboxWizardNewHDDialog({'path':(self.mediumPath ? self.mediumPath : $('#vboxPane').data('vboxRecentMediaPaths')[self.type])+$('#vboxPane').data('vboxConfig').DSEP}).run())
-					.then(function(id){
+					.done(function(id){
 						if(!id) return;
 						var med = vboxMedia.getMediumById(id);
 						self.callback(med);
@@ -4164,7 +4174,7 @@ function vboxLoader(name) {
 	 */
 	this.add = function(dataFunction, callback, params) {
 		if(!this.name) this.name = dataFunction + 'Loader';
-		this._data[this._data.length] = vboxAjaxRequest(dataFunction,params).then(callback);
+		this._data[this._data.length] = vboxAjaxRequest(dataFunction,params).done(callback);
 	};
 
 	/**
@@ -4194,7 +4204,7 @@ function vboxLoader(name) {
 	 *            elm - element to append file to
 	 */
 	this.addFileToDOM = function(file,elm) {
-		if(elm === undefined) elm = $('body').children('div').first();
+		if(elm === undefined) elm = $('#vboxPane');
 		var callback = function(f){elm.append(f);};
 		self.addFile(file,callback);
 	};
@@ -4252,14 +4262,26 @@ function vboxLoader(name) {
 		}
 		
 		// Data first
-		$.when.apply($, self._data).then(function() {
+		$.when.apply($, self._data).done(function() {
 			
 			// files
 			for(var i = 0; i < self._files.length; i++) {
-				self._files[i] = jQuery.get(self._files[i]['file'],self._files[i]['callback']);
+				self._files[i] = jQuery.get(self._files[i]['file'],self._files[i]['callback']).fail(function(d) {
+				
+					// Check for error HTTP status
+					if(d && d.status && (String(d.status).substring(0,1) == '4' || String(d.status).substring(0,1) == '5')) {
+						var err = {error: 'HTTP error: ' + d.status + ' ' + d.statusText,details:''};
+						for(var i in d) {
+							if(typeof(d[i]) == 'function' || typeof(d[i]) == 'object') continue;
+							err.details += i + ': "' + d[i] + '"' + "\n";
+						}
+						vboxAlert(err);
+					}
+				
+				});
 			}
 			
-			$.when.apply($, self._files).then(function() {
+			$.when.apply($, self._files).done(function() {
 				self._stop();
 			});
 				

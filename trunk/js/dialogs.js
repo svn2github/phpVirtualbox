@@ -379,7 +379,7 @@ function vboxWizardNewVMDialog(vmgroup) {
 			$.when(vboxAjaxRequest('machineCreate',{'disk':disk,'ostype':ostype,'memory':mem,'name':name,'group':vmgroup}))
 			.always(function() {
 				l.removeLoading();
-			}).then(function(res){
+			}).done(function(res){
 
 				if(res.responseData.exists) {
 					vboxAlert(trans('<p>Cannot create the machine folder <b>%1</b> in the parent folder <nobr><b>%2</b>.</nobr></p><p>This folder already exists and possibly belongs to another machine.</p>','UIMessageCenter').replace('%1',vboxBasename(res.exists)).replace('%2',vboxDirname(res.exists)));
@@ -507,7 +507,7 @@ function vboxWizardCloneVMDialog(args) {
 		$.when(vboxVMDataMediator.getVMDetails(args.vm.id)).always(function() {
 			// Always remove loading screen
 			l.removeLoading();		
-		}).then(function(d){			
+		}).done(function(d){			
 			self.steps = (d.snapshotCount > 0 ? 3 : 2);
 			self.args = $.extend(true,args,{'vm':d});
 			self.parentRun();
@@ -579,7 +579,7 @@ function vboxWizardCloneVMDialog(args) {
 						ml.showLoading();
 						$.when(vboxVMDataMediator.getVMDetails(src, true)).always(function(){
 							ml.removeLoading();
-						}).then(function(md){
+						}).done(function(md){
 							vbClone(md.currentSnapshot);								
 						});
 					},
@@ -1092,7 +1092,7 @@ function vboxVMsettingsDialog(vm,pane) {
 					var l = new vboxLoader();
 					l.showLoading();
 					
-					$.when(vboxVMDataMediator.getVMDataCombined(vm.id)).then(function(vmData) {
+					$.when(vboxVMDataMediator.getVMDataCombined(vm.id)).done(function(vmData) {
 		            	// data received from deferred object
 		            	$('#vboxSettingsDialog').data('vboxMachineData',vmData);
 		            	$('#vboxSettingsDialog').data('vboxFullEdit', (vboxVMStates.isPoweredOff(vmData) && !vboxVMStates.isSaved(vmData)));
@@ -1132,15 +1132,15 @@ function vboxVMsettingsDialog(vm,pane) {
 						 * Data to be reloaded
 						 */
 						var reload = [
-			              vboxAjaxRequest('vboxGetMedia',{}).then(function(d){$('#vboxPane').data('vboxMedia',d.responseData);}),
+			              vboxAjaxRequest('vboxGetMedia',{}).done(function(d){$('#vboxPane').data('vboxMedia',d.responseData);}),
 			              
-			              vboxAjaxRequest('hostGetNetworking',{}).then(function(d){$('#vboxSettingsDialog').data('vboxHostNetworking',d.responseData);}),
+			              vboxAjaxRequest('hostGetNetworking',{}).done(function(d){$('#vboxSettingsDialog').data('vboxHostNetworking',d.responseData);}),
 			              
-			              vboxAjaxRequest('vboxRecentMediaGet',{}).then(function(d){$('#vboxPane').data('vboxRecentMedia',d.responseData);}),
+			              vboxAjaxRequest('vboxRecentMediaGet',{}).done(function(d){$('#vboxPane').data('vboxRecentMedia',d.responseData);}),
 			              
-			              vboxAjaxRequest('consoleGetSharedFolders',{'vm':vm.id}).then(function(d){$('#vboxSettingsDialog').data('vboxTransientSharedFolders',d.responseData);}),
+			              vboxAjaxRequest('consoleGetSharedFolders',{'vm':vm.id}).done(function(d){$('#vboxSettingsDialog').data('vboxTransientSharedFolders',d.responseData);}),
 			              
-			              $.when(vboxVMDataMediator.getVMDataCombined(vm.id)).then(function(vmData) {
+			              $.when(vboxVMDataMediator.getVMDataCombined(vm.id)).done(function(vmData) {
 			            	  
 			            	  // data received from deferred object
 			            	  $('#vboxSettingsDialog').data('vboxMachineData',vmData);
@@ -1150,7 +1150,7 @@ function vboxVMsettingsDialog(vm,pane) {
 			              ];
 						
 						// Only when all of these are done
-						$.when.apply($, reload).then(function(){
+						$.when.apply($, reload).done(function(){
 
 							/* Change title and tell dialog that data is loaded */
 							$('#vboxSettingsDialog').trigger('dataLoaded').dialog('option','title','<img src="images/vbox/settings_16px.png" class="vboxDialogTitleIcon" /> ' + 
@@ -1175,7 +1175,7 @@ function vboxVMsettingsDialog(vm,pane) {
 	// Watch for changed VM settings
 	$('#vboxPane').on('vboxEvents',machineSettingsChanged);
 	
-	$.when(vboxVMDataMediator.getVMDataCombined(vm.id)).then(function(vmData) {
+	$.when(vboxVMDataMediator.getVMDataCombined(vm.id)).done(function(vmData) {
 		
 
 		/*

@@ -258,7 +258,7 @@ function vboxChooserToolbarUSBUpdate(menu) {
 				var cbox = $(this);
 				// Detach
 				if($(this).data('capt')) {
-					$.when(vboxAjaxRequest('consoleUSBDeviceDetach',{'vm':vm.id,'id':$(this).data('usbDevice')})).then(function(d){
+					$.when(vboxAjaxRequest('consoleUSBDeviceDetach',{'vm':vm.id,'id':$(this).data('usbDevice')})).done(function(d){
 						if(d.success) {
 							cbox.prop('checked',false);
 							cbox.data('capt',false);
@@ -268,7 +268,7 @@ function vboxChooserToolbarUSBUpdate(menu) {
 					});
 				// Attach
 				} else {
-					$.when(vboxAjaxRequest('consoleUSBDeviceAttach',{'vm':vm.id,'id':$(this).data('usbDevice')})).then(function(d){
+					$.when(vboxAjaxRequest('consoleUSBDeviceAttach',{'vm':vm.id,'id':$(this).data('usbDevice')})).done(function(d){
 						if(d.success) {
 							cbox.prop('checked',true);
 							cbox.data('capt',true);
@@ -434,7 +434,7 @@ $('#vboxPane').on('vmSelectionListChanged',function(e) {
 		
 		// Get data
 		$.when(vboxVMDataMediator.getVMDataCombined(vboxChooser.selectedVMs[0]))
-			.then(function(d) {
+			.done(function(d) {
 				
 				vboxUpdateSettingsMenu(d);
 
@@ -511,7 +511,7 @@ $('#vboxPane').on('vmSelectionListChanged',function(e) {
 			
 			// Get data
 			$.when(vboxVMDataMediator.getVMDataCombined(vboxChooser.selectedVMs[0]))
-				.then(function(d) {
+				.done(function(d) {
 					vboxUpdateSettingsMenu(d);
 				});
 			

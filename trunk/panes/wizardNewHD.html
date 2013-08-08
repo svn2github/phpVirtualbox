@@ -162,7 +162,6 @@ function wizardHDBrowseLocation() {
 		f=f.substring(0,f.length-1);
 		}
 		var path = f+$('#vboxPane').data('vboxConfig').DSEP+filename;
-		//document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value = f+$('#vboxPane').data('vboxConfig').DSEP+prefile;
 		document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value = path;
 	},true,trans('Location','UIWizardNewVD'));
 
@@ -231,22 +230,16 @@ $('#wizardNewHDStep3').on('show',function(e,wiz){
 function vboxWizardNewHDElectName() {
 	
 	/* Go through list of media and pick new hd name */
-	var HDname = 'NewVirtualDisk99';
-	for(var a = 1; a < 99; a++) {
-		var found = 0;
-		for(var i = 0; i < $('#vboxPane').data('vboxMedia').length; i++) {
-			if($('#vboxPane').data('vboxMedia')[i].name.toLowerCase().substring(0,$('#vboxPane').data('vboxMedia')[i].name.lastIndexOf('.')) == 'newharddisk'+a) {
-				i = $('#vboxPane').data('vboxMedia').length;
-				found = 1;
-			}
-		}
-		if(!found) {
-			HDname = 'NewVirtualDisk'+a;
-			a = 100;
-		}
-	}
+	var number = 1;
+	var HDname = 'NewVirtualDisk';
+	var RetName = '';
+	var found = false;
+	do {
+		RetName = HDName + (number++);
+		found = vboxMedia.getMediumByName(RetName);		
+	} while(found);
 
-	document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value = HDname;
+	document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value = RetName;
 	
 }
 

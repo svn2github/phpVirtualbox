@@ -625,7 +625,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return boolean true on success
 	 */
-	private function remote_machineSubscribeEvents($args) {
+	public function remote_machineSubscribeEvents($args) {
 	
 		$this->connect();
 		foreach($args['vms'] as $vm)
@@ -640,7 +640,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return boolean true on success
 	 */
-	private function remote_unsubscribeEvents($args) {
+	public function remote_unsubscribeEvents($args) {
 
 		$this->connect();
 		
@@ -682,7 +682,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return boolean true on success
 	 */
-	private function remote_subscribeEvents($args) {
+	public function remote_subscribeEvents($args) {
 		
 		$this->connect();
 		
@@ -2684,59 +2684,35 @@ class vboxconnector {
 		$this->connect();
 		
 		$response = array();
-
-		/*
-		 * Existing Networks
-		 */
 		$networks = array();
 		$vdenetworks = array();
 		$nics = array();
 		$genericDrivers = array();
-		foreach($this->vbox->machines as $machine) { /* @var $machine IMachine */
-
-			$mname = $machine->name;
-
-			for($i = 0; $i < $this->settings->nicMax; $i++) {
-
-				try {
-					/* @var $h INetworkAdapter */
-					$h = $machine->getNetworkAdapter($i);
-				} catch (Exception $e) {
-					break;
-				}
-
-				try {
-					$at = (string)$h->attachmentType;
-					if($at == 'Bridged' || $at == 'HostOnly') {
-						if($at == 'Bridged') $nic = $h->bridgedInterface;
-						else $nic = $h->hostOnlyInterface;
-						if(!is_array($nics[$nic])) $nics[$nic] = array();
-						if(!is_array($nics[$nic][$mname])) $nics[$nic][$mname] = array();
-						$nics[$nic][$mname][] = ($i+1);
-					} else if ($at == 'Generic') {
-						$genericDrivers[$h->genericDriver] = 1;
-					} else {
-						if($h->internalNetwork) {
-							$networks[$h->internalNetwork] = 1;
-						} else if(@$this->settings->enableVDE && @$h->VDENetwork) {
-							$vdenetworks[$h->VDENetwork] = 1;
-						}
-					}
-					$h->releaseRemote();
-				} catch (Exception $e) {
-					// Ignore
-				}
-
+		
+		/* Get host nics */
+		foreach($this->vbox->host->networkInterfaces as $d) { /* @var $d IHostNetworkInterface */
+			/*
+			if((string)$d->interfaceType != 'HostOnly') {
+				$d->releaseRemote();
+				continue;
 			}
-			$machine->releaseRemote();
+			*/
+			$nics[] = $d->name;
+			$d->releaseRemote();
 		}
+		
+		/* Get internal Networks */
+		$networks = $this->vbox->internalNetworks;
+		/* Generic Drivers */
+		$genericDrivers = $this->vbox->genericNetworkDrivers;
 		
 		return array(
 			'nics' => $nics,
-			'networks' => array_keys($networks),
-			'vdenetworks' => array_keys($vdenetworks),
-			'genericDrivers' => array_keys($genericDrivers)
+			'networks' => $networks,
+			'vdenetworks' => $vdenetworks,
+			'genericDrivers' => $genericDrivers
 		);
+		
 	}
 
 	/**

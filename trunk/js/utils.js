@@ -83,8 +83,6 @@ function vboxAjaxRequest(fn,params) {
 			// Fatal error previously occurred
 			if($('#vboxPane').data('vboxFatalError')) return null;
 			
-			console.log(d);
-
 			if(etext != 'error') {
 				
 				// Halt on parse errors

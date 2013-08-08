@@ -921,14 +921,13 @@ var vboxVMDetailsSections = {
 				   
 				   // Display links?
 				   if((d['state'] == 'Running' || d['state'] == 'Paused') && d['VRDEServerInfo']) {
-
+					   
 					   if(d['VRDEServerInfo']['port'] > 0 && d['VRDEServer']['VRDEExtPack'].indexOf("VNC") == -1) {
 						   rowStr = " <a href='rdp.php?host=" + chost + '&port=' + d['VRDEServerInfo']['port'] + "&id=" + d['id'] + "&vm=" + encodeURIComponent(d['name']) + "'>" + d['VRDEServerInfo']['port'] + "</a>";						   
 						   rowStr += ' <img src="images/vbox/blank.gif" style="vspace:0px;hspace:0px;height2px;width:10px;" /> (' + chost + ':' + d['VRDEServerInfo']['port'] + ')';
-					   } else {
 						   
-						   rowStr = '<span style="text-decoration: line-through; color: #f00;">' + rowStr + '</span>';
-						   
+					   } else if (d['VRDEServer']['VRDEExtPack'].indexOf("VNC") == -1) {
+						   rowStr = '<span style="text-decoration: line-through; color: #f00;">' + rowStr + '</span>';						   
 					   }
 				   } else {
 					   rowStr += ' ('+chost+')';

@@ -90,9 +90,9 @@ $('#vboxPane').on('vmSelectionListChanged', function(){
 	} else {
 		
 		// VM is running, get runtime data
-		$.when(vboxVMDataMediator.getVMRuntimeData(vm.id)).done(function(runtimeInfo) {
+		$.when(vboxVMDataMediator.getVMDataCombined(vm.id)).done(function(info) {
 			
-			if(runtimeInfo.VRDEServerInfo && runtimeInfo.VRDEServerInfo.port > 0) {
+			if(info.VRDEServerInfo && info.VRDEServerInfo.port > 0 && info.VRDEServer.VRDEExtPack.indexOf("VNC") == -1) {
 				
 				$('#vboxRDPFormContainer').css({'display':''});
 				$('#FlashRDPContainer').css({'visibility':'visible'});
@@ -113,33 +113,45 @@ $('#vboxPane').on('vmSelectionListChanged', function(){
 	var vmid = eventData.machineId;
 	var VRDEServerInfo = eventData.enrichmentData;
 		
-	var selVM = vboxChooser.getSingleSelected();	    		
+	var selVM = vboxChooser.getSingleSelected(); 		
 	var enabled = (selVM && selVM.id == vmid && vboxVMStates.isRunning(selVM) && VRDEServerInfo && VRDEServerInfo.port > 0);
 	
 	if(enabled) {
-		
-		$('#vboxTabVMConsole').parent().trigger('enableTab', ['vboxTabVMConsole']);
 
-		$('#vboxRDPFormContainer').css({'display':''});
-		$('#FlashRDPContainer').css({'visibility':'visible'});
-		$('#vboxTabVMUnavailable').css({'display':'none'});
-
-		
-		var chost = vboxGetVRDEHost(selVM);
-		chost+=':'+VRDEServerInfo.port;
-		
-		if($(document.vboxRDPForm.serverAddress).val() != chost) {
+		$.when(vboxVMDataMediator.getVMDataCombined(vmid)).done(function(info) {
 			
-			// console host changed
-			vboxRDPDisconnect();
-			
-		}
-		$(document.vboxRDPForm.serverAddress).val(chost);
-
+			enabled = (info.VRDEServerInfo && info.VRDEServerInfo.port > 0 && info.VRDEServer.VRDEExtPack.indexOf("VNC") == -1);
+		
+			if(enabled) {
+				
+				$('#vboxTabVMConsole').parent().trigger('enableTab', ['vboxTabVMConsole']);
+		
+				$('#vboxRDPFormContainer').css({'display':''});
+				$('#FlashRDPContainer').css({'visibility':'visible'});
+				$('#vboxTabVMUnavailable').css({'display':'none'});
+		
+				
+				var chost = vboxGetVRDEHost(selVM);
+				chost+=':'+VRDEServerInfo.port;
+				
+				if($(document.vboxRDPForm.serverAddress).val() != chost) {
+					
+					// console host changed
+					vboxRDPDisconnect();
+					
+				}
+				$(document.vboxRDPForm.serverAddress).val(chost);
+			} else {
+				$('#vboxTabVMConsole').parent().trigger('disableTab', ['vboxTabVMConsole']);
+			}
+		
+		});
+		
 	} else {
+		
 		$('#vboxTabVMConsole').parent().trigger('disableTab', ['vboxTabVMConsole']);
 	}
-
+	
 // Update tab on machine state change
 }).on('vboxOnMachineStateChanged', function(e, eventData){
 

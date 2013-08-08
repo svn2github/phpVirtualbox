@@ -767,7 +767,7 @@ function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
 	var divOpTitle = $('<div />').addClass('vboxProgressOpTitle');
 
 	if(icon) {
-		$('<img />').attr({'src':'images/vbox/'+icon,'height':'22','width':'22'}).appendTo(divOpTitle);
+		$('<img />').attr({'src':'images/vbox/'+icon,'height':'16','width':'16'}).appendTo(divOpTitle);
 	}
 
 	// Title

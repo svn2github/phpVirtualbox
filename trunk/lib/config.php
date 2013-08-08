@@ -227,6 +227,8 @@ class phpVBoxConfigClass {
 	 * @param string $server server from config.php $servers array
 	 */
 	function setServer($server) {
+		// do nothing if we are already using this server
+		if($server == $this->name) return;
 		foreach($this->servers as $s) {
 			if($s['name'] == $server) {				
 				foreach($s as $k=>$v) $this->$k = $v;

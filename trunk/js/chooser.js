@@ -645,13 +645,14 @@ var vboxChooser = {
 					},
 					function(a) {
 						
+						if(a == $('#vboxPane').data('vboxConfig').name) return;				
+
 						// Check for unfinished progress operations
 						if($('#vboxProgressOps').children().first().siblings('div:not(.vboxProgressComplete)').addClass('vboxProgressRunning').length) {
 							vboxAlert('Cannot change servers while operations are in progress');
 							return;
 						}
 						
-						if(a == $('#vboxPane').data('vboxConfig').name) return;						
 						
 						// Show loading screen
 						var l = new vboxLoader();

@@ -133,25 +133,22 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 			$('#vboxSettingsTabDisplayRemote').find('tr.vboxSettingsDisplayRDP').css({'display':''});
 			$('#vboxSettingsTabDisplayRemote').find('tr.vboxSettingsDisplayVNC').css({'display':'none'});
 		}
-		
 		document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEPort.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.ports;
 		document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEAuth.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.authType;
 		document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEAuthTimeout.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.authTimeout;
 		document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEAddr.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.netAddress;
 		document.forms['frmVboxSettings'].vboxSettingsDisplayVNCPassword.value = $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.VNCPassword;
 				
-		$(document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEEnabled).attr('checked',
-				(!$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.enabled)).trigger('click');
+		$(document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEEnabled).attr('checked',(!$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.enabled)).trigger('click');
 		
-ú		if(($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.allowMultiConnection)) {
+		if($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.allowMultiConnection) {
 			document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEMulti.checked = true;
 		} else {
 			document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEMulti.checked = false;
 		}
-		
-		if(!$('#vboxPane').data('vboxConfig').enableAdvancedConfig)
-			$('#vboxSettingsDisplayVRDEAddrRow').css('display','none');
-		
+
+	if(!$('#vboxPane').data('vboxConfig').enableAdvancedConfig)
+		$('#vboxSettingsDisplayVRDEAddrRow').css('display','none');
 	}
 
 
@@ -162,12 +159,6 @@ $('#vboxSettingsDialog').on('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxMachineData').VRAMSize = $(document.forms['frmVboxSettings'].vboxSettingsDisplayMemoryValue).val();
 
-	/* Unsupported
-	$('#vboxSettingsDialog').data('vboxMachineData').monitorCount = $(document.forms['frmVboxSettings'].vboxSettingsDisplayMonitorsValue).val();	
-	$('#vboxSettingsDialog').data('vboxMachineData').accelerate3DEnabled = (document.forms['frmVboxSettings'].vboxSettingsDisplay3d.checked ? 1 : 0);
-	$('#vboxSettingsDialog').data('vboxMachineData').accelerate2DVideoEnabled = (document.forms['frmVboxSettings'].vboxSettingsDisplay2d.checked ? 1 : 0);
-	*/
-	
 	if($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer && $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.VRDEExtPack) {
 		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.ports = document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEPort.value;
 		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.netAddress = document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEAddr.value;

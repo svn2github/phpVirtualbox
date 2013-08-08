@@ -163,6 +163,11 @@ class vboxconnector {
 			throw new Exception(trans('Not logged in.','UIUsers'),vboxconnector::PHPVB_ERRNO_FATAL);
 		}
 
+		// Persistent server?
+		if(@$this->persistentRequest['vboxServer']) {
+			$this->settings->setServer($this->persistentRequest['vboxServer']);
+		}
+		
 		//Connect to webservice
 		$pvbxver = substr(@constant('PHPVBOX_VER'),0,(strpos(@constant('PHPVBOX_VER'),'-')));
 		$this->client = new SoapClient(dirname(__FILE__)."/vboxwebService-".$pvbxver.".wsdl",
@@ -5125,9 +5130,12 @@ class vboxconnector {
 	 */
 	private function _util_progressStore(&$progress) {
 
-		/* Store progress operation */
+		/* Store vbox handle */
 		$this->persistentRequest['vboxHandle'] = $this->vbox->handle;
 		
+		/* Store server if multiple servers are configured */
+		if(@is_array($this->settings->servers) && count($this->settings->servers) > 1)
+			$this->persistentRequest['vboxServer'] = $this->settings->name;
 		
 		return $progress->handle;
 	}

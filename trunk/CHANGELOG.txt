@@ -46,6 +46,9 @@ of VM settings (beta). The console tab is still RDP specific.
 
 Added ability to change servers while operations are in progress.
 
+Better election of new hard drive names in Create Virtual Hard
+Drive wizards.
+
 -------------------------------------
 	4.2-6	2013-07-22
 -------------------------------------

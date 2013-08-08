@@ -182,19 +182,16 @@ function wizardHDUpdateOptions() {
  * Elect a filename for use
  *
  */
-function vboxWizardNewHDElectName() {
+function vboxWizardNewHDElectName(wiz) {
 	
-	/* Go through list of media and pick new hd name */
-	var number = 1;
-	var HDname = 'NewVirtualDisk';
-	var RetName = '';
-	var found = false;
-	do {
-		RetName = HDname + (number++);
-		found = vboxMedia.getMediumByName(RetName);		
-	} while(found);
-
-	document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value = RetName;
+	// check for path and use it to elect name
+	var baseName = null;
+	var start = 1;
+	if(wiz && wiz.suggested && wiz.suggested.vmName) {
+		baseName = wiz.suggested.vmName;
+		start = 2;
+	}
+	document.forms['frmwizardNewHD'].elements.wizardNewHDLocation.value = vboxMedia.electHardDiskName(baseName, start);
 	
 }
 
@@ -240,7 +237,7 @@ $('#wizardNewHDStep1').on('show',function(e,wiz){
 	}
 
 	if(!(wiz && wiz.suggested && wiz.suggested.name))
-		vboxWizardNewHDElectName();
+		vboxWizardNewHDElectName(wiz);
 
 	$('#wizardNewHDStep1').data('init',true);
 

@@ -2085,16 +2085,35 @@ var vboxVMActions = {
 	/** Power Action Helper function */
 	powerAction: function(pa,pt,vm){
 		icon =null;
+		errorMsg = null;
 		switch(pa) {
-			case 'powerdown': fn = 'powerDown'; icon='progress_poweroff_90px.png'; break;
-			case 'powerbutton': fn = 'powerButton'; break;
-			case 'savestate': fn = 'saveState'; icon='progress_state_save_90px.png'; break;
-			case 'pause': fn = 'pause'; break;
-			case 'reset': fn = 'reset'; break;
-			default: return;
+			case 'powerdown':
+				fn = 'powerDown';
+				icon='progress_poweroff_90px.png';
+				break;
+			case 'powerbutton':
+				fn = 'powerButton';
+				errorMsg = trans('Failed to send the ACPI Power Button press event to the virtual machine <b>%1</b>.','UIMessageCenter');
+				break;
+			case 'savestate':
+				fn = 'saveState';
+				icon='progress_state_save_90px.png';
+				break;
+			case 'pause':
+				fn = 'pause';
+				break;
+			case 'reset':
+				fn = 'reset';
+				break;
+			default:
+				return;
 		}
 		
 		$.when(vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':fn})).done(function(d){
+			if(!(d && d.success) && errorMsg) {
+				vboxAlert(errorMsg.replace('%1', vm.name));
+				return;
+			}
 			// check for progress operation
 			if(d && d.responseData && d.responseData.progress) {
 				vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){
@@ -2102,7 +2121,7 @@ var vboxVMActions = {
 				},icon,trans(pt,'UIActionPool'), vm.name);
 				return;
 			}
-		});		
+		});	
 		
 	}
 };
@@ -2256,16 +2275,39 @@ var vboxMedia = {
 			p = p.replace('\\.','/.');
 		return vboxTraverse($('#vboxPane').data('vboxMedia'),'location',p,false,'children');
 	},
-	
+
 	/**
-	 * Return a medium by its Name
+	 * Return a medium by its name, ignoring case and 
+	 * extension
 	 * 
 	 * @static
 	 */
-	getMediumByName : function(name) {
-		return vboxTraverse($('#vboxPane').data('vboxMedia'),'name',name,false,'children');
+	getMediumByName : function(n) {
+		var meds = $('#vboxPane').data('vboxMedia');
+		for(var i = 0; i < meds.length; i++) {
+			if(n.toLowerCase() == meds[i].name.replace(/\.[^\.]+$/, "").toLowerCase())
+				return meds[i];
+		}
+		return null;
 	},
-
+	
+	/**
+	 * Elect a new hard disk name
+	 */
+	electHardDiskName : function(rootName, start) {
+		
+		/* Go through list of media and pick new hd name */
+		var number = (start ? start : 1);
+		var HDname = (rootName ? rootName : 'NewVirtualDisk');
+		var RetName = '';
+		var found = false;
+		do {
+			RetName = HDname + (number++);
+			found = vboxMedia.getMediumByName(RetName);		
+		} while(found);
+		
+		return RetName;
+	},
 
 	/**
 	 * Return a medium by its ID

@@ -3103,7 +3103,7 @@ class vboxconnector {
 			$this->session->console->releaseRemote();
 			$this->session->unlockMachine();
 			$this->session = null;
-			throw new Exception(str_replace('%1',$vmname,trans('Failed to send the ACPI Power Button press event to the virtual machine <b>%1</b>.','UIMessageCenter')));
+			return false;
 		}
 
 

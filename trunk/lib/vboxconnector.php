@@ -503,7 +503,7 @@ class vboxconnector {
 						
 					
 					
-				/* VRDE server info changed. Just need port */
+				/* VRDE server info changed. Just need port and enabled/disabled */
 				case 'OnVRDEServerInfoChanged':
 					try {
 							
@@ -1379,6 +1379,11 @@ class vboxconnector {
 			$m->autostartEnabled = intval($args['autostartEnabled']);
 			$m->autostartDelay = intval($args['autostartDelay']);
 		
+		}
+		
+		// Custom Icon
+		if(@$this->settings->enableCustomIcons) {
+			$m->setExtraData('phpvb/icon', $args['customIcon']);
 		}
 		
 		$m->setExtraData('GUI/SaveMountedAtRuntime', ($args['GUI']['SaveMountedAtRuntime'] == 'no' ? 'no' : 'yes'));
@@ -2691,12 +2696,6 @@ class vboxconnector {
 		
 		/* Get host nics */
 		foreach($this->vbox->host->networkInterfaces as $d) { /* @var $d IHostNetworkInterface */
-			/*
-			if((string)$d->interfaceType != 'HostOnly') {
-				$d->releaseRemote();
-				continue;
-			}
-			*/
 			$nics[] = $d->name;
 			$d->releaseRemote();
 		}
@@ -5173,7 +5172,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return array of log file names
 	 */
-	public function remote_machineGetLogFilesInfo($args) {
+	public function remote_machineGetLogFilesList($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();

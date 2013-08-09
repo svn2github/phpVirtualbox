@@ -604,6 +604,30 @@ function vboxWizardCloneVMDialog(args) {
 }
 
 /**
+ * Guest properties editor dialog
+ * 
+ */
+function vboxVMExtraDataEditor() {
+	
+	$('#vboxPane').append($('<div />').attr({'id':'vboxVMExtraDataEditor'}));
+	
+	var l = new vboxLoader();
+	l.addFileToDOM('panes/editExtraData.html',$('#vboxVMExtraDataEditor'));
+	l.onLoad = function(){
+		var buttons = {};
+		buttons[trans('Refresh','UIVMLogViewer')] = function() {
+			vboxVMExtraDataLoad
+		};
+		buttons[trans('Close','UIVMLogViewer')] = function(){$(this).trigger('close').empty().remove();};
+		$('#vboxVMExtraDataEditor').dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/settings_16px.png" class="vboxDialogTitleIcon" /> '+ trans('Edit guest properties','UIActionPool')}).on("dialogbeforeclose",function(){
+	    	$(this).parent().find('span:contains("'+trans('Close','UIVMLogViewer')+'")').trigger('click');
+	    });
+		vboxVMExtraDataLoad();
+	};
+	l.run();	
+}
+
+/**
  * Run the VM Log Viewer dialog
  * @param {String} vm - uuid or name of virtual machine to obtain logs for
  */
@@ -612,7 +636,7 @@ function vboxShowLogsDialogInit(vm) {
 	$('#vboxPane').append($('<div />').attr({'id':'vboxVMLogsDialog'}));
 	
 	var l = new vboxLoader();
-	l.add('machineGetLogFilesInfo',function(r){
+	l.add('machineGetLogFilesList',function(r){
 		$('#vboxVMLogsDialog').data({'logs':r.responseData.logs,'logpath':r.responseData.path});
 	},{'vm':vm.id});
 	l.addFileToDOM('panes/vmlogs.html',$('#vboxVMLogsDialog'));
@@ -620,7 +644,7 @@ function vboxShowLogsDialogInit(vm) {
 		var buttons = {};
 		buttons[trans('Refresh','UIVMLogViewer')] = function() {
 			l = new vboxLoader();
-			l.add('machineGetLogFilesInfo',function(r){
+			l.add('machineGetLogFilesList',function(r){
 				$('#vboxVMLogsDialog').data({'logs':r.responseData.logs,'logpath':r.responseData.path});
 				
 			},{'vm':vm.id});

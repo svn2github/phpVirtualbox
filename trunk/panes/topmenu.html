@@ -195,7 +195,11 @@ var menu = {
 	    $.extend({},vboxVMActions['refresh'],{'name':'refresh'})
 	]
 };
-	
+
+// Add extra data
+if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
+	menu.menu[menu.menu.length] = $.extend({},vboxVMActions['editVMExtraData'],{'name':'editVMExtraData','separator':true});
+}
 vboxTopMenuBar.addMenu(menu);
 
 

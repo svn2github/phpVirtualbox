@@ -47,8 +47,8 @@ vboxChooser.setContextMenu('group', [
  * VM Context menu setup (menu per VM in list)
  */
  
-var cmenu = [
-  	$.extend({},vboxVMActions['settings'],{'name':'settings'}),
+vboxChooser.setContextMenu('vm',[
+   	$.extend({},vboxVMActions['settings'],{'name':'settings'}),
    	$.extend({},vboxVMActions['clone'],{'name':'clone'}),
    	$.extend({},vboxVMActions['remove'],{'name':'remove'}),
    	$.extend({},vboxVMActions['group'],{'name':'group'}),
@@ -59,15 +59,7 @@ var cmenu = [
    	$.extend({},vboxVMActions['discard'],{'name':'discard','separator' : true}),
    	$.extend({},vboxVMActions['logs'],{'name':'logs'}),
    	$.extend({},vboxVMActions['refresh'],{'name':'refresh'})
-];
- 
-//Add extra data editor
-if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
-	cmenu[cmenu] = $.extend({},vboxVMActions['editVMExtraData'],{'name':'editVMExtraData','separator':true});
-}
-
-vboxChooser.setContextMenu('vm',cmenu);
-cmenu = null;
+]);
 
 // Don't need thse anymore
 sChildren = null;

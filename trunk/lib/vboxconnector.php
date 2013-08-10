@@ -961,6 +961,54 @@ class vboxconnector {
 	}
 
 	/**
+	 * Set extra data of a vm
+	 *
+	 * @param array $args array of arguments. See function body for details.
+	 * @return array of extra data
+	 */
+	public function remote_machineSetExtraData($args) {
+	
+		$this->connect();
+	
+		/* @var $m IMachine */
+		$m = $this->vbox->findMachine($args['vm']);
+	
+		$m->setExtraData($args['key'],$args['value']);
+		$m->releaseRemote();
+	
+		return true;
+	
+	}
+	
+	/**
+	 * Enumerate extra data of a vm
+	 *
+	 * @param array $args array of arguments. See function body for details.
+	 * @return array of extra data
+	 */
+	public function remote_machineEnumerateExtraData($args) {
+	
+		$this->connect();
+	
+		/* @var $m IMachine */
+		$m = $this->vbox->findMachine($args['vm']);
+	
+		$props = array();
+		
+		$keys = $m->getExtraDataKeys();
+		
+		usort($keys,'strnatcasecmp');
+		
+		foreach($keys as $k) {
+			$props[$k] = $m->getExtraData($k);
+		}
+		$m->releaseRemote();
+	
+		return $props;
+	
+	}
+	
+	/**
 	 * Uses VirtualBox's vfsexplorer to check if a file exists
 	 * 
 	 * @param array $args array of arguments. See function body for details.

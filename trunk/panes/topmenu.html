@@ -173,7 +173,8 @@ for(var i = 0; i < vboxVMActions.stop_actions.length; i++) {
 	sChildren[sChildren.length] = $.extend({},vboxVMActions[vboxVMActions.stop_actions[i]],{'name':vboxVMActions.stop_actions[i],'iconStringDisabled':'_disabled'});
 }
 
-var menu = {
+
+vboxTopMenuBar.addMenu({
 	'name':'vboxTopMachine',
 	'label':trans('Machine','UIActionPool'),
 	'enabled' : function(chooser) {
@@ -194,40 +195,31 @@ var menu = {
 	    $.extend({},vboxVMActions['logs'],{'name':'logs'}),
 	    $.extend({},vboxVMActions['refresh'],{'name':'refresh'})
 	]
-};
+});
 
-// Add extra data
-if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
-	menu.menu[menu.menu.length] = $.extend({},vboxVMActions['editVMExtraData'],{'name':'editVMExtraData','separator':true});
-}
-vboxTopMenuBar.addMenu(menu);
-
-
-var menu = {
-		'name':'vboxTopGroup',
-		'label':trans('Group','UIActionPool'),
-		'enabled' : function(chooser) {
-			return (chooser && (chooser.selectionMode == vboxSelectionModeSingleGroup));
-		},
-		'menu':[
-	    	$.extend({}, vboxVMGroupActions['newmachine'], {name:'newmachine'}),
-	    	$.extend({}, vboxVMGroupActions['addmachine'], {name:'addmachine'}),
-	    	$.extend({}, vboxVMGroupActions['rename'], {name:'rename',separator:true}),
-	    	$.extend({}, vboxVMGroupActions['ungroup'], {name:'ungroup'}),
-	    	$.extend({},vboxVMActions['start'],{'name':'start','separator' : true}),
-	        $.extend({},vboxVMActions['pause'],{'name':'pause'}),
-	        $.extend({},vboxVMActions['reset'],{'name':'reset'}),
-	    	$.extend({},vboxVMActions['stop'],{'name':'stop','icon':'exit','children':sChildren}),
-	    	$.extend({},vboxVMActions['discard'],{'name':'discard','separator' : true}),
-	    	$.extend({},vboxVMActions['refresh'],{'name':'refresh'}),
-	    	$.extend({}, vboxVMGroupActions['sort'], {name:'sort',separator:true})
-		]
-	};
 		
-vboxTopMenuBar.addMenu(menu);
+vboxTopMenuBar.addMenu({
+	'name':'vboxTopGroup',
+	'label':trans('Group','UIActionPool'),
+	'enabled' : function(chooser) {
+		return (chooser && (chooser.selectionMode == vboxSelectionModeSingleGroup));
+	},
+	'menu':[
+    	$.extend({}, vboxVMGroupActions['newmachine'], {name:'newmachine'}),
+    	$.extend({}, vboxVMGroupActions['addmachine'], {name:'addmachine'}),
+    	$.extend({}, vboxVMGroupActions['rename'], {name:'rename',separator:true}),
+    	$.extend({}, vboxVMGroupActions['ungroup'], {name:'ungroup'}),
+    	$.extend({},vboxVMActions['start'],{'name':'start','separator' : true}),
+        $.extend({},vboxVMActions['pause'],{'name':'pause'}),
+        $.extend({},vboxVMActions['reset'],{'name':'reset'}),
+    	$.extend({},vboxVMActions['stop'],{'name':'stop','icon':'exit','children':sChildren}),
+    	$.extend({},vboxVMActions['discard'],{'name':'discard','separator' : true}),
+    	$.extend({},vboxVMActions['refresh'],{'name':'refresh'}),
+    	$.extend({}, vboxVMGroupActions['sort'], {name:'sort',separator:true})
+	]
+});
 
-	
-var menu = {
+vboxTopMenuBar.addMenu({
 	'name':'vboxTopHelp',
 	'label':trans('Help','UIHelpButton'),
 	'menu':[
@@ -262,8 +254,7 @@ var menu = {
         }
         
     ]
-};
-vboxTopMenuBar.addMenu(menu);
+});
 
 vboxTopMenuBar.renderTo('vboxMenu');
 

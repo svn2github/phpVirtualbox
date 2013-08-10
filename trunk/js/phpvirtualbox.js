@@ -1638,19 +1638,6 @@ var vboxVMActions = {
 		}
 	},
 
-	/** Extra data edit */
-	editVMExtraData : {
-		label:trans('Edit extra data','UIActionPool'),
-		icon:'vm_settings',
-		icon_16:'settings',
-		click:function(){
-			vboxVMExtraDataEditor();
-		},
-		enabled: function () {
-			return (vboxChooser.selectionMode == vboxSelectionModeSingleVM);
-		}		
-	},
-	
 	/** Refresh a VM's details */
 	refresh: {
 		label:trans('Refresh','UIVMLogViewer'),

@@ -2173,7 +2173,7 @@ class IMachine extends VBox_ManagedObject {
    public function setGroups($value) {
        $request = new stdClass();
        $request->_this = $this->handle;
-       if (is_null($value) || is_scalar($value)) {
+       if (is_null($value) || is_scalar($value) || is_array($value)) {
             $request->groups = $value;
        }
        else

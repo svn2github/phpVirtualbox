@@ -1235,7 +1235,6 @@ class vboxconnector {
 		
 		$response = array('saved'=>array(),'errored'=>false);
 		
-		
 		foreach($args['vms'] as $vm) {
 			
 			// create session and lock machine
@@ -1271,8 +1270,7 @@ class vboxconnector {
 				
 				$this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
 				
-				$vmLocked = ((string)$machine->sessionState == 'Locked');
-				$machine->lockMachine($this->session->handle, ($vmLocked ? 'Shared' : 'Write'));
+				$machine->lockMachine($this->session->handle, 'Write');
 				
 				usort($newGroups,'strnatcasecmp');
 				
@@ -1286,6 +1284,7 @@ class vboxconnector {
 				$this->session->unlockMachine();
 				
 				unset($this->session);
+				$machine->releaseRemote();
 				
 			} catch (Exception $e) {
 				

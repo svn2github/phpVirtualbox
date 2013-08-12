@@ -49,6 +49,8 @@ Added ability to change servers while operations are in progress.
 Better election of new hard drive names in Create Virtual Hard
 Drive wizards.
 
+Cloning operations are no longer modal.
+
 -------------------------------------
 	4.2-6	2013-07-22
 -------------------------------------

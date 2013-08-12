@@ -1,5 +1,5 @@
 -------------------------------------
-	4.2-7
+	4.2-7	2013-08-12
 -------------------------------------
 Upgraded jQuery from 1.8.2 to 1.10.2. Updated code to reflect
 library changes.

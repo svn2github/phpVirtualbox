@@ -771,7 +771,7 @@ $("#vboxVMDetails").mouseup( function(e) {
 
 	$('ul.contextMenu').hide();
 	
-	if(e.button == 2) {
+	if(e.button ==  2 && vboxChooser.getSingleSelectedId() != 'host') {
 
 		var menu = $('#vboxDetailsShowMenu');
 		vboxPositionEvent(menu, e);

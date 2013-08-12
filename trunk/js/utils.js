@@ -1357,6 +1357,6 @@ if (!Array.prototype.filter)
 $(document).ready(function() {
 
 	// Don't unload while progress operation is .. in progress
-	$(window).on('beforeunload',vboxOpInProgressCheck);
+	window.onbeforeunload = vboxOpInProgressCheck;
 
 });

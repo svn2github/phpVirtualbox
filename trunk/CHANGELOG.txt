@@ -51,6 +51,8 @@ Drive wizards.
 
 Cloning operations are no longer modal.
 
+Snapshot operations are no longer modal.
+
 -------------------------------------
 	4.2-6	2013-07-22
 -------------------------------------

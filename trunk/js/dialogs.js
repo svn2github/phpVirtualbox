@@ -1108,6 +1108,14 @@ function vboxVMsettingsDialog(vm,pane) {
 	              	})
 
 					break;
+
+				// Unregistered machine
+				case 'OnMachineRegistered':
+					
+					if(!eventList[i].machineId || eventList[i].machineId != vm.id || eventList[i].registered) break;
+
+					$('#vboxSettingsDialog').parent().find('span:contains("'+trans('Cancel','QIMessageBox')+'")').trigger('click');
+					break;
 					
 				case 'OnMachineDataChanged':
 				case 'OnNetworkAdapterChanged':

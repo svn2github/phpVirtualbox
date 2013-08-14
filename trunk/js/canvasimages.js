@@ -164,47 +164,22 @@ function vboxDrawPreviewCanvas(can, imageObj, text, width, height) {
 		
 		cachedCtx.moveTo(margin*2,margin);
 		
-		// Opera's arcTo always seems to go counter clockwise
-		// and does not follow control specs
-		if($.browser.opera) {
-			
-			// Left line and top left
-			cachedCtx.arcTo(margin *2, margin, margin, margin*2, margin);
-			cachedCtx.lineTo(margin, height-(margin*2));
-			
-			// bottom and bottom left
-			cachedCtx.arcTo(margin, height-(margin*2), (margin*2), height-(margin), margin);
-			cachedCtx.lineTo(width-(margin*2), height-margin);
-			
-			// Side and bottom right
-			cachedCtx.arcTo(width-(margin*2), height-margin, width-margin, height-(margin*2), margin);
-			cachedCtx.lineTo(width-margin, margin*2);
-			
-			// top and top right
-			cachedCtx.arcTo(width-margin, margin*2, width-(margin*2),margin, margin);
-			cachedCtx.lineTo(margin*2, margin);
-			
-			
-		} else {
-			
-			// top and top right
-			cachedCtx.lineTo(width-(margin*2), margin);
-			cachedCtx.arcTo(width-margin, margin, width-margin,margin*2, margin);
-			
-			// Side and bottom right
-			cachedCtx.lineTo(width-margin, height-(margin*2));
-			cachedCtx.arcTo(width-margin, height-margin, width-(margin*2), height-margin, margin);
-			
-			// bottom and bottom left
-			cachedCtx.lineTo(margin*2, height-margin);
-			cachedCtx.arcTo(margin, height-margin, margin, height-(margin*2), margin);
-			
-			// Left line and top left
-			cachedCtx.lineTo(margin, margin*2);
-			cachedCtx.arcTo(margin, margin, margin * 2, margin, margin);
-			
-		}
+		// top and top right
+		cachedCtx.lineTo(width-(margin*2), margin);
+		cachedCtx.arcTo(width-margin, margin, width-margin,margin*2, margin);
 		
+		// Side and bottom right
+		cachedCtx.lineTo(width-margin, height-(margin*2));
+		cachedCtx.arcTo(width-margin, height-margin, width-(margin*2), height-margin, margin);
+		
+		// bottom and bottom left
+		cachedCtx.lineTo(margin*2, height-margin);
+		cachedCtx.arcTo(margin, height-margin, margin, height-(margin*2), margin);
+		
+		// Left line and top left
+		cachedCtx.lineTo(margin, margin*2);
+		cachedCtx.arcTo(margin, margin, margin * 2, margin, margin);
+			
 		cachedCtx.closePath();
 		cachedCtx.save();
 		cachedCtx.shadowOffsetX = 5;
@@ -236,41 +211,31 @@ function vboxDrawPreviewCanvas(can, imageObj, text, width, height) {
 		var cvs = document.createElement('canvas');
 
 		/* Gloss */
-		if($.browser.opera && $.browser.version.substring(0,2) < 12) {
-
-			// Opera before 12 does not get this right. Just
-			// leave a blank canvas
-			cvs.width = rectWidth;
-			cvs.height = rectHeight;
-
-		} else {
-			
-			var rectX = 0;
-			var rectY = 0;
-			var rectWidth = width-(margin+screenMargin)*2;
-			var rectHeight = height-(margin+screenMargin)*2;
-			
-			cvs.width = rectWidth;
-			cvs.height = rectHeight;
-			
-			var ctxBlur = cvs.getContext('2d');
-			ctxBlur.beginPath();
-			ctxBlur.lineWidth = 1;
-			ctxBlur.strokeStyle = "#000000";
-			ctxBlur.moveTo(rectX,rectY);
-			ctxBlur.lineTo(rectWidth, rectY);
-			ctxBlur.lineTo(rectWidth,rectHeight*1.0/3.0);
-			ctxBlur.bezierCurveTo(rectX+rectWidth / 2.0, rectY + rectHeight * 1.0/3.0,
-					rectX+rectWidth / 2.0, rectY + rectHeight * 2.0/3.0,
-					rectX, rectY + rectHeight * 2.0/3.0);
-			ctxBlur.closePath();
-			ctxBlur.fillStyle="rgba(255,255,255,0.3)";
-			ctxBlur.fill();
-			
-			stackBlurCanvasRGBA( cvs, 0, 0, rectWidth, rectHeight, 17 );
-			
-			ctx.drawImage(cvs, margin+screenMargin, margin+screenMargin, rectWidth, rectHeight);
-		}
+		var rectX = 0;
+		var rectY = 0;
+		var rectWidth = width-(margin+screenMargin)*2;
+		var rectHeight = height-(margin+screenMargin)*2;
+		
+		cvs.width = rectWidth;
+		cvs.height = rectHeight;
+		
+		var ctxBlur = cvs.getContext('2d');
+		ctxBlur.beginPath();
+		ctxBlur.lineWidth = 1;
+		ctxBlur.strokeStyle = "#000000";
+		ctxBlur.moveTo(rectX,rectY);
+		ctxBlur.lineTo(rectWidth, rectY);
+		ctxBlur.lineTo(rectWidth,rectHeight*1.0/3.0);
+		ctxBlur.bezierCurveTo(rectX+rectWidth / 2.0, rectY + rectHeight * 1.0/3.0,
+				rectX+rectWidth / 2.0, rectY + rectHeight * 2.0/3.0,
+				rectX, rectY + rectHeight * 2.0/3.0);
+		ctxBlur.closePath();
+		ctxBlur.fillStyle="rgba(255,255,255,0.3)";
+		ctxBlur.fill();
+		
+		stackBlurCanvasRGBA( cvs, 0, 0, rectWidth, rectHeight, 17 );
+		
+		ctx.drawImage(cvs, margin+screenMargin, margin+screenMargin, rectWidth, rectHeight);
 
 		__vboxPreviewCanvasCache[width+'x'+height] = {
 				'monitor' : cachedCanvas,

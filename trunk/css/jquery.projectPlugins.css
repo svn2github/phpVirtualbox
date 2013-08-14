@@ -135,6 +135,18 @@ ul.contextMenu li {
 	position: relative;
 }
 
+ul.contextMenu li a.vboxCheckMark {
+	padding-left: 12px;
+}
+ul.contextMenu li a.vboxCheckMark > span.vboxCheckMark {
+	display: inline-block;
+	position: relative;
+	left: -6px;
+	padding: 0px;
+	margin: 0px;
+	width: 16px;
+	text-align: center;
+}
 ul.contextMenu li.vboxMenuItemChecked > span.vboxMenuItemChecked {
 	display: inline-block;
 }

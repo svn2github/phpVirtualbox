@@ -708,23 +708,13 @@ $('#vboxSettingsStorageTree').on('itemselect',function(e,item){
 			$('#vboxSettingsAddAttachmentsMenuHDDiv').show();
 			break;
 		case 'Floppy':
-			// Update remove item..
-			var med = $(item).data('attachment').medium;
-			if(!med || !med.id) {
-				mAttachToolbarFD.menuUpdateRemoveMedia();
-			} else {
-				mAttachToolbarFD.menuUpdateRemoveMedia(true);
-			}
+			// Update media menu...
+			mAttachToolbarFD.menuUpdateMedia($(item).data('attachment').medium);
 			$('#vboxSettingsAddAttachmentsMenuFDDiv').show();
 			break;
 		default:
-			// Update remove item..
-			var med = $(item).data('attachment').medium;
-			if(!med || !med.id) {
-				mAttachToolbarCD.menuUpdateRemoveMedia();				
-			} else {
-				mAttachToolbarCD.menuUpdateRemoveMedia(true);
-			}			
+			// Update media menu...
+			mAttachToolbarCD.menuUpdateMedia($(item).data('attachment').medium);			
 			$('#vboxSettingsAddAttachmentsMenuCDDiv').show();
 	}
 	

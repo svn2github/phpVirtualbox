@@ -1076,6 +1076,9 @@ function vboxVMsettingsDialog(vm,pane) {
 	if(typeof(vm) == 'string')
 		vm = vboxVMDataMediator.getVMData(vm);
 	
+	// Only show these dialogs once per change
+	var reloadConfirmShowing = false;
+	
 	// Handler for when VM settings have changed
 	/////////////////////////////////////////////
 	var machineSettingsChanged = function(e, eventList) {
@@ -1103,8 +1106,9 @@ function vboxVMsettingsDialog(vm,pane) {
 		            	$('#vboxSettingsDialog').data('vboxFullEdit', (vboxVMStates.isPoweredOff(vmData) && !vboxVMStates.isSaved(vmData)));
 		            	$('#vboxSettingsDialog').trigger('dataLoaded');
 		            	l.removeLoading();
-		            	if(vboxVMStates.isRunning(vmData))
+		            	if(vboxVMStates.isRunning(vmData)) {
 		            		vboxAlert(trans('The virtual machine that you are changing has been started. Only certain settings can be changed while a machine is running. All other changes will be lost if you close this window now.','UIMessageCenter'));
+		            	}
 	              	})
 
 					break;
@@ -1131,6 +1135,9 @@ function vboxVMsettingsDialog(vm,pane) {
 
 					
 					if(!eventList[i].machineId || eventList[i].machineId != vm.id) break;
+					
+					// already showing reload confirmation
+					if(reloadConfirmShowing) break;
 				
 					var buttons = {};
 					buttons[trans('Reload settings','UIMessageCenter')] = function() {
@@ -1170,14 +1177,19 @@ function vboxVMsettingsDialog(vm,pane) {
 									$('<div />').text($('#vboxSettingsDialog').data('vboxMachineData').name).text() + ' - ' + trans('Settings','UISettingsDialog'));
 
 							l.removeLoading();
+							reloadConfirmShowing = false;
 						});
 						
 						
 					};
 					
+					reloadConfirmShowing = true;
+					
 					vboxConfirm(trans("<p>The machine settings were changed while you were editing them. You currently have unsaved setting changes.</p><p>Would you like to reload the changed settings or to keep your own changes?</p>",'UIMessageCenter'),
 							buttons,
-							trans('Keep changes', 'UIMessageCenter'));
+							trans('Keep changes', 'UIMessageCenter'), function(){
+								reloadConfirmShowing = false;
+							});
 					
 					return;
 				
@@ -1424,12 +1436,6 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 			// Show selected pane
 			$('#vboxSettingsPane-' + $(this).data('name')).css({'display':''}).children().first().trigger('show');
 			
-			// Opera hidden select box bug
-			////////////////////////////////
-			if($.browser.opera) {
-				$('#vboxSettingsPane-' + $(this).data('name')).find('select').trigger('show');
-			}
-
 		}).on("mouseenter",function(){$(this).addClass('vboxHover');}).on("mouseleave",function(){$(this).removeClass('vboxHover');}).appendTo($('#vboxSettingsMenuList'));
 		
 		
@@ -1452,27 +1458,8 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 		/* Tell dialog that data is loaded */
 		$('#vboxSettingsDialog').trigger('dataLoaded');
 
-		// Opera hidden select box bug
-		////////////////////////////////
-		if($.browser.opera) {
-			$('#vboxSettingsPane').find('select').on('change',function(){
-				$(this).data('vboxSelected',$(this).val());
-			}).on('show',function(){
-				$(this).val($(this).data('vboxSelected'));
-			}).each(function(){
-				$(this).data('vboxSelected',$(this).val());
-			});
-		}
-
 		var buttons = { };
 		buttons[trans('OK','QIMessageBox')] = function() {
-			
-			// Opera hidden select bug
-			if($.browser.opera) {
-				$('#vboxSettingsPane').find('select').each(function(){
-					$(this).val($(this).data('vboxSelected'));
-				});
-			}
 			
 			$(this).trigger('save');
 			results.resolve(true);

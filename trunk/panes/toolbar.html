@@ -200,11 +200,16 @@ var vboxToolbarMediaMenuFD = new vboxMediaMenu('Floppy',vboxChooserToolbarMedium
 function vboxChooserToolbarStorageUpdate(menu) {
 
 	vboxToolbarMediaLast = $(menu).data('storage');
+	var medium = null;
+	if(vboxToolbarMediaLast && vboxToolbarMediaLast.medium && vboxToolbarMediaLast.medium.id)
+		medium = vboxMedia.getMediumById(vboxToolbarMediaLast.medium.id);
+
 	if(vboxToolbarMediaLast.type == 'DVD') {
-		vboxToolbarMediaMenuDVD.menuUpdateRemoveMedia((vboxToolbarMediaLast.medium && vboxToolbarMediaLast.medium.id));
+		vboxToolbarMediaMenuDVD.menuUpdateMedia(medium);
 		return vboxToolbarMediaMenuDVD.menuElement();
 	}
-	vboxToolbarMediaMenuFD.menuUpdateRemoveMedia((vboxToolbarMediaLast.medium && vboxToolbarMediaLast.medium.id));
+	
+	vboxToolbarMediaMenuFD.menuUpdateMedia(medium);
 	return vboxToolbarMediaMenuFD.menuElement();
 }
 
@@ -341,9 +346,16 @@ function vboxUpdateSettingsMenu(vm) {
 	if(vm && vm.storageControllers && vm.storageControllers.length) {
 		var dvdDevices = new Array();
 		var fdDevices = new Array();
+		
 		for(var a = 0; a < vm.storageControllers.length; a++) {
-			var icon = vm['storageControllers'][a].bus.toLowerCase();
-			if(vm['storageControllers'][a].bus == 'SAS') icon = 'sata';
+			
+			// See if this bus type supports removable media
+			if(jQuery.inArray('dvd',vboxStorage[vm['storageControllers'][a].bus].driveTypes) == -1 &&
+					jQuery.inArray('floppy',vboxStorage[vm['storageControllers'][a].bus].driveTypes) == -1)
+				continue;
+			
+			var icon = vboxStorage.getBusIcon(vm['storageControllers'][a].bus);
+			
 			for(var b = 0; b < vm['storageControllers'][a]['mediumAttachments'].length; b++) {
 				
 				if(vm['storageControllers'][a]['mediumAttachments'][b].type == 'HardDisk') continue;
@@ -362,7 +374,7 @@ function vboxUpdateSettingsMenu(vm) {
 				$('#'+vm.id+'-vboxVMSettingsStorage-'+a+'-'+b).remove();
 
 				var li = $('<li />').attr({'title':mName}).html("<a title='"+mName+"' href='#mount-"+vm['storageControllers'][a].bus+"-"+vm['storageControllers'][a]['mediumAttachments'][b].port+"-"+vm['storageControllers'][a]['mediumAttachments'][b].device+"' style='background-image:url(images/vbox/"+icon+"_16px.png);'>"+vm['storageControllers'][a]['name'] + ' ('+portName + ")</a>").addClass('vboxVMSettingsStorage');
-				$(li).append($('<ul />').attr({'id':smid}).data({'callback':'vboxChooserToolbarStorageUpdate','storage':vm['storageControllers'][a]['mediumAttachments'][b]}));
+				$(li).append($('<ul />').attr({'id':smid,'style':'display:none'}).data({'callback':'vboxChooserToolbarStorageUpdate','storage':vm['storageControllers'][a]['mediumAttachments'][b]}));
 				if(vm['storageControllers'][a]['mediumAttachments'][b].type == 'DVD') {
 					dvdDevices[dvdDevices.length] = li;
 				} else {
@@ -377,7 +389,7 @@ function vboxUpdateSettingsMenu(vm) {
 			if(dvdDevices.length == 1) {
 				ul = dvdDevices[0].children('ul').first();
 			} else {
-				ul = $('<ul />').addClass('vboxVMSettingsStorage');
+				ul = $('<ul />').attr({'style':'display:none'}).addClass('vboxVMSettingsStorage');
 				for(var i = 0; i < dvdDevices.length; i++) {
 					$(ul).append(dvdDevices[i]);	
 				}
@@ -391,7 +403,7 @@ function vboxUpdateSettingsMenu(vm) {
 			if(fdDevices.length == 1) {
 				ul = fdDevices[0].children('ul').first();
 			} else {
-				ul = $('<ul />').addClass('vboxVMSettingsStorage');
+				ul = $('<ul />').attr({'style':'display:none'}).addClass('vboxVMSettingsStorage');
 				for(var i = 0; i < fdDevices.length; i++) {
 					$(ul).append(fdDevices[i]);	
 				}

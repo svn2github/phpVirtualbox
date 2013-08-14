@@ -572,7 +572,7 @@ ul.vboxMenuBar li {
 
 /* Virtual Machine List and Top Toolbar*/
 /* So that resizing is consistent */
-#vboxChooserPane { background: #f7f3f7; padding-top: 2px; }
+#vboxChooserPane { background: #fff; padding-top: 2px; }
 #vboxChooserPane * { margin: 0px; padding: 0px;}
 #vboxChooserPane span.vboxServerLink { text-decoration: underline; cursor: pointer; }
 #vboxChooserPane > div { width: 300px; } /* Initial Width */

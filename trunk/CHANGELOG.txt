@@ -1,7 +1,18 @@
 -------------------------------------
 	4.2-8	
 -------------------------------------
+Updated media menus to indicate which media is already mounted
+by the given virtual machine.
 
+Minor UI enhancements.
+
+Fixed bug when collapsing and expanding the Preview box in VM
+details sections that would leave an arrow image drawn over the
+preview image.
+
+Removed bug workarounds for old version of Opera.
+
+Minor translation bug fixes.
 
 -------------------------------------
 	4.2-7	2013-08-12

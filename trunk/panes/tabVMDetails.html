@@ -391,7 +391,7 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 	var links = true;
 	
 	// No link if VM is not in valid state
-	if(!((vboxVMStates.isRunning(data) || vboxVMStates.isEditable(data)) && !vboxVMStates.isSaved(data))) {
+	if(!((vboxVMStates.isRunning(data) || vboxVMStates.isPaused(data) || vboxVMStates.isEditable(data)) && !vboxVMStates.isSaved(data))) {
 		links = false;
 	}
 
@@ -451,108 +451,8 @@ function __vboxCreateDetailsSection(data, sectionName, section) {
 
 	var vboxDetailsSection = $('<div />')
 		.attr({'class':'vboxDetailsBorder vboxVMDetailsBox'+sectionName+ ' vboxVMDetailsBox-vm-'+data.id,'id':'vboxDetailsSectionId-'+sectionName+'-'+data.id})
-		.dblclick(function(e){
-
-			// Save section name
-			var sectionName = $(this).data('sectionName');
-			
-			vboxSetLocalDataItem('vboxSectionCollapse'+sectionName,
-				($(this).hasClass('vboxDetailsSectionCollapsed') ? '' : '1')
-			);
-			
-			var collapsed = $(this).hasClass('vboxDetailsSectionCollapsed');
-			
-			// Animate if canvas is supported
-			if(isCanvasSupported()) {
-				
-				
-				// Get canvas of current section only
-				var canvas = $(this).find('canvas')[0];
-				var ctx = canvas.getContext('2d');
-				
-				// Only animate the canvas that is part of this section header
-				// All others just get switched
-				$.when($('<div />').animate({left:90},
-					{
-						duration: 500,
-						step: function(currentStep ) {
-							ctx.save();
-							ctx.clearRect(0,0,18,18);
-							ctx.translate(9,9);
-							ctx.rotate((collapsed ? (90 - currentStep) : currentStep) * Math.PI / 180.0);
-							ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
-							ctx.restore();
-						},
-						queue: true
-					}),
-					$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
-						.toggleClass('vboxDetailsSectionCollapsed', 500)
-						
-				).done(function() {
-					$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
-						.find('canvas').each(function(idx, can) {
-							var ctx = can.getContext('2d');
-							ctx.clearRect(0,0,18,18);
-							if(!collapsed) {
-								ctx.save();
-								ctx.translate(9,9);
-								ctx.rotate(90 * Math.PI / 180.0);
-								ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
-								ctx.restore();
-							} else {
-								ctx.drawImage(vboxImageDownGrey,0,0);
-							}
-							
-						});
-				});
-
-			} else {
-				
-				// IE8 doesn't display this animation
-				if(!($.browser.msie && $.browser.version.substring(0,1) < 9)) {
-					
-					// Get image span of current section only
-					var vboxArrowImage = $(this).find('span.vboxArrowImage');
-						
-					// Only animate the span that is part of this section header
-					// All others just get switched
-					$.when($('<div />').animate({left:90},
-						{
-							duration: 300,
-							step: function(currentStep ) {
-								if(collapsed) {
-									currentStep = 90 + (currentStep * -1);
-								}
-								vboxArrowImage.css({
-									'transform':'rotate('+currentStep+'deg)',
-									'-moz-transform': 'rotate('+currentStep+'deg)',
-									'-webkit-transform': 'rotate('+currentStep+'deg)',
-									'-o-transform': 'rotate('+currentStep+'deg)',
-									'-ms-transform': 'rotate('+currentStep+'deg)'
-								});
-							},
-							queue: true
-						})).done(function(){
-							
-							vboxArrowImage.css({
-								'transform':'',
-								'-moz-transform': '',
-								'-webkit-transform': '',
-								'-o-transform': '',
-								'-ms-transform': ''
-							});
-							
-						});
-						
-				}
-				
-				$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
-					.toggleClass('vboxDetailsSectionCollapsed', (($.browser.msie && $.browser.version.substring(0,1) < 9) ? undefined : 300));
-				
-			}
-
-			return false;
-		}).hoverClass('vboxHover').disableSelection().data({'sectionName':sectionName});
+		.dblclick(__vboxDetailsSectionCollapse)
+			.hoverClass('vboxHover').disableSelection().data({'sectionName':sectionName});
 
 	if(vboxGetLocalDataItem("vboxSectionCollapse"+sectionName)) {
 		vboxDetailsSection.addClass('vboxDetailsSectionCollapsed');
@@ -713,6 +613,111 @@ function __vboxDisplayHostDetailsData(data, targetDiv) {
 	
 }
 
+
+//Collapse section used on dblclick of sections
+function __vboxDetailsSectionCollapse(e) {
+
+	// Save section name
+	var sectionName = $(this).data('sectionName');
+	
+	vboxSetLocalDataItem('vboxSectionCollapse'+sectionName,
+		($(this).hasClass('vboxDetailsSectionCollapsed') ? '' : '1')
+	);
+	
+	var collapsed = $(this).hasClass('vboxDetailsSectionCollapsed');
+	
+	// Animate if canvas is supported
+	if(isCanvasSupported()) {
+		
+		
+		// Get canvas of current section only
+		var canvas = $(this).find('canvas.vboxArrowImage')[0];
+		var ctx = canvas.getContext('2d');
+		
+		// Only animate the canvas that is part of this section header
+		// All others just get switched
+		$.when($('<div />').animate({left:90},
+			{
+				duration: 500,
+				step: function(currentStep ) {
+					ctx.save();
+					ctx.clearRect(0,0,18,18);
+					ctx.translate(9,9);
+					ctx.rotate((collapsed ? (90 - currentStep) : currentStep) * Math.PI / 180.0);
+					ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
+					ctx.restore();
+				},
+				queue: true
+			}),
+			$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
+				.toggleClass('vboxDetailsSectionCollapsed', 500)
+				
+		).done(function() {
+			$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
+				.find('canvas.vboxArrowImage').each(function(idx, can) {
+					var ctx = can.getContext('2d');
+					ctx.clearRect(0,0,18,18);
+					if(!collapsed) {
+						ctx.save();
+						ctx.translate(9,9);
+						ctx.rotate(90 * Math.PI / 180.0);
+						ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
+						ctx.restore();
+					} else {
+						ctx.drawImage(vboxImageDownGrey,0,0);
+					}
+					
+				});
+		});
+
+	} else {
+		
+		// IE8 doesn't display this animation
+		if(!($.browser.msie && $.browser.version.substring(0,1) < 9)) {
+			
+			// Get image span of current section only
+			var vboxArrowImage = $(this).find('span.vboxArrowImage');
+				
+			// Only animate the span that is part of this section header
+			// All others just get switched
+			$.when($('<div />').animate({left:90},
+				{
+					duration: 300,
+					step: function(currentStep ) {
+						if(collapsed) {
+							currentStep = 90 + (currentStep * -1);
+						}
+						vboxArrowImage.css({
+							'transform':'rotate('+currentStep+'deg)',
+							'-moz-transform': 'rotate('+currentStep+'deg)',
+							'-webkit-transform': 'rotate('+currentStep+'deg)',
+							'-o-transform': 'rotate('+currentStep+'deg)',
+							'-ms-transform': 'rotate('+currentStep+'deg)'
+						});
+					},
+					queue: true
+				})).done(function(){
+					
+					vboxArrowImage.css({
+						'transform':'',
+						'-moz-transform': '',
+						'-webkit-transform': '',
+						'-o-transform': '',
+						'-ms-transform': ''
+					});
+					
+				});
+				
+		}
+		
+		$('#vboxVMDetails').find('div.vboxVMDetailsBox'+sectionName)
+			.toggleClass('vboxDetailsSectionCollapsed', (($.browser.msie && $.browser.version.substring(0,1) < 9) ? undefined : 300));
+		
+	}
+
+	return false;
+	
+}
 
 /*
  *

@@ -20,7 +20,6 @@ var vboxHostDetailsSections = {
 		icon:'machine_16px.png',
 		title:trans('General','VBoxGlobal'),
 		settingsLink: 'General',
-		multiSelectDetailsTable: true,
 		rows : [
 		   {
 			   title: trans('Name', 'VBoxGlobal'),
@@ -163,7 +162,7 @@ var vboxHostDetailsSections = {
 	},
 		   
 	hostnetwork: {
-		title: 'Network',
+		title: trans('Network'),
 		icon: 'nw_16px.png',
 		rows: function(d) {
 			
@@ -213,8 +212,7 @@ var vboxHostDetailsSections = {
 	},
 
 	hostdvddrives : {
-		title: 'CD/DVD Devices',
-		translationContext: 'UIActionPool',
+		title: trans('DVD','UIApplianceEditorWidget'),
 		icon: 'cd_16px.png',
 		condition: function(d) {
 			return d['DVDDrives'].length;
@@ -235,8 +233,7 @@ var vboxHostDetailsSections = {
 	},
 	
 	hostfloppydrives: {
-		title:'Floppy Devices',
-		translationContext: 'UIActionPool',
+		title: trans('Floppy','UIApplianceEditorWidget'),
 		icon: "fd_16px.png",
 		condition: function(d) { return d['floppyDrives'].length; },
 		rows: function(d) {
@@ -337,7 +334,7 @@ var vboxVMDetailsSections = {
 					return bo.join(', ');
 			   }
 		   },{
-			   title: trans("Acceleration",'UIDetailsPagePrivate'),
+			   title: trans("Acceleration",'UIGDetails'),
 			   callback: function(d) {
 				   var acList = [];
 				   if(d['HWVirtExProperties'].Enabled) acList[acList.length] = trans('VT-x/AMD-V');
@@ -2580,18 +2577,6 @@ function vboxWizard() {
 		
 		l.onLoad = function(){
 		
-			// Opera hidden select box bug
-			// //////////////////////////////
-			if($.browser.opera) {
-				$('#'+self.name+'Content').find('select').on('change',function(){
-					$(this).data('vboxSelected',$(this).val());
-				}).on('show',function(){
-					$(this).val($(this).data('vboxSelected'));
-				}).each(function(){
-					$(this).data('vboxSelected',$(this).val());
-				});
-			}
-
 			// Show / Hide description button
 			if(!self.stepButtons) self.stepButtons = [];
 			if(!self.noAdvanced) {
@@ -2839,12 +2824,6 @@ function vboxWizard() {
 		}
 		$('#'+self.name+'Title').html(trans($('#'+self.name+'Step'+step).attr('title'),self.context));
 		$('#'+self.name+'Step'+step).css({'display':''});
-
-		// Opera hidden select box bug
-		// //////////////////////////////
-		if($.browser.opera) {
-			$('#'+self.name+'Step'+step).find('select').trigger('show');
-		}
 
 		$('#'+self.name+'Step'+step).trigger('show',self);
 
@@ -3520,15 +3499,12 @@ function vboxButtonMediaMenu(type,callback,mediumPath) {
 	};
 	
 	/**
-	 * Update media menu's "Remove Medium" item
+	 * Update media menu
 	 * 
-	 * @memberOf vboxButtonMediaMenu
-	 * @param {Boolean}
-	 *            enabled - whether the item should be enabled or not
+	 * @see vboxMediaMenu.menuUpdateMedia
 	 */
-	this.menuUpdateRemoveMedia = function(enabled) {
-		self.mediaMenu.menuUpdateRemoveMedia(enabled);
-	};
+	this.menuUpdateMedia = self.mediaMenu.menuUpdateMedia;
+
 }
 
 /**
@@ -3717,17 +3693,27 @@ function vboxMediaMenu(type,callback,mediumPath) {
 	};
 		
 	/**
-	 * Update "remove image from disk" menu item
+	 * Update media checkbox and "remove image from disk" menu item
 	 * 
 	 * @memberOf vboxMediaMenu
-	 * @param {Boolean}
-	 *            enabled - whether the item should be enabled or not
+	 * @param {String}
+	 *            medium - medium attached to controller
 	 * @return null
 	 */
-	this.menuUpdateRemoveMedia = function(enabled) {
-		self.removeEnabled = (enabled ? true : false);
+	this.menuUpdateMedia = function(medium) {
+		self.removeEnabled = (medium ? true : false);
 		if(!self._menu) self.menuElement();
 		else self._menu.update();
+		// Remove all 'attached' spans
+		var elm = $('#'+self.menu_id());
+		$(elm).find('a.vboxCheckMark').removeClass('vboxCheckMark').children('span.vboxCheckMark').remove();
+		if(medium) {
+			if(medium.hostDrive) {
+				$(elm).find('a[href="#'+medium.id+'"]').addClass('vboxCheckMark').prepend($('<span />').attr({'class':'vboxCheckMark'}).html('&#x2713;'));
+			} else {
+				$(elm).find('a[href="#path:'+medium.location+'"]').addClass('vboxCheckMark').prepend($('<span />').attr({'class':'vboxCheckMark'}).html('&#x2713;'));				
+			}
+		}
 	};
 	
 	/**
@@ -4435,6 +4421,18 @@ var vboxStorage = {
 			busts[busts.length] = i;
 		}
 		return busts;
+	},
+	
+	/**
+	 * Return icon name for bus
+	 * 
+	 * @memberOf vboxStorage
+	 * @param {String} bus - bus type
+	 * @return {String} icon name
+	 */
+	getBusIcon : function(bus) {
+		if(vboxStorage[bus].displayInherit) bus = vboxStorage[bus].displayInherit
+		return bus.toLowerCase();
 	},
 	
 	IDE : {

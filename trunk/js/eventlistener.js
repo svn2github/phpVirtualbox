@@ -137,7 +137,7 @@ var vboxEventListener = {
 				vboxEventListener._persist = d.persist;
 			}).always(function(){
 				vmEvents.resolve();
-			})
+			});
 			return vmEvents.promise();
 		});
 		

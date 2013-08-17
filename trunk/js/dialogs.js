@@ -565,7 +565,7 @@ function vboxWizardCloneVMDialog(args) {
 						self.args.vm.name + ' > ' + name);
 					} else {
 						self.completed.reject();
-					};					
+					}					
 				}).fail(function(){
 					self.completed.reject();
 				});
@@ -1050,8 +1050,8 @@ function vboxGlobalPrefsDialog() {
 				l.onLoad = function(){location.reload(true);};
 			
 			}
-			l.add('hostOnlyInterfacesSave',function(){},{'networkInterfaces':$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces});
-			l.add('vboxSystemPropertiesSave',function(){},{'SystemProperties':$('#vboxSettingsDialog').data('vboxSystemProperties')});
+			l.add('hostOnlyInterfacesSave',function(){return;},{'networkInterfaces':$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces});
+			l.add('vboxSystemPropertiesSave',function(){return;},{'SystemProperties':$('#vboxSettingsDialog').data('vboxSystemProperties')});
 			l.run();
 			
 			// Update system properties
@@ -1109,7 +1109,7 @@ function vboxVMsettingsDialog(vm,pane) {
 		            	if(vboxVMStates.isRunning(vmData)) {
 		            		vboxAlert(trans('The virtual machine that you are changing has been started. Only certain settings can be changed while a machine is running. All other changes will be lost if you close this window now.','UIMessageCenter'));
 		            	}
-	              	})
+	              	});
 
 					break;
 
@@ -1195,7 +1195,7 @@ function vboxVMsettingsDialog(vm,pane) {
 				
 			}
 		}
-	}
+	};
 	
 	// Watch for changed VM settings
 	$('#vboxPane').on('vboxEvents',machineSettingsChanged);
@@ -1304,7 +1304,7 @@ function vboxWizardFirstRunDialog(vm) {
 	// This still resolves on cancel
 	this.onCancel = function () {
 		self.completed.resolve();
-	}
+	};
 	
 	this.onFinish = function() {
 		

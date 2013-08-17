@@ -979,8 +979,6 @@ var vboxVMDetailsSections = {
 		},
 		rows: function(d) {
 			
-			var advancedView = $('#vboxPane').data('vboxConfig').enableAdvancedConfig;
-			
 			var rows = new Array();
 			
 			for(var a = 0; a < d['storageControllers'].length; a++) {
@@ -1431,7 +1429,7 @@ var vboxVMActions = {
 			vboxFileBrowser($('#vboxPane').data('vboxSystemProperties').defaultMachineFolder,function(f){
 				if(!f) return;
 				var l = new vboxLoader();
-				l.add('machineAdd',function(){},{'file':f});
+				l.add('machineAdd',function(){return;},{'file':f});
 				l.onLoad = function(){
 					var lm = new vboxLoader();
 					lm.add('vboxGetMedia',function(d){$('#vboxPane').data('vboxMedia',d.responseData);});
@@ -3132,7 +3130,6 @@ function vboxToolbar(buttons) {
 */
 function vboxToolbarSingle(button) {
 
-	var self = this;
 	this.parentClass = vboxToolbarSmall;
 	this.parentClass();
 	this.buttons = [ button ];

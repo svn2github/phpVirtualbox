@@ -44,9 +44,9 @@
 
 <script type="text/javascript">
 
-var fFlashLoaded = false;
-var FlashVersion = "";
+var vboxRDPFlashLoaded = false;
 var vboxConsoleDetached = false;
+var vboxRDPFlashListenersAdded = false;
 
 $('#vboxRDPForm').on('submit',function(e){
 	e.stopPropagation();
@@ -276,9 +276,8 @@ function vboxRDPLoad() {
 	}
 }
 
-function vboxRDPgetFlashProperty(id, name) {
-	id = "FlashRDP";
-	var flash = RDPWebClient.getFlashById(id);
+function vboxRDPgetFlashProperty(name) {
+	var flash = RDPWebClient.getFlashById("FlashRDP");
 	try {
 		return flash.getProperty(name);
 	} catch (e) {
@@ -293,9 +292,8 @@ function vboxRDPgetFlashProperty(id, name) {
  */
 function RDPWebEventLoaded(flashid) {
 	
-	fFlashLoaded = true;
-	FlashVersion = vboxRDPgetFlashProperty("FlashRDP", "version");
-	$("#vboxRDPStatus").html(trans("Version",'UIVMDesktop') + ": " + FlashVersion);
+	vboxRDPFlashLoaded = true;
+	$("#vboxRDPStatus").html(trans("Version",'UIVMDesktop') + ": " + vboxRDPgetFlashProperty("version"));
 	if(vboxConsoleDetached) window.status = $("#vboxRDPStatus").text();
 
     var flash = RDPWebClient.getFlashById("FlashRDP");
@@ -303,16 +301,23 @@ function RDPWebEventLoaded(flashid) {
 	// Apply keyboard layout
 	flash.setProperty("keyboardLayout", ($('#vboxPane').data('vboxConfig').consoleKeyboardLayout == 'DE' ? 'de' : 'en'));
  
-	if (window.addEventListener) {
-	    window.addEventListener("contextmenu", function(event) { return RDPWebClient._MozillaContextMenu(event); }, true);
-	    window.addEventListener("mousedown", function(event) { return RDPWebClient._MozillaMouse(event, true); }, true);
-	    window.addEventListener("mouseup", function(event) { return RDPWebClient._MozillaMouse(event, false); }, true);
-	    flash.addEventListener("mouseout", function(event) { return RDPWebClient._MozillaMouseOut(event); }, true);
-	} else {
-	    document.oncontextmenu = function() { return RDPWebClient._IEContextMenu(); };
-	    flash.parentNode.onmousedown = function() { return RDPWebClient._IEMouse(true); };
-	    flash.parentNode.onmouseup = function() { return RDPWebClient._IEMouse(false); };
-	    flash.onmouseout=function() {return RDPWebClient._IEMouseOut(); };
+	// Only do this once
+	if(!vboxRDPFlashListenersAdded) {
+		
+		if (window.addEventListener) {
+		    window.addEventListener("contextmenu", function(event) { return RDPWebClient._MozillaContextMenu(event); }, true);
+		    window.addEventListener("mousedown", function(event) { return RDPWebClient._MozillaMouse(event, true); }, true);
+		    window.addEventListener("mouseup", function(event) { return RDPWebClient._MozillaMouse(event, false); }, true);
+		    flash.addEventListener("mouseout", function(event) { return RDPWebClient._MozillaMouseOut(event); }, true);
+		} else {
+		    document.oncontextmenu = function() { return RDPWebClient._IEContextMenu(); };
+		    flash.parentNode.onmousedown = function() { return RDPWebClient._IEMouse(true); };
+		    flash.parentNode.onmouseup = function() { return RDPWebClient._IEMouse(false); };
+		    flash.onmouseout=function() {return RDPWebClient._IEMouseOut(); };
+		}
+		
+		vboxRDPFlashListenersAdded = true;
+		
 	}
 
 	// Connect if "detached"
@@ -356,7 +361,7 @@ function RDPWebEventConnected(flashId) {
 }
 
 function RDPWebEventServerRedirect(flashId) {
-	$("#vboxRDPStatus").html(trans("Redirection by %1",'VBoxConsoleWgt').replace('%1',vboxRDPgetFlashProperty("FlashRDP", "serverAddress")));
+	$("#vboxRDPStatus").html(trans("Redirection by %1",'VBoxConsoleWgt').replace('%1',vboxRDPgetFlashProperty("serverAddress")));
 	if(vboxConsoleDetached) window.status = $("#vboxRDPStatus").text();
 }
 
@@ -368,7 +373,7 @@ function RDPWebEventDisconnected(flashId) {
    	$('#vboxVRDPDetachBtn').hide();
        
     /* RDP connection has been lost */
-    $("#vboxRDPStatus").html(trans("Disconnect reason",'VBoxConsoleWgt')+":\n" + vboxRDPgetFlashProperty("FlashRDP", "lastError"));
+    $("#vboxRDPStatus").html(trans("Disconnect reason",'VBoxConsoleWgt')+":\n" + vboxRDPgetFlashProperty("lastError"));
     if(vboxConsoleDetached) {
     	alert($("#vboxRDPStatus").text());
     	window.close();
@@ -390,7 +395,7 @@ function vboxRDPConnect() {
 
 	vboxSetLocalDataItem('vbox'+vboxChooser.getSingleSelectedId()+'ConsoleSize',$('#vboxRDPSize').val(), true); 
 	
-    if (!fFlashLoaded) return false;
+    if (!vboxRDPFlashLoaded) return false;
 
     var flash = RDPWebClient.getFlashById("FlashRDP");
     if (!flash) return;

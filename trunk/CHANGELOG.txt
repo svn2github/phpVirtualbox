@@ -14,6 +14,9 @@ Removed bug workarounds for old version of Opera.
 
 Minor translation bug fixes.
 
+Added VNC viewer for VirtualBox-OSE with VNC support
+(experimental).
+
 -------------------------------------
 	4.2-7	2013-08-12
 -------------------------------------

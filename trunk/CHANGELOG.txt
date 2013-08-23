@@ -17,6 +17,9 @@ Minor translation bug fixes.
 Added VNC viewer for VirtualBox-OSE with VNC support
 (experimental).
 
+VRDE port in the Details pane is now a vnc:// link if VirtualBox
+with VNC support is detected and the VM is running.
+
 -------------------------------------
 	4.2-7	2013-08-12
 -------------------------------------

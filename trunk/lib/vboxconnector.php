@@ -902,7 +902,7 @@ class vboxconnector {
 	
 
 	/**
-	 * Call overloader. Handles caching of vboxwebsrv data for some incoming requests.
+	 * Call overloader.
 	 * Returns result of method call. Here is where python's decorators would come in handy.
 	 *
 	 * @param string $fn method to call
@@ -937,7 +937,7 @@ class vboxconnector {
 
 		}
 
-		return $response;
+		return true;
 	}
 
 	/**

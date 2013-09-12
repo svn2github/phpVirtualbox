@@ -105,15 +105,7 @@ class vboxconnector {
 	 * @see vboxconnector::getDsep()
 	 */
 	var $dsep = null;
-	
-	/**
-	 * The 'remote_' method being called.
-	 * 
-	 * @var string
-	 * @see vboxconnector::__call
-	 */
-	var $calledMethod = null;
-	
+
 	/**
 	 * Obtain configuration settings and set object vars
 	 * @param boolean $useAuthMaster use the authentication master obtained from configuration class
@@ -861,7 +853,7 @@ class vboxconnector {
 	        	break;
 	        case 'OnSharedFolderChanged':
 	        	$data['machineId'] = $data['sourceId'];
-	        	$data['global'] = $eventDataObject->global;
+	        	$data['scope'] = (string)$eventDataObject->scope;
 	        	break;
 	        case 'OnVRDEServerInfoChanged':
 	        	$data['machineId'] = $data['sourceId'];
@@ -925,7 +917,6 @@ class vboxconnector {
 		# Access to undefined methods prefixed with remote_
 		if(method_exists($this,'remote_'.$fn)) {
 
-			$this->calledMethod = $fn;
 			$args[1][0]['data']['responseData'] = $this->{'remote_'.$fn}($req);
 			$args[1][0]['data']['success'] = ($args[1][0]['data']['responseData'] !== false);
 			$args[1][0]['data']['key'] = $this->settings->key;

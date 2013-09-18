@@ -1752,7 +1752,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return boolean true on success
 	 */
-	public function remote_machineSave($args,&$response) {
+	public function remote_machineSave($args) {
 
 		$this->connect();
 
@@ -2903,7 +2903,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return array response data
 	 */
-	public function remote_hostOnlyInterfaceRemove($args,&$response) {
+	public function remote_hostOnlyInterfaceRemove($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -2935,7 +2935,7 @@ class vboxconnector {
 	 * @param unused $args
 	 * @return array of os types
 	 */
-	public function remote_vboxGetGuestOSTypes($args,&$response) {
+	public function remote_vboxGetGuestOSTypes($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -3244,7 +3244,7 @@ class vboxconnector {
 	 * @param unused $args
 	 * @return array of USB devices
 	 */
-	public function remote_hostGetUSBDevices($args,&$response) {
+	public function remote_hostGetUSBDevices($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -3386,7 +3386,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return array of machine runtime data
 	 */
-	public function remote_machineGetRuntimeData($args, &$response) {
+	public function remote_machineGetRuntimeData($args) {
 
 		$this->connect();
 		
@@ -3462,7 +3462,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return boolean true on success or array of response data
 	 */
-	public function remote_machineRemove($args, &$response) {
+	public function remote_machineRemove($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -3834,7 +3834,7 @@ class vboxconnector {
 
 				if($machine) {
 
-					$response['data']['vmlist'][] = array(
+					$vmlist[] = array(
 						'name' => $machine->id,
 						'state' => 'Inaccessible',
 						'OSTypeId' => 'Other',
@@ -4278,7 +4278,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return array response data containing progress operation id
 	 */
-	public function remote_snapshotRestore($args, &$response) {
+	public function remote_snapshotRestore($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4334,7 +4334,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return array response data containing progress operation id
 	 */
-	public function remote_snapshotDelete($args, &$response) {
+	public function remote_snapshotDelete($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4781,7 +4781,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return boolean true
 	 */
-	public function remote_mediumRelease($args,&$response) {
+	public function remote_mediumRelease($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -4993,7 +4993,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return boolean true on success
 	 */
-	public function remote_mediumMount($args,&$response) {
+	public function remote_mediumMount($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
@@ -5158,7 +5158,7 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @return array of system properties
 	 */
-	public function remote_vboxSystemPropertiesGet($args,&$response) {
+	public function remote_vboxSystemPropertiesGet($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();

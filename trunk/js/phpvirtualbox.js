@@ -1013,7 +1013,7 @@ var vboxVMDetailsSections = {
 							d.id+"','"+d['storageControllers'][a]['mediumAttachments'][b].medium.id+"');\">"+trans('Refresh','UIVMLogViewer')+"</a>";							
 
 						} else {
-							portDesk = trans('Refresh','UIVMLogViewer');
+							portDesc = trans('Refresh','UIVMLogViewer');
 						}
 
 					} else {

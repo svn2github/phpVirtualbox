@@ -1121,7 +1121,7 @@ class vboxconnector {
 			try {
 
 				/* @var $progress IProgress */
-				$progress = $this->session->console->guest->updateGuestAdditions($gem->location,'WaitForUpdateStartOnly');
+				$progress = $this->session->console->guest->updateGuestAdditions($gem->location,array(),'WaitForUpdateStartOnly');
 
 				// No error info. Save progress.
 				$gem->releaseRemote();
@@ -1681,13 +1681,16 @@ class vboxconnector {
 		$usbEx = array();
 		$usbNew = array();
 
-		$usbc = $this->_machineGetUSBController($this->session->machine);
+		$usbc = $this->_machineGetUSBControllers($this->session->machine);
+		
+		$deviceFilters = $this->_machineGetUSBDeviceFilters($this->session->machine);
 
-		if($state != 'Saved' && $usbc['enabled']) {
+		if($state != 'Saved') {
 
 			// filters
-			if(!is_array($args['USBController']['deviceFilters'])) $args['USBController']['deviceFilters'] = array();
-			if(count($usbc['deviceFilters']) != count($args['USBController']['deviceFilters']) || @serialize($usbc['deviceFilters']) != @serialize($args['USBController']['deviceFilters'])) {
+			if(!is_array($args['USBDeviceFilters'])) $args['USBDeviceFilters'] = array();
+			
+			if(count($deviceFilters) != count($args['USBDeviceFilters']) || @serialize($deviceFilters) != @serialize($args['USBDeviceFilters'])) {
 
 				// usb filter properties to change
 				$usbProps = array('vendorId','productId','revision','manufacturer','product','serialNumber','port','remote');
@@ -1696,33 +1699,33 @@ class vboxconnector {
 				try {
 
 
-					$max = max(count($usbc['deviceFilters']),count($args['USBController']['deviceFilters']));
+					$max = max(count($deviceFilters),count($args['USBDeviceFilters']));
 					$offset = 0;
 
 					// Remove existing
 					for($i = 0; $i < $max; $i++) {
 
 						// Only if filter differs
-						if(@serialize($usbc['deviceFilters'][$i]) != @serialize($args['USBController']['deviceFilters'][$i])) {
+						if(@serialize($deviceFilters[$i]) != @serialize($args['USBDeviceFilters'][$i])) {
 
 							// Remove existing?
-							if($i < count($usbc['deviceFilters'])) {
-								$m->USBController->removeDeviceFilter(($i-$offset));
+							if($i < count($deviceFilters)) {
+								$m->USBDeviceFilters->removeDeviceFilter(($i-$offset));
 								$offset++;
 							}
 
 							// Exists in new?
-							if(count($args['USBController']['deviceFilters'][$i])) {
+							if(count($args['USBDeviceFilters'][$i])) {
 
 								// Create filter
-								$f = $m->USBController->createDeviceFilter($args['USBController']['deviceFilters'][$i]['name']);
-								$f->active = (bool)$args['USBController']['deviceFilters'][$i]['active'];
+								$f = $m->USBDeviceFilters->createDeviceFilter($args['USBDeviceFilters'][$i]['name']);
+								$f->active = (bool)$args['USBDeviceFilters'][$i]['active'];
 
 								foreach($usbProps as $p) {
-									$f->$p = $args['USBController']['deviceFilters'][$i][$p];
+									$f->$p = $args['USBDeviceFilters'][$i][$p];
 								}
 
-								$m->USBController->insertDeviceFilter($i,$f->handle);
+								$m->USBDeviceFilters->insertDeviceFilter($i,$f->handle);
 								$f->releaseRemote();
 								$offset--;
 							}
@@ -1846,7 +1849,7 @@ class vboxconnector {
 			$m->keyboardHIDType = $args['keyboardHIDType'];
 			$m->pointingHIDType = $args['pointingHIDType'];
 			$m->setHWVirtExProperty('LargePages', (intval($args['HWVirtExProperties']['LargePages']) ? 1 : 0));
-			$m->setHWVirtExProperty('Exclusive', (intval($args['HWVirtExProperties']['Exclusive']) ? 1 : 0));
+			$m->setHWVirtExProperty('UnrestrictedExecution', (intval($args['HWVirtExProperties']['UnrestrictedExecution']) ? 1 : 0));
 			$m->setHWVirtExProperty('VPID', (intval($args['HWVirtExProperties']['VPID']) ? 1 : 0));
 
 		}
@@ -2160,17 +2163,33 @@ class vboxconnector {
 		$usbEx = array();
 		$usbNew = array();
 
-		$usbc = $this->_machineGetUSBController($this->session->machine);
+		$usbc = $this->_machineGetUSBControllers($this->session->machine);
+		if(!$args['USBControllers'] || !is_array($args['USBControllers'])) $args['USBControllers'] = array();
 
-		// controller properties
-		if((bool)$usbc['enabled'] != (bool)$args['USBController']['enabled'] || (bool)$usbc['enabledEHCI'] != (bool)$args['USBController']['enabledEHCI']) {
-			$m->USBController->enabled = (bool)$args['USBController']['enabled'];
-			$m->USBController->enabledEHCI = (bool)$args['USBController']['enabledEHCI'];
+		// Remove old
+		$newNames = array();
+		$newByName = array();
+		foreach($args['USBControllers'] as $c) {
+			$newNames[] = $c['name'];
+			$newByName[$c['name']] = $c;
+		}
+		$exNames = array();
+		foreach($usbc as $c) {
+			$exNames[] = $c['name'];
+			if(in_array($c['name'], $newNames)) continue;
+			$this->session->machine->removeUSBController($c['name']);
+		}
+		
+		$addNames = array_diff($newNames, $exNames);
+		foreach($addNames as $name) {
+			$this->session->machine->addUSBController($name, $newByName[$name]['type']);
 		}
 
 		// filters
-		if(!is_array($args['USBController']['deviceFilters'])) $args['USBController']['deviceFilters'] = array();
-		if(count($usbc['deviceFilters']) != count($args['USBController']['deviceFilters']) || @serialize($usbc['deviceFilters']) != @serialize($args['USBController']['deviceFilters'])) {
+		$deviceFilters = $this->_machineGetUSBDeviceFilters($this->session->machine);
+		if(!is_array($args['USBDeviceFilters'])) $args['USBDeviceFilters'] = array();
+		
+		if(count($deviceFilters) != count($args['USBDeviceFilters']) || @serialize($deviceFilters) != @serialize($args['USBDeviceFilters'])) {
 
 			// usb filter properties to change
 			$usbProps = array('vendorId','productId','revision','manufacturer','product','serialNumber','port','remote');
@@ -2179,33 +2198,33 @@ class vboxconnector {
 			try {
 
 
-				$max = max(count($usbc['deviceFilters']),count($args['USBController']['deviceFilters']));
+				$max = max(count($deviceFilters),count($args['USBDeviceFilters']));
 				$offset = 0;
 
 				// Remove existing
 				for($i = 0; $i < $max; $i++) {
 
 					// Only if filter differs
-					if(@serialize($usbc['deviceFilters'][$i]) != @serialize($args['USBController']['deviceFilters'][$i])) {
+					if(@serialize($deviceFilters[$i]) != @serialize($args['USBDeviceFilters'][$i])) {
 
 						// Remove existing?
-						if($i < count($usbc['deviceFilters'])) {
-							$m->USBController->removeDeviceFilter(($i-$offset));
+						if($i < count($deviceFilters)) {
+							$m->USBDeviceFilters->removeDeviceFilter(($i-$offset));
 							$offset++;
 						}
 
 						// Exists in new?
-						if(count($args['USBController']['deviceFilters'][$i])) {
+						if(count($args['USBDeviceFilters'][$i])) {
 
 							// Create filter
-							$f = $m->USBController->createDeviceFilter($args['USBController']['deviceFilters'][$i]['name']);
-							$f->active = (bool)$args['USBController']['deviceFilters'][$i]['active'];
+							$f = $m->USBDeviceFilters->createDeviceFilter($args['USBDeviceFilters'][$i]['name']);
+							$f->active = (bool)$args['USBDeviceFilters'][$i]['active'];
 
 							foreach($usbProps as $p) {
-								$f->$p = $args['USBController']['deviceFilters'][$i][$p];
+								$f->$p = $args['USBDeviceFilters'][$i][$p];
 							}
 
-							$m->USBController->insertDeviceFilter($i,$f->handle);
+							$m->USBDeviceFilters->insertDeviceFilter($i,$f->handle);
 							$f->releaseRemote();
 							$offset--;
 						}
@@ -2671,7 +2690,7 @@ class vboxconnector {
 				// skip this VM as it is not owned by the user we're logged in as
 				continue;
 			}
-			$desc = $m->export($app->handle, $args['file']);
+			$desc = $m->exportTo($app->handle, $args['file']);
 			$props = $desc->getDescription();
 			$ptypes = array();
 			foreach($props[0] as $p) {$ptypes[] = (string)$p;}
@@ -2695,7 +2714,7 @@ class vboxconnector {
 		}
 
 		/* @var $progress IProgress */
-		$progress = $app->write(($args['format'] ? $args['format'] : 'ovf-1.0'),($args['manifest'] ? true : false),$args['file']);
+		$progress = $app->write(($args['format'] ? $args['format'] : 'ovf-1.0'),($args['manifest'] ? array('CreateManifest') : array()),$args['file']);
 		$app->releaseRemote();
 
 		// Does an exception exist?
@@ -3352,8 +3371,10 @@ class vboxconnector {
 		// Shared Folders
 		$data['sharedFolders'] = $this->_machineGetSharedFolders($machine);
 
-		// USB Filters
-		$data['USBController'] = $this->_machineGetUSBController($machine);
+		// USB Controllers
+		$data['USBControllers'] = $this->_machineGetUSBControllers($machine);
+		$data['USBDeviceFilters'] = $this->_machineGetUSBDeviceFilters($machine);
+		
 
 		if (@$this->settings->enforceVMOwnership )
 		{
@@ -3485,7 +3506,7 @@ class vboxconnector {
 			}
 
 			/* @var $progress IProgress */
-			$progress = $machine->delete($hds);
+			$progress = $machine->deleteConfig($hds);
 
 			$machine->releaseRemote();
 
@@ -3605,16 +3626,6 @@ class vboxconnector {
 			// Always set
 			$this->session->machine->setExtraData('GUI/SaveMountedAtRuntime', 'yes');
 			$this->session->machine->setExtraData('GUI/FirstRun', 'yes');
-
-			try {
-				$this->session->machine->USBController->enabled = true;
-				
-				// This causes problems if the extpack isn't installed
-				// $this->session->machine->USBController->enabledEHCI = true;
-				
-			} catch (Exception $e) {
-				// Ignore
-			}
 
 			try {
 				if($this->session->machine->VRDEServer && $this->vbox->systemProperties->defaultVRDEExtPack) {
@@ -3899,13 +3910,33 @@ class vboxconnector {
 	 * @param IMachine $m virtual machine instance
 	 * @return array USB controller info
 	 */
-	private function _machineGetUSBController(&$m) {
-
+	private function _machineGetUSBControllers(&$m) {
+	
 		/* @var $u IUSBController */
-		$u = &$m->USBController;
+		$controllers = &$m->USBControllers;
+		
+		$rcons = array();
+		foreach($controllers as $c) {
+			$rcons[] = array(
+				'name' => $c->name,
+				'type' => (string)$c->type
+			);
+			$c->releaseRemote();
+		}
+		
+		return $rcons;
+	}
+	
+	/**
+	 * Get USB device filters
+	 *
+	 * @param IMachine $m virtual machine instance
+	 * @return array USB device filters
+	 */
+	private function _machineGetUSBDeviceFilters(&$m) {
 
 		$deviceFilters = array();
-		foreach($u->deviceFilters as $df) { /* @var $df IUSBDeviceFilter */
+		foreach($m->USBDeviceFilters->deviceFilters as $df) { /* @var $df IUSBDeviceFilter */
 
 			$deviceFilters[] = array(
 				'name' => $df->name,
@@ -3921,12 +3952,7 @@ class vboxconnector {
 				);
 			$df->releaseRemote();
 		}
-		$r = array(
-			'enabled' => intval($u->enabled),
-			'enabledEHCI' => $u->enabledEHCI,
-			'deviceFilters' => $deviceFilters);
-		$u->releaseRemote();
-		return $r;
+		return $deviceFilters;
 	}
 
 	/**
@@ -3994,7 +4020,7 @@ class vboxconnector {
 				'Enabled' => $m->getHWVirtExProperty('Enabled'),
 				'NestedPaging' => $m->getHWVirtExProperty('NestedPaging'),
 				'LargePages' => $m->getHWVirtExProperty('LargePages'),
-				'Exclusive' => $m->getHWVirtExProperty('Exclusive'),
+				'UnrestrictedExecution' => $m->getHWVirtExProperty('UnrestrictedExecution'),
 				'VPID' => $m->getHWVirtExProperty('VPID')
 				),
 			'CpuProperties' => array(
@@ -4610,10 +4636,10 @@ class vboxconnector {
 		/* @var $src IMedium */
 		$src = $this->vbox->openMedium($args['src'],'HardDisk');
 
-		$type = ($args['type'] == 'fixed' ? 'Fixed' : 'Standard');
 		$mv = new MediumVariant();
-		$type = $mv->ValueMap[$type];
-		if($args['split']) $type += $mv->ValueMap['VmdkSplit2G'];
+
+		$type = array(($args['type'] == 'fixed' ? $mv->ValueMap['Fixed'] : $mv->ValueMap['Standard']));
+		if($args['split']) $type[] = $mv->ValueMap['VmdkSplit2G'];
 
 		/* @var $progress IProgress */
 		$progress = $src->cloneTo($target->handle,$type,null);
@@ -4747,10 +4773,10 @@ class vboxconnector {
 		$this->connect();
 
 		$format = strtoupper($args['format']);
-		$type = ($args['type'] == 'fixed' ? 'Fixed' : 'Standard');
+
 		$mv = new MediumVariant();
-		$type = $mv->ValueMap[$type];
-		if($args['split']) $type += $mv->ValueMap['VmdkSplit2G'];
+		$type = array(($args['type'] == 'fixed' ? $mv->ValueMap['Fixed'] : $mv->ValueMap['Standard']));
+		if($args['split']) $type[] = $mv->ValueMap['VmdkSplit2G'];
 
 		/* @var $hd IMedium */
 		$hd = $this->vbox->createHardDisk($format,$args['file']);
@@ -5105,8 +5131,15 @@ class vboxconnector {
 
 		// For $fixed value
 		$mv = new MediumVariant();
-		$variant = $m->variant;
-
+		$variant = 0;
+		/*;
+		foreach($m->variant as $mv) {
+			$variant[] = 
+		}
+		$variant = array_unique($variant);
+		*/
+		
+		// print_r($variant);
 		return array(
 				'id' => $m->id,
 				'description' => $m->description,
@@ -5175,9 +5208,17 @@ class vboxconnector {
 			$dtypes = array();
 			foreach($exts[1] as $t) $dtypes[] = (string)$t;
 			$caps = array();
+			foreach(array_values($mf->capabilities) as $c) {
+				print_r($c);
+				$caps[] = 'none'; //(string)$c;
+			}
+			
+			#print_r($mf->capabilities);
+			/*
 			foreach($mfCap->NameMap as $k=>$v) {
 				if ($k & $mf->capabilities)	 $caps[] = $v;
 			}
+			*/
 			$mediumFormats[] = array('id'=>$mf->id,'name'=>$mf->name,'extensions'=>array_map('strtolower',$exts[0]),'deviceTypes'=>$dtypes,'capabilities'=>$caps);
 		}
 

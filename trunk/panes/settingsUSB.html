@@ -320,16 +320,23 @@ $("#vboxSettingsUSBAddDeviceClick").contextMenu({
 $('#vboxSettingsDialog').on('dataLoaded',function(){
 	
 	// set checkboxes for USB and EHCI
-	$(document.forms['frmVboxSettings'].vboxSettingsUSBEnabled).prop('checked',($('#vboxSettingsDialog').data('vboxMachineData').USBController.enabled)).trigger('syntheticClick');
-	document.forms['frmVboxSettings'].vboxSettingsUSBEnabledEHCI.checked = ($('#vboxSettingsDialog').data('vboxMachineData').USBController.enabledEHCI);
+	var OHCI = false;
+	var EHCI = false; // USB2.0
+	var usbControllers = $('#vboxSettingsDialog').data('vboxMachineData').USBControllers;
+	for(var i = 0; i < usbControllers.length; i++) {
+		if(usbControllers[i].type == 'OHCI') OHCI = true;
+		if(usbControllers[i].type == 'EHCI') EHCI = true;
+	}
+	$(document.forms['frmVboxSettings'].vboxSettingsUSBEnabled).prop('checked',OHCI).trigger('syntheticClick');
+	document.forms['frmVboxSettings'].vboxSettingsUSBEnabledEHCI.checked = EHCI;
 
 	// clear list
 	var list = $('#vboxSettingsUSBFilterList');
 	$(list).empty().children().remove();
 
 	// add filters
-	for(var i = 0; i < $('#vboxSettingsDialog').data('vboxMachineData').USBController.deviceFilters.length; i++) {
-		vboxSettingsAddUSBFilter($('#vboxSettingsDialog').data('vboxMachineData').USBController.deviceFilters[i],true);
+	for(var i = 0; i < $('#vboxSettingsDialog').data('vboxMachineData').USBDeviceFilters.length; i++) {
+		vboxSettingsAddUSBFilter($('#vboxSettingsDialog').data('vboxMachineData').USBDeviceFilters[i],true);
 	}
 	vboxColorRows($('#vboxSettingsUSBFilterList'));
 
@@ -352,15 +359,43 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 /* Change settings onSave() */
 $('#vboxSettingsDialog').on('save',function(){
 
+	// get checkboxes for USB and EHCI
+	var frmOHCI = document.forms['frmVboxSettings'].vboxSettingsUSBEnabled.checked;
+	var frmEHCI = document.forms['frmVboxSettings'].vboxSettingsUSBEnabledEHCI.checked;
 	
-	$('#vboxSettingsDialog').data('vboxMachineData').USBController.enabled = (document.forms['frmVboxSettings'].vboxSettingsUSBEnabled.checked ? 1 : 0);
-	$('#vboxSettingsDialog').data('vboxMachineData').USBController.enabledEHCI = (document.forms['frmVboxSettings'].vboxSettingsUSBEnabledEHCI.checked ? 1 : 0);
+	var OHCI = false;
+	var EHCI = false; // USB2.0
 
-	$('#vboxSettingsDialog').data('vboxMachineData').USBController.deviceFilters = new Array();
+	var usbControllers = $('#vboxSettingsDialog').data('vboxMachineData').USBControllers;
+	var newUsbControllers = [];
+	for(var i = 0; i < usbControllers.length; i++) {
+		if(usbControllers[i].type == 'OHCI'){
+			OHCI = true;
+			if(frmOHCI) {
+				newUsbControllers.push(usbControllers[i]);
+			}
+		}
+		if(usbControllers[i].type == 'EHCI') {
+			EHCI = true;
+			if(frmEHCI) {
+				newUsbControllers.push(usbControllers[i]);
+			}
+		}
+	}
+	if(frmOHCI && !OHCI) {
+		newUsbControllers.push({'name':'OHCI','type':'OHCI'});
+	}	
+	if(frmEHCI && !EHCI) {
+		newUsbControllers.push({'name':'EHCI','type':'EHCI'});
+	}	
+	
+	$('#vboxSettingsDialog').data('vboxMachineData').USBControllers = newUsbControllers
+
+	$('#vboxSettingsDialog').data('vboxMachineData').USBDeviceFilters = new Array();
 
 	$('#vboxSettingsUSBFilterList').children('li').each(function(){
 		$(this).data('filter').active = ($(this).children('input:checkbox').first().prop('checked') ? 1 : 0);
-		$('#vboxSettingsDialog').data('vboxMachineData').USBController.deviceFilters[$('#vboxSettingsDialog').data('vboxMachineData').USBController.deviceFilters.length] = $(this).data('filter');
+		$('#vboxSettingsDialog').data('vboxMachineData').USBDeviceFilters[$('#vboxSettingsDialog').data('vboxMachineData').USBDeviceFilters.length] = $(this).data('filter');
 	});
 	
 });

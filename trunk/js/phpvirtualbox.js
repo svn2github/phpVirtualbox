@@ -343,7 +343,7 @@ var vboxVMDetailsSections = {
 				   
 				   if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
 					   if(d['HWVirtExProperties'].LargePages) acList[acList.length] = trans('Large Pages');
-					   if(d['HWVirtExProperties'].Exclusive) acList[acList.length] = trans('Exclusive use of the hardware virtualization extensions');
+					   if(d['HWVirtExProperties'].UnrestrictedExecution) acList[acList.length] = trans('VT-x unrestricted execution');
 					   if(d['HWVirtExProperties'].VPID) acList[acList.length] = trans('VT-x VPID');
 				   }
 				   return acList.join(', ');
@@ -1261,17 +1261,27 @@ var vboxVMDetailsSections = {
 			
 			var rows = [];
 			
-			if(d['USBController'] && d['USBController']['enabled']) {
+			var usbEnabled = false;
+			
+			for(var i = 0; i < d.USBControllers.length; i++) {
+				if(d.USBControllers[i].type == 'OHCI') {
+					usbEnabled = true;
+					break;
+				}
+			}
+			
+			if(usbEnabled) {
+				
 				var tot = 0;
 				var act = 0;
-				for(var i = 0; i < d['USBController'].deviceFilters.length; i++) {
+				for(var i = 0; i < d.USBDeviceFilters.length; i++) {
 					tot++;
-					if(d['USBController'].deviceFilters[i].active) act++;
+					if(d.USBDeviceFilters[i].active) act++;
 				}
 				
 				rows[0] = {
-					title: trans("Device Filters"),
-					data: trans('%1 (%2 active)').replace('%1',tot).replace('%2',act)
+						title: trans("Device Filters"),
+						data: trans('%1 (%2 active)').replace('%1',tot).replace('%2',act)
 				};
 				
 			} else {

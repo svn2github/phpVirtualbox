@@ -176,7 +176,7 @@
 	</tr>
 	<tr class='vboxSettingsSystemAdvancedOnly'>
 		<th></th>
-		<td><label><input type='checkbox' name='settingsSystemExclusive' class='vboxEnablerListen'/> <span class='translate vboxEnablerListen'>Enable exclusive use of the hardware virtualization extensions</span></label></td>
+		<td><label><input type='checkbox' name='settingsSystemUnrestrictedExecution' class='vboxEnablerListen'/> <span class='translate vboxEnablerListen'>Enable VT-x unrestricted execution</span></label></td>
 	</tr>   
 	<tr class='vboxSettingsSystemAdvancedOnly'>
 		<th></th>
@@ -295,7 +295,7 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 		document.forms['frmVboxSettings'].vboxSettingsSystemHPET.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HPETEnabled);
 		document.forms['frmVboxSettings'].vboxSettingsSystemDisableHostTimeSync.checked = ($('#vboxSettingsDialog').data('vboxMachineData').disableHostTimeSync);
 		document.forms['frmVboxSettings'].settingsSystemLargePages.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.LargePages);
-		document.forms['frmVboxSettings'].settingsSystemExclusive.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Exclusive);
+		document.forms['frmVboxSettings'].settingsSystemUnrestrictedExecution.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.UnrestrictedExecution);
 		document.forms['frmVboxSettings'].settingsSystemVPID.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.VPID);
 		document.forms['frmVboxSettings'].vboxSettingsSystemPageFusion.checked = ($('#vboxSettingsDialog').data('vboxMachineData').pageFusionEnabled);
 		
@@ -429,7 +429,7 @@ $('#vboxSettingsDialog').on('save',function(){
 		$('#vboxSettingsDialog').data('vboxMachineData').HPETEnabled = (document.forms['frmVboxSettings'].vboxSettingsSystemHPET.checked ? 1 : 0);
 		$('#vboxSettingsDialog').data('vboxMachineData').disableHostTimeSync = (document.forms['frmVboxSettings'].vboxSettingsSystemDisableHostTimeSync.checked ? 1 : 0);
 		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.LargePages = (document.forms['frmVboxSettings'].settingsSystemLargePages.checked ? 1 : 0);
-		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Exclusive = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && document.forms['frmVboxSettings'].settingsSystemExclusive.checked ? 1 : 0);
+		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.UnrestrictedExecution = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && document.forms['frmVboxSettings'].settingsSystemUnrestrictedExecution.checked ? 1 : 0);
 		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.VPID = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && document.forms['frmVboxSettings'].settingsSystemVPID.checked ? 1 : 0);
 	}
 	

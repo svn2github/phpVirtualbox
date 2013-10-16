@@ -2210,6 +2210,23 @@ var vboxMedia = {
 	},
 	
 	/**
+	 * Return true if a medium format supports
+	 */
+	formatSupportsSplit : function(format) {
+		
+		var format = format.toLowerCase();
+		
+		var mfs = $('#vboxPane').data('vboxSystemProperties').mediumFormats;
+		
+		for(var i = 0; i < mfs.length; i++) {
+			if(mfs[i].id.toLowerCase() == format) {
+				return (jQuery.inArray('CreateSplit2G',mfs[i].capabilities) > -1);
+			}
+		}
+		return false;
+	},
+	
+	/**
 	 * Return printable virtual hard disk variant
 	 * 
 	 * @static

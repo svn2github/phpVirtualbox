@@ -915,7 +915,8 @@ function vboxWizardCopyHDDialog(suggested) {
 				break;
 			}
 		}
-		var fsplit = ($(self.form).find('[name=newHardDiskSplit]').prop('checked') && format == 'vmdk' ? 1 : 0);
+
+		var fsplit = ($(self.form).find('[name=newHardDiskSplit]').prop('checked') && vboxMedia.formatSupportsSplit(format) ? 1 : 0);
 
 		var loc = jQuery.trim($(self.form).find('[name=wizardCopyHDLocation]').val());
 		if(!loc) {

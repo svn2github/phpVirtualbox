@@ -5130,16 +5130,12 @@ class vboxconnector {
 		}
 
 		// For $fixed value
-		$mv = new MediumVariant();
+		$mvenum = new MediumVariant();
 		$variant = 0;
-		/*;
-		foreach($m->variant as $mv) {
-			$variant[] = 
-		}
-		$variant = array_unique($variant);
-		*/
 		
-		// print_r($variant);
+		foreach($m->variant as $mv) {
+			$variant += $mvenum->ValueMap[(string)$mv];
+		}
 		return array(
 				'id' => $m->id,
 				'description' => $m->description,
@@ -5160,8 +5156,8 @@ class vboxconnector {
 				'hasSnapshots' => $hasSnapshots,
 				'lastAccessError' => $m->lastAccessError,
 				'variant' => $variant,
-				'fixed' => intval((intval($variant) & $mv->ValueMap['Fixed']) > 0),
-				'split' => intval((intval($variant) & $mv->ValueMap['VmdkSplit2G']) > 0),
+				'fixed' => intval((intval($variant) & $mvenum->ValueMap['Fixed']) > 0),
+				'split' => intval((intval($variant) & $mvenum->ValueMap['VmdkSplit2G']) > 0),
 				'machineIds' => array(),
 				'attachedTo' => $attachedTo
 			);
@@ -5208,18 +5204,12 @@ class vboxconnector {
 			$dtypes = array();
 			foreach($exts[1] as $t) $dtypes[] = (string)$t;
 			$caps = array();
-			foreach(array_values($mf->capabilities) as $c) {
-				print_r($c);
-				$caps[] = 'none'; //(string)$c;
+			foreach($mf->capabilities as $c) {
+				$caps[] = (string)$c;
 			}
 			
-			#print_r($mf->capabilities);
-			/*
-			foreach($mfCap->NameMap as $k=>$v) {
-				if ($k & $mf->capabilities)	 $caps[] = $v;
-			}
-			*/
 			$mediumFormats[] = array('id'=>$mf->id,'name'=>$mf->name,'extensions'=>array_map('strtolower',$exts[0]),'deviceTypes'=>$dtypes,'capabilities'=>$caps);
+
 		}
 
 		return array(

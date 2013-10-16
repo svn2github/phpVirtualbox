@@ -201,6 +201,8 @@ var vboxEventListener = {
 					// Trigger each event individually
 					for(var i = 0; i < d.responseData.length; i++) {
 						
+						console.log(d.responseData[i]);
+						
 						// Trigger raw vbox events
 						$('#vboxPane').trigger('vbox' + d.responseData[i].eventType, [d.responseData[i]]);
 						

@@ -1030,7 +1030,8 @@ function vboxGlobalPrefsDialog() {
 	var data = new Array(
 		{'fn':'hostOnlyInterfacesGet','callback':function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d.responseData);}},
 		{'fn':'vboxSystemPropertiesGet','callback':function(d){$('#vboxSettingsDialog').data('vboxSystemProperties',d.responseData);}},
-		{'fn':'getUsers','callback':function(d){$('#vboxSettingsDialog').data('vboxUsers',d.responseData);}}
+		{'fn':'getUsers','callback':function(d){$('#vboxSettingsDialog').data('vboxUsers',d.responseData);}},
+		{'fn':'vboxGetNATNetworks','callback':function(d){$('#vboxSettingsDialog').data('vboxNATNetworks',d.responseData);}}
 	);	
 	
 	// Check for noAuth setting
@@ -1133,7 +1134,7 @@ function vboxVMsettingsDialog(vm,pane) {
 				case 'OnSharedFolderChanged':
 				case 'OnCPUExecutionCapChanged':
 				case 'OnStorageDeviceChanged':
-				case 'OnNATRedirectEvent':
+				case 'OnNATRedirect':
 					
 					if(!eventList[i].machineId || eventList[i].machineId != vm.id) break;
 					
@@ -1155,7 +1156,7 @@ function vboxVMsettingsDialog(vm,pane) {
 						var reload = [
 			              vboxAjaxRequest('vboxGetMedia',{}).done(function(d){$('#vboxPane').data('vboxMedia',d.responseData);}),
 			              
-			              vboxAjaxRequest('hostGetNetworking',{}).done(function(d){$('#vboxSettingsDialog').data('vboxHostNetworking',d.responseData);}),
+			              vboxAjaxRequest('getNetworking',{}).done(function(d){$('#vboxSettingsDialog').data('vboxNetworking',d.responseData);}),
 			              
 			              vboxAjaxRequest('vboxRecentMediaGet',{}).done(function(d){$('#vboxPane').data('vboxRecentMedia',d.responseData);}),
 			              
@@ -1217,7 +1218,7 @@ function vboxVMsettingsDialog(vm,pane) {
 				$('#vboxSettingsDialog').data('vboxFullEdit', (vboxVMStates.isPoweredOff(vmData) && !vboxVMStates.isSaved(vmData)));
 			
 			}},
-			{'fn':'hostGetNetworking','callback':function(d){$('#vboxSettingsDialog').data('vboxHostNetworking',d.responseData);}},
+			{'fn':'getNetworking','callback':function(d){$('#vboxSettingsDialog').data('vboxNetworking',d.responseData);}},
 			{'fn':'hostGetDetails','callback':function(d){$('#vboxSettingsDialog').data('vboxHostDetails',d.responseData);}},
 			{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxNetworkAdapterTypes',d.responseData);},'args':{'class':'NetworkAdapterType'}},
 			{'fn':'vboxGetEnumerationMap','callback':function(d){$('#vboxSettingsDialog').data('vboxAudioControllerTypes',d.responseData);},'args':{'class':'AudioControllerType'}},

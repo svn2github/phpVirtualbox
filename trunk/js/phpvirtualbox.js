@@ -1124,6 +1124,9 @@ var vboxVMDetailsSections = {
 						case 'VDE':
 							adp = trans('VDE network, \'%1\'','VBoxGlobal').replace('%1', $('<div />').text(nic.VDENetwork).html());
 							break;
+						case 'NATNetwork':
+							adp = trans('NAT Network, \'%1\'','UIDetailsPagePrivate').replace('%1', $('<div />').text(nic.NATNetwork).html());
+							break;
 					}
 
 					rows[rows.length] = {

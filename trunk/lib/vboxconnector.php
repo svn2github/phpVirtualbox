@@ -884,7 +884,15 @@ class vboxconnector {
         		$data['storageDevice'] = $eventDataObject->storageDevice;
         		$data['removed'] = $eventDataObject->removed;
         		break;
-        	        		
+        	
+        	/* On nat network delete / create */
+        	case 'OnNATNetworkCreationDeletion':
+        		$data['creationEvent'] = $eventDataObject->creationEvent;
+        	/* NAT network change */
+        	case 'OnNATNetworkSetting':
+        		$data['networkName'] = $eventDataObject->networkName;
+        		$data['dedupId'] .= '-' . $data['networkName'];
+        		break;
 		}
 		
 		
@@ -1604,8 +1612,13 @@ class vboxconnector {
 					$n->NATEngine->hostIP = $args['networkAdapters'][$i]['NATEngine']['hostIP'];
 				}
 
+			} else if($args['networkAdapters'][$i]['attachmentType'] == 'NATNetwork') {
+				
+				if($n->NATNetwork = $args['networkAdapters'][$i]['NATNetwork']);
 			}
+
 			$n->releaseRemote();
+
 		}
 		
 		/* Shared Folders */
@@ -2022,9 +2035,9 @@ class vboxconnector {
 		 */
 
 		$netprops = array('enabled','attachmentType','adapterType','MACAddress','bridgedInterface','hostOnlyInterface','internalNetwork','NATNetwork','cableConnected','promiscModePolicy','genericDriver');
-		if(@$this->settings->enableVDE) $netprops[] = 'VDENetwork';
 	
 		for($i = 0; $i < count($args['networkAdapters']); $i++) {
+		if(@$this->settings->enableVDE) $netprops[] = 'VDENetwork';
 
 			$n = $m->getNetworkAdapter($i);
 
@@ -2087,7 +2100,11 @@ class vboxconnector {
 					$n->NATEngine->hostIP = $args['networkAdapters'][$i]['NATEngine']['hostIP'];
 				}
 
+			} else if($args['networkAdapters'][$i]['attachmentType'] == 'NATNetwork') {
+			
+				if($n->NATNetwork = $args['networkAdapters'][$i]['NATNetwork']);
 			}
+				
 			$n->releaseRemote();
 		}
 
@@ -2734,22 +2751,89 @@ class vboxconnector {
 	}
 
 	/**
-	 * Get host networking info
+	 * Get nat network info
 	 *
 	 * @param unused $args
 	 * @param array $response response data passed byref populated by the function
 	 * @return array networking info data
 	 */
-	public function remote_hostGetNetworking($args) {
+	public function remote_vboxGetNATNetworks($args) {
+	
+		$this->connect();
+
+		$props = array('networkName','enabled','network','IPv6Enabled',
+				'advertiseDefaultIPv6RouteEnabled','needDhcpServer','portForwardRules4',
+				'portForwardRules6');
+		
+		$natNetworks = array();
+		
+		foreach($this->vbox->NATNetworks as $n) {
+			
+			
+			$netDetails = array();
+			foreach($props as $p) {
+				$netDetails[$p] = $n->$p;
+			}
+			
+			$natNetworks[] = $netDetails;
+		}
+		
+		return $natNetworks;
+		
+	}
+
+	/**
+	 * Get nat network details
+	 *
+	 * @param array $args contains network name
+	 * @param array $response response data passed byref populated by the function
+	 * @return array networking info data
+	 */
+	public function remote_vboxSaveNATNetwork($args) {
+		
+		$this->connect();
+		
+		$network = $this->vbox->findNATNetworkByName($args['old_networkName']);
+		$props = array('networkName','enabled','network','IPv6Enabled',
+				'advertiseDefaultIPv6RouteEnabled','needDhcpServer');
+		
+		foreach($props as $p) {
+			$network->$p = $args[$p];
+		}
+		
+		foreach(array('portForwardRules4','portForwardRules6') as $rules) {
+			
+			$rules_remove = array_diff($args[$rules], $network->$rules);
+			$rules_add = array_diff($network->$rules, $args[$rules]);
+			
+			foreach($rules_remove as $rule) {
+				$network->removePortForwardRule((strpos($rules,'6')>-1), array_shift(preg_split('/:/',$rule)));
+			}
+			foreach($rules_add as $rule) {
+				$rule = preg_split('/:/', $rule);
+				$network->addPortForwardRule((strpos($rules,'6')>-1), $rule[0],$rule[1],$rule[2],$rule[3],$rule[4],$rule[5]);
+			}
+		}
+		
+	}
+	
+	/**
+	 * Get networking info
+	 *
+	 * @param unused $args
+	 * @param array $response response data passed byref populated by the function
+	 * @return array networking info data
+	 */
+	public function remote_getNetworking($args) {
 
 		// Connect to vboxwebsrv
 		$this->connect();
 		
 		$response = array();
 		$networks = array();
-		$vdenetworks = array();
 		$nics = array();
 		$genericDrivers = array();
+		$vdenetworks = array();
 		
 		/* Get host nics */
 		foreach($this->vbox->host->networkInterfaces as $d) { /* @var $d IHostNetworkInterface */
@@ -2762,11 +2846,17 @@ class vboxconnector {
 		/* Generic Drivers */
 		$genericDrivers = $this->vbox->genericNetworkDrivers;
 		
+		$natNetworks = array();
+		foreach($this->vbox->NATNetworks as $n) {
+			$natNetworks[] = $n->networkName;
+		}
+		
 		return array(
 			'nics' => $nics,
 			'networks' => $networks,
-			'vdenetworks' => $vdenetworks,
-			'genericDrivers' => $genericDrivers
+			'genericDrivers' => $genericDrivers,
+			'vdenetworks' => $vdenetworks,	
+			'natNetworks' => $natNetworks
 		);
 		
 	}
@@ -5156,8 +5246,6 @@ class vboxconnector {
 				'hasSnapshots' => $hasSnapshots,
 				'lastAccessError' => $m->lastAccessError,
 				'variant' => $variant,
-				'fixed' => intval((intval($variant) & $mvenum->ValueMap['Fixed']) > 0),
-				'split' => intval((intval($variant) & $mvenum->ValueMap['VmdkSplit2G']) > 0),
 				'machineIds' => array(),
 				'attachedTo' => $attachedTo
 			);

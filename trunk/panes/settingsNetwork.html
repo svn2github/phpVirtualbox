@@ -127,16 +127,16 @@ for(var i = 1; i < nics.length; i++) { // index 0 is 'Null' and not used
 
 
 // Shorthand
-var vboxHostNetworking = $('#vboxSettingsDialog').data('vboxHostNetworking');
-vboxHostNetworking.networkInterfaces = $('#vboxSettingsDialog').data('vboxHostDetails').networkInterfaces;
+var vboxNetworking = $('#vboxSettingsDialog').data('vboxNetworking');
+vboxNetworking.networkInterfaces = $('#vboxSettingsDialog').data('vboxHostDetails').networkInterfaces;
 
-for(var i = 0; i < vboxHostNetworking.networkInterfaces.length; i++) {
-	if(vboxHostNetworking.networkInterfaces[i].interfaceType == 'Bridged') {
-		vboxSettingsNetAdaptersBridged[vboxSettingsNetAdaptersBridged.length] = vboxHostNetworking.networkInterfaces[i].name;
-	} else if(vboxHostNetworking.networkInterfaces[i].interfaceType == 'HostOnly') {
-		vboxSettingsNetAdaptersHostOnly[vboxSettingsNetAdaptersHostOnly.length] = vboxHostNetworking.networkInterfaces[i].name;
+for(var i = 0; i < vboxNetworking.networkInterfaces.length; i++) {
+	if(vboxNetworking.networkInterfaces[i].interfaceType == 'Bridged') {
+		vboxSettingsNetAdaptersBridged[vboxSettingsNetAdaptersBridged.length] = vboxNetworking.networkInterfaces[i].name;
+	} else if(vboxNetworking.networkInterfaces[i].interfaceType == 'HostOnly') {
+		vboxSettingsNetAdaptersHostOnly[vboxSettingsNetAdaptersHostOnly.length] = vboxNetworking.networkInterfaces[i].name;
 	} else {
-		vboxAlert('Unknown interface type :' + vboxHostNetworking.networkInterfaces[i].interfaceType);
+		vboxAlert('Unknown interface type :' + vboxNetworking.networkInterfaces[i].interfaceType);
 	}
 }
 
@@ -281,8 +281,8 @@ function vboxSettingsUpdateNetworkOptions(sel) {
 		$(nsel).children().remove();
 		$(nsel).prop('disabled',false);
 
-		// Special case for Internal and VDE network select
-		if(sel.value == 'Internal' || sel.value == 'VDE' || sel.value=='Generic' || sel.value=='Bridged') {
+		// Special case for certian network selects
+		if(sel.value == 'Internal' || sel.value == 'VDE' || sel.value=='Generic' || sel.value=='Bridged' || sel.value=='NATNetwork') {
 			var isel = $(nsel).clone(false);
 			$(nsel).replaceWith(isel);
 			nsel = isel;
@@ -298,13 +298,16 @@ function vboxSettingsUpdateNetworkOptions(sel) {
 				src = vboxSettingsNetAdaptersHostOnly;
 				break;
 			case 'Internal':
-				src = $('#vboxSettingsDialog').data('vboxHostNetworking').networks;
+				src = $('#vboxSettingsDialog').data('vboxNetworking').networks;
 				break;
 			case 'Generic':
-				src = $('#vboxSettingsDialog').data('vboxHostNetworking').genericDrivers;
-				break;				
+				src = $('#vboxSettingsDialog').data('vboxNetworking').genericDrivers;
+				break;	
+			case 'NATNetwork':
+				src = $('#vboxSettingsDialog').data('vboxNetworking').natNetworks;
+				break;
 			case 'VDE':
-				src = $('#vboxSettingsDialog').data('vboxHostNetworking').vdenetworks;
+				src = $('#vboxSettingsDialog').data('vboxNetworking').vdenetworks;
 				break;				
 			default:
 				vboxAlert('Unknown network binding type: ' + sel.value);
@@ -352,6 +355,9 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 				break;
 			case 'Generic':
 				netName = $('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].genericDriver;
+				break;
+			case 'NATNetwork':
+				netName = $('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATNetwork;
 				break;
 			case 'VDE':
 				netName = $('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].VDENetwork;
@@ -482,6 +488,9 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 				break;				
 			case 'Internal':
 				$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].internalNetwork = document.forms['frmVboxSettings'].elements['vboxSettingsNetName'+a].value;
+				break;
+			case 'NATNetwork':
+				$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATNetwork = document.forms['frmVboxSettings'].elements['vboxSettingsNetName'+a].value;
 				break;
 			case 'VDE':
 				$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].VDENetwork = document.forms['frmVboxSettings'].elements['vboxSettingsNetName'+a].value;

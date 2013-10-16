@@ -7,23 +7,23 @@
 
  -->
 <ul>
-	<li><a href="#vboxGlobalNatNetworks"><span class='translate'>NAT Networks</span></a>
+	<li><a href="#vboxGlobalNATNetworks"><span class='translate'>NAT Networks</span></a>
 	<li><a href="#vboxGlobalHostNetworking"><span class='translate'>Host-only Networks</span></a>
 </ul>
-<div id='vboxGlobalNatNetworks'>
+<div id='vboxGlobalNATNetworks'>
 	<table style='width: 100%; margin-left:auto; margin-right:auto;' class='vboxInvisible'>
 		<tr style='vertical-align:top'>
 			<td>
-				<table style='width:100%'>
+				<table style='width:100%; border-spacing: 0px;' class='vboxBordered vboxList vboxHover'>
 					<thead>
-						<tr><th style='width: 1%'>Active</th><th>Name</th></tr>
+						<tr><th style='width: 1%; padding-left: 4px;text-align:left'>Active</th><th style='text-align:left'>Name</th></tr>
 					</thead>
-					<tbody id='vboxSettingsGlobalNatNetList'>
-						<tr><td></td><td></td></tr>
+					<tbody id='vboxSettingsGlobalNATNetList'>
+						<tr><td>asdf</td><td>asdf</td></tr>
 					</tbody>
 				</table>
 			</td>
-			<td style='width: 1%; padding: 4px;' id='vboxSettingsGlobalNatNetToolbar'></td>
+			<td style='width: 1%; padding: 4px;' id='vboxSettingsGlobalNATNetToolbar'></td>
 		</tr>
 	</table>
 
@@ -96,15 +96,49 @@
 </div>
 
 
+<!--  Edit NAT NET Networking Properties Dialog -->
+<div id='vboxSettingsGlobalNATNetworkEditDialog' style='display: none'>
+
+
+	<div class='vboxDialogContent'>
+			<table class="vboxSettingsTable">
+				<tr>
+					<td colspan='2'><label><input type='checkbox' class='vboxCheckbox vboxEnablerCheckbox' id='vboxSettingsGlobalNATNetEnabled' /> <span class='translate'>Enable Network</span></label></td>
+				</tr>
+				<tr>
+					<th><span class='translate'>Network Name:</span></th>
+					<td><input type='text' class='vboxText' id='vboxSettingsGlobalNATNetName' style='width:200px' /></td>
+				</tr>
+				<tr>
+					<th><span class='translate'>Network CIDR:</span></th>
+					<td><input type='text' class='vboxText' id='vboxSettingsGlobalNATNetNetwork' style='width:200px' /></td>
+				</tr>
+				<tr>
+					<th><span class='translate'>Network Options:</span></th>
+					<td><label><input type='checkbox' class='vboxCheckbox' id='vboxSettingsGlobalNATNetDHCP' /> <span class='translate vboxEnablerListen'>Supports DHCP</span></label></td>
+				</tr>
+				<tr>
+					<th></th>
+					<td><label><input type='checkbox' class='vboxCheckbox vboxEnablerTrigger' id='vboxSettingsGlobalNATNetIPv6' /> <span class='translate vboxEnablerListen'>Supports IPv6</span></label></td>
+				</tr>
+				<tr>
+					<th></th>
+					<td><label><input type='checkbox' class='vboxCheckbox' id='vboxSettingsGlobalNATNetIPv6Route' /> <span class='translate vboxEnablerListen'>Advertise Default IPv6 Route</span></label></td>
+				</tr>
+				<tr>
+					<th></th>
+					<td><input type='button' class='vboxButton' id='vboxSettingsGlobalNATNetRules' value='Port Forwarding' /></td>
+				</tr>
+			</table>
+		</div>
+</div>
+
+
 
 
 <script type='text/javascript'>
 
-/* Build Toolbar */
-
-/*
- * Init Shared Folder buttons and toolbar
- */
+/* Build Host interface Toolbar */
 
 var sButtons = new Array(
 
@@ -218,6 +252,86 @@ $('#vboxSettingsGlobalNetList').on('select',function(e,i){
 });
 
 
+/* Build nat network Toolbar */
+
+var sButtons = new Array(
+
+	{
+		'name' : 'addNet',
+		'label' : trans('Add NAT network','UIGlobalSettingsNetwork'),
+		'icon' : 'add_host_iface',
+		'click' : function () {
+
+			// Elect name...
+			var netNameTpl = 'NatNetwork';
+			var number = 1;
+			var netName = netNameTpl + number++;
+			
+			while($('#vboxSettingsGlobalNATNetList').find('td:contains("'+netName+'")').length) {
+				netName = netNameTpl + number++;
+			}
+			vboxSettingsGlobalNATNetworksAddNet({'enabled':false,'networkName':netName});
+			
+
+		}
+	},
+
+	{
+		'name' : 'delNet',
+		'label' : trans('Remove NAT network','UIGlobalSettingsNetwork'),
+		'icon' : 'remove_host_iface',
+		'enabled' : function (item) { return (item); },
+		'click' : function () {
+
+			var item = $('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first();
+			
+			var buttons = {};
+			buttons[trans('OK','QIMessageBox')] = function() {
+
+				$(item).remove();
+				$('#vboxSettingsGlobalNATNetList').trigger('select', null);
+				$(this).empty().remove();
+			};
+			vboxConfirm(trans("<p>Deleting this host-only network will remove " +
+			           "the host-only interface this network is based on. Do you want to " +
+			           "remove the (host-only network) interface <nobr><b>%1</b>?</nobr></p>" +
+			           "<p><b>Note:</b> this interface may be in use by one or more " +
+			           "virtual network adapters belonging to one of your VMs. " +
+			           "After it is removed, these adapters will no longer be usable until " +
+			           "you correct their settings by either choosing a different interface " +
+			           "name or a different adapter attachment type.</p>",'UIMessageCenter').replace('%1',$(item).data('NATNetwork').networkName),buttons);	
+		}
+	},
+	{
+		'name' : 'editNet',
+		'label' : trans('Edit NAT network','UIGlobalSettingsNetwork'),
+		'icon' : 'guesttools',
+		'enabled' : function (item) { return (item); },
+		'click' : function () {
+			vboxSettingsGlobalNATNetworkEditDialog();
+		}
+	},{
+		name : 'refreshNet',
+		'label' : trans('Refresh','UIVMLogViewer'),
+		'icon' : 'refresh',
+		click: function() {
+			var l = new vboxLoader();
+			l.add('vboxGetNATNetworks',function(d){$('#vboxSettingsDialog').data('vboxNATNetworks',d.responseData);});
+			l.onLoad = function(){
+				vboxSettingsGlobalNATNetworksAdd();
+			};
+			l.run();				
+		}
+	}
+);
+
+var natNetToolbar = new vboxToolbarSmall(sButtons);
+natNetToolbar.renderTo('vboxSettingsGlobalNATNetToolbar');
+
+$('#vboxSettingsGlobalNATNetList').on('select',function(e,i){
+	natNetToolbar.update(i);
+});
+
 /*
  *
  * Function to fill network adapters
@@ -259,9 +373,44 @@ function vboxSettingsGlobalNetworkAddAdpaters() {
 }
 vboxSettingsGlobalNetworkAddAdpaters();
 
+/*
+ * 
+ * FIll nat networks
+ */
+function vboxSettingsGlobalNATNetworksAdd() {
+	var nets = $('#vboxSettingsDialog').data('vboxNATNetworks');
+	$('#vboxSettingsGlobalNATNetList').empty();
+	for(var i = 0; i < nets.length; i++) {
+		vboxSettingsGlobalNATNetworksAddNet(nets[i]);
+	}
+	$('#vboxSettingsGlobalNATNetList').trigger('select',null);
+}
 
+function vboxSettingsGlobalNATNetworksAddNet(net) {
 
+	$('<tr />').data({'NATNetwork':net}).hoverClass('vboxHover').addClass('vboxListItem').append(
+		$('<td />').append(
+				$('<input />').attr({'type':'checkbox'}).click(function(){
+					$(this).closest('tr').data('NATNetwork').enabled = this.checked;		
+					$(this).closest('tr').data('NATNetwork')._modified = true;
+					}).prop('checked', net.enabled)
+				
+			).click(function(){
+				$(this).parent().parent().children('tr.vboxListItemSelected').removeClass('vboxListItemSelected').addClass('vboxListItem');
+				$(this).parent().addClass('vboxListItemSelected').removeClass('vboxListItem');
+				$('#vboxSettingsGlobalNATNetList').trigger('select',this);
+		})
+	).append(
+		$('<td />').html($('<div />').html(net.networkName).text()).click(function(){
+			$(this).parent().parent().children('tr.vboxListItemSelected').removeClass('vboxListItemSelected').addClass('vboxListItem');
+			$(this).parent().addClass('vboxListItemSelected').removeClass('vboxListItem');
+			$('#vboxSettingsGlobalNATNetList').trigger('select',this);
+		})
+	).appendTo($('#vboxSettingsGlobalNATNetList'));
 
+}
+
+vboxSettingsGlobalNATNetworksAdd();
 
 /*
  *
@@ -269,6 +418,7 @@ vboxSettingsGlobalNetworkAddAdpaters();
  *
  */
 vboxInitDisplay('vboxSettingsGlobalNetEditDialog','UIGlobalSettingsNetworkDetails');
+
 var buttons = {};
 buttons[trans('OK','QIMessageBox')] = function(){
 
@@ -339,6 +489,114 @@ function vboxSettingsGlobalNetEditDialog() {
 
 }
 
+/*
+*
+* Edit NAT Network Interface Dialog 
+*
+*/
+vboxInitDisplay('vboxSettingsGlobalNATNetworkEditDialog','UIGlobalSettingsNetworkDetails');
+
+var buttons = {};
+buttons[trans('OK','QIMessageBox')] = function(){
+
+	var net = $('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first().data('NATNetwork');
+	
+	// Get Form Values
+	net.enabled = $('#vboxSettingsGlobalNATNetEnabled').prop('checked') ? 1 : 0;
+	net.networkName = $('#vboxSettingsGlobalNATNetName').val();
+	net.network = $('#vboxSettingsGlobalNATNetNetwork').val();
+	net.needDhcpServer = $('#vboxSettingsGlobalNATNetDHCP').prop('checked') ? 1 : 0;
+	net.IPv6Enabled = $('#vboxSettingsGlobalNATNetIPv6').prop('checked') ? 1 : 0;
+	net.advertiseDefaultIPv6RouteEnabled = $('#vboxSettingsGlobalNATNetIPv6Route').prop('checked') ? 1 : 0;
+	net._modified = true;
+
+	$('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first().data('NATNetwork',net);
+	
+	$(this).dialog("close");
+};
+buttons[trans('Cancel','QIMessageBox')] = function(){$(this).dialog("close");};
+$('#vboxSettingsGlobalNATNetworkEditDialog').dialog({'buttons':buttons,'width':500,'modal':true,'autoOpen':false,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/nw_16px.png" class="vboxDialogTitleIcon" /> ' +trans('Host-only Network Details','UIGlobalSettingsNetworkDetails')});
+$('#vboxSettingsGlobalNATNetIPv6').on('enable',function() {
+	if(this.checked) {
+		$('#vboxSettingsGlobalNATNetIPv6Route').prop('disabled', false).siblings().removeClass('vboxDisabled');	
+	} else {
+		$('#vboxSettingsGlobalNATNetIPv6Route').prop('disabled', true).siblings().addClass('vboxDisabled');
+	}
+}).on('click',function(){
+	$(this).trigger('enable');
+});
+
+function vboxSettingsGlobalNATNetworkEditDialog() {
+
+	var net = $('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first().data('NATNetwork');
+	
+	// Set Form Values
+	$('#vboxSettingsGlobalNATNetEnabled').prop('checked', net.enabled);
+	$('#vboxSettingsGlobalNATNetName').val(net.networkName);
+	$('#vboxSettingsGlobalNATNetNetwork').val(net.network);
+	$('#vboxSettingsGlobalNATNetDHCP').prop('checked', net.needDhcpServer)
+	$('#vboxSettingsGlobalNATNetIPv6').prop('checked', net.IPv6Enabled)
+	$('#vboxSettingsGlobalNATNetIPv6Route').prop('checked', net.advertiseDefaultIPv6RouteEnabled)
+
+	$('#vboxSettingsGlobalNATNetEnabled').trigger('syntheticClick');
+	$('#vboxSettingsGlobalNATNetIPv6').trigger('syntheticClick');
+	
+	$('#vboxSettingsGlobalNATNetRules').click(function(){
+		vboxSettingsGlobalNetworkNatPortForwardingDialog(net);	
+	});
+	
+	$('#vboxSettingsGlobalNATNetworkEditDialog').dialog('open');
+
+}
+
+
+function vboxSettingsGlobalNetworkNatPortForwardingDialog(net) {
+	
+	var results = $.Deferred();
+	
+	var l = new vboxLoader();
+	l.addFileToDOM("panes/settingsGlobalNetworkNATPortForwarding.html");
+	l.onLoad = function(){
+		
+		vboxSettingsGlobalNetworkNatPortForwardingInit(net.portForwardRules4, false);
+		vboxSettingsGlobalNetworkNatPortForwardingInit(net.portForwardRules6, true);
+		
+		var buttons = {};
+		buttons[trans('OK','QIMessageBox')] = function(){
+			// Get rules
+			var rules = $('#vboxSettingsPortForwardingList').children('tr');
+			var rulesToPass = new Array();
+			for(var i = 0; i < rules.length; i++) {
+				if($(rules[i]).data('vboxRule')[3] == 0 || $(rules[i]).data('vboxRule')[5] == 0) {
+					vboxAlert(trans("The current port forwarding rules are not valid. " +
+				               "None of the host or guest port values may be set to zero.",'UIMessageCenter'));
+					return;
+				}
+				rulesToPass[i] = $(rules[i]).data('vboxRule');
+			}
+			$(this).trigger('close').empty().remove();
+			
+			results.resolve(rulesToPass);
+		};
+		buttons[trans('Cancel','QIMessageBox')] = function(){
+			results.reject();
+			$(this).trigger('close').empty().remove();
+		};
+		
+		vboxInitDisplay($('#vboxSettingsGlobalNetworkNatPortForwardingDialog'), 'UIPortForwardingModel');
+		
+		$('#vboxSettingsGlobalNetworkNatPortForwardingDialog').tabs();
+		
+		$('#vboxSettingsGlobalNetworkNatPortForwardingDialog').dialog({'closeOnEscape':true,'width':600,'height':400,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/nw_16px.png" class="vboxDialogTitleIcon" /> ' + trans('Port Forwarding Rules','UIMachineSettingsPortForwardingDlg')}).on("dialogbeforeclose",function(){
+	    	$(this).parent().find('span:contains("'+trans('Cancel','QIMessageBox')+'")').trigger('click');
+	    });
+		
+
+	};
+	l.run();
+	
+}
+
 /* 
  * 
  * Update Data onSave() 
@@ -358,6 +616,7 @@ $('#vboxSettingsDialog').on('save',function(){
  */
 $('#vboxSettingsDialog').on('close',function(){
 	$('#vboxSettingsGlobalNetEditDialog').remove();
+	$('#vboxSettingsGlobalNATNetworkEditDialog').remove();
 });
  
 </script>

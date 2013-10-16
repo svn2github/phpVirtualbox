@@ -6,34 +6,40 @@
 	$Id$
 
  -->
-<div>
-<table style='width: auto; margin-left:auto; margin-right:auto;' class='vboxInvisible'>
-	<tr>
-		<td colspan='2'><span class='translate'>Host-only Networks:</span></td>
-	</tr>
-	<tr style='vertical-align:top'>
-		<td style='width: 400px'>
-			<ul id='vboxSettingsGlobalNetList' class='vboxBordered vboxList vboxHover' style='width: 400px; margin-top: 0px;'>
-				<li>interface</li>
-			</ul>
-		</td>
-		<td style='width: 10px' id='vboxSettingsGlobalNetToolbar'></td>
-	</tr>
-	<tr id='vboxSettingsGlobalNetLabels'>
-		<td colspan='2'>
-			<table style='width: 100%'>
-				<tr>
-					<th style='width: auto; white-space: nowrap; text-align: left'><span class='translate'>Adapter</span>:</th>
-					<td id='vboxSettingsGlobalNetAdapterLabel' style='width: 100%; white-space: nowrap; text-align: left'></td>
-				</tr>
-				<tr>
-					<th style='width: auto; white-space: nowrap; text-align: left'><span class='translate'>DHCP Server</span>:</th>
-					<td id='vboxSettingsGlobalNetDHCPLabel' style='width: 100%; white-space: nowrap; text-align: left'></td>
-				</tr>
-			</table>
-		</td>
-	</tr>
-</table>
+<ul>
+	<li><a href="#vboxGlobalNatNetworks"><span class='translate'>NAT Networks</span></a>
+	<li><a href="#vboxGlobalHostNetworking"><span class='translate'>Host-only Networks</span></a>
+</ul>
+<div id='vboxGlobalNatNetworks'>
+	<table style='width: 100%; margin-left:auto; margin-right:auto;' class='vboxInvisible'>
+		<tr style='vertical-align:top'>
+			<td>
+				<table style='width:100%'>
+					<thead>
+						<tr><th style='width: 1%'>Active</th><th>Name</th></tr>
+					</thead>
+					<tbody id='vboxSettingsGlobalNatNetList'>
+						<tr><td></td><td></td></tr>
+					</tbody>
+				</table>
+			</td>
+			<td style='width: 1%; padding: 4px;' id='vboxSettingsGlobalNatNetToolbar'></td>
+		</tr>
+	</table>
+
+</div>
+<div id='vboxGlobalHostNetworking'>
+	<table style='width: 100%; margin-left:auto; margin-right:auto;' class='vboxInvisible'>
+		<tr style='vertical-align:top'>
+			<td >
+				<ul id='vboxSettingsGlobalNetList' class='vboxBordered vboxList vboxHover' style='width: 100%; margin-top: 0px;'>
+					<li>interface</li>
+				</ul>
+			</td>
+			<td style='width: 1%; padding: 4px;' id='vboxSettingsGlobalNetToolbar'></td>
+		</tr>
+	</table>
+</div>
 
 <!--  Edit Host Networking Properties Dialog -->
 <div id='vboxSettingsGlobalNetEditDialog' style='display: none'>
@@ -90,8 +96,6 @@
 </div>
 
 
-<!-- Main Div -->
-</div>
 
 
 <script type='text/javascript'>
@@ -211,13 +215,6 @@ netToolbar.renderTo('vboxSettingsGlobalNetToolbar');
 
 $('#vboxSettingsGlobalNetList').on('select',function(e,i){
 	netToolbar.update(i);
-	if(i) {
-		$('#vboxSettingsGlobalNetAdapterLabel').html($(i).data('interface').DHCPEnabled ? trans('Automatically configured','UIGlobalSettingsNetwork') : trans('Manually configured','UIGlobalSettingsNetwork'));
-		$('#vboxSettingsGlobalNetDHCPLabel').html($(i).data('interface').dhcpServer.enabled ? trans('Enabled','UIGlobalSettingsNetwork') : trans('Disabled','UIGlobalSettingsNetwork'));
-	} else {
-		$('#vboxSettingsGlobalNetAdapterLabel').html('');
-		$('#vboxSettingsGlobalNetDHCPLabel').html('');		
-	}
 });
 
 

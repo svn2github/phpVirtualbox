@@ -1023,7 +1023,7 @@ function vboxGlobalPrefsDialog() {
 	var panes = new Array(
 		{'name':'GlobalGeneral','label':'General','icon':'machine','context':'UIGlobalSettingsGeneral'},
 		{'name':'GlobalLanguage','label':'Language','icon':'site','context':'UIGlobalSettingsLanguage'},
-		{'name':'GlobalNetwork','label':'Network','icon':'nw','context':'UIGlobalSettingsNetwork'},
+		{'name':'GlobalNetwork','label':'Network','icon':'nw','context':'UIGlobalSettingsNetwork','tabbed':true},
 		{'name':'GlobalUsers','label':'Users','icon':'register','context':'UIUsers'}
 	);
 	
@@ -1133,7 +1133,7 @@ function vboxVMsettingsDialog(vm,pane) {
 				case 'OnSharedFolderChanged':
 				case 'OnCPUExecutionCapChanged':
 				case 'OnStorageDeviceChanged':
-
+				case 'OnNATRedirectEvent':
 					
 					if(!eventList[i].machineId || eventList[i].machineId != vm.id) break;
 					

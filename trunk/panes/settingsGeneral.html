@@ -297,7 +297,7 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 		$(p).find('tr:not(.vboxRunningEnabled)').find('span').addClass('disabled');
 		$(p).find('tr:not(.vboxRunningEnabled)').find('input,select,textarea').prop('disabled',true);
-		$('#vboxSettingsTabGeneralAdvanced').find('input.vboxImgButton').css('background-image','url(images/vbox/select_file_dis_16px.png)');
+		$('#vboxSettingsTabGeneralAdvanced').find('input.vboxImgButton').css('background-image','url(images/vbox/select_file_disabled_16px.png)');
 		$(document.images["vboxOSTypeImg"]).addClass('vboxDisabled');
 	} else {
 		$(p).find('tr:not(.vboxRunningEnabled)').find('span').removeClass('disabled');

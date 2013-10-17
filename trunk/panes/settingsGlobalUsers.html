@@ -39,7 +39,7 @@ var sButtons = new Array(
 	{
 		'name' : 'addUser',
 		'label' : trans('Add User','UIUsers'),
-		'icon' : 'new',
+		'icon' : 'vm_new',
 		'click' : function () {
 	
 			var l = new vboxLoader();
@@ -83,7 +83,7 @@ var sButtons = new Array(
 				buttons[trans('Cancel','QIMessageBox')] = function(){
 					$(this).remove();
 				};
-				$('#vboxUserEdit').dialog({'closeOnEscape':false,'width':500,'height':220,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/new_16px.png" class="vboxDialogTitleIcon" /> '+trans('Add User','UIUsers')});
+				$('#vboxUserEdit').dialog({'closeOnEscape':false,'width':500,'height':220,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/vm_new_16px.png" class="vboxDialogTitleIcon" /> '+trans('Add User','UIUsers')});
 
 			};
 			l.run();
@@ -93,7 +93,7 @@ var sButtons = new Array(
 	{
 		'name' : 'delUser',
 		'label' : trans('Remove User','UIUsers'),
-		'icon' : 'delete',
+		'icon' : 'vm_delete',
 		'noDisabledIcon' : true,
 		'enabled' : function (item) { return (item && $(item).data('username') && $(item).data('username') != $('#vboxPane').data('vboxSession').user); },
 		'click' : function () {

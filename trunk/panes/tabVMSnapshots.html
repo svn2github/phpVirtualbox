@@ -87,7 +87,7 @@ var vboxSnapshotButtons = [
   	{
   		'name' : 'take_snapshot',
   		'label' : trans('Take Snapshot...','UIActionPool'),
-  		'icon' : 'take_snapshot',
+  		'icon' : 'snapshot_take',
   		'enabled' : function(item) {
   			
   			if(typeof item == 'string') state = item;
@@ -197,7 +197,7 @@ var vboxSnapshotButtons = [
   	{
   		'name' : 'discard_cur_state',
   		'label' : trans('Restore Snapshot','VBoxSnapshotsWgt'),
-  		'icon' : 'discard_cur_state',
+  		'icon' : 'snapshot_restore',
   		'enabled' : function(item) {
   			var vm = vboxChooser.getSingleSelected();
   			return ( item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && $(item).data('vboxSnapshot').state != 'current' && !vboxVMStates.isRunning(vm) && !vboxVMStates.isPaused(vm));
@@ -285,7 +285,7 @@ var vboxSnapshotButtons = [
   	{
   		'name' : 'delete_snapshot',
   		'label' : trans('Delete Snapshot','VBoxSnapshotsWgt'),
-  		'icon' : 'delete_snapshot',
+  		'icon' : 'snapshot_delete',
   		'enabled' : function(item) {
   			return (item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && $(item).data('vboxSnapshot').state != 'current' && $(item).data('vboxSnapshot').children.length <= 1);
   		},
@@ -315,9 +315,7 @@ var vboxSnapshotButtons = [
   	{
   		'name' : 'clone',
   		'label' : trans('Clone...','UIActionPool'),
-  		'icon' : 'vm_clone_16',
-  		'icon_disabled' : 'vm_clone_disabled_16',
-  		'icon_exact' : true,
+  		'icon' : 'vm_clone',
   		'separator' : true,
   		'enabled' : function(item) { 
   			var vm = vboxChooser.getSingleSelected();
@@ -339,7 +337,7 @@ var vboxSnapshotButtons = [
   	{
   		'name' : 'show_snapshot_details',
   		'label' : trans('Show Details','VBoxSnapshotsWgt'),
-  		'icon' : 'show_snapshot_details',
+  		'icon' : 'snapshot_show_details',
   		'enabled' : function(item) {
   			return (item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && $(item).data('vboxSnapshot').state != 'current');
   		},
@@ -415,7 +413,7 @@ var vboxSnapshotButtons = [
 				buttons[trans('Cancel','QIMessageBox')] = function(){
 					$(this).dialog('close');
 				};
-				$('#vboxSnapshotDetails').dialog({'closeOnEscape':false,'width':'600px','height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_snapshot_details_16px.png" class="vboxDialogTitleIcon" /> '+trans('Details of %1 (%2)','VBoxSnapshotDetailsDlg').replace('%1',$('<div />').text(snapshot.name).html()).replace('%2',vm.name)});
+				$('#vboxSnapshotDetails').dialog({'closeOnEscape':false,'width':'600px','height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/snapshot_show_details_16px.png" class="vboxDialogTitleIcon" /> '+trans('Details of %1 (%2)','VBoxSnapshotDetailsDlg').replace('%1',$('<div />').text(snapshot.name).html()).replace('%2',vm.name)});
 			};
 			l.run();
   	  	},
@@ -429,7 +427,6 @@ var vboxSnapshotButtons = [
 /* Append Top Toolbar */
 var vboxSnapshotToolbar = new vboxToolbarSmall(vboxSnapshotButtons);
 vboxSnapshotToolbar.size = 22;
-vboxSnapshotToolbar.disabledString = 'dis';
 // special case for 'clone' button because it is 16px rather than 22px
 vboxSnapshotToolbar.addButtonCSS('clone', {'background-position':'6px 4px'});
 vboxSnapshotToolbar.renderTo('vboxSnapshotToolbar');
@@ -724,7 +721,7 @@ function __vboxTabSnapshot(s, currentId) {
 	$(li).append(' ').append(
 	
 	   $('<div />').attr({'class':'vboxListItem'})
-	   	  .html('<img src="images/vbox/'+(s.online ? 'online' : 'offline')+'_snapshot_16px.png" height="16" width="16" /> ' + 
+	   	  .html('<img src="images/vbox/snapshot_'+(s.online ? 'online' : 'offline')+'_16px.png" height="16" width="16" /> ' + 
 	   			  $('<div />').text(s.name).html())
 	   	   .append($('<span />').attr({'class':'timestamp'}).data({'vboxTimestamp':s.timeStamp}).text(ts))
 	   			  

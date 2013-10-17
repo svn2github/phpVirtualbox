@@ -1260,8 +1260,8 @@ var vboxChooser = {
 					})
 						.children('span.vboxChooserGroupInfo')
 						.children('span.vboxChooserGroupCounts').html(
-							(gList.length ? ('<span style="background-image:url(images/vbox/nw_16px.png);" />'+gList.length) : '') +
-							(vmList.length ? ('<span style="background-image:url(images/vbox/fullscreen_16px.png);" />'+vmList.length) : '')
+							(gList.length ? ('<span style="background-image:url(images/vbox/group_abstract_16px.png);" />'+gList.length) : '') +
+							(vmList.length ? ('<span style="background-image:url(images/vbox/machine_abstract_16px.png);" />'+vmList.length) : '')
 				);
 			});
 			
@@ -1593,58 +1593,16 @@ var vboxChooser = {
 	},
 
 	/*
-	 * Select a single group and modify canvas elements
+	 * Select a single group
 	 */
-	_selectGroup : function(gelm) {
-		
-		if(isCanvasSupported()) {
-			
-			// Change collapse arrow color
-			$(gelm).children('div.vboxChooserGroupHeader')			
-				.children('canvas.vboxChooserGroupNameArrowCollapse').each(function(idx,can) {
-					var ctx = $(can)[0].getContext('2d');
-					ctx.clearRect(0,0,18,18);
-					if($(gelm).hasClass('vboxVMGroupCollapsed')) {
-						ctx.save();
-						ctx.translate(9,9);
-						ctx.rotate(-90 * Math.PI / 180.0);										
-						ctx.drawImage(vboxImageDownWhite,-9,-9,18,18);
-						ctx.restore();
-					} else {
-						ctx.drawImage(vboxImageDownWhite,0,0,18,18);
-					}
-					
-				});
-		}
-		
+	_selectGroup : function(gelm) {		
 		$(gelm).addClass('vboxVMGroupSelected');
 	},
 	
 	/*
-	 * Deselect a single group and modify canvas elements
+	 * Deselect a single group
 	 */
 	_deselectGroup : function(gelm) {
-		
-		if(isCanvasSupported()) {
-			
-			// Change collapse arrow color
-			$(gelm).children('div.vboxChooserGroupHeader')			
-				.children('canvas.vboxChooserGroupNameArrowCollapse').each(function(idx,can) {
-		
-					var ctx = $(can)[0].getContext('2d');
-					ctx.clearRect(0,0,18,18);
-					if($(can).closest('div.vboxChooserGroup').hasClass('vboxVMGroupCollapsed')) {
-						ctx.save();
-						ctx.translate(9,9);
-						ctx.rotate(-90 * Math.PI / 180.0);										
-						ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
-						ctx.restore();
-					} else {
-						ctx.drawImage(vboxImageDownGrey,0,0,18,18);
-				}
-			
-			});
-		}
 		
 		$(gelm).removeClass('vboxVMGroupSelected');
 	},
@@ -1929,65 +1887,37 @@ var vboxChooser = {
 					
 					// Button rotation function
 					var rotateButton = function(){return true;};
-					
-					// Canvas rotation
-					if(isCanvasSupported()) {
 						
-						var ctx = $(this).children('canvas.vboxChooserGroupNameArrowCollapse')[0].getContext('2d');
-						
-						var imgButton = ($(this).closest('div.vboxChooserGroup').hasClass('vboxVMGroupSelected') ?
-								vboxImageDownWhite : vboxImageDownGrey);
+					var vboxArrowImage = $(this).find('span.vboxChooserGroupNameArrowCollapse');
 
+					if(!($.browser.msie && $.browser.version.substring(0,1) < 9)) {
+						
 						rotateButton = function() {
 							
-							return $('<div />').animate({left:90},
-									{
+							return $('<div />').animate({left:90},{
 								duration: 300,
-								step: function(currentStep ) {
-									ctx.save();
-									ctx.clearRect(0,0,18,18);
-									ctx.translate(9,9);
-									ctx.rotate((collapsed ? -90 + currentStep : (currentStep*-1)) * Math.PI / 180.0);
-									ctx.drawImage(imgButton,-9,-9,18,18);
-									ctx.restore();
-								},
-								queue: true
-							});							
-						};
-						
-					// Span rotation
-					} else if(!($.browser.msie && $.browser.version.substring(0,1) < 9)){
-						
-						var vboxArrowImage = $(this).find('span.vboxChooserGroupNameArrowCollapse');
-
-						rotateButton = function() {
-						
-							return $('<div />').animate({left:90},
-									{
-										duration: 300,
-										step: function(currentStep ) {
-											currentStep *= -1;
-											if(collapsed) currentStep = (-90 + -currentStep);
-											vboxArrowImage.css({
-												'transform':'rotate('+currentStep+'deg)',
-												'-moz-transform': 'rotate('+currentStep+'deg)',
-												'-webkit-transform': 'rotate('+currentStep+'deg)',
-												'-o-transform': 'rotate('+currentStep+'deg)',
-												'-ms-transform': 'rotate('+currentStep+'deg)'
-											});
-										},
-										queue: true,
-										complete: function() {
-											vboxArrowImage.css({
-												'transform':'',
-												'-moz-transform': '',
-												'-webkit-transform': '',
-												'-o-transform': '',
-												'-ms-transform': ''
-											});
-										}
-									
+								step: function(currentStep) {
+									if(!collapsed) currentStep = (90 - currentStep);
+									vboxArrowImage.css({
+										'transform':'rotate('+currentStep+'deg)',
+										'-moz-transform': 'rotate('+currentStep+'deg)',
+										'-webkit-transform': 'rotate('+currentStep+'deg)',
+										'-o-transform': 'rotate('+currentStep+'deg)',
+										'-ms-transform': 'rotate('+currentStep+'deg)'
 									});
+								},
+								queue: true,
+								complete: function() {
+									vboxArrowImage.css({
+										'transform':'',
+										'-moz-transform': '',
+										'-webkit-transform': '',
+										'-o-transform': '',
+										'-ms-transform': ''
+									});
+								}
+								
+							});
 						};
 					}
 
@@ -2014,29 +1944,7 @@ var vboxChooser = {
 						})
 				)
 				.append(
-						(isCanvasSupported() ? 
-							$('<canvas />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse')
-								.attr({'width':'18','height':'18','style':'width: 18px; height: 18px;'})
-								.each(function(idx, canvas) {
-									var ctx = canvas.getContext('2d');
-									if(collapsed) {
-										ctx.save();
-										ctx.translate(9,9);
-										ctx.rotate(-90 * Math.PI / 180.0);										
-										ctx.drawImage(vboxImageDownGrey,-9,-9,18,18);
-										ctx.restore();
-									} else {
-										ctx.drawImage(vboxImageDownGrey,0,0,18,18);
-									}
-								}).mousedown(function(e){
-									e.stopPropagation();
-									e.preventDefault();
-									return false;
-								}).mouseup(function(){
-									$(this).closest('div.vboxChooserGroupHeader').trigger('dblclick');									
-								})
-								
-							: $('<span />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse vboxArrowImage')
+						$('<span />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupNameArrowCollapse vboxArrowImage')
 								.mousedown(function(e){
 									e.stopPropagation();
 									e.preventDefault();
@@ -2044,7 +1952,7 @@ var vboxChooser = {
 								}).mouseup(function(){
 									$(this).closest('div.vboxChooserGroupHeader').trigger('dblclick');									
 								})
-						)
+						
 				).append(
 						
 					$('<span />').addClass('vboxChooserGroupNameArrowLeft vboxChooserGroupShowOnlyBack vboxArrowImage')

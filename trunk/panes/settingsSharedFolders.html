@@ -48,7 +48,7 @@ var sButtons = new Array(
 	{
 		'name' : 'addshared',
 		'label' : trans('Add Shared Folder','UIMachineSettingsSF'),
-		'icon' : 'add_shared_folder',
+		'icon' : 'sf_add',
 		'enabled' : function (item) { return true; },
 		'click' : function () {
 
@@ -75,7 +75,7 @@ var sButtons = new Array(
 				$(dialog).empty().remove();
 			};
 			buttons[trans('Cancel','QIMessageBox')] = function() { $(dialog).empty().remove(); };
-			$(dialog).dialog({'buttons':buttons,'title':'<img src="images/vbox/shared_folder_16px.png" class="vboxDialogTitleIcon" /> '+trans('Add Share','UIMachineSettingsSFDetails')}).dialog('open');
+			$(dialog).dialog({'buttons':buttons,'title':'<img src="images/vbox/sf_16px.png" class="vboxDialogTitleIcon" /> '+trans('Add Share','UIMachineSettingsSFDetails')}).dialog('open');
 			
 		}
 	},
@@ -83,7 +83,7 @@ var sButtons = new Array(
 	{
 		'name' : 'editshared',
 		'label' : trans('Edit Shared Folder','UIMachineSettingsSF'),
-		'icon' : 'edit_shared_folder',
+		'icon' : 'sf_edit',
 		'enabled' : function (item) { return $(item).hasClass('vboxListItemSelected');  },
 		'click' : function () {
 
@@ -119,7 +119,7 @@ var sButtons = new Array(
 	{
 		'name' : 'removeshared',
 		'label' : trans('Remove Shared Folder','UIMachineSettingsSF'),
-		'icon' : 'remove_shared_folder',
+		'icon' : 'sf_remove',
 		'enabled' : function (item) { return $(item).hasClass('vboxListItemSelected'); },
 		'click' : function () {
 			var item = $('#vboxSettingsSharedFoldersList').find('.vboxListItemSelected').first();
@@ -337,7 +337,7 @@ function vboxSettingsSFEditDialog() {
 		$('<tr />').append($('<th />')).append($('<td />').html('<label><input type="checkbox" class="vboxCheckbox" id="vboxSettingsSFPerm" /> ' + trans('Make Permanent','UIMachineSettingsSFDetails')+'</label>')).appendTo(tbl);
 	}
 	
-	$(d).append(tbl).dialog({'width':800,'modal':true,'autoOpen':false,'dialogClass':'vboxDialogContent vboxNonTabbed','title':'<img src="images/vbox/shared_folder_16px.png" class="vboxDialogTitleIcon" /> '+trans('Edit Share','UIMachineSettingsSFDetails')});
+	$(d).append(tbl).dialog({'width':800,'modal':true,'autoOpen':false,'dialogClass':'vboxDialogContent vboxNonTabbed','title':'<img src="images/vbox/sf_16px.png" class="vboxDialogTitleIcon" /> '+trans('Edit Share','UIMachineSettingsSFDetails')});
 	
 	return $('#vboxSettingsSFEdit');
 }

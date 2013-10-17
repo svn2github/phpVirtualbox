@@ -3439,7 +3439,6 @@ class vboxconnector {
 	 * @param array $args array of arguments. See function body for details.
 	 * @param ISnapshot $snapshot snapshot instance to use if obtaining snapshot details.
 	 * @see hostGetDetails()
-	 * @see hostGetNetworking()
 	 * @return array machine details
 	 */
 	public function remote_machineGetDetails($args, $snapshot=null) {
@@ -3448,8 +3447,6 @@ class vboxconnector {
 		if($args['vm'] == 'host') {
 
 			$response = $this->remote_hostGetDetails($args);
-
-			$response['networking'] = $this->remote_hostGetNetworking($args);
 
 			return $response;
 		}

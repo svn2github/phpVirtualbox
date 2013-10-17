@@ -1304,7 +1304,7 @@ var vboxVMDetailsSections = {
 	 * Shared folders list
 	 */
 	sharedfolders : {
-		icon: 'shared_folder_16px.png',
+		icon: 'sf_16px.png',
 		title: trans('Shared Folders', 'UIDetailsPagePrivate'),
 		settingsLink: 'SharedFolders',
 		rows: function(d) {
@@ -1353,7 +1353,7 @@ var vboxVMGroupActions = {
 
 	'newmachine': {
 		label: trans('New Machine...','UIActionPool'),
-		icon: 'new',
+		icon: 'vm_new',
 		click: function(){
 			vboxVMActions['new'].click(true);
 		},
@@ -1375,7 +1375,7 @@ var vboxVMGroupActions = {
 	
 	rename: {
 		label: trans('Rename Group...','UIActionPool'),
-		icon: 'name',
+		icon: 'vm_group_name',
 		enabled: function() {
 			if(!$('#vboxPane').data('vboxSession').admin) return false;
 			if(!vboxChooser._editable) return false;
@@ -1392,7 +1392,7 @@ var vboxVMGroupActions = {
 	
 	ungroup: {
 		label: trans('Ungroup...','UIActionPool'),
-		icon: 'delete',
+		icon: 'vm_group_remove',
 		enabled: function() {
 			if(!vboxChooser._editable) return false;
 			if(!$('#vboxPane').data('vboxSession').admin) return false;
@@ -1411,6 +1411,7 @@ var vboxVMGroupActions = {
 	
 	'sort': {
 		label: trans('Sort','UIActionPool'),
+		icon:'sort',
 		click: function() {
 			vboxChooser.sortSelectedGroup();
 		},
@@ -1434,7 +1435,6 @@ var vboxVMActions = {
 	'new':{
 			label:trans('New...','UIActionPool'),
 			icon:'vm_new',
-			icon_16:'new',
 			click: function(fromGroup){
 				new vboxWizardNewVMDialog((fromGroup ? $(vboxChooser.getSelectedGroupElements()[0]).data('vmGroupPath') : '')).run();
 			}
@@ -1465,7 +1465,6 @@ var vboxVMActions = {
 		name : 'start',
 		label : trans('Start','UIActionPool'),
 		icon : 'vm_start',
-		icon_16 : 'start',
 		click : function (btn) {
 		
 			
@@ -1627,7 +1626,6 @@ var vboxVMActions = {
 	settings: {
 		label:trans('Settings...','UIActionPool'),
 		icon:'vm_settings',
-		icon_16:'settings',
 		click:function(){
 			
 			vboxVMsettingsDialog(vboxChooser.getSingleSelectedId());
@@ -1642,8 +1640,6 @@ var vboxVMActions = {
 	clone: {
 		label:trans('Clone...','UIActionPool'),
 		icon:'vm_clone',
-		icon_16:'vm_clone',
-		icon_disabled:'vm_clone_disabled',
 		click:function(){
 			new vboxWizardCloneVMDialog({vm:vboxChooser.getSingleSelected()}).run();
 		},
@@ -1656,7 +1652,6 @@ var vboxVMActions = {
 	refresh: {
 		label:trans('Refresh','UIVMLogViewer'),
 		icon:'refresh',
-		icon_disabled:'refresh_disabled',
 		click:function(){
 			
 			var vmid = vboxChooser.getSingleSelectedId();
@@ -1674,7 +1669,7 @@ var vboxVMActions = {
     /** Delete / Remove a VM */
     remove: {
 		label:trans('Remove...', 'UIActionPool'),
-		icon:'delete',
+		icon:'vm_delete',
 		click:function(){
 
 			///////////////////
@@ -1784,8 +1779,7 @@ var vboxVMActions = {
     /** Create a group from VM * */
     group: {
     	label: trans('Group','UIActionPool'),
-    	icon: 'add_shared_folder',
-    	icon_disabled: 'add_shared_folder_disabled',
+    	icon: 'vm_group_create',
     	click: function() {
     		vboxChooser.groupSelectedItems();
     	},
@@ -1808,7 +1802,6 @@ var vboxVMActions = {
     discard: {
 		label:trans('Discard saved state...','UIActionPool'),
 		icon:'vm_discard',
-		icon_16:'discard',
 		click:function(){
 			
 			var buttons = {};
@@ -1918,8 +1911,7 @@ var vboxVMActions = {
     /** Show VM Logs */
     logs: {
 		label:trans('Show Log...','UIActionPool'),
-		icon:'show_logs',
-		icon_disabled:'show_logs_disabled',
+		icon:'vm_show_logs',
 		click:function(){
     		vboxShowLogsDialogInit(vboxChooser.getSingleSelected());
 		},
@@ -1931,7 +1923,7 @@ var vboxVMActions = {
     /** Save the current VM State */
 	savestate: {
 		label: trans('Save State', 'UIActionPool'),
-		icon: 'fd',
+		icon: 'vm_save_state',
 		stop_action: true,
 		enabled: function(){
 			return (vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Paused'));
@@ -1949,7 +1941,7 @@ var vboxVMActions = {
 	/** Send ACPI Power Button to VM */
 	powerbutton: {
 		label: trans('ACPI Shutdown','UIActionPool'),
-		icon: 'acpi',
+		icon: 'vm_shutdown',
 		stop_action: true,
 		enabled: function(){
 			return vboxChooser.isSelectedInState('Running');
@@ -1985,8 +1977,7 @@ var vboxVMActions = {
 	/** Pause a running VM */
 	pause: {
 		label: trans('Pause','UIActionPool'),
-		icon: 'pause',
-		icon_disabled: 'pause_disabled',
+		icon: 'vm_pause',
 		enabled: function(){
 			return vboxChooser.isSelectedInState('Running');
 		},
@@ -2002,7 +1993,7 @@ var vboxVMActions = {
 	/** Power off a VM */
 	powerdown: {
 		label: trans('Power Off','UIActionPool'),
-		icon: 'poweroff',
+		icon: 'vm_poweroff',
 		stop_action: true,
 		enabled: function() {
 			return (vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Paused') || vboxChooser.isSelectedInState('Stuck'));
@@ -2043,8 +2034,7 @@ var vboxVMActions = {
 	/** Reset a VM */
 	reset: {
 		label: trans('Reset','UIActionPool'),
-		icon: 'reset',
-		icon_disabled: 'reset_disabled',
+		icon: 'vm_reset',
 		enabled: function(){
 			return vboxChooser.isSelectedInState('Running');
 		},
@@ -2085,8 +2075,7 @@ var vboxVMActions = {
 	stop: {
 		name: 'stop',
 		label: trans('Stop','VBoxSelectorWnd'),
-		icon: 'acpi',
-		icon_disabled:'acpi_disabled',
+		icon: 'vm_shutdown',
 		menu: true,
 		click: function () { return true; /* handled by stop context menu */ },
 		enabled: function () {
@@ -3221,7 +3210,7 @@ function vboxToolbarSmall(buttons) {
 		if(b.noDisabledIcon)
 			this._buttonElements[b.name].css('display','').prop('disabled',false);
 		else
-			this._buttonElements[b.name].css('background-image','url(images/vbox/' + (b.icon_exact ? b.icon : b.icon + '_'+self.size)+'px.png)').prop('disabled',false);
+			this._buttonElements[b.name].css('background-image','url(images/vbox/' + b.icon + '_'+self.size+'px.png)').prop('disabled',false);
 	};
 	/**
 	 * Disable a single button
@@ -3235,7 +3224,7 @@ function vboxToolbarSmall(buttons) {
 		if(b.noDisabledIcon)
 			this._buttonElements[b.name].css('display','none').prop('disabled',false).removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton').trigger('mouseleave');
 		else
-			this._buttonElements[b.name].css('background-image','url(images/vbox/' + (b.icon_exact ? b.icon_disabled : b.icon + '_'+self.disabledString+'_'+self.size)+'px.png)').prop('disabled',true).removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton').trigger('mouseleave');
+			this._buttonElements[b.name].css('background-image','url(images/vbox/' + b.icon + '_'+self.disabledString+'_'+self.size+'px.png)').prop('disabled',true).removeClass('vboxToolbarSmallButtonHover').addClass('vboxToolbarSmallButton').trigger('mouseleave');
 	};
 
 	/**
@@ -3263,7 +3252,7 @@ function vboxToolbarSmall(buttons) {
 		// Pre-load disabled version of icon if enabled function exists
 		if(b.enabled && !b.noDisabledIcon) {
 			var a = new Image();
-			a.src = "images/vbox/" + (b.icon_exact ? b.icon_disabled : b.icon + '_'+self.disabledString+'_'+self.size)+'px.png';
+			a.src = "images/vbox/" + b.icon + '_'+self.disabledString+'_'+self.size+'px.png';
 		}
 
 		var btn = $('<input />').attr({'type':'button','value':'',
@@ -3853,7 +3842,7 @@ function vboxMenu(name, id, menuItems) {
 	
 	this.name = name;
 	this.menuItems = {};
-	this.iconStringDisabled = '_dis';
+	this.iconStringDisabled = '_disabled';
 	this.id = id;
 		
 	/**
@@ -3980,23 +3969,7 @@ function vboxMenu(name, id, menuItems) {
 		
 		if(!i.icon) return '';
 		
-		// absolute url?
-		if(i.icon_absolute) {
-			if(disabled) return i.icon_disabled;
-			return i.icon;
-		}
-
-		// exact icon?
-		if(i.icon_exact) {
-			if(disabled) return 'images/vbox/' + i.icon_disabled + 'px.png';
-			return 'images/vbox/' + i.icon + 'px.png';
-		}
-		
-		if(disabled) {
-			return 'images/vbox/' + (i.icon_disabled ? i.icon_disabled : (i.icon_16 ? i.icon_16 : i.icon) + (i.iconStringDisabled ? i.iconStringDisabled : self.iconStringDisabled)) + '_16px.png';
-		}
-		
-		return 'images/vbox/' + (i.icon_16 ? i.icon_16 : i.icon) + '_16px.png';
+		return 'images/vbox/' + i.icon + (disabled ? self.iconStringDisabled: '') + '_16px.png';
 		
 	};
 	
@@ -4093,7 +4066,7 @@ function vboxMenuBar(name) {
 	this.name = name;
 	this.menus = new Array();
 	this.menuClick = {};
-	this.iconStringDisabled = '_dis';
+	this.iconStringDisabled = '_disabled';
 	
 	/**
 	 * Add a menu to this object

@@ -212,7 +212,7 @@ vboxTopMenuBar.addMenu({
     	$.extend({},vboxVMActions['start'],{'name':'start','separator' : true}),
         $.extend({},vboxVMActions['pause'],{'name':'pause'}),
         $.extend({},vboxVMActions['reset'],{'name':'reset'}),
-    	$.extend({},vboxVMActions['stop'],{'name':'stop','icon':'exit','children':sChildren}),
+    	$.extend({},vboxVMActions['stop'],{'name':'stop','children':sChildren}),
     	$.extend({},vboxVMActions['discard'],{'name':'discard','separator' : true}),
     	$.extend({},vboxVMActions['refresh'],{'name':'refresh'}),
     	$.extend({}, vboxVMGroupActions['sort'], {name:'sort',separator:true})
@@ -226,8 +226,7 @@ vboxTopMenuBar.addMenu({
         {
 			'name':'helpvbox',
 			'label':trans('VirtualBox User Manual','UIActionPool'),
-			'icon':'images/vbox/site_16px.png',
-			'icon_absolute':true,
+			'icon':'site',
 			'click':function(){
 				window.open('http://www.virtualbox.org/manual/','manual');        	
         	}

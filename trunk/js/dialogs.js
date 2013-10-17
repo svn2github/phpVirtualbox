@@ -347,7 +347,7 @@ function vboxWizardNewVMDialog(vmgroup) {
 	this.name = 'wizardNewVM';
 	this.bg = 'images/vbox/vmw_new_welcome_bg.png';
 	this.title = trans('Create Virtual Machine','UIWizardNewVM');
-	this.icon = 'new';
+	this.icon = 'vm_new';
 	this.steps = 3;
 	this.vmgroup = vmgroup;
 	this.context = 'UIWizardNewVM';
@@ -635,7 +635,7 @@ function vboxShowLogsDialogInit(vm) {
 			l.run();
 		};
 		buttons[trans('Close','UIVMLogViewer')] = function(){$(this).trigger('close').empty().remove();};
-		$('#vboxVMLogsDialog').dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/show_logs_16px.png" class="vboxDialogTitleIcon" /> '+ trans('%1 - VirtualBox Log Viewer','UIVMLogViewer').replace('%1',vm.name)}).on("dialogbeforeclose",function(){
+		$('#vboxVMLogsDialog').dialog({'closeOnEscape':true,'width':800,'height':500,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/vm_show_logs_16px.png" class="vboxDialogTitleIcon" /> '+ trans('%1 - VirtualBox Log Viewer','UIVMLogViewer').replace('%1',vm.name)}).on("dialogbeforeclose",function(){
 	    	$(this).parent().find('span:contains("'+trans('Close','UIVMLogViewer')+'")').trigger('click');
 	    });
 		vboxShowLogsInit(vm);
@@ -1177,7 +1177,7 @@ function vboxVMsettingsDialog(vm,pane) {
 						$.when.apply($, reload).done(function(){
 
 							/* Change title and tell dialog that data is loaded */
-							$('#vboxSettingsDialog').trigger('dataLoaded').dialog('option','title','<img src="images/vbox/settings_16px.png" class="vboxDialogTitleIcon" /> ' + 
+							$('#vboxSettingsDialog').trigger('dataLoaded').dialog('option','title','<img src="images/vbox/vm_settings_16px.png" class="vboxDialogTitleIcon" /> ' + 
 									$('<div />').text($('#vboxSettingsDialog').data('vboxMachineData').name).text() + ' - ' + trans('Settings','UISettingsDialog'));
 
 							l.removeLoading();
@@ -1242,13 +1242,13 @@ function vboxVMsettingsDialog(vm,pane) {
 			{'name':'SerialPorts','label':'Serial Ports','icon':'serial_port','tabbed':true,'context':'UIMachineSettingsSerial'},
 			{'name':'ParallelPorts','label':'Parallel Ports','icon':'parallel_port','tabbed':true,'disabled':(!$('#vboxPane').data('vboxConfig').enableLPTConfig),'context':'UIMachineSettingsParallel'},
 			{'name':'USB','label':'USB','icon':'usb','context':'UIMachineSettingsUSB'},
-			{'name':'SharedFolders','label':'Shared Folders','icon':'shared_folder','context':'UIMachineSettingsSF'}
+			{'name':'SharedFolders','label':'Shared Folders','icon':'sf','context':'UIMachineSettingsSF'}
 
 		);
 		
 		
 
-		$.when(vboxSettingsDialog(vmData.name + ' - ' + trans('Settings','UISettingsDialog'),panes,dataList,pane,'settings','UISettingsDialogMachine'))
+		$.when(vboxSettingsDialog(vmData.name + ' - ' + trans('Settings','UISettingsDialog'),panes,dataList,pane,'vm_settings','UISettingsDialogMachine'))
 		
 			// Always run this
 			.always(function(){

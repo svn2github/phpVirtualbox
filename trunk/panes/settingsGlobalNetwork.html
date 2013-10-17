@@ -11,22 +11,23 @@
 	<li><a href="#vboxGlobalHostNetworking"><span class='translate'>Host-only Networks</span></a>
 </ul>
 <div id='vboxGlobalNATNetworks'>
-	<table style='width: 100%; margin-left:auto; margin-right:auto;' class='vboxInvisible'>
-		<tr style='vertical-align:top'>
-			<td>
-				<table style='width:100%; border-spacing: 0px;' class='vboxBordered vboxList vboxHover'>
-					<thead>
-						<tr><th style='width: 1%; padding-left: 4px;text-align:left'>Active</th><th style='text-align:left'>Name</th></tr>
-					</thead>
-					<tbody id='vboxSettingsGlobalNATNetList'>
-						<tr><td>asdf</td><td>asdf</td></tr>
-					</tbody>
-				</table>
-			</td>
-			<td style='width: 1%; padding: 4px;' id='vboxSettingsGlobalNATNetToolbar'></td>
-		</tr>
-	</table>
-
+		<table style='width: 100%; margin-left:auto; margin-right:auto;' class='vboxInvisible'>
+			<tr style='vertical-align:top'>
+				<td>
+					<div class='vboxBordered' style='height: 280px'>
+						<table style='width:100%; border-spacing: 0px;' class='vboxList vboxHover'>
+							<thead>
+								<tr><th style='width: 140px; padding-left: 4px;text-align:left'>Active</th><th style='text-align:left'>Name</th></tr>
+							</thead>
+							<tbody id='vboxSettingsGlobalNATNetList'>
+								<tr><td>asdf</td><td>asdf</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</td>
+				<td style='width: 1%; padding: 4px;' id='vboxSettingsGlobalNATNetToolbar'></td>
+			</tr>
+		</table>
 </div>
 <div id='vboxGlobalHostNetworking'>
 	<table style='width: 100%; margin-left:auto; margin-right:auto;' class='vboxInvisible'>
@@ -270,7 +271,7 @@ var sButtons = new Array(
 			while($('#vboxSettingsGlobalNATNetList').find('td:contains("'+netName+'")').length) {
 				netName = netNameTpl + number++;
 			}
-			vboxSettingsGlobalNATNetworksAddNet({'enabled':false,'networkName':netName});
+			vboxSettingsGlobalNATNetworksAddNet({'enabled':false,'networkName':netName,'portForwardRules4':[],'portForwardRules6':[]});
 			
 
 		}
@@ -316,7 +317,7 @@ var sButtons = new Array(
 		'icon' : 'refresh',
 		click: function() {
 			var l = new vboxLoader();
-			l.add('vboxGetNATNetworks',function(d){$('#vboxSettingsDialog').data('vboxNATNetworks',d.responseData);});
+			l.add('vboxNATNetworksGet',function(d){$('#vboxSettingsDialog').data('vboxNATNetworks',d.responseData);});
 			l.onLoad = function(){
 				vboxSettingsGlobalNATNetworksAdd();
 			};
@@ -381,6 +382,7 @@ function vboxSettingsGlobalNATNetworksAdd() {
 	var nets = $('#vboxSettingsDialog').data('vboxNATNetworks');
 	$('#vboxSettingsGlobalNATNetList').empty();
 	for(var i = 0; i < nets.length; i++) {
+		nets[i].orig_networkName = nets[i].networkName;
 		vboxSettingsGlobalNATNetworksAddNet(nets[i]);
 	}
 	$('#vboxSettingsGlobalNATNetList').trigger('select',null);
@@ -510,7 +512,7 @@ buttons[trans('OK','QIMessageBox')] = function(){
 	net.advertiseDefaultIPv6RouteEnabled = $('#vboxSettingsGlobalNATNetIPv6Route').prop('checked') ? 1 : 0;
 	net._modified = true;
 
-	$('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first().data('NATNetwork',net);
+	$('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first().data('NATNetwork',net).find('input').prop('checked', net.enabled);
 	
 	$(this).dialog("close");
 };
@@ -541,8 +543,8 @@ function vboxSettingsGlobalNATNetworkEditDialog() {
 	$('#vboxSettingsGlobalNATNetEnabled').trigger('syntheticClick');
 	$('#vboxSettingsGlobalNATNetIPv6').trigger('syntheticClick');
 	
-	$('#vboxSettingsGlobalNATNetRules').click(function(){
-		vboxSettingsGlobalNetworkNatPortForwardingDialog(net);	
+	$('#vboxSettingsGlobalNATNetRules').off('click').on('click',function(){
+		vboxSettingsGlobalNetworkNatPortForwardingDialog(net, $('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first());	
 	});
 	
 	$('#vboxSettingsGlobalNATNetworkEditDialog').dialog('open');
@@ -550,9 +552,10 @@ function vboxSettingsGlobalNATNetworkEditDialog() {
 }
 
 
-function vboxSettingsGlobalNetworkNatPortForwardingDialog(net) {
+function vboxSettingsGlobalNetworkNatPortForwardingDialog(net, row) {
 	
-	var results = $.Deferred();
+	if($('#vboxSettingsGlobalNetworkNatPortForwardingDialog')[0])
+		$('#vboxSettingsGlobalNetworkNatPortForwardingDialog').empty().remove();
 	
 	var l = new vboxLoader();
 	l.addFileToDOM("panes/settingsGlobalNetworkNATPortForwarding.html");
@@ -563,23 +566,46 @@ function vboxSettingsGlobalNetworkNatPortForwardingDialog(net) {
 		
 		var buttons = {};
 		buttons[trans('OK','QIMessageBox')] = function(){
-			// Get rules
-			var rules = $('#vboxSettingsPortForwardingList').children('tr');
-			var rulesToPass = new Array();
-			for(var i = 0; i < rules.length; i++) {
-				if($(rules[i]).data('vboxRule')[3] == 0 || $(rules[i]).data('vboxRule')[5] == 0) {
-					vboxAlert(trans("The current port forwarding rules are not valid. " +
-				               "None of the host or guest port values may be set to zero.",'UIMessageCenter'));
-					return;
-				}
-				rulesToPass[i] = $(rules[i]).data('vboxRule');
+			
+			// wrap ips in []
+			var wrapIp = function(ip) {
+				ip = ip.trim();
+				if(!ip) return '[]';
+				if(ip[0] != '[') $ip = '[' + ip;
+				if(ip[ip.length-1] != ']') ip += ']';
+				return ip;
 			}
+			
+			// Get rules
+			var none=0;
+			do {
+				var ruleNum = 4 + (none*2);
+				var rules = $('#vboxSettingsGlobalNetworkNatPortForwardingListIPv'+ruleNum).children('tr');
+				var rulesToPass = new Array();
+				for(var i = 0; i < rules.length; i++) {
+					if($(rules[i]).data('vboxRule')[3] == 0 || $(rules[i]).data('vboxRule')[5] == 0) {
+						vboxAlert(trans("The current port forwarding rules are not valid. " +
+					               "None of the host or guest port values may be set to zero.",'UIMessageCenter'));
+						return;
+					}
+					
+					rulesToPass[i] = $(rules[i]).data('vboxRule');
+					
+					rulesToPass[i][0] = rulesToPass[i][0].replace(':','');
+					rulesToPass[i][2] = wrapIp(rulesToPass[i][2]);
+					rulesToPass[i][4] = wrapIp(rulesToPass[i][4]);
+					
+					rulesToPass[i] = rulesToPass[i].join(':');
+				}
+				$('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first().data('NATNetwork')['portForwardRules'+ruleNum] = rulesToPass;
+				
+			} while(none++ < 1)
+				
 			$(this).trigger('close').empty().remove();
 			
-			results.resolve(rulesToPass);
+			
 		};
 		buttons[trans('Cancel','QIMessageBox')] = function(){
-			results.reject();
 			$(this).trigger('close').empty().remove();
 		};
 		
@@ -587,7 +613,7 @@ function vboxSettingsGlobalNetworkNatPortForwardingDialog(net) {
 		
 		$('#vboxSettingsGlobalNetworkNatPortForwardingDialog').tabs();
 		
-		$('#vboxSettingsGlobalNetworkNatPortForwardingDialog').dialog({'closeOnEscape':true,'width':600,'height':400,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/nw_16px.png" class="vboxDialogTitleIcon" /> ' + trans('Port Forwarding Rules','UIMachineSettingsPortForwardingDlg')}).on("dialogbeforeclose",function(){
+		$('#vboxSettingsGlobalNetworkNatPortForwardingDialog').dialog({'closeOnEscape':true,'width':840,'height':400,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/nw_16px.png" class="vboxDialogTitleIcon" /> ' + trans('Port Forwarding Rules','UIMachineSettingsPortForwardingDlg')}).on("dialogbeforeclose",function(){
 	    	$(this).parent().find('span:contains("'+trans('Cancel','QIMessageBox')+'")').trigger('click');
 	    });
 		
@@ -607,8 +633,16 @@ $('#vboxSettingsDialog').on('save',function(){
 	$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces = new Array();
 
 	$('#vboxSettingsGlobalNetList').children('li').each(function(){
-		$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces[$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces.length] = $(this).data('interface');		
+		$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces.push($(this).data('interface'));		
 	});
+	
+	var nets = [];
+	
+	$('#vboxSettingsGlobalNATNetList').children('tr').each(function(){
+		nets.push($(this).data('NATNetwork'));
+	});
+	$('#vboxSettingsDialog').data('vboxNATNetworks',nets);
+	
 });
 
 /*

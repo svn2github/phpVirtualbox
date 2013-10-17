@@ -1031,7 +1031,7 @@ function vboxGlobalPrefsDialog() {
 		{'fn':'hostOnlyInterfacesGet','callback':function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d.responseData);}},
 		{'fn':'vboxSystemPropertiesGet','callback':function(d){$('#vboxSettingsDialog').data('vboxSystemProperties',d.responseData);}},
 		{'fn':'getUsers','callback':function(d){$('#vboxSettingsDialog').data('vboxUsers',d.responseData);}},
-		{'fn':'vboxGetNATNetworks','callback':function(d){$('#vboxSettingsDialog').data('vboxNATNetworks',d.responseData);}}
+		{'fn':'vboxNATNetworksGet','callback':function(d){$('#vboxSettingsDialog').data('vboxNATNetworks',d.responseData);}}
 	);	
 	
 	// Check for noAuth setting
@@ -1052,6 +1052,8 @@ function vboxGlobalPrefsDialog() {
 				l.onLoad = function(){location.reload(true);};
 			
 			}
+
+			l.add('vboxNATNetworksSave',function(){return;},{'networks':$('#vboxSettingsDialog').data('vboxNATNetworks')});
 			l.add('hostOnlyInterfacesSave',function(){return;},{'networkInterfaces':$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces').networkInterfaces});
 			l.add('vboxSystemPropertiesSave',function(){return;},{'SystemProperties':$('#vboxSettingsDialog').data('vboxSystemProperties')});
 			l.run();

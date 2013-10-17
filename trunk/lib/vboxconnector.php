@@ -2757,7 +2757,7 @@ class vboxconnector {
 	 * @param array $response response data passed byref populated by the function
 	 * @return array networking info data
 	 */
-	public function remote_vboxGetNATNetworks($args) {
+	public function remote_vboxNATNetworksGet($args) {
 	
 		$this->connect();
 
@@ -2789,31 +2789,80 @@ class vboxconnector {
 	 * @param array $response response data passed byref populated by the function
 	 * @return array networking info data
 	 */
-	public function remote_vboxSaveNATNetwork($args) {
+	public function remote_vboxNATNetworksSave($args) {
 		
 		$this->connect();
 		
-		$network = $this->vbox->findNATNetworkByName($args['old_networkName']);
 		$props = array('networkName','enabled','network','IPv6Enabled',
 				'advertiseDefaultIPv6RouteEnabled','needDhcpServer');
+
+		$exNetworks = array();
+		foreach($this->vbox->NATNetworks as $n) { $exNetworks[$n->networkName] = false; }
 		
-		foreach($props as $p) {
-			$network->$p = $args[$p];
+		/* Incoming network list */
+		foreach($args['networks'] as $net) {
+			
+			/* Existing network */
+			if($net['orig_networkName']) {
+
+				$network = $this->vbox->findNATNetworkByName($net['orig_networkName']);
+				
+			
+				$exNetworks[$net['orig_networkName']] = true;
+				
+				foreach($props as $p) {
+					$network->$p = $net[$p];
+				}
+				
+				foreach(array('portForwardRules4','portForwardRules6') as $rules) {
+					
+					if(!$net[$rules] || !is_array($net[$rules])) $net[$rules] = array();
+					
+					$rules_remove = array_diff($network->$rules, $net[$rules]);
+					$rules_add = array_diff($net[$rules], $network->$rules);
+					
+					foreach($rules_remove as $rule) {
+						$network->removePortForwardRule((strpos($rules,'6')>-1), array_shift(preg_split('/:/',$rule)));
+					}
+					foreach($rules_add as $r) {
+						preg_match('/(.*?):(.+?):\[(.*?)\]:(\d+):\[(.*?)\]:(\d+)/', $r, $rule);
+						array_shift($rule);
+						$network->addPortForwardRule((strpos($rules,'6')>-1), $rule[0],strtoupper($rule[1]),$rule[2],$rule[3],$rule[4],$rule[5]);
+					}
+				}
+				
+			/* New network */
+			} else {
+				
+				$network = $this->vbox->createNATNetwork($net['networkName']);
+				
+				foreach($props as $p) {
+					$network->$p = $net[$p];
+				}
+				
+				foreach($net['portForwardRules4'] as $r) {
+					preg_match('/(.*?):(.+?):\[(.*?)\]:(\d+):\[(.*?)\]:(\d+)/', $r, $rule);
+					array_shift($rule);
+					$network->addPortForwardRule(false, $rule[0],strtoupper($rule[1]),$rule[2],$rule[3],$rule[4],$rule[5]);
+				}
+				foreach($net['portForwardRules6'] as $r) {
+					preg_match('/(.*?):(.+?):\[(.*?)\]:(\d+):\[(.*?)\]:(\d+)/', $r, $rule);
+					array_shift($rule);
+					$network->addPortForwardRule(true, $rule[0],strtoupper($rule[1]),$rule[2],$rule[3],$rule[4],$rule[5]);
+				}
+				
+			}
+			
 		}
 		
-		foreach(array('portForwardRules4','portForwardRules6') as $rules) {
-			
-			$rules_remove = array_diff($args[$rules], $network->$rules);
-			$rules_add = array_diff($network->$rules, $args[$rules]);
-			
-			foreach($rules_remove as $rule) {
-				$network->removePortForwardRule((strpos($rules,'6')>-1), array_shift(preg_split('/:/',$rule)));
-			}
-			foreach($rules_add as $rule) {
-				$rule = preg_split('/:/', $rule);
-				$network->addPortForwardRule((strpos($rules,'6')>-1), $rule[0],$rule[1],$rule[2],$rule[3],$rule[4],$rule[5]);
-			}
+		/* Remove networks not in list */
+		foreach($exNetworks as $n=>$v) {
+			if($v) continue;
+			$n = $this->vbox->findNATNetworkByName($n);
+			$this->vbox->removeNATNetwork($n);
 		}
+		
+		return true;
 		
 	}
 	

@@ -78,7 +78,9 @@ $('#vboxSettingsPortForwardingList').trigger('select');
 
 /* Edit rule element */
 function vboxSettingsPortForwardingEdit(td,type) {
+	if($(td).children('input').length) return;
 	var ex = $(td).parent().data('vboxRule')[$(td).data('vboxPane')];
+	var w = $(td).width();
 	$(td).html('');
 	$('<input />').data('vboxPane',$(td).data('vboxPane')).attr({'class':'vboxText'}).val(ex).blur(function(){
 		switch($(this).data('vboxPane')) {
@@ -104,7 +106,7 @@ function vboxSettingsPortForwardingEdit(td,type) {
 		$(this).parent().parent().data('vboxRule')[$(this).data('vboxPane')] = $(this).val();
 		var ex = $(this).val();
 		$(this).replaceWith($('<div />').html(ex).text());
-	}).css({'width':($(td).innerWidth()-12)+'px','padding':'0px','margin':'0px'}).keydown(function(event){
+	}).css({'width':(w-8)+'px','padding':'0px','margin':'0px'}).keydown(function(event){
 		if(event.keyCode == 13) {
 			$(this).trigger('blur');
 			return;

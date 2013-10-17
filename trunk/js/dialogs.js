@@ -49,7 +49,7 @@ function vboxWizardImportApplianceDialog() {
 
 		var file = $(self.form).find('[name=wizardImportApplianceLocation]').val();
 		var descriptions = $('#vboxImportProps').data('descriptions');
-		var reinitNetwork = $(self.form).find('[name=vboxImportReinitNetwork]').prop('checked');
+		var reinitNetwork = ($(self.form).find('[name=vboxImportReinitNetwork]').prop('checked') ? 1 : 0);
 		
 		// Check for descriptions
 		if(!descriptions) {
@@ -210,7 +210,7 @@ function vboxWizardExportApplianceDialog() {
 			}
 
 			var file = $(self.form).find('[name=wizardExportApplianceLocation]').val();
-			var format = ($(self.form).find('[name=wizardExportApplianceLegacy]').prop('checked') ? 'ovf-0.9' : '');
+			var format = $(self.form).find('[name=wizardExportApplianceFormat]').val();
 			var manifest = ($(self.form).find('[name=wizardExportApplianceManifest]').prop('checked') ? 1 : 0);
 			var overwrite = force;
 			
@@ -524,7 +524,7 @@ function vboxWizardCloneVMDialog(args) {
 		var name = jQuery.trim($(self.form).find('[name=machineCloneName]').val());
 		var src = self.args.vm.id;
 		var snapshot = self.args.snapshot;
-		var allNetcards = $(self.form).find('[name=vboxCloneReinitNetwork]').prop('checked');
+		var allNetcards = ($(self.form).find('[name=vboxCloneReinitNetwork]').prop('checked') ? 1 : 0);
 		
 		if(!name) {
 			$(self.form).find('[name=machineCloneName]').addClass('vboxRequired');

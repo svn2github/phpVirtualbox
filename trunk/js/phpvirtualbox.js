@@ -2014,7 +2014,7 @@ var vboxVMActions = {
 			var vmNames = [];
 			var vms = vboxChooser.getSelectedVMsData();
 			for(var i = 0; i < vms.length; i++) {
-				if(vboxVMStates.isRunning(vms[i]) || vboxVMStates.isPaused(vms[i])) {
+				if(vboxVMStates.isRunning(vms[i]) || vboxVMStates.isPaused(vms[i]) || vboxVMStates.isStuck(vms[i])) {
 					vmNames[vmNames.length] = vms[i].name;
 				}
 			}
@@ -2079,7 +2079,7 @@ var vboxVMActions = {
 		menu: true,
 		click: function () { return true; /* handled by stop context menu */ },
 		enabled: function () {
-			return (vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Paused'));
+			return (vboxChooser.isSelectedInState('Running') || vboxChooser.isSelectedInState('Paused') || vboxChooser.isSelectedInState('Stuck'));
 		}
 	},
 	

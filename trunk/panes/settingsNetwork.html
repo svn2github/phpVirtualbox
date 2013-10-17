@@ -77,9 +77,9 @@
 		<th class='vboxSettingsNetPromiscuousMode'><span class='translate'>Promiscuous Mode:</span></th>
 		<td>
 			<select class='vboxSettingsNetPromiscuousMode' name='vboxSettingsNetAdapterPromiscuousMode' style='width: 100%'>
-				<option value='Deny' class='translate'>Deny</option>
-				<option value='AllowNetwork' class='translate'>Allow VMs</option>
-				<option value='AllowAll' class='translate'>Allow All</option>
+				<option value='Deny'>Deny</option>
+				<option value='AllowNetwork'>Allow VMs</option>
+				<option value='AllowAll'>Allow All</option>
 			</select>
 		</td>
 	</tr>	
@@ -103,8 +103,8 @@
 <script type='text/javascript'>
 
 /* Translations */
-$(document.forms['frmVboxSettings'].vboxSettingsNetAttachedTo).find('option').html(function(i,h){return trans(h,'VBoxGlobal');}).removeClass('translate');
-$(document.forms['frmVboxSettings'].vboxSettingsNetAdapterPromiscuousMode).find('option').html(function(i,h){return trans(h,'VBoxGlobal');}).removeClass('translate');
+$(document.forms['frmVboxSettings'].vboxSettingsNetAttachedTo).find('option').html(function(i,h){return trans(h,'VBoxGlobal');});
+$(document.forms['frmVboxSettings'].vboxSettingsNetAdapterPromiscuousMode).find('option').html(function(i,h){return trans(h,'VBoxGlobal');});
 $('#vboxSettingsTabNetAdapter').find(".translate").html(function(i,h){return trans($('<div />').html(h).text(),'UIMachineSettingsNetwork');}).removeClass('translate');
 
 /*

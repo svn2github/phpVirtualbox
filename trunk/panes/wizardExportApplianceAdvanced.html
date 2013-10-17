@@ -39,32 +39,31 @@
 		<tr style='vertical-align: top; height: 1%;'>
 			<td colspan='2'>
 			
-				<!-- File name -->
-				<table style='width: 100%;' class='vboxInvisible'>
+				<table style='width: 100%;' class='vboxOptions'>
 					<tr>
-						<td style='white-space: nowrap' class='vboxFileFolderInput'>
-							<span class='translate'>File:</span>
-							<input type='text' class='vboxText'
-								name='wizardExportApplianceLocation' onkeydown="$(this).data('userChanged', true);"/>
+						<th width='1%'><span class='translate'>File:</span></th>
+						<td class='vboxFileFolderInput'>
+							<input type='text' class='vboxText' name='wizardExportApplianceLocation' />
+							<input type="button" class="vboxImgButton" style="background-image: url(images/vbox/select_file_16px.png)" onClick="wizardExportApplianceBrowseLocation()" />
 						</td>
-						<td width='1%'>
-							<input type="button" class="vboxImgButton" style="margin-left: 6px; background-image: url(images/vbox/select_file_16px.png)" onClick="wizardExportApplianceBrowseLocation()" />
+					</tr>
+					<tr>
+						<th width='1%'><span class='translate'>Format:</span></th>
+						<td>
+							<select name='wizardExportApplianceFormat'>
+								<option value="ovf-0.9">OVF 0.9</option>
+								<option value="ovf-1.0" selected>OVF 1.0</option>
+								<option value="ovf-2.0">OVF 2.0</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td colspan='2'>
+							<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceManifest'/>
+								<span class='translate'>Write Manifest file</span></label>	
 						</td>
 					</tr>
 				</table>
-			</td>
-		</tr>
-		<tr style='vertical-align: top; height: 1%;'>
-			<!-- File options -->
-			<td colspan='2'>
-					<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceLegacy'/>
-						<span class='translate'>Write legacy OVF 0.9</span></label>
-			</td>
-		</tr>
-		<tr style='vertical-align: top; height: 1%;'>
-			<td colspan='2'>	
-					<label><input type='checkbox' class='vboxCheckbox' name='wizardExportApplianceManifest'/>
-						<span class='translate'>Write Manifest file</span></label>	
 			</td>
 		</tr>
 	</table>
@@ -72,6 +71,9 @@
 
 
 <script type='text/javascript'>
+
+//Add format options
+$(document.forms['frmwizardExportAppliance'].wizardExportApplianceFormat).find('option').html(function(i,h){return trans(h,'UIWizardExportApp');});
 
 
 // Load list of exportable machines
@@ -162,7 +164,7 @@ function wizardExportApplianceBrowseLocation() {
 		loc = loc.replace(r,'');
 	} else {
 		// no path set
-		loc = $('#vboxPane').data('vboxConfig').version.settingsFilePath.substring(0,$('#vboxPane').data('vboxConfig').version.settingsFilePath.length - 27);
+		loc = vboxDirname($('#vboxPane').data('vboxConfig').version.settingsFilePath) + $('#vboxPane').data('vboxConfig').DSEP;
 	}
 	vboxFileBrowser(loc,function(f){
 		if(!f) return;
@@ -204,7 +206,7 @@ function vboxWizardExportApplianceOVFName() {
 	if(jQuery.trim($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val())) {
 		name = vboxDirname(jQuery.trim($(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val())) + $('#vboxPane').data('vboxConfig').DSEP + name + '.ova';
 	} else {
-		name = $('#vboxPane').data('vboxConfig').version.settingsFilePath.substring(0,$('#vboxPane').data('vboxConfig').version.settingsFilePath.length - 27) + $('#vboxPane').data('vboxConfig').DSEP + name + '.ova';
+		name = vboxDirname($('#vboxPane').data('vboxConfig').version.settingsFilePath) + $('#vboxPane').data('vboxConfig').DSEP + name + '.ova';
 	}
 	
 	$(document.forms['frmwizardExportAppliance'].elements.wizardExportApplianceLocation).val(name);

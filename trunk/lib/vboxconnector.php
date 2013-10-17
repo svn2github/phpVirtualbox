@@ -1335,6 +1335,7 @@ class vboxconnector {
 		$cm = new CloneMode(null,$args['vmState']);
 		$state = $cm->ValueMap[$args['vmState']];
 
+		
 		$opts = array();
 		if(!$args['reinitNetwork']) $opts[] = 'KeepAllMACs';
 		if($args['link']) $opts[] = 'Link';
@@ -2731,7 +2732,7 @@ class vboxconnector {
 		}
 
 		/* @var $progress IProgress */
-		$progress = $app->write(($args['format'] ? $args['format'] : 'ovf-1.0'),($args['manifest'] ? array('CreateManifest') : array()),$args['file']);
+		$progress = $app->write($args['format'],($args['manifest'] ? array('CreateManifest') : array()),$args['file']);
 		$app->releaseRemote();
 
 		// Does an exception exist?
@@ -4772,10 +4773,8 @@ class vboxconnector {
 		/* @var $src IMedium */
 		$src = $this->vbox->openMedium($args['src'],'HardDisk');
 
-		$mv = new MediumVariant();
-
-		$type = array(($args['type'] == 'fixed' ? $mv->ValueMap['Fixed'] : $mv->ValueMap['Standard']));
-		if($args['split']) $type[] = $mv->ValueMap['VmdkSplit2G'];
+		$type = array(($args['type'] == 'fixed' ? 'Fixed' : 'Standard'));
+		if($args['split']) $type[] = 'VmdkSplit2G';
 
 		/* @var $progress IProgress */
 		$progress = $src->cloneTo($target->handle,$type,null);
@@ -4910,10 +4909,9 @@ class vboxconnector {
 
 		$format = strtoupper($args['format']);
 
-		$mv = new MediumVariant();
-		$type = array(($args['type'] == 'fixed' ? $mv->ValueMap['Fixed'] : $mv->ValueMap['Standard']));
-		if($args['split']) $type[] = $mv->ValueMap['VmdkSplit2G'];
-
+		$type = array(($args['type'] == 'fixed' ? 'Fixed' : 'Standard'));
+		if($args['split']) $type[] = 'VmdkSplit2G';
+		
 		/* @var $hd IMedium */
 		$hd = $this->vbox->createHardDisk($format,$args['file']);
 

@@ -155,7 +155,7 @@ function vboxSettingsGlobalNetworkNatPortForwardingEdit(td,type) {
 			/* IPs */
 			case 2:
 			case 4:
-				return (vboxValidateCtrl(event.keyCode) || vboxValidateIP(event.keyCode)); 
+				return true; 
 				break;
 			/* ports */
 			case 3:

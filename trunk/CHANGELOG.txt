@@ -3,6 +3,14 @@
 -------------------------------------
 VirtualBox 4.3.x support.
 
+Fixed behavior when a VM is inaccessible.
+
+Fixed Clone VM Wizard bug that would not keep MAC addresses even
+when 'Reinitialize MAC address...' was not set
+https://sourceforge.net/p/phpvirtualbox/bugs/3/
+
+Fixed bug that would not allow a VM to be powered off if it stuck
+https://sourceforge.net/p/phpvirtualbox/bugs/5/
 
 -------------------------------------
 	4.2-8	2013-10-15

@@ -509,7 +509,7 @@ function __vboxDisplayDetailsData(data, multiSelect, targetDiv, skipTable) {
 			
 			var l = new vboxLoader();
 			l.showLoading();
-			$.when(vboxVMDataMediator.refreshVMData(e.data.vmid)).done(function(){
+			$.when(vboxVMDataMediator.refreshVMData(e.data.vmid)).always(function(){
 				l.removeLoading();	
 			});
 			

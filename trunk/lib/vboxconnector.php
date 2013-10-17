@@ -3475,7 +3475,7 @@ class vboxconnector {
 			if(!$machine->accessible) {
 
 				return array(
-					'name' => $machine->name,
+					'name' => $machine->id,
 					'state' => 'Inaccessible',
 					'OSTypeId' => 'Other',
 					'id' => $machine->id,
@@ -3953,6 +3953,28 @@ class vboxconnector {
 
 			try {
 				
+				if(!$machine->accessible) {
+					
+					$vmlist[] = array(
+						'name' => $machine->id,
+						'state' => 'Inaccessible',
+						'OSTypeId' => 'Other',
+						'id' => $machine->id,
+						'sessionState' => 'Inaccessible',
+						'accessible' => 0,
+						'accessError' => array(
+							'resultCode' => $this->_util_resultCodeText($machine->accessError->resultCode),
+							'component' => $machine->accessError->component,
+							'text' => $machine->accessError->text),
+						'lastStateChange' => 0,
+						'groups' => array(),
+						'currentSnapshot' => ''
+								
+					);
+					
+					continue;
+				}
+								
 				if($this->settings->phpVboxGroups) {
 					$groups = explode(',',$machine->getExtraData(vboxconnector::phpVboxGroupKey));
 					if(!is_array($groups) || (count($groups) == 1 && !$groups[0])) $groups = array("/");
@@ -3989,6 +4011,7 @@ class vboxconnector {
 						'id' => $machine->id,
 						'sessionState' => 'Inaccessible',
 						'lastStateChange' => 0,
+						'groups' => array(),
 						'currentSnapshot' => ''
 					);
 

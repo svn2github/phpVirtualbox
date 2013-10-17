@@ -2206,6 +2206,9 @@ $(document).ready(function(){
 
 						redrawVMs[redrawVMs.length] = vmid;
 						
+						// Make sure VM has root group at least
+						if(data.groups.length == 0) data.groups = ['/'];
+						
 						// Remove from groups if they have changed
 						var currGroups  = vboxChooser.getGroupsForVM(vmid);
 						var groupDiff = $(currGroups).not(data.groups);

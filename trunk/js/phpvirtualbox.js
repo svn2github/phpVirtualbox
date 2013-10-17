@@ -1724,7 +1724,7 @@ var vboxVMActions = {
 					
 					for(var i = 0; i < vms.length; i++) {
 						
-						if(vboxVMStates.isPoweredOff(vms[i])) {
+						if(vboxVMStates.isPoweredOff(vms[i]) || vboxVMStates.isInaccessible(vms[i])) {
 	
 							// Remove each selected vm
 							$.when(vms[i].name, vboxAjaxRequest('machineRemove',
@@ -1753,7 +1753,7 @@ var vboxVMActions = {
 				var vmNames = [];
 				var vms = vboxChooser.getSelectedVMsData();
 				for(var i = 0; i < vms.length; i++) {
-					if(vboxVMStates.isPoweredOff(vms[i]) && !vboxChooser.vmHasUnselectedCopy(vms[i].id)) {
+					if((vboxVMStates.isPoweredOff(vms[i]) || vboxVMStates.isInaccessible(vms[i])) && !vboxChooser.vmHasUnselectedCopy(vms[i].id)) {
 						vmNames[vmNames.length] = vms[i].name;
 					}
 				}
@@ -1772,7 +1772,7 @@ var vboxVMActions = {
     	},
     	enabled: function () {
     		if(!vboxChooser._editable) return false;
-    		return (vboxChooser.isSelectedInState('PoweredOff'));
+    		return (vboxChooser.isSelectedInState('PoweredOff') || vboxChooser.isSelectedInState('Inaccessible'));
     	}
     },
     
@@ -4633,7 +4633,12 @@ var vboxVMStates = {
 	isRunning: function(vm) {
 		return (vm && jQuery.inArray(vm.state, ['Running','LiveSnapshotting','Teleporting']) > -1);
 	},
-	
+
+	/* Return whether or not vm is inaccessible */
+	isInaccessible: function(vm) {
+		return (vm && !vm.accessible);
+	},
+
 	/* Return whether or not a vm is stuck */
 	isStuck: function (vm) {
 		return (vm && vm.state == 'Stuck');

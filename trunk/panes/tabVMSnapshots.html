@@ -313,28 +313,6 @@ var vboxSnapshotButtons = [
   	  	}
   	},
   	{
-  		'name' : 'clone',
-  		'label' : trans('Clone...','UIActionPool'),
-  		'icon' : 'vm_clone',
-  		'separator' : true,
-  		'enabled' : function(item) { 
-  			var vm = vboxChooser.getSingleSelected();
-  			return (item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && !vboxVMStates.isPaused(vm) && !vboxVMStates.isRunning(vm));
-  		},
-  		'click' : function () {
-
-  			var vm = vboxChooser.getSingleSelected();
-  			
-  			// Current snapshot
-  	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
-  			
-  	  		new vboxWizardCloneVMDialog({'vm':vm,'snapshot':(snapshot.state == 'current' ? undefined : snapshot)}).run();
-  			
-  	  	},
-  		'separator' : true
-  	},
-  	
-  	{
   		'name' : 'show_snapshot_details',
   		'label' : trans('Show Details','VBoxSnapshotsWgt'),
   		'icon' : 'snapshot_show_details',
@@ -416,10 +394,30 @@ var vboxSnapshotButtons = [
 				$('#vboxSnapshotDetails').dialog({'closeOnEscape':false,'width':'600px','height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/snapshot_show_details_16px.png" class="vboxDialogTitleIcon" /> '+trans('Details of %1 (%2)','VBoxSnapshotDetailsDlg').replace('%1',$('<div />').text(snapshot.name).html()).replace('%2',vm.name)});
 			};
 			l.run();
-  	  	},
-  	  'separator' : true
-  	}
+  	  	}
+  	},
+  	{
+  		'name' : 'clone',
+  		'label' : trans('Clone...','UIActionPool'),
+  		'icon' : 'vm_clone',
+  		'separator' : true,
+  		'enabled' : function(item) { 
+  			var vm = vboxChooser.getSingleSelected();
+  			return (item && $(item).data('vboxSnapshot') && $(item).data('vboxSnapshot').name && !vboxVMStates.isPaused(vm) && !vboxVMStates.isRunning(vm));
+  		},
+  		'click' : function () {
+
+  			var vm = vboxChooser.getSingleSelected();
+  			
+  			// Current snapshot
+  	  		var snapshot = $('#vboxSnapshotList').find('div.vboxListItemSelected').first().parent().data('vboxSnapshot');
+  			
+  	  		new vboxWizardCloneVMDialog({'vm':vm,'snapshot':(snapshot.state == 'current' ? undefined : snapshot)}).run();
+  			
+  	  	}
+  	},
   	
+
   	
 ];
 

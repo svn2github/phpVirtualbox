@@ -1,5 +1,5 @@
 -------------------------------------
-	4.3-0	
+	4.3-0	2013-10-17
 -------------------------------------
 VirtualBox 4.3.x support.
 
@@ -1031,7 +1031,7 @@ GUI.
 Some features of the Virtual Media Manager have been removed to
 mimic the one in the VirtualBox GUI.
 
-Changed versioning schema.
+Changed versioning scheme.
 
 New configuration model where config.php-example is distributed
 instead of config.php. This should allow for persistent user
@@ -1073,11 +1073,11 @@ in user's PHP config.
 Fixed bug that would not display a list of internal networks
 in VM network settings.
 
-Network settings are now (somewhat) changable while a VM is
+Network settings are now (somewhat) changeable while a VM is
 running. This mimics the same functionality as the VirtualBox
 GUI.
 
-Shared folder settings are now changable while a VM is
+Shared folder settings are now changeable while a VM is
 running.
 
 Added VirtualBox guest additions installation feature.
@@ -1217,7 +1217,7 @@ Fixed Host Details bug that would not display the VirtualBox
 host server's details when it is selected in the list of vms.
 
 Fixed bug in File -> Preferences that would not correctly
-reflect a change made to any prefrences on the General tab.
+reflect a change made to any preferences on the General tab.
 
 Workaround for Console tab resize bug that would disconnect from
 an existing console session when the window was resized. Now, it
@@ -1303,7 +1303,7 @@ GUI, and so appears to be a bug in VirtualBox itself.
 
 Added file type icons to file / folder browser.
 
-Fixed ineternal network dropdown list in Virtual Machine
+Fixed internal network dropdown list in Virtual Machine
 settings.
 
 -------------------------------------

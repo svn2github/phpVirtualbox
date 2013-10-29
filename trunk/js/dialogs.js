@@ -1030,8 +1030,8 @@ function vboxGlobalPrefsDialog() {
 	var data = new Array(
 		{'fn':'hostOnlyInterfacesGet','callback':function(d){$('#vboxSettingsDialog').data('vboxHostOnlyInterfaces',d.responseData);}},
 		{'fn':'vboxSystemPropertiesGet','callback':function(d){$('#vboxSettingsDialog').data('vboxSystemProperties',d.responseData);}},
-		{'fn':'getUsers','callback':function(d){$('#vboxSettingsDialog').data('vboxUsers',d.responseData);}},
-		{'fn':'vboxNATNetworksGet','callback':function(d){$('#vboxSettingsDialog').data('vboxNATNetworks',d.responseData);}}
+		{'fn':'vboxNATNetworksGet','callback':function(d){$('#vboxSettingsDialog').data('vboxNATNetworks',d.responseData);}},
+		{'fn':'getUsers','callback':function(d){$('#vboxSettingsDialog').data('vboxUsers',d.responseData);}}
 	);	
 	
 	// Check for noAuth setting

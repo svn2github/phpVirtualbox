@@ -301,7 +301,7 @@ var vboxChooser = {
 				
 		// Enforce VM ownership
         if($('#vboxPane').data('vboxConfig').enforceVMOwnership && !$('#vboxPane').data('vboxSession').admin) {
-        	d.vmlist = jQuery.grep(vmlist,function(vm,i){
+        	vmlist = jQuery.grep(vmlist,function(vm,i){
         		return (vm.owner == $('#vboxPane').data('vboxSession').user);
         	});
 		}

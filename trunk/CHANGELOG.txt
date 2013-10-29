@@ -2,6 +2,14 @@
 	4.3-1	
 -------------------------------------
 
+Fixed bug that would not stop the Global Preferences dialog from
+being displayed when $noAuth was enabled or some other auth method
+was set in config.php
+https://sourceforge.net/p/phpvirtualbox/bugs/7/
+
+Fixed JavaScript error when $enforceVMOwnership is enabled
+https://sourceforge.net/p/phpvirtualbox/bugs/9/
+
 -------------------------------------
 	4.3-0	2013-10-17
 -------------------------------------

@@ -10,6 +10,10 @@ https://sourceforge.net/p/phpvirtualbox/bugs/7/
 Fixed JavaScript error when $enforceVMOwnership is enabled
 https://sourceforge.net/p/phpvirtualbox/bugs/9/
 
+Updated the links to point to new Sourceforge home instead of
+googlecode
+http://sourceforge.net/p/phpvirtualbox/bugs/11/
+
 -------------------------------------
 	4.3-0	2013-10-17
 -------------------------------------

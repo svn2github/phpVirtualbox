@@ -4484,7 +4484,7 @@ var vboxStorage = {
 	SCSI : {
 		maxPortCount : 16,
 		maxDevicesPerPortCount : 1,
-		driveTypes : ['disk'],
+		driveTypes : ['dvd','disk'],
 		types : ['LsiLogic','BusLogic'],
 		ignoreFlush : true,
 		slotName : function(p,d) { return trans('SCSI Port %1','VBoxGlobal').replace('%1',p); },
@@ -4500,7 +4500,7 @@ var vboxStorage = {
 		maxPortCount : 8,
 		maxDevicesPerPortCount : 1,
 		types : ['LsiLogicSas'],
-		driveTypes : ['disk'],
+		driveTypes : ['dvd','disk'],
 		slotName : function(p,d) { return trans('SAS Port %1','VBoxGlobal').replace('%1',p); },
 		slots : function() {
 			var s = {};

@@ -16,7 +16,7 @@ http://sourceforge.net/p/phpvirtualbox/bugs/11/
 
 Updated guest OS type icons
 
-Allow SATA and SAS controllers to have CD/DVD drives
+Allow SCSI and SAS controllers to have CD/DVD drives
 
 -------------------------------------
 	4.3-0	2013-10-17

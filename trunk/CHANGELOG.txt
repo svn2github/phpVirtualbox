@@ -1,5 +1,5 @@
 -------------------------------------
-	4.3-1	
+	4.3-1	2014-01-02
 -------------------------------------
 
 Fixed bug that would not stop the Global Preferences dialog from

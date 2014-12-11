@@ -15,6 +15,7 @@
 
 	<!-- Icon && title -->
 	<link rel="shortcut icon" href="images/vbox/OSE/VirtualBox_win.ico"/>
+	<link rel="icon" href="images/vbox/OSE/VirtualBox_win.ico"/>
 	<title>phpVirtualBox - VirtualBox Web Console</title>
 
 	
@@ -45,7 +46,6 @@
     <script type="text/javascript" src="js/datamediator.js"></script>
 	<script type="text/javascript" src="js/dialogs.js"></script>
 	<script type="text/javascript" src="js/canvasimages.js"></script>
-	<script type="text/javascript" src="js/phptest.php"></script>
 
 
 	<!-- Main Setup -->
@@ -66,29 +66,19 @@
 			 
 			 
 			/**
-			 * Check that PHP is being parsed.
-			 * @see js/phptest.php
+			 * Check that someone isn't accessing this from their local filesystem
 			 */
-			if(typeof __vboxPHP == 'undefined' || __vboxPHP === false) {
+			try {
+				if(window.location.toString().search('file:') == 0) {
+					vboxAlert("You are accessing phpVirtualBox from your local filesystem.\
+							phpVirtualBox must be accessed through your web browser. E.g. \
+							http://localhost/phpVirtualBox (its actual URL may vary).");
+					return;
+				}
+			} catch(err) {
+				// noop
+			}			
 				
-				// Check for file: prefix
-				try {
-					if(window.location.toString().search('file:') == 0) {
-						vboxAlert("You are accessing phpVirtualBox from your local filesystem.\
-								phpVirtualBox must be accessed through your web browser. E.g. \
-								http://localhost/phpVirtualBox (its actual URL may vary).");
-						return;
-					}
-				} catch(err) {
-					// noop
-				}			
-				
-				vboxAlert("PHP is not being parsed by your web server. Make sure that \
-						  PHP is installed.<p>Unable to continue.</p><i>Note: you may also see this \
-						  message if you have opened index.html in your web browser directly rather than \
-						  accessing it through your web server.</i>",{'width':'auto'});
-				return;
-			}
 			
 			/*
 			 * If everything loaded correctly, trans() should be defined in

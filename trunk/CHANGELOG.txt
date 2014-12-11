@@ -2,6 +2,24 @@
 	4.3-2
 -------------------------------------
 
+Updated documentation to remove all googlecode.com references.
+
+Changing the guest OS type now updates LongMode CPU Feature of VM.
+https://sourceforge.net/p/phpvirtualbox/bugs/31/
+
+Removed phptest.php and related check to see if PHP parsing works
+correctly. This gives a false negative result in some browsers
+/ web server configurations.
+https://sourceforge.net/p/phpvirtualbox/bugs/32/
+
+Copied missing image from VirtualBox src.
+
+Fixed bug that would incorrectly determine the name of some images
+causing 404s in web server logs and broken images.
+
+Fixed bug in global NAT network settings that would not save the
+'Active' checkbox setting.
+
 -------------------------------------
 	4.3-1	2014-01-02
 -------------------------------------

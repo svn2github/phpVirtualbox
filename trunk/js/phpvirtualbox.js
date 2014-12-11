@@ -168,6 +168,8 @@ var vboxHostDetailsSections = {
 			
 			var netRows = [];
 			
+			d['networkInterfaces'].sort(strnatcasecmp);
+			
 			for(var i = 0; i < d['networkInterfaces'].length; i++) {		
 				
 				/* Interface Name */
@@ -3158,7 +3160,7 @@ function vboxToolbarSingle(button) {
 	this.parentClass = vboxToolbarSmall;
 	this.parentClass();
 	this.buttons = [ button ];
-	this.disabledString = 'dis'
+	this.disabledString = 'disabled'
 	this._buttonElement = this.buttonElement; /* copy orig */
 	
 	/**

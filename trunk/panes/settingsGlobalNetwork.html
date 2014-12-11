@@ -393,7 +393,7 @@ function vboxSettingsGlobalNATNetworksAddNet(net) {
 	$('<tr />').data({'NATNetwork':net}).hoverClass('vboxHover').addClass('vboxListItem').append(
 		$('<td />').append(
 				$('<input />').attr({'type':'checkbox'}).click(function(){
-					$(this).closest('tr').data('NATNetwork').enabled = this.checked;		
+					$(this).closest('tr').data('NATNetwork').enabled = (this.checked ? 1 : 0);		
 					$(this).closest('tr').data('NATNetwork')._modified = true;
 					}).prop('checked', net.enabled)
 				

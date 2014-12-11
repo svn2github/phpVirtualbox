@@ -3,7 +3,8 @@ $Id$
 
 This outlines in-depth the process used by phpVirtualBox's translation mechanisms and describes
 how a developer may add new translations. If the reader, as an end-user simply wishes to translate
-phpVirtualBox into a new language, see: http://code.google.com/p/phpvirtualbox/wiki/Translation
+phpVirtualBox into a new language, see:
+http://sourceforge.net/p/phpvirtualbox/wiki/Home/#translating-phpvirtualbox
 
 .. I) phpVirtualBox translation mechanism
 ....... a) Contexts

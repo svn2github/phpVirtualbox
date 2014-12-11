@@ -17,8 +17,9 @@ Rename config.php-example to config.php and edit as needed.
 
 Default login is username: admin password: admin
 
-Please see the wiki located at http://code.google.com/p/phpvirtualbox/ for
-detailed installation and configuration instructions.
+Please see the wiki located at
+http://sourceforge.net/p/phpvirtualbox/wiki/Home/
+for detailed installation and configuration instructions.
 
 PASSWORD RECOVERY:
 

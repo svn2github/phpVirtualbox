@@ -1,5 +1,5 @@
 -------------------------------------
-	4.3-2
+	4.3-2	2014-12-16
 -------------------------------------
 
 Updated documentation to remove all googlecode.com references.

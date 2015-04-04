@@ -75,7 +75,7 @@ function vboxAjaxRequest(fn,params) {
 	if($('#vboxPane').data('vboxFatalError'))
 		return def.reject();
 	
-	$.when($.post('lib/ajax.php', $.extend(true,{},(params ? params : {}),{'fn':fn}),undefined,"json")
+	$.when($.post(vboxEndpointConfig.api, $.extend(true,{},(params ? params : {}),{'fn':fn}),undefined,"json")
 	
 		// Run on error
 		.fail(function(d,etext,xlr,d2) {

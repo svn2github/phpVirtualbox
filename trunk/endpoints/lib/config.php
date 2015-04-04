@@ -14,7 +14,7 @@
 /*
  * This version of phpVirtualBox
  */
-define('PHPVBOX_VER', '4.3-3');
+define('PHPVBOX_VER', '5.0-0');
 
 class phpVBoxConfigClass {
 
@@ -148,7 +148,7 @@ class phpVBoxConfigClass {
 	 */
 	function __construct() {
 		
-		@include_once(dirname(dirname(__FILE__)).'/config.php');
+		@include_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 		
 		$ep = error_reporting(0);
 	

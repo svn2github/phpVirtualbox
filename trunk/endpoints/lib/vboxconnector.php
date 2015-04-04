@@ -4815,7 +4815,7 @@ class vboxconnector {
 
 		$format = strtoupper($args['format']);
 		/* @var $target IMedium */
-		$target = $this->vbox->createHardDisk($format,$args['location']);
+		$target = $this->vbox->createMedium($format, $args['location'], 'ReadWrite', 'HardDisk');
 		$mid = $target->id;
 
 		/* @var $src IMedium */
@@ -4888,7 +4888,7 @@ class vboxconnector {
 
 		// Create disk
 		/* @var $hd IMedium */
-		$hd = $this->vbox->createHardDisk('iSCSI',$name);
+		$hd = $this->vbox->createMedium('iSCSI',$name, 'ReadWrite', 'HardDisk');
 
 		if($args['port']) $args['server'] .= ':'.intval($args['port']);
 
@@ -4961,7 +4961,7 @@ class vboxconnector {
 		if($args['split']) $type[] = 'VmdkSplit2G';
 		
 		/* @var $hd IMedium */
-		$hd = $this->vbox->createHardDisk($format,$args['file']);
+		$hd = $this->vbox->createMedium($format, $args['file'], 'ReadWrite', 'HardDisk');
 
 		/* @var $progress IProgress */
 		$progress = $hd->createBaseStorage(intval($args['size'])*1024*1024,$type);

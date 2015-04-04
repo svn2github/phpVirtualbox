@@ -28,7 +28,7 @@ var vboxChooser = {
 	vms : {},
 	
 	// VM tool tip
-	_vmToolTip : trans('<nobr>%1<br></nobr><nobr>%2 since %3</nobr><br><nobr>Session %4</nobr>','UIVMListView'),
+	_vmToolTip : '<nobr>%1<br></nobr><nobr>%2 since %3</nobr><br><nobr>Session %4</nobr>',
 	
 	// Anchor element
 	_anchorid : null,
@@ -687,7 +687,9 @@ var vboxChooser = {
 			
 
 			// Table gets tool tips
-			tip = vboxChooser._vmToolTip.replace('%1',('<b>'+$('<span />').text(vmn.name).html()+'</b>'+(vmn.currentSnapshotName ? ' (' + $('<span />').text(vmn.currentSnapshotName).html() + ')' : '')))
+			tip = trans(vboxChooser._vmToolTip, 'UIVMListView').replace('%1',('<b>'+$('<span />')
+				.text(vmn.name).html()+'</b>'+(vmn.currentSnapshotName ? ' (' + $('<span />')
+						.text(vmn.currentSnapshotName).html() + ')' : '')))
 				.replace('%2',trans(vboxVMStates.convert(vmn.state),'VBoxGlobal'))
 				.replace('%3',vboxDateTimeString(vmn.lastStateChange))
 				.replace('%4',trans(vmn.sessionState,'VBoxGlobal').toLowerCase());

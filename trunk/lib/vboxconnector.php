@@ -3347,7 +3347,7 @@ class vboxconnector {
 			'operatingSystem' => $host->operatingSystem,
 			'OSVersion' => $host->OSVersion,
 			'memorySize' => $host->memorySize,
-			'acceleration3DAvailable' => 0, #$host->acceleration3DAvailable,
+			'acceleration3DAvailable' => intval($host->acceleration3DAvailable),
 			'cpus' => array(),
 			'networkInterfaces' => array(),
 			'DVDDrives' => array(),

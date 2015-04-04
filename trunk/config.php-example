@@ -181,7 +181,7 @@ var $nicMax = 4;
 #var $startStopConfig = true;
 
 // Authentication library.
-var $authLib = 'Builtin';
+// var $authLib = 'Builtin';
 
 // VM ownership
 #var $enforceVMOwnership = true;
@@ -211,6 +211,11 @@ LPT support may or may not work for you.
 */
 #var $enableHDFlushConfig = true;
 
+/*
+ * Event listener timeout in seconds. This is an advanced option that most people will
+ * probably not need to change.
+ */
+#var $eventListenerTimeout = 20;
 
 /* END SETTINGS  */
 

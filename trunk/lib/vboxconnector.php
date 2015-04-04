@@ -13,6 +13,12 @@
 class vboxconnector {
 
 	/**
+	 * Error with safe HTML
+	 * @var integer
+	 */
+	const PHPVB_ERRNO_HTML = 1;
+	
+	/**
 	 * Error number describing a fatal error
 	 * @var integer
 	 */
@@ -123,7 +129,11 @@ class vboxconnector {
 
 		// Are default settings being used?
 		if(@$this->settings->warnDefault) {
-			throw new Exception("No configuration found. Rename the file <b>config.php-example</b> in phpVirtualBox's folder to <b>config.php</b> and edit as needed.<p>For more detailed instructions, please see the installation wiki on phpVirtualBox's web site. <p><a href='http://sourceforge.net/p/phpvirtualbox/wiki/Home/' target=_blank>http://sourceforge.net/p/phpvirtualbox/wiki/Home/</a>.</p>",vboxconnector::PHPVB_ERRNO_FATAL);
+			throw new Exception("No configuration found. Rename the file <b>config.php-example</b> in phpVirtualBox's folder to ".
+					"<b>config.php</b> and edit as needed.<p>For more detailed instructions, please see the installation wiki on ".
+					"phpVirtualBox's web site. <p><a href='http://sourceforge.net/p/phpvirtualbox/wiki/Home/' target=_blank>".
+					"http://sourceforge.net/p/phpvirtualbox/wiki/Home/</a>.</p>",
+						(vboxconnector::PHPVB_ERRNO_FATAL + vboxconnector::PHPVB_ERRNO_HTML));
 		}
 
 		// Check for SoapClient class
@@ -1862,11 +1872,9 @@ class vboxconnector {
 			* @remarks This must match GMMR0Init; currently we only support page fusion on
 			 *          all 64-bit hosts except Mac OS X */
 			
-			if(intval($this->vbox->host->getProcessorFeature('LongMode')) && stripos($this->vbox->host->operatingSystem,"darwin")===false) {
-				try {
-					$m->pageFusionEnabled = intval($args['pageFusionEnabled']);
-				} catch (Exception $null) {
-				}
+			if(intval($this->vbox->host->getProcessorFeature('LongMode'))) {
+
+				$m->pageFusionEnabled = intval($args['pageFusionEnabled']);
 			}
 
 			$m->HPETEnabled = intval($args['HPETEnabled']);
@@ -1887,6 +1895,10 @@ class vboxconnector {
 		
 		$m->setExtraData('GUI/SaveMountedAtRuntime', ($args['GUI']['SaveMountedAtRuntime'] == 'no' ? 'no' : 'yes'));
 
+		// Video
+		$m->accelerate3DEnabled = intval($args['accelerate3DEnabled']);
+		$m->accelerate2DVideoEnabled = intval($args['accelerate2DVideoEnabled']);
+		
 		// VRDE settings
 		try {
 			if($m->VRDEServer && $this->vbox->systemProperties->defaultVRDEExtPack) {
@@ -3335,6 +3347,7 @@ class vboxconnector {
 			'operatingSystem' => $host->operatingSystem,
 			'OSVersion' => $host->OSVersion,
 			'memorySize' => $host->memorySize,
+			'acceleration3DAvailable' => 0, #$host->acceleration3DAvailable,
 			'cpus' => array(),
 			'networkInterfaces' => array(),
 			'DVDDrives' => array(),

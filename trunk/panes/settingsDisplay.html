@@ -39,6 +39,14 @@
 
 		</td>
 	</tr>
+	<tr>
+		<th><span class='translate'>Extended Features:</span></th>
+		<td><label><input type='checkbox' class='vboxCheckbox' name='vboxSettingsDisplay3d' /> <span class='translate'>Enable 3D Acceleration</span></label></td>
+	</tr>
+	<tr>
+		<th></th>
+		<td><label><input type='checkbox' class='vboxCheckbox' name='vboxSettingsDisplay2d' /> <span class='translate'>Enable 2D Video Acceleration</span></label></td>
+	</tr>
 </table>
 </div>
 
@@ -99,6 +107,9 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 
 	$('#vboxSettingsDisplayMemory').slider('value',parseInt($('#vboxSettingsDialog').data('vboxMachineData').VRAMSize));
 	
+	document.forms['frmVboxSettings'].vboxSettingsDisplay3d.checked = ($('#vboxSettingsDialog').data('vboxMachineData').accelerate3DEnabled);
+	document.forms['frmVboxSettings'].vboxSettingsDisplay2d.checked = ($('#vboxSettingsDialog').data('vboxMachineData').accelerate2DVideoEnabled);
+	
 	var p = $('#vboxSettingsTabDisplayVideo').parent().children('div'); 
 	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 		$(p).find('tr:not(.vboxRunningEnabled)').find('span').addClass('disabled');
@@ -109,8 +120,15 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 		$(p).find('tr:not(.vboxRunningEnabled)').find('input,select,textarea').removeClass('disabled').prop('disabled',false);
 		$('#vboxSettingsDisplayMemory').slider('enable');
 		
+		if(!$('#vboxSettingsDialog').data('vboxHostDetails').acceleration3DAvailable) {
+	        $(document.forms['frmVboxSettings'].vboxSettingsDisplay3d).addClass('disabled').prop('disabled', true)
+	           .parent().addClass('disabled');
+		} else {
+			$(document.forms['frmVboxSettings'].vboxSettingsDisplay3d).removeClass('disabled').prop('disabled', false)
+			 .parent().removeClass('disabled');
+		}
 	}
-
+	
 
 	/*
 	 * No VRDE?
@@ -158,6 +176,9 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 $('#vboxSettingsDialog').on('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxMachineData').VRAMSize = $(document.forms['frmVboxSettings'].vboxSettingsDisplayMemoryValue).val();
+
+	$('#vboxSettingsDialog').data('vboxMachineData').accelerate3DEnabled = (document.forms['frmVboxSettings'].vboxSettingsDisplay3d.checked ? 1 : 0);
+	$('#vboxSettingsDialog').data('vboxMachineData').accelerate2DVideoEnabled = (document.forms['frmVboxSettings'].vboxSettingsDisplay2d.checked ? 1 : 0);
 
 	if($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer && $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.VRDEExtPack) {
 		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.ports = document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEPort.value;

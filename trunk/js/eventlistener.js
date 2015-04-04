@@ -16,43 +16,51 @@
  */
 var vboxEventListener = {
 	
+	// Timeout
+	timeout: 20,
+	
 	// Not initially running
-	_running : false,
+	_running: false,
 	
 	// persistent request data
 	_persist: {},
 
 	// List of machines to subscribe to at runtime
-	_subscribeList : [],
+	_subscribeList: [],
 	
 	// Watchdog to make sure vboxEventListener is still
 	// running and attempting to get events
-	_watchdog : {
-		lastRun : 0,
-		timer : window.setInterval(function() {
+	_watchdog: {
+		lastRun: 0,
+		start: function() {
+			window.setInterval(function() {
 			if(vboxEventListener._running && 
-					((new Date().getTime()/1000) - vboxEventListener._watchdog.lastRun > 20)) {
+					((new Date().getTime()/1000) - vboxEventListener._watchdog.lastRun > vboxEventListener.timeout)) {
 				phpVirtualBoxFailure(' (EventListener watchdog failure)');
 				vboxEventListener.stop();
 				window.clearInterval(vboxEventListener._watchdog.timer);
 			} 
-		}, 20000) // 20 seconds
+			}, vboxEventListener.timeout)
+		},
+		stop: function() {
+			window.clearInterval(vboxEventListener._watchdog.timer);
+		}
 	},
 		
 	// Since VirtualBox handles to event listener objects are persistent,
 	// calls using the same handle should be synchronous
-	_requestQueue : {
+	_requestQueue: {
 		
-		requests : [],
+		requests: [],
 		running: false,
 		
 		// run timer
-		timer : window.setInterval(function(){
+		timer: window.setInterval(function(){
 			vboxEventListener._requestQueue.run();
 		}, 5000), // 5 seconds
 		
 		// Add a request to the queue
-		addReq : function(q) {
+		addReq: function(q) {
 			
 			var d = $.Deferred();
 			
@@ -74,7 +82,7 @@ var vboxEventListener = {
 		},
 		
 		// Run a single request, removing it from the queue
-		runReq : function() {
+		runReq: function() {
 			var r = vboxEventListener._requestQueue.requests.shift();
 			if(r) {
 				$.when(r.request())
@@ -92,10 +100,14 @@ var vboxEventListener = {
 	 *  Start event listener loop
 	 *  @param {Array} vmlist - list of VM ids to subscribe to
 	 */
-	start : function(vmlist) {
+	start: function(vmlist) {
 		
 		// Already started?
 		if(vboxEventListener._running) return;
+		
+		// Get timeout if exists
+		if($('#vboxPane').data('vboxConfig').eventListenerTimeout)
+			vboxEventListener.timeout = $('#vboxPane').data('vboxConfig').eventListenerTimeout;
 		
 		vboxEventListener._running = true;
 		
@@ -105,6 +117,7 @@ var vboxEventListener = {
 		$.when(vboxAjaxRequest('subscribeEvents',{vms:vmlist})).done(function(d) {
 			vboxEventListener._persist = d.persist;
 			$.when(vboxEventListener._getEvents()).done(function(){
+				vboxEventListener._watchdog.start();
 				started.resolve();
 			});
 		});
@@ -118,7 +131,7 @@ var vboxEventListener = {
 	 * 
 	 * @param {String} vmid - ID of VM to subscribe to
 	 */
-	subscribeVMEvents : function(vmid) {
+	subscribeVMEvents: function(vmid) {
 		
 		// Push into list
 		vboxEventListener._subscribeList.push(vmid);
@@ -146,13 +159,15 @@ var vboxEventListener = {
 	/**
 	 *  Stop event listener loop and unsubscribe from events
 	 */
-	stop : function() {
+	stop: function() {
 		
 		if(!vboxEventListener._running)
 			return;
 		
 		window.clearTimeout(vboxEventListener._running);
 		vboxEventListener._running = false;
+		
+		vboxEventListener._watchdog.stop();
 		
 		// Unsubscribe from events. Returns a deferred object
 		return vboxEventListener._requestQueue.addReq(function(){
@@ -164,7 +179,7 @@ var vboxEventListener = {
 	/**
 	 * Main loop - get pending events
 	 */
-	_getEvents : function(){
+	_getEvents: function(){
 
 		// Don't do anything if we aren't running anymore
 		if(!vboxEventListener._running) return;

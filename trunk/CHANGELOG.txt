@@ -1,6 +1,12 @@
 -------------------------------------
 	4.3-3
 -------------------------------------
+Added 2d/3d video acceleration configuration options in VM
+settings
+
+Fixed guest OS icon for Linux 2.6 (32-bit)
+
+Added $eventListenerTimeout configuration option.
 
 -------------------------------------
 	4.3-2	2014-12-16

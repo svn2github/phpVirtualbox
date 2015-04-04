@@ -136,6 +136,12 @@ class phpVBoxConfigClass {
 	var $authConfig = array();
 	
 	/**
+	 * Event listener timeout in seconds.
+	 * @var integer
+	 */
+	var $eventListenerTimeout = 20;
+	
+	/**
 	 * Read user configuration, apply defaults, and do some sanity checking
 	 * @see ajax
 	 * @see vboxconnector

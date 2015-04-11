@@ -334,7 +334,9 @@ var vboxSnapshotButtons = [
 				$('#vboxSnapshotDetailsDesc').val(d.responseData.description);
 				
 				if(d.responseData.online) {
-					$('#vboxSnapshotSS').html('<a href="screen.php?vm='+vm.id+'&snapshot='+d.responseData.id+'&full=1" target="_blank"><img src="screen.php?vm='+vm.id+'&snapshot='+d.responseData.id+'" /></a>').show();
+					$('#vboxSnapshotSS').html('<a href="'+ vboxEndpointConfig.screen +'?vm='+vm.id+
+							'&snapshot='+d.responseData.id+'&full=1" target="_blank"><img src="'+vboxEndpointConfig.screen+'?vm='+
+									vm.id+'&snapshot='+d.responseData.id+'" /></a>').show();
 				} else {
 					$('#vboxSnapshotSS').empty().hide();
 				}

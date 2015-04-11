@@ -5,7 +5,7 @@
  *    separately maintained
  * @author Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
- * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
+ * @copyright Copyright (C) 2010-2015 Ian Moore (imoore76 at yahoo dot com)
  * 
  */
 
@@ -493,7 +493,7 @@ if(jQuery) (function($){
 				function showTree(c, t, fullpath) {
 					$(c).addClass('wait');
 					$(".jqueryFileTree.start").remove();
-					$.post(o.script, { 'dir': t, 'dirsOnly' : (o.dirsOnly ? 1 : 0), 'fullpath' : (fullpath ? 1 : 0)}, function(data) {
+					$.post(o.script, { 'dir': t, 'dirsOnly' : (o.dirsOnly ? true : false), 'fullpath' : (fullpath ? true : false)}, function(data) {
 						$(c).find('.start').html('');
 						$(c).removeClass('wait').append(data);
 						if( o.root == t ) $(c).find('UL:hidden').show(); else $(c).find('UL:hidden').slideDown({ duration: o.expandSpeed, easing: o.expandEasing });

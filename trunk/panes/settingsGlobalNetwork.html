@@ -393,7 +393,7 @@ function vboxSettingsGlobalNATNetworksAddNet(net) {
 	$('<tr />').data({'NATNetwork':net}).hoverClass('vboxHover').addClass('vboxListItem').append(
 		$('<td />').append(
 				$('<input />').attr({'type':'checkbox'}).click(function(){
-					$(this).closest('tr').data('NATNetwork').enabled = (this.checked ? 1 : 0);		
+					$(this).closest('tr').data('NATNetwork').enabled = this.checked;		
 					$(this).closest('tr').data('NATNetwork')._modified = true;
 					}).prop('checked', net.enabled)
 				
@@ -432,7 +432,7 @@ buttons[trans('OK','QIMessageBox')] = function(){
 	nic.IPV6NetworkMaskPrefixLength = $('#vboxSettingsGlobalNetIPv6Mask').val();
 	nic.dhcpServer = {};
 	nic.dhcpServer.networkName = nic.networkName;
-	nic.dhcpServer.enabled = ($('#vboxSettingsGlobalNetDHCPEnabled').prop('checked') ? 1 : 0);
+	nic.dhcpServer.enabled = $('#vboxSettingsGlobalNetDHCPEnabled').prop('checked');
 	nic.dhcpServer.IPAddress = $('#vboxSettingsGlobalNetServerAddress').val();
 	nic.dhcpServer.networkMask = $('#vboxSettingsGlobalNetServerMask').val();
 	nic.dhcpServer.lowerIP = $('#vboxSettingsGlobalNetLower').val();
@@ -504,12 +504,12 @@ buttons[trans('OK','QIMessageBox')] = function(){
 	var net = $('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first().data('NATNetwork');
 	
 	// Get Form Values
-	net.enabled = $('#vboxSettingsGlobalNATNetEnabled').prop('checked') ? 1 : 0;
+	net.enabled = $('#vboxSettingsGlobalNATNetEnabled').prop('checked');
 	net.networkName = $('#vboxSettingsGlobalNATNetName').val();
 	net.network = $('#vboxSettingsGlobalNATNetNetwork').val();
-	net.needDhcpServer = $('#vboxSettingsGlobalNATNetDHCP').prop('checked') ? 1 : 0;
-	net.IPv6Enabled = $('#vboxSettingsGlobalNATNetIPv6').prop('checked') ? 1 : 0;
-	net.advertiseDefaultIPv6RouteEnabled = $('#vboxSettingsGlobalNATNetIPv6Route').prop('checked') ? 1 : 0;
+	net.needDhcpServer = $('#vboxSettingsGlobalNATNetDHCP').prop('checked');
+	net.IPv6Enabled = $('#vboxSettingsGlobalNATNetIPv6').prop('checked');
+	net.advertiseDefaultIPv6RouteEnabled = $('#vboxSettingsGlobalNATNetIPv6Route').prop('checked');
 	net._modified = true;
 
 	$('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first().data('NATNetwork',net).find('input').prop('checked', net.enabled);

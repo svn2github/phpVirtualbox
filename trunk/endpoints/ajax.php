@@ -4,7 +4,7 @@
  * Accepts JSON or simple GET requests, and returns JSON data.
  * 
  * @author Ian Moore (imoore76 at yahoo dot com)
- * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
+ * @copyright Copyright (C) 2010-2015 Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
  * @package phpVirtualBox
  * @see vboxconnector
@@ -35,6 +35,7 @@ global $_SESSION;
  * Clean request
  */
 $vboxRequest = clean_request();
+
 
 global $response;
 $response = array('data'=>array('responseData'=>array()),'errors'=>array(),'persist'=>array(),'messages'=>array());
@@ -107,7 +108,7 @@ try {
 			
 			
 			// NOTE: Do not break. Fall through to 'getSession
-			if(!$vboxRequest['u'] || !$vboxRequest['p']) {
+			if(!$vboxRequest['params']['u'] || !$vboxRequest['params']['p']) {
 				break;	
 			}
 
@@ -118,7 +119,7 @@ try {
 
 			// Try / catch here to hide login credentials
 			try {
-				$settings->auth->login($vboxRequest['u'], $vboxRequest['p']);
+				$settings->auth->login($vboxRequest['params']['u'], $vboxRequest['parans']['p']);
 			} catch(Exception $e) {
 				throw new Exception($e->getMessage(), $e->getCode());
 			}
@@ -167,7 +168,8 @@ try {
 			session_init(true);
 			
 			$settings = new phpVBoxConfigClass();
-			$response['data']['success'] = $settings->auth->changePassword($vboxRequest['old'], $vboxRequest['new']);
+			$response['data']['success'] = $settings->auth->changePassword($vboxRequest['params']['old'], 
+					                                                       $vboxRequest['parans']['new']);
 
 			// We're done writing to session
 			if(function_exists('session_write_close'))
@@ -206,7 +208,7 @@ try {
 			if(!$_SESSION['admin']) break;
 	
 			$settings = new phpVBoxConfigClass();
-			$settings->auth->deleteUser($vboxRequest['u']);
+			$settings->auth->deleteUser($vboxRequest['params']['u']);
 			
 			$response['data']['success'] = 1;
 			break;
@@ -233,7 +235,7 @@ try {
 			if(!$_SESSION['admin']) break;
 			
 			$settings = new phpVBoxConfigClass();
-			$settings->auth->updateUser($vboxRequest, @$skipExistCheck);
+			$settings->auth->updateUser($vboxRequest['params'], @$skipExistCheck);
 						
 			$response['data']['success'] = 1;
 			break;
@@ -293,15 +295,15 @@ try {
 			/*
 			 *  Persistent request data
 			 */
-			if(is_array($vboxRequest['_persist'])) {
-				$vbox->persistentRequest = $vboxRequest['_persist'];
+			if(is_array($vboxRequest['persist'])) {
+				$vbox->persistentRequest = $vboxRequest['persist'];
 			}
 			
 			
 			/*
 			 * Call to vboxconnector
 			 */
-			$vbox->$vboxRequest['fn']($vboxRequest,array(&$response));
+			$vbox->$vboxRequest['fn']($vboxRequest['params'],array(&$response));
 			
 			
 			/*

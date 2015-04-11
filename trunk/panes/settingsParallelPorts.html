@@ -181,7 +181,7 @@ $('#vboxSettingsDialog').on('save',function(){
 		$('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].path = $(document.forms['frmVboxSettings'].elements['vboxSettingsPPortPath'+a]).val();
 		
 		// Enabled port
-		$('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].enabled = (document.forms['frmVboxSettings'].elements['vboxSettingsPPortEnabled'+a].checked ? 1 : 0);
+		$('#vboxSettingsDialog').data('vboxMachineData').parallelPorts[i].enabled = document.forms['frmVboxSettings'].elements['vboxSettingsPPortEnabled'+a].checked;
 
 
 	}

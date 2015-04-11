@@ -109,7 +109,7 @@ $('#vboxSettingsDialog').on('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.audioDriver = document.forms['frmVboxSettings'].vboxSettingsAudioDriver.value;
 	$('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.audioController = document.forms['frmVboxSettings'].vboxSettingsAudioController.value;
-	$('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.enabled = (document.forms['frmVboxSettings'].vboxSettingsAudioEnabled.checked ? 1 : 0);
+	$('#vboxSettingsDialog').data('vboxMachineData').audioAdapter.enabled = document.forms['frmVboxSettings'].vboxSettingsAudioEnabled.checked;
 		
 });
 

@@ -407,30 +407,30 @@ $('#vboxSettingsDialog').one('show',function(){
 $('#vboxSettingsDialog').on('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxMachineData').memorySize = parseInt(document.forms['frmVboxSettings'].vboxSettingsSystemMemoryValue.value);
-	$('#vboxSettingsDialog').data('vboxMachineData').BIOSSettings.IOAPICEnabled = (document.forms['frmVboxSettings'].vboxSettingsSystemIOAPIC.checked ? 1 : 0);
+	$('#vboxSettingsDialog').data('vboxMachineData').BIOSSettings.IOAPICEnabled = document.forms['frmVboxSettings'].vboxSettingsSystemIOAPIC.checked;
 	$('#vboxSettingsDialog').data('vboxMachineData').firmwareType = (document.forms['frmVboxSettings'].vboxSettingsSystemEFI.checked ? 'EFI' : 'BIOS');
 	$('#vboxSettingsDialog').data('vboxMachineData').CPUCount = parseInt($('#vboxSettingsSystemProcessor').slider('value'));
 	$('#vboxSettingsDialog').data('vboxMachineData').CPUExecutionCap = parseInt($('#vboxSettingsSystemProcessorCap').slider('value'));
-	$('#vboxSettingsDialog').data('vboxMachineData').CpuProperties.PAE = (document.forms['frmVboxSettings'].vboxSettingsSystemPAE.checked ? 1 : 0);
-	$('#vboxSettingsDialog').data('vboxMachineData').RTCUseUTC = (document.forms['frmVboxSettings'].vboxSettingsSystemRTCUseUTC.checked ? 1 : 0);
+	$('#vboxSettingsDialog').data('vboxMachineData').CpuProperties.PAE = document.forms['frmVboxSettings'].vboxSettingsSystemPAE.checked;
+	$('#vboxSettingsDialog').data('vboxMachineData').RTCUseUTC = document.forms['frmVboxSettings'].vboxSettingsSystemRTCUseUTC.checked;
 
 	/* Only if we had a chipset */
 	if($('#vboxSettingsDialog').data('vboxMachineData').chipsetType)
 		$('#vboxSettingsDialog').data('vboxMachineData').chipsetType = $(document.forms['frmVboxSettings'].vboxSettingsSystemChipset).val();
 		
 	if($('#vboxSettingsDialog').data('vboxHostDetails').cpuFeatures.HWVirtEx || $('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled || $('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
-		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled = (document.forms['frmVboxSettings'].settingsSystemVT.checked ? 1 : 0);
-		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.NestedPaging = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && document.forms['frmVboxSettings'].settingsSystemPaging.checked ? 1 : 0);
+		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled = document.forms['frmVboxSettings'].settingsSystemVT.checked;
+		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.NestedPaging = $('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && document.forms['frmVboxSettings'].settingsSystemPaging.checked;
 	}
 	
 	/* Only if advanced config is enabled */
 	if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
-		$('#vboxSettingsDialog').data('vboxMachineData').pageFusionEnabled = (document.forms['frmVboxSettings'].vboxSettingsSystemPageFusion.checked ? 1 : 0);
-		$('#vboxSettingsDialog').data('vboxMachineData').HPETEnabled = (document.forms['frmVboxSettings'].vboxSettingsSystemHPET.checked ? 1 : 0);
-		$('#vboxSettingsDialog').data('vboxMachineData').disableHostTimeSync = (document.forms['frmVboxSettings'].vboxSettingsSystemDisableHostTimeSync.checked ? 1 : 0);
-		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.LargePages = (document.forms['frmVboxSettings'].settingsSystemLargePages.checked ? 1 : 0);
-		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.UnrestrictedExecution = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && document.forms['frmVboxSettings'].settingsSystemUnrestrictedExecution.checked ? 1 : 0);
-		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.VPID = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && document.forms['frmVboxSettings'].settingsSystemVPID.checked ? 1 : 0);
+		$('#vboxSettingsDialog').data('vboxMachineData').pageFusionEnabled = document.forms['frmVboxSettings'].vboxSettingsSystemPageFusion.checked;
+		$('#vboxSettingsDialog').data('vboxMachineData').HPETEnabled = document.forms['frmVboxSettings'].vboxSettingsSystemHPET.checked;
+		$('#vboxSettingsDialog').data('vboxMachineData').disableHostTimeSync = document.forms['frmVboxSettings'].vboxSettingsSystemDisableHostTimeSync.checked;
+		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.LargePages = document.forms['frmVboxSettings'].settingsSystemLargePages.checked;
+		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.UnrestrictedExecution = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && document.forms['frmVboxSettings'].settingsSystemUnrestrictedExecution.checked ? true : false);
+		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.VPID = $('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && document.forms['frmVboxSettings'].settingsSystemVPID.checked;
 	}
 	
 	// Boot order

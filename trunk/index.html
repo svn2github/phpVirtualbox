@@ -53,13 +53,15 @@
 	
 		$(document).ready(function(){
 
-			/* Synchronously load language definition */
-			$.ajax({
-		        type: "GET",
-		        url: vboxEndpointConfig.translations,
-		        async: false,
-		        dataType: "script"
-		    });
+			/* Synchronously load requirements */
+			for(var i = 0; i < vboxEndpointConfig.requirements.length; i++) {
+				$.ajax({
+			        type: "GET",
+			        url: vboxEndpointConfig.requirements[i],
+			        async: false,
+			        dataType: "script"
+			    });				
+			}
 
 			/*
 			 * Parse cookies

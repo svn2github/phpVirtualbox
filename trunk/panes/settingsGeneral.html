@@ -322,7 +322,7 @@ $('#vboxSettingsDialog').on('save',function(){
 	if($('#vboxPane').data('vboxConfig').vboxAutostartConfig) {
 		
 		$('#vboxSettingsDialog').data('vboxMachineData').autostopType = document.forms['frmVboxSettings'].vboxAutostartConfigShutdownOptions.value; 
-		$('#vboxSettingsDialog').data('vboxMachineData').autostartEnabled = (document.forms['frmVboxSettings'].autostartEnabled.checked ? 1 : 0);
+		$('#vboxSettingsDialog').data('vboxMachineData').autostartEnabled = document.forms['frmVboxSettings'].autostartEnabled.checked;
 		if(isNaN(document.forms['frmVboxSettings'].autostartDelay.value))
 			document.forms['frmVboxSettings'].autostartDelay.value = 0;
 		$('#vboxSettingsDialog').data('vboxMachineData').autostartDelay = parseInt(document.forms['frmVboxSettings'].autostartDelay.value);

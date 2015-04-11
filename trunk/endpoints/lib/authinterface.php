@@ -3,7 +3,7 @@
  * Interface for phpVirtualBox authentication modules
  *
  * @author Ian Moore (imoore76 at yahoo dot com)
- * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
+ * @copyright Copyright (C) 2010-2015 Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
  * @package phpVirtualBox
  * 

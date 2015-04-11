@@ -215,13 +215,13 @@ $('#vboxSettingsDialog').on('save',function(){
 		$('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].hostMode = $(document.forms['frmVboxSettings'].elements['vboxSettingsPortMode'+a]).val(); 
 
 		// Create pipe 
-		$('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].server = (document.forms['frmVboxSettings'].elements['vboxSettingsSPortCreatePipe'+a].checked ? 1 : 0);
+		$('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].server = document.forms['frmVboxSettings'].elements['vboxSettingsSPortCreatePipe'+a].checked;
 		
 		// Path
 		$('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].path = $(document.forms['frmVboxSettings'].elements['vboxSettingsSPortPath'+a]).val();
 		
 		// Enabled port
-		$('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].enabled = (document.forms['frmVboxSettings'].elements['vboxSettingsSPortEnabled'+a].checked ? 1 : 0);
+		$('#vboxSettingsDialog').data('vboxMachineData').serialPorts[i].enabled = document.forms['frmVboxSettings'].elements['vboxSettingsSPortEnabled'+a].checked;
 
 
 	}

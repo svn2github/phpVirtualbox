@@ -3,7 +3,7 @@
  * Virtual machine PNG screenshot generation
  * 
  * @author Ian Moore (imoore76 at yahoo dot com)
- * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
+ * @copyright Copyright (C) 2010-2015 Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
  * @package phpVirtualBox
  * 
@@ -113,9 +113,10 @@ try {
 		$machine->lockMachine($vbox->session->handle,'Shared');
 		$machine->releaseRemote();
 		
+		
 		$res = $vbox->session->console->display->getScreenResolution(0);
-
-	    $screenWidth = array_shift($res);
+		
+		$screenWidth = array_shift($res);
 	    $screenHeight = array_shift($res);
 	    
 
@@ -128,7 +129,7 @@ try {
 			if($factor > 0) {
 				$screenHeight = $factor * $screenHeight;
 			} else {
-				$screenHeight = ($screenWidth * 3.0/4.0);
+				$screenHeight = ($screenWidth * 9.0/16.0);
 			}
 
 		// If no width is set, we were reached from Open in New Window
@@ -138,16 +139,22 @@ try {
 			header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 			header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+			
 	    }
 
+	    // If we were unable to get screen dimensions, set it to something
+	    if(!$screenWidth || !$screenHeight) {
+	    	$screenWidth = 640;
+	    	$screenHeight = 480;
+	    }
 		// array() for compatibility with readSavedScreenshotPNGToArray return value
 		try {
-			$imageraw = array($vbox->session->console->display->takeScreenShotPNGToArray(0,$screenWidth, $screenHeight));
+			$imageraw = array($vbox->session->console->display->takeScreenShotToArray(0, $screenWidth, $screenHeight, 'PNG'));
 		} catch (Exception $e) {
 			// For some reason this is required or you get "Could not take a screenshot (VERR_TRY_AGAIN)" in some cases.
 			// I think it's a bug in the Linux guest additions, but cannot prove it.
 			$vbox->session->console->display->invalidateAndUpdate();
-			$imageraw = array($vbox->session->console->display->takeScreenShotPNGToArray(0,$screenWidth, $screenHeight));
+			$imageraw = array($vbox->session->console->display->takeScreenShotToArray(0, $screenWidth, $screenHeight, 'PNG'));
 		}
 
 		$vbox->session->unlockMachine();
@@ -178,7 +185,7 @@ try {
 		
 	
     	if($_REQUEST['full']) $imageraw = $machine->readSavedScreenshotPNGToArray(0);
-    	else $imageraw = $machine->readSavedThumbnailPNGToArray(0);
+    	else $imageraw = $machine->readSavedThumbnailToArray(0, 'PNG');
 			
 		$machine->releaseRemote();
 

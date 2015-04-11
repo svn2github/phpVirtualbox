@@ -31,7 +31,7 @@
 /* Build Toolbar */
 
 /*
- * Init Shared Folder buttons and toolbar
+ * Init Users buttons and toolbar
  */
 
 var sButtons = new Array(
@@ -54,7 +54,7 @@ var sButtons = new Array(
 					var u = $('#vboxUserEdit').find('input[name=username]').first().val();
 					var p1 = $('#vboxUserEdit').find('input[name=npass1]').first().val();
 					var p2 = $('#vboxUserEdit').find('input[name=npass2]').first().val();
-					var a = ($('#vboxUserEdit').find('input[name=admin]').first().prop('checked') ? 1 : 0);
+					var a = $('#vboxUserEdit').find('input[name=admin]').first().prop('checked');
 					if(u.length == 0) {
 						$(this).remove();
 						return;
@@ -192,7 +192,7 @@ var sButtons = new Array(
 					
 					var p1 = $('#vboxUserEdit').find('input[name=npass1]').first().val();
 					var p2 = $('#vboxUserEdit').find('input[name=npass2]').first().val();
-					var a = ($('#vboxUserEdit').find('input[name=admin]').first().prop('checked') ? 1 : 0);
+					var a = $('#vboxUserEdit').find('input[name=admin]').first().prop('checked');
 					
 					if(p1.length > 0 && (p1 != p2)) {
 						vboxAlert(trans('The passwords you have entered do not match.','UIUsers'),{'width':'auto'});

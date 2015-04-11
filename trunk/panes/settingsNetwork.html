@@ -507,9 +507,9 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 				aliasMode |= 4;
 			}
 			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.aliasMode = aliasMode;
-			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.DNSPassDomain = (document.forms['frmVboxSettings'].elements['vboxSettingsNetPassDNSDomain'+a].checked ? 1 : 0);
-			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.DNSProxy = (document.forms['frmVboxSettings'].elements['vboxSettingsNetDNSProxy'+a].checked ? 1 : 0);
-			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.DNSUseHostResolver = (document.forms['frmVboxSettings'].elements['vboxSettingsNetUseHostResolver'+a].checked ? 1 : 0);
+			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.DNSPassDomain = document.forms['frmVboxSettings'].elements['vboxSettingsNetPassDNSDomain'+a].checked;
+			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.DNSProxy = document.forms['frmVboxSettings'].elements['vboxSettingsNetDNSProxy'+a].checked;
+			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.DNSUseHostResolver = document.forms['frmVboxSettings'].elements['vboxSettingsNetUseHostResolver'+a].checked;
 			$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].NATEngine.hostIP = $(document.forms['frmVboxSettings'].elements['vboxSettingsNetBindIp'+a]).val();
 		}
 		
@@ -517,8 +517,8 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 		$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].promiscModePolicy = $(document.forms['frmVboxSettings'].elements['vboxSettingsNetAdapterPromiscuousMode'+a]).val();
 		$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].adapterType = document.forms['frmVboxSettings'].elements['vboxSettingsNetAdapter'+a].value;
 		$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].MACAddress = document.forms['frmVboxSettings'].elements['vboxSettingsNetMAC'+a].value;
-		$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].cableConnected = (document.forms['frmVboxSettings'].elements['vboxSettingsNetConnected'+a].checked ? 1 : 0);
-		$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].enabled = (document.forms['frmVboxSettings'].elements['vboxSettingsNetEnabled'+a].checked ? 1 : 0);
+		$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].cableConnected = document.forms['frmVboxSettings'].elements['vboxSettingsNetConnected'+a].checked;
+		$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].enabled = document.forms['frmVboxSettings'].elements['vboxSettingsNetEnabled'+a].checked;
 
 	}
 

@@ -15,7 +15,7 @@ require_once(dirname(__FILE__).'/lib/language.php');
 if(!is_object($_vbox_language)) $_vbox_language = new __vbox_language();
 
 
-header("Content-type: text/javascript; charset=utf-8", true);
+header("Content-type: application/javascript; charset=utf-8", true);
 
 //Set no caching
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");

@@ -109,16 +109,6 @@
 								</table>
 							</td>
 						</tr>
-						<tr id='vboxSettingsControllerDeviceOptionRow'>
-							<th></th>
-							<td><label><input type='checkbox' class='vboxCheckbox'
-								name='vboxSettingsControllerDeviceOption' /> <span id='vboxSettingsControllerDeviceOptionLabel'>Passthrough</span></label></td>
-						</tr>
-						<tr id='vboxSettingsControllerDeviceOptionFlushRow' style='display: none'>
-							<th></th>
-							<td><label class='vboxRunningEnabled'><input type='checkbox' class='vboxCheckbox vboxRunningEnabled'
-								name='vboxSettingsControllerDeviceFlush' /> <span class='vboxRunningEnabled'>Ignore Flush Requests</span></label></td>
-						</tr>
 					</table>
 				</div>
 	
@@ -601,26 +591,6 @@ document.forms['frmVboxSettings'].vboxSettingsControllerSlot.onchange = function
 
 
 
-/* 
- * Clicking medium option checkbox changes value based on medium type
- */
-$(document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption).click(function(){
-	
-	var ma = $('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first();
-	$(ma).data('attachment').passthrough = (this.checked ? 1 : 0);
-	$(ma).data('attachment').temporaryEject = (this.checked ? 1 : 0);
-	$(ma).data('attachment').nonRotational = (this.checked ? 1 : 0);
-	
-});
-
-
- /* 
-  * Clicking ignore flush option checkbox changes value based on medium type
-  */
-$(document.forms['frmVboxSettings'].vboxSettingsControllerDeviceFlush).click(function(){
- 	$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().data('attachment').ignoreFlush = (this.checked ? 1 : 0); 	
-});
-
 /*
  * 
  * 		Controller form elements
@@ -672,7 +642,7 @@ $(document.forms['frmVboxSettings'].vboxSettingsStorageItemName).on('blur',funct
 
 /* Change host cache value onClick of checkbox */
 $(document.forms['frmVboxSettings'].vboxSettingsStorageHostCache).click(function(){
-	$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().data('controller').useHostIOCache = (this.checked ? 1 : 0);
+	$('#vboxSettingsStorageTree').find('table.vboxListItemSelected').first().data('controller').useHostIOCache = this.checked;
 });
 
 
@@ -1389,48 +1359,51 @@ function vboxSettingsSelectAttachment(tbl) {
     if(ma.medium && ma.medium.id)
         ma.medium = vboxMedia.getMediumById(ma.medium.id);
 
-    /* change labels */
-    var label = null;
-    
-    if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
-    	$('#vboxSettingsControllerDeviceOptionLabel').addClass('disabled');
-    	$(document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption).prop('disabled',true);
-    }
-    switch(ma.type) {
-    	case 'HardDisk':
-        	label = 'Hard Disk:';
-    		$('#vboxSettingsControllerDeviceOptionRow').css('display','');
-    		$('#vboxSettingsControllerDeviceOptionLabel').html(trans('Solid-state drive','UIMachineSettingsStorage'));  
-    		document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.checked = (ma.nonRotational ? 'checked' : '');
-    		if($('#vboxPane').data('vboxConfig').enableHDFlushConfig && ma.ignoreFlush !== '') {
-	    		$('#vboxSettingsControllerDeviceOptionFlushRow').css({'display':''});
-	    		$(document.forms['frmVboxSettings'].vboxSettingsControllerDeviceFlush).prop('checked',(ma.ignoreFlush ? true : false));
-    		} else {
-    			$('#vboxSettingsControllerDeviceOptionFlushRow').css({'display':'none'});
-    		}
-        	break;
-    	case 'DVD':
-        	label = 'CD/DVD Drive:';
-        	$('#vboxSettingsControllerDeviceOptionFlushRow').css({'display':'none'});
-           	$('#vboxSettingsControllerDeviceOptionRow').css('display','');
-            if(ma.medium && ma.medium.id && ma.medium.hostDrive) {
-	    		$('#vboxSettingsControllerDeviceOptionLabel').html(trans('Passthrough','UIMachineSettingsStorage'));  
-	    		document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.checked = (ma.passthrough ? 'checked' : '');
-            } else {
-	    		$('#vboxSettingsControllerDeviceOptionLabel').html(trans('Live CD/DVD','UIMachineSettingsStorage'));  
-	    		document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption.checked = (ma.temporaryEject ? 'checked' : '');
+    (function(){
+	    var tblSA = $('#vboxSettingsStorageAttachment').find('table').first();
+	    $(tblSA).find('tr.vboxSettingsControllerDeviceOptionRow').empty().remove();
+	    
+	    switch(ma.type) {
+	        
+	    	case 'HardDisk':
+	        	label = 'Hard Disk:';
+	        	break;
+	    	case 'DVD':
+	        	label = 'CD/DVD Drive:';
+	        	break;
+	    	case 'Floppy':
+	        	label = 'Floppy Drive:';
+	        	break;
+	    }
+	    var maOptions = vboxStorage.getMAOptions(ma);
+	    for(var i = 0; i < maOptions.length; i++) {
+	        
+	        var opt = maOptions[i];
+	        if(opt.condition && !opt.condition())
+	            continue
+	        
+	        var cbox = $('<input />').attr('type','checkbox').prop('checked', ma[opt.attrib] ? true : false)
+	           .on('click', {attrib: opt.attrib}, function(event){
+	            
+	            var attachment = $(tbl).data('attachment');
+	            attachment[event.data.attrib] = this.checked ? true : false;
+	            $(tbl).data('attachment', attachment);
+	            
+	        }).addClass('vboxCheckbox');
+	        
+	        $('<tr />').addClass('vboxSettingsControllerDeviceOptionRow')
+	            .append($('<th />'))
+	            .append(
+	                    $('<td />')
+	                        .append($('<label />')
+		                        .append(cbox)
+                                .append($('<span />').css({'margin-left':'4px'}).text(opt.label))
+	                         )
+	             ).appendTo($(tblSA));
 
-	    		$('#vboxSettingsControllerDeviceOptionLabel').removeClass('disabled');
-	        	$(document.forms['frmVboxSettings'].vboxSettingsControllerDeviceOption).prop('disabled',false);
-	    		
-            }            	
-        	break;
-    	case 'Floppy':
-        	label = 'Floppy Drive:';
-        	$('#vboxSettingsControllerDeviceOptionFlushRow').css({'display':'none'});
-        	$('#vboxSettingsControllerDeviceOptionRow').css('display','none');
-        	break;
-    }
+	        
+	    }
+    })();
     $('#vboxSettingsControllerSlotLabel').html(trans(label,'UIMachineSettingsStorage'));
 
     

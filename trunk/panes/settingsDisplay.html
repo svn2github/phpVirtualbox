@@ -177,16 +177,16 @@ $('#vboxSettingsDialog').on('save',function(){
 
 	$('#vboxSettingsDialog').data('vboxMachineData').VRAMSize = $(document.forms['frmVboxSettings'].vboxSettingsDisplayMemoryValue).val();
 
-	$('#vboxSettingsDialog').data('vboxMachineData').accelerate3DEnabled = (document.forms['frmVboxSettings'].vboxSettingsDisplay3d.checked ? 1 : 0);
-	$('#vboxSettingsDialog').data('vboxMachineData').accelerate2DVideoEnabled = (document.forms['frmVboxSettings'].vboxSettingsDisplay2d.checked ? 1 : 0);
+	$('#vboxSettingsDialog').data('vboxMachineData').accelerate3DEnabled = document.forms['frmVboxSettings'].vboxSettingsDisplay3d.checked;
+	$('#vboxSettingsDialog').data('vboxMachineData').accelerate2DVideoEnabled = document.forms['frmVboxSettings'].vboxSettingsDisplay2d.checked;
 
 	if($('#vboxSettingsDialog').data('vboxMachineData').VRDEServer && $('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.VRDEExtPack) {
 		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.ports = document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEPort.value;
 		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.netAddress = document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEAddr.value;
 		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.authType = document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEAuth.value;
 		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.authTimeout = document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEAuthTimeout.value;
-		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.enabled = (document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEEnabled.checked ? 1 : 0);
-		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.allowMultiConnection = (document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEMulti.checked ? 1 : 0);
+		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.enabled = document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEEnabled.checked;
+		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.allowMultiConnection = document.forms['frmVboxSettings'].vboxSettingsDisplayVRDEMulti.checked;
 		$('#vboxSettingsDialog').data('vboxMachineData').VRDEServer.VNCPassword = document.forms['frmVboxSettings'].vboxSettingsDisplayVNCPassword.value;
 	}
 });

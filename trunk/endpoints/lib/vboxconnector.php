@@ -482,7 +482,7 @@ class vboxconnector {
 						
 						try {
 							$eventlist[$k]['enrichmentData'] = (!$vrde ? null : array(
-								'enabled' => intval($vrde->enabled),
+								'enabled' => $vrde->enabled,
 								'ports' => $vrde->getVRDEProperty('TCP/Ports'),
 								'netAddress' => $vrde->getVRDEProperty('TCP/Address'),
 								'VNCPassword' => $vrde->getVRDEProperty('VNCPassword'),
@@ -521,7 +521,7 @@ class vboxconnector {
 						try {
 							$eventlist[$k]['enrichmentData'] = array(
 									'port' => $this->session->console->VRDEServerInfo->port,
-									'enabled' => intval($this->session->machine->VRDEServer->enabled)
+									'enabled' => $this->session->machine->VRDEServer->enabled
 							);
 						} catch (Exception $e) {
 							// Just unlock the machine
@@ -1027,7 +1027,7 @@ class vboxconnector {
 
 		/* No need to go through vfs explorer if local browser is true */
 		if($this->settings->browserLocal) {
-			return intval(file_exists($args['file']));
+			return file_exists($args['file']);
 		}
 		
 		$this->connect();
@@ -1421,7 +1421,7 @@ class vboxconnector {
 		/* @var $m IMachine */
 		$m = &$this->session->machine;
 
-		$m->CPUExecutionCap = intval($args['CPUExecutionCap']);
+		$m->CPUExecutionCap = $args['CPUExecutionCap'];
 		$m->description = $args['description'];
 		
 		// Start / stop config
@@ -1433,8 +1433,8 @@ class vboxconnector {
 		if(@$this->settings->vboxAutostartConfig && @$args['clientConfig']['vboxAutostartConfig']) {
 		
 			$m->autostopType = $args['autostopType'];
-			$m->autostartEnabled = intval($args['autostartEnabled']);
-			$m->autostartDelay = intval($args['autostartDelay']);
+			$m->autostartEnabled = $args['autostartEnabled'];
+			$m->autostartDelay = $args['autostartDelay'];
 		
 		}
 		
@@ -1448,11 +1448,11 @@ class vboxconnector {
 		// VRDE settings
 		try {
 			if($m->VRDEServer && $this->vbox->systemProperties->defaultVRDEExtPack) {
-				$m->VRDEServer->enabled = intval($args['VRDEServer']['enabled']);
+				$m->VRDEServer->enabled = $args['VRDEServer']['enabled'];
 				$m->VRDEServer->setVRDEProperty('TCP/Ports',$args['VRDEServer']['ports']);
 				$m->VRDEServer->setVRDEProperty('VNCPassword',$args['VRDEServer']['VNCPassword'] ? $args['VRDEServer']['VNCPassword'] : null);
 				$m->VRDEServer->authType = ($args['VRDEServer']['authType'] ? $args['VRDEServer']['authType'] : null);
-				$m->VRDEServer->authTimeout = intval($args['VRDEServer']['authTimeout']);
+				$m->VRDEServer->authTimeout = $args['VRDEServer']['authTimeout'];
 			}
 		} catch (Exception $e) {
 		}
@@ -1515,8 +1515,8 @@ class vboxconnector {
 	
 					// Set Live CD/DVD
 					if($ma['type'] == 'DVD') {
-						if((strtolower($ma['medium']['hostDrive']) != 'true' && $ma['medium']['hostDrive'] !== true))
-							$m->temporaryEjectDevice($name,$ma['port'],$ma['device'],(intval($ma['temporaryEject']) ? true : false));
+						if(!$ma['medium']['hostDrive'])
+							$m->temporaryEjectDevice($name, $ma['port'], $ma['device'], $ma['temporaryEject']);
 	
 					// Set IgnoreFlush
 					} elseif($ma['type'] == 'HardDisk') {
@@ -1527,7 +1527,7 @@ class vboxconnector {
 							$xtra = $this->_util_getIgnoreFlushKey($ma['port'], $ma['device'], $sc['controllerType']);
 	
 							if($xtra) {
-								if(intval($ma['ignoreFlush']) == 0) {
+								if((bool)($ma['ignoreFlush'])) {
 									$m->setExtraData($xtra, '0');
 								} else {
 									$m->setExtraData($xtra, '');
@@ -1594,8 +1594,8 @@ class vboxconnector {
 					$n->setProperty($k, $v);
 				}
 					
-				if(intval($n->cableConnected) != intval($args['networkAdapters'][$i]['cableConnected']))
-					$n->cableConnected = intval($args['networkAdapters'][$i]['cableConnected']);
+				if($n->cableConnected != $args['networkAdapters'][$i]['cableConnected'])
+					$n->cableConnected = $args['networkAdapters'][$i]['cableConnected'];
 				
 			}
 
@@ -1617,9 +1617,9 @@ class vboxconnector {
 					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 2)) $aliasMode |= 2;
 					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 4)) $aliasMode |= 4;
 					$n->NATEngine->aliasMode = $aliasMode;
-					$n->NATEngine->DNSProxy = intval($args['networkAdapters'][$i]['NATEngine']['DNSProxy']);
-					$n->NATEngine->DNSPassDomain = intval($args['networkAdapters'][$i]['NATEngine']['DNSPassDomain']);
-					$n->NATEngine->DNSUseHostResolver = intval($args['networkAdapters'][$i]['NATEngine']['DNSUseHostResolver']);
+					$n->NATEngine->DNSProxy = $args['networkAdapters'][$i]['NATEngine']['DNSProxy'];
+					$n->NATEngine->DNSPassDomain = $args['networkAdapters'][$i]['NATEngine']['DNSPassDomain'];
+					$n->NATEngine->DNSUseHostResolver = $args['networkAdapters'][$i]['NATEngine']['DNSUseHostResolver'];
 					$n->NATEngine->hostIP = $args['networkAdapters'][$i]['NATEngine']['hostIP'];
 				}
 
@@ -1782,7 +1782,7 @@ class vboxconnector {
 	public function remote_machineSave($args) {
 
 		$this->connect();
-
+		
 		// create session and lock machine
 		/* @var $machine IMachine */
 		$machine = $this->vbox->findMachine($args['id']);
@@ -1840,7 +1840,7 @@ class vboxconnector {
 		
 		// IOAPIC
 		$m->BIOSSettings->IOAPICEnabled = ($args['BIOSSettings']['IOAPICEnabled'] ? 1 : 0);
-		$m->CPUExecutionCap = intval($args['CPUExecutionCap']);
+		$m->CPUExecutionCap = $args['CPUExecutionCap'];
 		$m->description = $args['description'];
 		
 		// Start / stop config
@@ -1853,17 +1853,17 @@ class vboxconnector {
 		if(@$this->settings->vboxAutostartConfig && @$args['clientConfig']['vboxAutostartConfig']) {
 		
 			$m->autostopType = $args['autostopType'];
-			$m->autostartEnabled = intval($args['autostartEnabled']);
-			$m->autostartDelay = intval($args['autostartDelay']);
+			$m->autostartEnabled = $args['autostartEnabled'];
+			$m->autostartDelay = $args['autostartDelay'];
 
 		}
 		
 		// Determine if host is capable of hw accel
-		$hwAccelAvail = intval($this->vbox->host->getProcessorFeature('HWVirtEx'));
+		$hwAccelAvail = $this->vbox->host->getProcessorFeature('HWVirtEx');
 
-		$m->setHWVirtExProperty('Enabled',(intval($args['HWVirtExProperties']['Enabled']) && $hwAccelAvail ? 1 : 0));
-		$m->setHWVirtExProperty('NestedPaging', (intval($args['HWVirtExProperties']['Enabled']) && $hwAccelAvail && intval($args['HWVirtExProperties']['NestedPaging']) ? 1 : 0));
-		
+		$m->setHWVirtExProperty('Enabled', $args['HWVirtExProperties']['Enabled']);
+		$m->setHWVirtExProperty('NestedPaging', ($args['HWVirtExProperties']['Enabled'] && $hwAccelAvail && $args['HWVirtExProperties']['NestedPaging']));
+
 		/* Only if advanced configuration is enabled */
 		if(@$this->settings->enableAdvancedConfig) {
 
@@ -1872,18 +1872,18 @@ class vboxconnector {
 			* @remarks This must match GMMR0Init; currently we only support page fusion on
 			 *          all 64-bit hosts except Mac OS X */
 			
-			if(intval($this->vbox->host->getProcessorFeature('LongMode'))) {
+			if($this->vbox->host->getProcessorFeature('LongMode')) {
 
-				$m->pageFusionEnabled = intval($args['pageFusionEnabled']);
+				$m->pageFusionEnabled = $args['pageFusionEnabled'];
 			}
 
-			$m->HPETEnabled = intval($args['HPETEnabled']);
+			$m->HPETEnabled = $args['HPETEnabled'];
 			$m->setExtraData("VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled", $args['disableHostTimeSync']);
 			$m->keyboardHIDType = $args['keyboardHIDType'];
 			$m->pointingHIDType = $args['pointingHIDType'];
-			$m->setHWVirtExProperty('LargePages', (intval($args['HWVirtExProperties']['LargePages']) ? 1 : 0));
-			$m->setHWVirtExProperty('UnrestrictedExecution', (intval($args['HWVirtExProperties']['UnrestrictedExecution']) ? 1 : 0));
-			$m->setHWVirtExProperty('VPID', (intval($args['HWVirtExProperties']['VPID']) ? 1 : 0));
+			$m->setHWVirtExProperty('LargePages', $args['HWVirtExProperties']['LargePages']);
+			$m->setHWVirtExProperty('UnrestrictedExecution', $args['HWVirtExProperties']['UnrestrictedExecution']);
+			$m->setHWVirtExProperty('VPID', $args['HWVirtExProperties']['VPID']);
 
 		}
 
@@ -1896,20 +1896,20 @@ class vboxconnector {
 		$m->setExtraData('GUI/SaveMountedAtRuntime', ($args['GUI']['SaveMountedAtRuntime'] == 'no' ? 'no' : 'yes'));
 
 		// Video
-		$m->accelerate3DEnabled = intval($args['accelerate3DEnabled']);
-		$m->accelerate2DVideoEnabled = intval($args['accelerate2DVideoEnabled']);
+		$m->accelerate3DEnabled = $args['accelerate3DEnabled'];
+		$m->accelerate2DVideoEnabled = $args['accelerate2DVideoEnabled'];
 		
 		// VRDE settings
 		try {
 			if($m->VRDEServer && $this->vbox->systemProperties->defaultVRDEExtPack) {
-				$m->VRDEServer->enabled = intval($args['VRDEServer']['enabled']);
+				$m->VRDEServer->enabled = $args['VRDEServer']['enabled'];
 				$m->VRDEServer->setVRDEProperty('TCP/Ports',$args['VRDEServer']['ports']);
 				if(@$this->settings->enableAdvancedConfig)
 					$m->VRDEServer->setVRDEProperty('TCP/Address',$args['VRDEServer']['netAddress']);
 				$m->VRDEServer->setVRDEProperty('VNCPassword',$args['VRDEServer']['VNCPassword'] ? $args['VRDEServer']['VNCPassword'] : null);
 				$m->VRDEServer->authType = ($args['VRDEServer']['authType'] ? $args['VRDEServer']['authType'] : null);
-				$m->VRDEServer->authTimeout = intval($args['VRDEServer']['authTimeout']);
-				$m->VRDEServer->allowMultiConnection = intval($args['VRDEServer']['allowMultiConnection']);
+				$m->VRDEServer->authTimeout = $args['VRDEServer']['authTimeout'];
+				$m->VRDEServer->allowMultiConnection = $args['VRDEServer']['allowMultiConnection'];
 			}
 		} catch (Exception $e) {
 		}
@@ -1970,7 +1970,7 @@ class vboxconnector {
 			$bust = new StorageBus(null,$sc['bus']);
 			$c = $m->addStorageController($name,(string)$bust);
 			$c->controllerType = $sc['controllerType'];
-			$c->useHostIOCache = (intval($sc['useHostIOCache']) ? 1 : 0);
+			$c->useHostIOCache = $sc['useHostIOCache'];
 			
 			// Set sata port count
 			if($sc['bus'] == 'SATA') {
@@ -2021,15 +2021,15 @@ class vboxconnector {
 				// CD / DVD medium attachment type
 				if($ma['type'] == 'DVD') {
 
-					if((strtolower($ma['medium']['hostDrive']) == 'true' || $ma['medium']['hostDrive'] === true))
-						$m->passthroughDevice($name,$ma['port'],$ma['device'],(intval($ma['passthrough']) ? true : false));
+					if($ma['medium']['hostDrive'])
+						$m->passthroughDevice($name, $ma['port'], $ma['device'], $ma['passthrough']);
 					else
-						$m->temporaryEjectDevice($name,$ma['port'],$ma['device'],(intval($ma['temporaryEject']) ? true : false));
+						$m->temporaryEjectDevice($name, $ma['port'], $ma['device'], $ma['temporaryEject']);
 
 				// HardDisk medium attachment type
 				} else if($ma['type'] == 'HardDisk') {
 
-					$m->nonRotationalDevice($name,$ma['port'],$ma['device'],(intval($ma['nonRotational']) ? true : false));
+					$m->nonRotationalDevice($name, $ma['port'], $ma['device'], $ma['nonRotational']);
 
 					// Remove IgnoreFlush key?
 					if($this->settings->enableHDFlushConfig) {
@@ -2037,16 +2037,21 @@ class vboxconnector {
 						$xtra = $this->_util_getIgnoreFlushKey($ma['port'], $ma['device'], $sc['controllerType']);
 
 						if($xtra) {
-							if(intval($ma['ignoreFlush']) == 0) {
-								$m->setExtraData($xtra, 0);
-							} else {
+							if($ma['ignoreFlush']) {
 								$m->setExtraData($xtra, '');
+							} else {
+								$m->setExtraData($xtra, 0);
 							}
 						}
 					}
 
 
 				}
+				
+				if ($ma['type'] == 'HardDisk' || $ma['type'] == 'DVD') {
+					$m->setHotPluggableForDevice($name, $ma['port'], $ma['device'], $ma['hotPluggable']);
+				}
+				
 				if(is_object($med)) $med->releaseRemote();
 			}
 
@@ -2066,7 +2071,8 @@ class vboxconnector {
 			$n = $m->getNetworkAdapter($i);
 
 			// Skip disabled adapters
-			if(intval($n->enabled) + intval($args['networkAdapters'][$i]['enabled']) == 0) continue;
+			if(!($n->enabled && $args['networkAdapters'][$i]['enabled']))
+				continue;
 
 			for($p = 0; $p < count($netprops); $p++) {
 				switch($netprops[$p]) {
@@ -2078,8 +2084,8 @@ class vboxconnector {
 			}
 
 			// Special case for boolean values
-			$n->enabled = intval($args['networkAdapters'][$i]['enabled']);
-			$n->cableConnected = intval($args['networkAdapters'][$i]['cableConnected']);
+			$n->enabled = $args['networkAdapters'][$i]['enabled'];
+			$n->cableConnected = $args['networkAdapters'][$i]['cableConnected'];
 			
 			// Network properties
 			$eprops = $n->getProperties();
@@ -2118,9 +2124,9 @@ class vboxconnector {
 					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 2)) $aliasMode |= 2;
 					if(intval($args['networkAdapters'][$i]['NATEngine']['aliasMode'] & 4)) $aliasMode |= 4;
 					$n->NATEngine->aliasMode = $aliasMode;
-					$n->NATEngine->DNSProxy = intval($args['networkAdapters'][$i]['NATEngine']['DNSProxy']);
-					$n->NATEngine->DNSPassDomain = intval($args['networkAdapters'][$i]['NATEngine']['DNSPassDomain']);
-					$n->NATEngine->DNSUseHostResolver = intval($args['networkAdapters'][$i]['NATEngine']['DNSUseHostResolver']);
+					$n->NATEngine->DNSProxy = $args['networkAdapters'][$i]['NATEngine']['DNSProxy'];
+					$n->NATEngine->DNSPassDomain = $args['networkAdapters'][$i]['NATEngine']['DNSPassDomain'];
+					$n->NATEngine->DNSUseHostResolver = $args['networkAdapters'][$i]['NATEngine']['DNSUseHostResolver'];
 					$n->NATEngine->hostIP = $args['networkAdapters'][$i]['NATEngine']['hostIP'];
 				}
 
@@ -2138,9 +2144,11 @@ class vboxconnector {
 			/* @var $p ISerialPort */
 			$p = $m->getSerialPort($i);
 
-			if(!($p->enabled || intval($args['serialPorts'][$i]['enabled']))) continue;
+			if(!($p->enabled || $args['serialPorts'][$i]['enabled']))
+				continue;
+			
 			try {
-				$p->enabled = intval($args['serialPorts'][$i]['enabled']);
+				$p->enabled = $args['serialPorts'][$i]['enabled'];
 				$p->IOBase = @hexdec($args['serialPorts'][$i]['IOBase']);
 				$p->IRQ = intval($args['serialPorts'][$i]['IRQ']);
 				if($args['serialPorts'][$i]['path']) {
@@ -2150,7 +2158,7 @@ class vboxconnector {
 					$p->hostMode = $args['serialPorts'][$i]['hostMode'];
 					$p->path = $args['serialPorts'][$i]['path'];
 				}
-				$p->server = intval($args['serialPorts'][$i]['server']);
+				$p->server = $args['serialPorts'][$i]['server'];
 				$p->releaseRemote();
 			} catch (Exception $e) {
 				$this->errors[] = $e;
@@ -2166,13 +2174,15 @@ class vboxconnector {
 				/* @var $p IParallelPort */
 				$p = $m->getParallelPort($i);
 
-				if(!($p->enabled || intval($args['parallelPorts'][$i]['enabled']))) continue;
+				if(!($p->enabled || $args['parallelPorts'][$i]['enabled']))
+					continue;
+				
 				$lptChanged = true;
 				try {
 					$p->IOBase = @hexdec($args['parallelPorts'][$i]['IOBase']);
 					$p->IRQ = intval($args['parallelPorts'][$i]['IRQ']);
 					$p->path = $args['parallelPorts'][$i]['path'];
-					$p->enabled = intval($args['parallelPorts'][$i]['enabled']);
+					$p->enabled = $args['parallelPorts'][$i]['enabled'];
 					$p->releaseRemote();
 				} catch (Exception $e) {
 					$this->errors[] = $e;
@@ -2495,7 +2505,7 @@ class vboxconnector {
 	 * @see vboxServiceWrappers.php
 	 */
 	public function remote_vboxGetEnumerationMap($args) {
-		
+
 		$c = new $args['class'];
 		return (@isset($args['ValueMap']) ? $c->ValueMap : $c->NameMap);
 	}
@@ -3035,7 +3045,7 @@ class vboxconnector {
 				$dhcp = $this->vbox->createDHCPServer($nic->networkName);
 			}
 			if($dhcp->handle) {
-				$dhcp->enabled = intval(@$nics[$i]['dhcpServer']['enabled']);
+				$dhcp->enabled = @$nics[$i]['dhcpServer']['enabled'];
 				$dhcp->setConfiguration($nics[$i]['dhcpServer']['IPAddress'],$nics[$i]['dhcpServer']['networkMask'],$nics[$i]['dhcpServer']['lowerIP'],$nics[$i]['dhcpServer']['upperIP']);
 				$dhcp->releaseRemote();
 			}
@@ -3141,7 +3151,7 @@ class vboxconnector {
 				'is64Bit' => $bit64,
 				'recommendedRAM' => $g->recommendedRAM,
 				'recommendedHDD' => ($g->recommendedHDD/1024)/1024,
-				'supported' => intval(!$bit64 || $supp64)
+				'supported' => (bool)(!$bit64 || $supp64)
 			);
 		}
 
@@ -3214,7 +3224,9 @@ class vboxconnector {
 
 				// set first run
 				if($machine->getExtraData('GUI/FirstRun') == 'yes') {
-					$machine->setExtraData('GUI/FirstRun', 'no');					
+					$machine->lockMachine($this->session->handle, 'Write');
+					$this->session->machine->setExtraData('GUI/FirstRun', 'no');
+					$this->session->unlockMachine();
 				}
 				
 				/* @var $progress IProgress */
@@ -3347,7 +3359,7 @@ class vboxconnector {
 			'operatingSystem' => $host->operatingSystem,
 			'OSVersion' => $host->OSVersion,
 			'memorySize' => $host->memorySize,
-			'acceleration3DAvailable' => intval($host->acceleration3DAvailable),
+			'acceleration3DAvailable' => $host->acceleration3DAvailable,
 			'cpus' => array(),
 			'networkInterfaces' => array(),
 			'DVDDrives' => array(),
@@ -3366,7 +3378,7 @@ class vboxconnector {
 		 */
 		$response['cpuFeatures'] = array();
 		foreach(array('HWVirtEx'=>'HWVirtEx','PAE'=>'PAE','NestedPaging'=>'Nested Paging','LongMode'=>'Long Mode (64-bit)') as $k=>$v) {
-			$response['cpuFeatures'][$v] = intval($host->getProcessorFeature($k));
+			$response['cpuFeatures'][$v] = $host->getProcessorFeature($k);
 		}
 
 		/*
@@ -3611,7 +3623,7 @@ class vboxconnector {
 			$vrde = $smachine->VRDEServer;
 			
 			$data['VRDEServer'] = (!$vrde ? null : array(
-					'enabled' => intval($vrde->enabled),
+					'enabled' => $vrde->enabled,
 					'ports' => $vrde->getVRDEProperty('TCP/Ports'),
 					'netAddress' => $vrde->getVRDEProperty('TCP/Address'),
 					'VNCPassword' => $vrde->getVRDEProperty('VNCPassword'),
@@ -3915,7 +3927,7 @@ class vboxconnector {
 			$adapters[] = array(
 				'adapterType' => (string)$n->adapterType,
 				'slot' => $n->slot,
-				'enabled' => intval($n->enabled),
+				'enabled' => $n->enabled,
 				'MACAddress' => $n->MACAddress,
 				'attachmentType' => $at,
 				'genericDriver' => $n->genericDriver,
@@ -3928,7 +3940,7 @@ class vboxconnector {
 				'VDENetwork' => ($this->settings->enableVDE ? $n->VDENetwork : ''),
 				'cableConnected' => $n->cableConnected,
 				'NATEngine' => ($at == 'NAT' ?
-					array('aliasMode' => intval($nd->aliasMode),'DNSPassDomain' => intval($nd->DNSPassDomain), 'DNSProxy' => intval($nd->DNSProxy), 'DNSUseHostResolver' => intval($nd->DNSUseHostResolver), 'hostIP' => $nd->hostIP)
+					array('aliasMode' => intval($nd->aliasMode),'DNSPassDomain' => $nd->DNSPassDomain, 'DNSProxy' => $nd->DNSProxy, 'DNSUseHostResolver' => $nd->DNSUseHostResolver, 'hostIP' => $nd->hostIP)
 					: array('aliasMode' => 0,'DNSPassDomain' => 0, 'DNSProxy' => 0, 'DNSUseHostResolver' => 0, 'hostIP' => '')),
 				'lineSpeed' => $n->lineSpeed,
 				'redirects' => (
@@ -4125,7 +4137,7 @@ class vboxconnector {
 
 			$deviceFilters[] = array(
 				'name' => $df->name,
-				'active' => intval($df->active),
+				'active' => $df->active,
 				'vendorId' => $df->vendorId,
 				'productId' => $df->productId,
 				'revision' => $df->revision,
@@ -4163,7 +4175,7 @@ class vboxconnector {
 			'groups' => $groups,
 			'id' => $m->id,
 			'autostopType' => ($this->settings->vboxAutostartConfig ? (string)$m->autostopType : ''),
-			'autostartEnabled' => intval($this->settings->vboxAutostartConfig && $m->autostartEnabled),
+			'autostartEnabled' => ($this->settings->vboxAutostartConfig && $m->autostartEnabled),
 			'autostartDelay' => ($this->settings->vboxAutostartConfig ? intval($m->autostartDelay) : '0'),
 			'settingsFilePath' => $m->settingsFilePath,
 			'OSTypeId' => $m->OSTypeId,
@@ -4184,19 +4196,19 @@ class vboxconnector {
 			'firmwareType' => (string)$m->firmwareType,
 			'snapshotFolder' => $m->snapshotFolder,
 			'monitorCount' => $m->monitorCount,
-			'pageFusionEnabled' => intval($m->pageFusionEnabled),
+			'pageFusionEnabled' => $m->pageFusionEnabled,
 			'VRDEServer' => (!$m->VRDEServer ? null : array(
-				'enabled' => intval($m->VRDEServer->enabled),
+				'enabled' => $m->VRDEServer->enabled,
 				'ports' => $m->VRDEServer->getVRDEProperty('TCP/Ports'),
 				'netAddress' => $m->VRDEServer->getVRDEProperty('TCP/Address'),
 				'VNCPassword' => $m->VRDEServer->getVRDEProperty('VNCPassword'),
 				'authType' => (string)$m->VRDEServer->authType,
 				'authTimeout' => $m->VRDEServer->authTimeout,
-				'allowMultiConnection' => intval($m->VRDEServer->allowMultiConnection),
+				'allowMultiConnection' => $m->VRDEServer->allowMultiConnection,
 				'VRDEExtPack' => (string)$m->VRDEServer->VRDEExtPack
 				)),
 			'audioAdapter' => array(
-				'enabled' => intval($m->audioAdapter->enabled),
+				'enabled' => $m->audioAdapter->enabled,
 				'audioController' => (string)$m->audioAdapter->audioController,
 				'audioDriver' => (string)$m->audioAdapter->audioDriver,
 				),
@@ -4219,7 +4231,7 @@ class vboxconnector {
 			),
 			'customIcon' => (@$this->settings->enableCustomIcons ? $m->getExtraData('phpvb/icon') : ''),
 			'disableHostTimeSync' => intval($m->getExtraData("VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled")),
-			'CPUExecutionCap' => intval($m->CPUExecutionCap)
+			'CPUExecutionCap' => $m->CPUExecutionCap
 		);
 
 	}
@@ -4248,18 +4260,18 @@ class vboxconnector {
 	 */
 	private function _machineGetSerialPorts(&$m) {
 		$ports = array();
-		$max = intval($this->vbox->systemProperties->serialPortCount);
+		$max = $this->vbox->systemProperties->serialPortCount;
 		for($i = 0; $i < $max; $i++) {
 			try {
 				/* @var $p ISerialPort */
 				$p = $m->getSerialPort($i);
 				$ports[] = array(
 					'slot' => $p->slot,
-					'enabled' => intval($p->enabled),
+					'enabled' => $p->enabled,
 					'IOBase' => '0x'.strtoupper(sprintf('%3s',dechex($p->IOBase))),
 					'IRQ' => $p->IRQ,
 					'hostMode' => (string)$p->hostMode,
-					'server' => intval($p->server),
+					'server' => $p->server,
 					'path' => $p->path
 				);
 				$p->releaseRemote();
@@ -4279,14 +4291,14 @@ class vboxconnector {
 	private function _machineGetParallelPorts(&$m) {
 		if(!@$this->settings->enableLPTConfig) return array();
 		$ports = array();
-		$max = intval($this->vbox->systemProperties->parallelPortCount);
+		$max = $this->vbox->systemProperties->parallelPortCount;
 		for($i = 0; $i < $max; $i++) {
 			try {
 				/* @var $p IParallelPort */
 				$p = $m->getParallelPort($i);
 				$ports[] = array(
 					'slot' => $p->slot,
-					'enabled' => intval($p->enabled),
+					'enabled' => $p->enabled,
 					'IOBase' => '0x'.strtoupper(sprintf('%3s',dechex($p->IOBase))),
 					'IRQ' => $p->IRQ,
 					'path' => $p->path
@@ -4417,9 +4429,10 @@ class vboxconnector {
 				'port' => $ma->port,
 				'device' => $ma->device,
 				'type' => (string)$ma->type,
-				'passthrough' => intval($ma->passthrough),
-				'temporaryEject' => intval($ma->temporaryEject),
-				'nonRotational' => intval($ma->nonRotational)
+				'passthrough' => $ma->passthrough,
+				'temporaryEject' => $ma->temporaryEject,
+				'nonRotational' => $ma->nonRotational,
+				'hotPluggable' => $ma->hotPluggable,
 			);
 		}
 
@@ -4730,7 +4743,7 @@ class vboxconnector {
 			$sc[] = array(
 				'name' => $c->name,
 				'maxDevicesPerPortCount' => $c->maxDevicesPerPortCount,
-				'useHostIOCache' => intval($c->useHostIOCache),
+				'useHostIOCache' => $c->useHostIOCache,
 				'minPortCount' => $c->minPortCount,
 				'maxPortCount' => $c->maxPortCount,
 				'portCount' => $c->portCount,
@@ -4762,7 +4775,7 @@ class vboxconnector {
 				if(trim($sc[$i]['mediumAttachments'][$a]['ignoreFlush']) === '')
 					$sc[$i]['mediumAttachments'][$a]['ignoreFlush'] = 1;
 				else
-					$sc[$i]['mediumAttachments'][$a]['ignoreFlush'] = intval($sc[$i]['mediumAttachments'][$a]['ignoreFlush']);
+					$sc[$i]['mediumAttachments'][$a]['ignoreFlush'] = $sc[$i]['mediumAttachments'][$a]['ignoreFlush'];
 
 			}
 		}

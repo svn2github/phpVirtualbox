@@ -2,7 +2,7 @@
  * @fileOverview Dialog logic for various wizards and other dialogs
  * @author Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
- * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
+ * @copyright Copyright (C) 2010-2015 Ian Moore (imoore76 at yahoo dot com)
  */
 
 /**
@@ -49,7 +49,7 @@ function vboxWizardImportApplianceDialog() {
 
 		var file = $(self.form).find('[name=wizardImportApplianceLocation]').val();
 		var descriptions = $('#vboxImportProps').data('descriptions');
-		var reinitNetwork = ($(self.form).find('[name=vboxImportReinitNetwork]').prop('checked') ? 1 : 0);
+		var reinitNetwork = $(self.form).find('[name=vboxImportReinitNetwork]').prop('checked');
 		
 		// Check for descriptions
 		if(!descriptions) {
@@ -211,7 +211,7 @@ function vboxWizardExportApplianceDialog() {
 
 			var file = $(self.form).find('[name=wizardExportApplianceLocation]').val();
 			var format = $(self.form).find('[name=wizardExportApplianceFormat]').val();
-			var manifest = ($(self.form).find('[name=wizardExportApplianceManifest]').prop('checked') ? 1 : 0);
+			var manifest = $(self.form).find('[name=wizardExportApplianceManifest]').prop('checked');
 			var overwrite = force;
 			
 			var l = new vboxLoader();
@@ -524,7 +524,7 @@ function vboxWizardCloneVMDialog(args) {
 		var name = jQuery.trim($(self.form).find('[name=machineCloneName]').val());
 		var src = self.args.vm.id;
 		var snapshot = self.args.snapshot;
-		var allNetcards = ($(self.form).find('[name=vboxCloneReinitNetwork]').prop('checked') ? 1 : 0);
+		var allNetcards = $(self.form).find('[name=vboxCloneReinitNetwork]').prop('checked');
 		
 		if(!name) {
 			$(self.form).find('[name=machineCloneName]').addClass('vboxRequired');
@@ -540,7 +540,7 @@ function vboxWizardCloneVMDialog(args) {
 		}
 		
 		// Full / linked clone
-		var cLink = ($(self.form).find('[name=vboxCloneType]').eq(1).prop('checked') ? 1 : 0);
+		var cLink = $(self.form).find('[name=vboxCloneType]').eq(1).prop('checked');
 		
 		// wrap function
 		var vbClone = function(sn) {
@@ -830,7 +830,7 @@ function vboxWizardNewHDDialog(suggested) {
 				           "<p>Please specify a different location.</p>",'UIMessageCenter').replace('%1',file));
 				return;
 			}
-			var fsplit = ($(self.form).find('[name=newHardDiskSplit]').prop('checked') ? 1 : 0);
+			var fsplit = $(self.form).find('[name=newHardDiskSplit]').prop('checked');
 			var size = vboxConvertMbytes($(self.form).find('[name=wizardNewHDSizeValue]').val());
 			var type = ($(self.form).find('[name=newHardDiskType]').eq(1).prop('checked') ? 'fixed' : 'dynamic');
 			var nl = new vboxLoader('mediumCreateBaseStorage');
@@ -916,7 +916,7 @@ function vboxWizardCopyHDDialog(suggested) {
 			}
 		}
 
-		var fsplit = ($(self.form).find('[name=newHardDiskSplit]').prop('checked') && vboxMedia.formatSupportsSplit(format) ? 1 : 0);
+		var fsplit = $(self.form).find('[name=newHardDiskSplit]').prop('checked') && vboxMedia.formatSupportsSplit(format);
 
 		var loc = jQuery.trim($(self.form).find('[name=wizardCopyHDLocation]').val());
 		if(!loc) {

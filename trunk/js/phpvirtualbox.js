@@ -2,7 +2,7 @@
  * @fileOverview Common classes and objects used
  * @author Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
- * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
+ * @copyright Copyright (C) 2010-2015 Ian Moore (imoore76 at yahoo dot com)
  */
 
 
@@ -516,7 +516,7 @@ var vboxVMDetailsSections = {
 			$('<li />')
 				.attr({'id':'vboxDetailsViewSavedSS','class':'separator','style':'display:none;text-align: center;'})
 				.click(function(){
-					window.open('screen.php?vm='+$(this).data('vmid')+'&full=1','vboxSC','toolbar=1,menubar=0,location=0,directories=0,status=true,resize=true');
+					window.open(vboxEndpointConfig.screen+'?vm='+$(this).data('vmid')+'&full=1','vboxSC','toolbar=1,menubar=0,location=0,directories=0,status=true,resize=true');
 				}).append(
 					$('<span />')
 						.html(trans('Open in new window','UIVMPreviewWindow'))
@@ -724,7 +724,7 @@ var vboxVMDetailsSections = {
 					var currentTime = new Date();
 					randid = Math.floor(currentTime.getTime() / 1000);
 				}
-				__vboxDrawPreviewImg.src = 'screen.php?width='+(width)+'&vm='+vmid+'&randid='+randid;
+				__vboxDrawPreviewImg.src = vboxEndpointConfig.screen+'?width='+(width)+'&vm='+vmid+'&randid='+randid;
 				
 			}
 			
@@ -873,7 +873,7 @@ var vboxVMDetailsSections = {
 					var currentTime = new Date();
 					randid = Math.floor(currentTime.getTime() / 1000);
 				}
-				preview.src = 'screen.php?width='+(width)+'&vm='+d.id+'&randid='+randid;
+				preview.src = vboxEndpointConfig.screen+'?width='+(width)+'&vm='+d.id+'&randid='+randid;
 
 			}
 			
@@ -1849,7 +1849,7 @@ var vboxVMActions = {
     		if(!vmid)
     			vmid = vboxChooser.getSingleSelected().id;
     		
-			$.when(vboxAjaxRequest('consoleGuestAdditionsInstall',{'vm':vmid,'mount_only':(mount_only ? 1 : 0)})).done(function(d){
+			$.when(vboxAjaxRequest('consoleGuestAdditionsInstall',{'vm':vmid,'mount_only':mount_only})).done(function(d){
 				
 				// Progress operation returned. Guest Additions are being updated.
 				if(d && d.responseData && d.responseData.progress) {
@@ -2141,6 +2141,13 @@ var vboxVMActions = {
  */
 var vboxMedia = {
 
+    /**
+     * Return true if medium is a host drive
+     */
+    isHostDrive: function(m) {
+        return (m && m.hostDrive)
+    },
+    
 	/**
 	 * Return a printable string for medium m
 	 * 
@@ -4433,6 +4440,53 @@ var vboxStorage = {
 			busts[busts.length] = i;
 		}
 		return busts;
+	},
+	
+    /**
+     * Return icon name for bus
+     * 
+     * @memberOf vboxStorage
+     * @param {Object} ma - medium attachment object
+     * @return {Array} options list
+     */
+	getMAOptions: function(ma) {
+	
+	    switch(ma.type) {
+	        case 'HardDisk':
+	            return [{
+	                label: trans('Solid-state Drive','UIMachineSettingsStorage'),
+	                attrib: 'nonRotational'
+	            },{
+	                label: trans('Hot-pluggable','UIMachineSettingsStorage'),
+	                attrib: 'hotPluggable'
+	            },{
+	                label: 'Ignore Flush Requests',
+	                attrib: 'ignoreFlush',
+	                runningEnabled: true,
+	                condition: function() {
+	                    return $('#vboxPane').data('vboxConfig').enableHDFlushConfig;
+	                }
+	            }]
+	        case 'DVD':
+	            // Host drive
+	            if(vboxMedia.isHostDrive(ma.medium)) {
+	                return [{
+	                    label: trans('Passthrough','UIMachineSettingsStorage'),
+	                    attrib: 'passthrough'
+	                }]
+	            }
+	            // Image
+                return [{
+                    label: trans('Live CD/DVD','UIMachineSettingsStorage'),
+                    attrib: 'temporaryEject',
+                    runningEnabled: true
+                },{
+                    label: trans('Hot-pluggable','UIMachineSettingsStorage'),
+                    attrib: 'hotPluggable'
+                }]
+	        default:
+	            return []
+	    }
 	},
 	
 	/**

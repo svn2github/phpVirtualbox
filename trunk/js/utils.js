@@ -2,7 +2,7 @@
  * @fileOverview Common utilities
  * @author Ian Moore (imoore76 at yahoo dot com)
  * @version $Id$
- * @copyright Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
+ * @copyright Copyright (C) 2010-2015 Ian Moore (imoore76 at yahoo dot com)
  * 		- unless otherwise noted in fuction
  */
 
@@ -66,7 +66,7 @@ function vboxTraverse(tree,prop,val,all,children) {
  * @param {Object} params - params to pass to AJAX call
  * @return {Object} deferred promise
  */
-function vboxAjaxRequest(fn,params) {
+function vboxAjaxRequest(fn,params,config) {
 	
 	// Promise for data
 	var def = $.Deferred();
@@ -75,7 +75,13 @@ function vboxAjaxRequest(fn,params) {
 	if($('#vboxPane').data('vboxFatalError'))
 		return def.reject();
 	
-	$.when($.post(vboxEndpointConfig.api, $.extend(true,{},(params ? params : {}),{'fn':fn}),undefined,"json")
+	var data = {
+        'fn': fn,
+        'params': params ? params : null,
+        'persist': config && config.persist ? config.persist : null
+	};
+		
+	$.when($.post(vboxEndpointConfig.api, JSON.stringify(data), undefined,"json")
 	
 		// Run on error
 		.fail(function(d,etext,xlr,d2) {
@@ -372,7 +378,7 @@ function vboxFileBrowser(root,fn,foldersonly,title,icon,strictFiles) {
 
 	var d1 = $('<div />').attr({'id':'vboxBrowseFolder','class':'vboxDialogContent','style':'display:none'});
 	
-	$('<div />').attr({'id':'vboxBrowseFolderList'}).fileTree({ 'root': (root ? root : '/'),'dirsOnly':(foldersonly ? 1 : 0),'loadMessage':trans('Loading ...','UIVMDesktop'),'scrollTo':'#vboxBrowseFolder'},function(f){
+	$('<div />').attr({'id':'vboxBrowseFolderList'}).fileTree({ 'root': (root ? root : '/'),'dirsOnly':foldersonly,'loadMessage':trans('Loading ...','UIVMDesktop'),'scrollTo':'#vboxBrowseFolder'},function(f){
     	buttons[trans('OK','QIMessageBox')](f);
     }).appendTo(d1);
 	
@@ -702,8 +708,7 @@ function vboxProgress(prequest,callback,icon,title,target,blocking) {
 	// Sanitize progress request data
 	prequest = {
 		'progress' : prequest.progress,
-		'catcherrs' : prequest.catcherrs,
-		'_persist' : prequest.persist
+		'catcherrs' : prequest.catcherrs
 	};
 	
 	// Blocking creates a dialog
@@ -711,13 +716,13 @@ function vboxProgress(prequest,callback,icon,title,target,blocking) {
 	
 		vboxProgressCreateListElement(prequest,icon,title,target,callback);
 		
-		$.when(prequest, vboxAjaxRequest('progressGet',prequest)).done(vboxProgressUpdate);
+		$.when(prequest, vboxAjaxRequest('progressGet',prequest,{'persist':prequest.persist})).done(vboxProgressUpdate);
 
 	} else {
 		
 		vboxProgressCreateDialog(prequest,icon,title,target,callback);
 				
-		$.when(prequest, vboxAjaxRequest('progressGet',prequest)).done(vboxProgressUpdateModal);
+		$.when(prequest, vboxAjaxRequest('progressGet',prequest,{'persist':prequest.persist})).done(vboxProgressUpdateModal);
 	}
 	
 	

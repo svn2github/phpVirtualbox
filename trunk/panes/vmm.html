@@ -322,10 +322,10 @@ var vmmButtons = new Array(
 				var frm = document.forms.vboxISCSIForm;
 				var server = $(frm.vboxISCSIServer).val();
 				var port = $(frm.vboxISCSIPort).val();
-				var intnet = (frm.vboxISCSIIntnet.checked ? 1 : 0);
+				var intnet = frm.vboxISCSIIntnet.checked;
 				var target = $(frm.vboxISCSITarget).val();
 				var lun = $(frm.vboxISCSILun).val();
-				var enclun = (frm.vboxISCSILunEnc.checked ? 1 : 0);
+				var enclun = frm.vboxISCSILunEnc.checked;
 				var user = $(frm.vboxISCSIUser).val();
 				var pass = $(frm.vboxISCSIPass).val();
 				

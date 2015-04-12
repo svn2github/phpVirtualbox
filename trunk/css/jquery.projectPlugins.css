@@ -219,12 +219,13 @@ ul.contextMenu LI.vboxHover {
 /**
  * Filetree plugin css
  */
-UL.jqueryFileTree {
+ul.jqueryFileTree {
 	font-family: Verdana, sans-serif;
 	font-size: 11px;
 	line-height: 18px;
 	padding: 0px;
 	margin: 0px;
+	display: block;
 }
 
 UL.jqueryFileTree LI {
@@ -233,6 +234,7 @@ UL.jqueryFileTree LI {
 	padding-left: 20px;
 	margin: 0px;
 	white-space: nowrap;
+	display: block;
 }
 
 UL.jqueryFileTree A {
@@ -243,7 +245,7 @@ UL.jqueryFileTree A {
 
 
 /* Core Styles */
-.jqueryFileTree LI.directory { background: url(../images/jqueryFileTree/directory.png) left top no-repeat; }
+.jqueryFileTree LI.folder { background: url(../images/jqueryFileTree/directory.png) left top no-repeat; }
 .jqueryFileTree LI.expanded { background: url(../images/jqueryFileTree/folder_open.png) left top no-repeat; }
 .jqueryFileTree LI.file { background: url(../images/jqueryFileTree/file.png) left top no-repeat; }
 .jqueryFileTree LI.wait { background: url(../images/jqueryFileTree/spinner.gif) left top no-repeat; }

@@ -476,7 +476,7 @@ if(jQuery) (function($){
 			// Defaults
 			if( !o ) var o = {};
 			if( o.root == undefined ) o.root = '/';
-			if( o.script == undefined ) o.script = 'lib/jqueryFileTree.php';
+			if( o.script == undefined ) o.script = vboxEndpointConfig.filebrowser;
 			if( o.expandSpeed == undefined ) o.expandSpeed= 500;
 			if( o.collapseSpeed == undefined ) o.collapseSpeed= 500;
 			if( o.expandEasing == undefined ) o.expandEasing = null;
@@ -491,39 +491,115 @@ if(jQuery) (function($){
 			$(this).each( function() {
 				
 				function showTree(c, t, fullpath) {
-					$(c).addClass('wait');
-					$(".jqueryFileTree.start").remove();
-					$.post(o.script, { 'dir': t, 'dirsOnly' : (o.dirsOnly ? true : false), 'fullpath' : (fullpath ? true : false)}, function(data) {
-						$(c).find('.start').html('');
-						$(c).removeClass('wait').append(data);
-						if( o.root == t ) $(c).find('UL:hidden').show(); else $(c).find('UL:hidden').slideDown({ duration: o.expandSpeed, easing: o.expandEasing });
+				    
+				    // If a UL is not the target, find or create it
+				    if($(c).prop('tagName') != 'UL') {
+				        var target = $(c).children('UL').first();
+				        if(target.length) {
+				            c = $(target);
+				        } else {
+				            var rootList = $('<ul />').addClass("jqueryFileTree");
+				            $(c).append(rootList);
+				            c = rootList;				            
+				        }
+				    }
+				    
+				    // If data is already loaded, just show it
+				    if($(c).children().length) {
+				        $(c).slideDown({ duration: o.expandSpeed, easing: o.expandEasing });
+				        return;
+				    }
+				    
+				    $(c).append($('<li />').addClass("wait").text(o.loadMessage));
+				    
+					$.post(o.script, JSON.stringify({ 'dir': t, 'dirsOnly' : (o.dirsOnly ? true : false), 'fullpath' : (fullpath ? true : false)}), function(data) {
+
+					    $(c).children('.wait').remove();
+						$(c).append(toHTML(data));
+						
 						if(o.scrollTo) {
 							var sto = $(o.scrollTo).find('a.vboxListItemSelected').first();
-							if(sto[0]) {
-								$(o.scrollTo).scrollTo(sto,{'axis':'y','offset':{'top':-15}});
+							if(sto.length) {
+								$(o.scrollTo).scrollTo($(sto),{'axis':'y','offset':{'top':-15}});
 							}
 						}
 						bindTree(c);
-					});
+						
+					}, "json");
+				}
+				
+				function folderElement(data) {
+				    return $('<li/>').addClass("folder")
+				        .addClass(data.expanded ? 'expanded' : 'collapsed')
+				        .addClass('vboxListItem')
+				        .addClass(data.selected ? 'vboxListItemSelected' : '')
+				        .append(
+				                $('<a/>').attr({'href':'#','name':data.path,'rel':data.path}).text(data.name)
+				        );
+				}
+				
+				function fileElement(data) {
+				    return $('<li/>').addClass('file file_' + data.ext +' vboxListItem')
+				        .append(
+				                $('<a/>').attr({'href':'#','name':data.path,'rel':data.path}).text(data.name)
+				         );
+				}
+				function toHTML(data) {
+				
+				    data.sort(function(a,b){
+				        if(a.type == b.type)
+				            return strnatcasecmp(a.path, b.path);
+				        
+				        return a.type == 'folder' ? 1 : -1
+				    });
+				    
+				    var elms = [];
+				    for(var i = 0; i < data.length; i++) {
+				        
+				        // Folder
+				        if(data[i].type == 'folder') {
+				            var direlm = folderElement(data[i]);
+				            if(data[i].expanded) {
+				                var listelm = $('<ul/>').addClass('jqueryFileTree');
+				                var children = toHTML(data[i].children);
+				                for(var a = 0; a < children.length; a++) {
+				                    $(listelm).append(children[a]);				                    
+				                }
+				                $(direlm).append(listelm);
+				            }
+				            elms.push(direlm);
+				            
+				            				            
+				        // File
+				        } else {
+				            elms.push(fileElement(data[i]));
+				        }
+				    }
+				    return elms;
 				}
 				
 				function bindTree(t) {
+				    // Expand / collapse
 					$(t).find('LI A').on('dblclick', function(e) {
 						e.preventDefault();
-						if( $(this).parent().hasClass('directory') ) {
+						// Folder
+						if( $(this).parent().hasClass('folder') ) {
+						    
+						    // Is collapsed. Expand
 							if( $(this).parent().hasClass('collapsed') ) {
 								// Expand
 								if( !o.multiFolder ) {
-									$(this).parent().parent().find('UL').slideUp({ duration: o.collapseSpeed, easing: o.collapseEasing });
-									$(this).parent().parent().find('LI.directory').removeClass('expanded').addClass('collapsed');
+									$(top).find('UL').slideUp({ duration: o.collapseSpeed, easing: o.collapseEasing })
+									$(top).find('LI.folder').removeClass('expanded').addClass('collapsed');
 								}
-								$(this).parent().find('UL').remove(); // cleanup
-								showTree( $(this).parent(), $(this).attr('name') );
 								$(this).parent().removeClass('collapsed').addClass('expanded');
+							    showTree( $(this).parent(), $(this).attr('name') );			
+							    
+							// Is expanded. Collapse
 							} else {
 								// Collapse
-								$(this).parent().find('UL').slideUp({ duration: o.collapseSpeed, easing: o.collapseEasing });
-								$(this).parent().removeClass('expanded').addClass('collapsed');
+								$(this).parent().removeClass('expanded').addClass('collapsed')
+								    .children('UL').slideUp({ duration: o.collapseSpeed, easing: o.collapseEasing });
 							}
 						} else {
 							h($(this).attr('name'));
@@ -537,9 +613,10 @@ if(jQuery) (function($){
 					});
 				}
 				// Loading message
-				$(this).html('<ul class="jqueryFileTree start"><li class="wait">' + o.loadMessage + '<li></ul>');
+				var rootList = $('<ul />').addClass("jqueryFileTree");
+				$(this).empty().append(rootList);
 				// Get the initial file list
-				showTree( $(this), o.root, true);
+				showTree( rootList, o.root, true);
 			});
 			
 			return this;

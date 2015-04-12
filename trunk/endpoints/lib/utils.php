@@ -62,24 +62,24 @@ function session_init($keepopen = false) {
 	
 }
 
-/**
- * Strip slashes from string. Needed to pass to array_walk
- * @param string $a string to strip slashes from
- */
-function __vbx_stripslash(&$a) { $a = stripslashes($a); }
 
 /**
  * Clean (strip slashes from if applicable) $_GET and $_POST and return
  * an array containing a merged array of both.
  * @return array
  */
-function clean_request($r = null) {
-	$json = @json_decode(file_get_contents('php://input'), true);
-	if(!$r) $r = array_merge($_GET,$_POST, $json);
-	if(function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) {array_walk_recursive($r,'__vbx_stripslash');}
-	// Prevent XSS by using htmlentities()
-	if($r['fn']) $r['fn'] = htmlentities($r['fn']);
-	return $r;
+function clean_request() {
+	
+	if($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
+	   $json = json_decode(file_get_contents('php://input'), true);
+	   if(!is_array($json))
+	   	   $json = array();
+	} else {
+		$json = array();
+	}
+	$req = array_merge_recursive($_GET, $_POST);
+	return array_merge_recursive($req, $json);
+
 }
 
 if(!function_exists('hash')) {

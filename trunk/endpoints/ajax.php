@@ -34,7 +34,7 @@ global $_SESSION;
 /*
  * Clean request
  */
-$vboxRequest = clean_request();
+$request = clean_request();
 
 
 global $response;
@@ -61,9 +61,19 @@ try {
 		throw new Exception('phpVirtualBox requires PHP >= 5.2.0, but this server is running version '. PHP_VERSION .'. Please upgrade PHP.');
 	}
 
-	/* Check for function called */
-	switch($vboxRequest['fn']) {
+	# Only valid function chars
+	$request['fn'] = preg_replace('[^a-zA-Z0-9_-]', '', $request['fn']);
 	
+	/* Check for function called */
+	switch($request['fn']) {
+	
+		/*
+		 * No method called
+		 */
+	    case '':
+	    	throw new Exception('No method called.');
+	    	break;
+	    	
 		/*
 		 * Return phpVirtualBox's configuration data
 		 */
@@ -108,7 +118,7 @@ try {
 			
 			
 			// NOTE: Do not break. Fall through to 'getSession
-			if(!$vboxRequest['params']['u'] || !$vboxRequest['params']['p']) {
+			if(!$request['params']['u'] || !$request['params']['p']) {
 				break;	
 			}
 
@@ -119,7 +129,7 @@ try {
 
 			// Try / catch here to hide login credentials
 			try {
-				$settings->auth->login($vboxRequest['params']['u'], $vboxRequest['parans']['p']);
+				$settings->auth->login($request['params']['u'], $request['params']['p']);
 			} catch(Exception $e) {
 				throw new Exception($e->getMessage(), $e->getCode());
 			}
@@ -168,8 +178,8 @@ try {
 			session_init(true);
 			
 			$settings = new phpVBoxConfigClass();
-			$response['data']['success'] = $settings->auth->changePassword($vboxRequest['params']['old'], 
-					                                                       $vboxRequest['parans']['new']);
+			$response['data']['success'] = $settings->auth->changePassword($request['params']['old'], 
+					                                                       $request['parans']['new']);
 
 			// We're done writing to session
 			if(function_exists('session_write_close'))
@@ -208,7 +218,7 @@ try {
 			if(!$_SESSION['admin']) break;
 	
 			$settings = new phpVBoxConfigClass();
-			$settings->auth->deleteUser($vboxRequest['params']['u']);
+			$settings->auth->deleteUser($request['params']['u']);
 			
 			$response['data']['success'] = 1;
 			break;
@@ -235,7 +245,7 @@ try {
 			if(!$_SESSION['admin']) break;
 			
 			$settings = new phpVBoxConfigClass();
-			$settings->auth->updateUser($vboxRequest['params'], @$skipExistCheck);
+			$settings->auth->updateUser($request['params'], @$skipExistCheck);
 						
 			$response['data']['success'] = 1;
 			break;
@@ -295,15 +305,15 @@ try {
 			/*
 			 *  Persistent request data
 			 */
-			if(is_array($vboxRequest['persist'])) {
-				$vbox->persistentRequest = $vboxRequest['persist'];
+			if(is_array($request['persist'])) {
+				$vbox->persistentRequest = $request['persist'];
 			}
 			
 			
 			/*
 			 * Call to vboxconnector
 			 */
-			$vbox->$vboxRequest['fn']($vboxRequest['params'],array(&$response));
+			$vbox->$request['fn']($request['params'],array(&$response));
 			
 			
 			/*
@@ -334,7 +344,7 @@ try {
 // Add any messages
 if($vbox && count($vbox->messages)) {
 	foreach($vbox->messages as $m)
-		$response['messages'][] = 'vboxconnector('.$vboxRequest['fn'] .'): ' . $m;
+		$response['messages'][] = 'vboxconnector('.$request['fn'] .'): ' . $m;
 }
 // Add other error info
 if($vbox && $vbox->errors) {
@@ -368,6 +378,10 @@ if($vbox && $vbox->errors) {
  * Return response as JSON encoded data or use PHP's
  * print_r to dump data to browser.
  */
-if(isset($vboxRequest['printr'])) print_r($response);
-else echo(json_encode($response));
+if(isset($request['printr'])) {
+	print_r($response);
+} else {
+    header('Content-type', 'application/json');	
+	echo(json_encode($response));
+}
 

@@ -54,10 +54,10 @@
 		$(document).ready(function(){
 
 			/* Synchronously load requirements */
-			for(var i = 0; i < vboxEndpointConfig.requirements.length; i++) {
+			for(var i = 0; i < vboxEndpointConfig.require.length; i++) {
 				$.ajax({
 			        type: "GET",
-			        url: vboxEndpointConfig.requirements[i],
+			        url: vboxEndpointConfig.require[i],
 			        async: false,
 			        dataType: "script"
 			    });				

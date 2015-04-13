@@ -1861,6 +1861,7 @@ class vboxconnector {
 		// Determine if host is capable of hw accel
 		$hwAccelAvail = $this->vbox->host->getProcessorFeature('HWVirtEx');
 
+		$m->paravirtProvider = $args['paravirtProvider'];
 		$m->setHWVirtExProperty('Enabled', $args['HWVirtExProperties']['Enabled']);
 		$m->setHWVirtExProperty('NestedPaging', ($args['HWVirtExProperties']['Enabled'] && $hwAccelAvail && $args['HWVirtExProperties']['NestedPaging']));
 
@@ -4178,6 +4179,7 @@ class vboxconnector {
 			'autostartEnabled' => ($this->settings->vboxAutostartConfig && $m->autostartEnabled),
 			'autostartDelay' => ($this->settings->vboxAutostartConfig ? intval($m->autostartDelay) : '0'),
 			'settingsFilePath' => $m->settingsFilePath,
+		    'paravirtProvider' => (string)$m->paravirtProvider,
 			'OSTypeId' => $m->OSTypeId,
 			'OSTypeDesc' => $this->vbox->getGuestOSType($m->OSTypeId)->description,
 			'CPUCount' => $m->CPUCount,
@@ -5331,6 +5333,17 @@ class vboxconnector {
 		foreach($m->variant as $mv) {
 			$variant += $mvenum->ValueMap[(string)$mv];
 		}
+		
+		// Encryption settings
+		$encryptionSettings = null;
+		if((string)$m->deviceType == 'HardDisk') {
+    		try {
+    		    $encryptionSettings = $m->getEncryptionSettings();
+		    } catch (Exception $e) {
+		        // Pass. Encryption is not configured
+    		}
+		    
+		}
 		return array(
 				'id' => $m->id,
 				'description' => $m->description,
@@ -5352,7 +5365,8 @@ class vboxconnector {
 				'lastAccessError' => $m->lastAccessError,
 				'variant' => $variant,
 				'machineIds' => array(),
-				'attachedTo' => $attachedTo
+				'attachedTo' => $attachedTo,
+		        'encryptionSettings' => $encryptionSettings
 			);
 
 	}
@@ -5404,6 +5418,20 @@ class vboxconnector {
 			$mediumFormats[] = array('id'=>$mf->id,'name'=>$mf->name,'extensions'=>array_map('strtolower',$exts[0]),'deviceTypes'=>$dtypes,'capabilities'=>$caps);
 
 		}
+		
+		$scs = array();
+		
+		$scts = array('LsiLogic',
+'BusLogic',
+'IntelAhci',
+'PIIX4',
+'ICH6',
+'I82078',
+'USB');
+		
+		foreach($scts as $t) {
+		    $scs[$t] = $sp->getStorageControllerHotplugCapable($t);
+		}
 
 		return array(
 			'minGuestRAM' => (string)$sp->minGuestRAM,
@@ -5424,7 +5452,8 @@ class vboxconnector {
 			'defaultVRDEExtPack' => $sp->defaultVRDEExtPack,
 			'serialPortCount' => $sp->serialPortCount,
 			'parallelPortCount' => $sp->parallelPortCount,
-			'mediumFormats' => $mediumFormats
+			'mediumFormats' => $mediumFormats,
+		    'scs' => $scs
 		);
 	}
 

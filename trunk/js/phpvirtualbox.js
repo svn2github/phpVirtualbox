@@ -4422,9 +4422,16 @@ var vboxParallelPorts = {
  * Common VM storage / controller namespace
  * 
  * @namespace vboxStorage
+ * 
+5.133.2 getDefaultIoCacheSettingForStorageController
+5.133.3 getDeviceTypesForStorageBus
+5.133.4 getMaxDevicesPerPortForStorageBus
+5.133.5 getMaxInstancesOfStorageBus
+
  */
 var vboxStorage = {
 
+     
 	/**
 	 * Return list of bus types
 	 * 
@@ -4453,40 +4460,52 @@ var vboxStorage = {
 	
 	    switch(ma.type) {
 	        case 'HardDisk':
-	            return [{
+	            var opts = [{
 	                label: trans('Solid-state Drive','UIMachineSettingsStorage'),
 	                attrib: 'nonRotational'
-	            },{
-	                label: trans('Hot-pluggable','UIMachineSettingsStorage'),
-	                attrib: 'hotPluggable'
-	            },{
-	                label: 'Ignore Flush Requests',
-	                attrib: 'ignoreFlush',
-	                runningEnabled: true,
-	                condition: function() {
-	                    return $('#vboxPane').data('vboxConfig').enableHDFlushConfig;
-	                }
-	            }]
+	            }];
+	            if($('#vboxPane').data('vboxConfig').enableHDFlushConfig) {
+	                opts.push({
+                        label: 'Ignore Flush Requests',
+                        attrib: 'ignoreFlush',
+                        runningEnabled: true,
+	                });
+	            }
+	            return opts;
 	        case 'DVD':
 	            // Host drive
 	            if(vboxMedia.isHostDrive(ma.medium)) {
 	                return [{
 	                    label: trans('Passthrough','UIMachineSettingsStorage'),
 	                    attrib: 'passthrough'
-	                }]
+	                }];
 	            }
 	            // Image
                 return [{
                     label: trans('Live CD/DVD','UIMachineSettingsStorage'),
                     attrib: 'temporaryEject',
                     runningEnabled: true
-                },{
-                    label: trans('Hot-pluggable','UIMachineSettingsStorage'),
-                    attrib: 'hotPluggable'
-                }]
+                }];
 	        default:
 	            return []
 	    }
+	},
+	
+	/**
+	 * Get medium attachment options for storage controller
+	 * 
+     * @memberOf vboxStorage
+     * @param {Object} sc - storage controller object
+     * @return {Array} options list
+	 */
+	getMAOptionsForSC: function(sc) {
+	    if(sc.controllerType == 'IntelAhci') {
+	        return [{
+                label: trans('Hot-pluggable','UIMachineSettingsStorage'),
+                attrib: 'hotPluggable'
+	        }];
+	    }
+	    return [];
 	},
 	
 	/**
@@ -4581,8 +4600,22 @@ var vboxStorage = {
 		driveTypes : ['floppy'],
 		slotName : function(p,d) { return trans('Floppy Device %1','VBoxGlobal').replace('%1',d); },
 		slots : function() { return { '0-0':trans('Floppy Device %1','VBoxGlobal').replace('%1','0'), '0-1' :trans('Floppy Device %1','VBoxGlobal').replace('%1','1') }; }	
+	},
+	
+	USB : {
+        maxPortCount : 8,
+        maxDevicesPerPortCount : 1,
+        types: ['USB'],
+        driveTypes : ['dvd','disk'],
+        slotName : function(p,d) { return trans('USB Port %1','VBoxGlobal').replace('%1',p); },
+        slots : function() {
+            var s = {};
+            for(var i = 0; i < 8; i++) {
+                s[i+'-0'] = trans('USB Port %1','VBoxGlobal').replace('%1',i);
+            }
+            return s;
+        }
 	}
-
 };
 
 /**

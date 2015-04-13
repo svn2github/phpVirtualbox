@@ -627,7 +627,7 @@ function vboxInitDisplay(root,context) {
 			var roottbl = $(this).closest('table');
 			
 			$(roottbl).find('input:not(.vboxEnablerCheckbox)').prop('disabled',!this.checked);
-			$(roottbl).find('select').prop('disabled',!this.checked);
+			$(roottbl).find('select:not(.vboxEnablerIgnore)').prop('disabled',!this.checked);
 			(this.checked ? $(roottbl).find('th').removeClass('vboxDisabled') : $(roottbl).find('th:not(.vboxEnablerIgnore)').addClass('vboxDisabled'));
 			(this.checked ? $(roottbl).find('.vboxEnablerListen').removeClass('vboxDisabled') : $(roottbl).find('.vboxEnablerListen').addClass('vboxDisabled'));
 	

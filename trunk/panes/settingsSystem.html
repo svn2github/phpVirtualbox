@@ -162,9 +162,20 @@
 <!-- Acceleration Tab -->
 <div id='vboxSettingsTabSystemAcceleration' title='Acceleration'>
 <table>
+    <tr>
+        <th class='vboxEnablerIgnore'><span class='translate'>Paravirtualization Interface:</span></th>
+        <td><select name='vboxSettingsParavirtInterface' class='vboxEnablerIgnore'>
+            <option value='None'>None</option>
+            <option value='Default'>Default</option>
+            <option value='Legacy'>Legacy</option>
+            <option value='Minimal'>Minimal</option>
+            <option value='HyperV'>HyperV</option>
+            <option value='KVM'>KVM</option>
+        </select></td>
 	<tr>
-		<th style='text-align:right' class='vboxEnablerIgnore'><span class='translate'>Hardware Virtualization:</span></th>
-		<td style='width:100%'><label><input type='checkbox' name='settingsSystemVT' class='vboxEnablerCheckbox'/> <span class='translate'>Enable VT-x/AMD-V</span></label></td>
+		<th style='text-align:right' class='vboxEnablerIgnore vboxSettingsAccelRequired'><span class='translate'>Hardware Virtualization:</span></th>
+		<td style='width:100%'><label><input type='checkbox' name='settingsSystemVT' class='vboxEnablerCheckbox vboxSettingsAccelRequired'/>
+		  <span class='translate vboxSettingsAccelRequired'>Enable VT-x/AMD-V</span></label></td>
 	</tr>
 	<tr>
 		<th></th>
@@ -286,6 +297,8 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 	document.forms['frmVboxSettings'].settingsSystemVT.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled);
 	document.forms['frmVboxSettings'].settingsSystemPaging.checked = ($('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.NestedPaging);
 	
+	$(document.forms['frmVboxSettings'].vboxSettingsParavirtInterface).val($('#vboxSettingsDialog').data('vboxMachineData').paravirtProvider);
+	
 	$(document.forms['frmVboxSettings'].settingsSystemVT).trigger('syntheticClick');
 
 
@@ -395,8 +408,10 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 $('#vboxSettingsDialog').one('show',function(){
 	
 	// Are virtualExtensions supported by the cpu?
-	if(!$('#vboxSettingsDialog').data('vboxHostDetails').cpuFeatures.HWVirtEx && !$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && !$('#vboxPane').data('vboxConfig').enableAdvancedConfig) {
-		$('#vboxSettingsTabSystemMotherboard').parent().tabs({disabled: [2]});
+	if(!$('#vboxSettingsDialog').data('vboxHostDetails').cpuFeatures.HWVirtEx && !$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled) {
+	    
+	    $('#vboxSettingsTabSystemAcceleration').find('input.vboxSettingsAccelRequired').prop('disabled', true);
+	    $('#vboxSettingsTabSystemAcceleration').find('.vboxSettingsAccelRequired').addClass('vboxDisabled');
 	}
 
 
@@ -422,6 +437,8 @@ $('#vboxSettingsDialog').on('save',function(){
 		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled = document.forms['frmVboxSettings'].settingsSystemVT.checked;
 		$('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.NestedPaging = $('#vboxSettingsDialog').data('vboxMachineData').HWVirtExProperties.Enabled && document.forms['frmVboxSettings'].settingsSystemPaging.checked;
 	}
+	
+	 $('#vboxSettingsDialog').data('vboxMachineData').paravirtProvider = $(document.forms['frmVboxSettings'].vboxSettingsParavirtInterface).val();
 	
 	/* Only if advanced config is enabled */
 	if($('#vboxPane').data('vboxConfig').enableAdvancedConfig) {

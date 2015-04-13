@@ -10,6 +10,7 @@
 	<li><a href="#vboxSettingsTabGeneralBasic"><span class='translate'>Basic</span></a></li>
 	<li><a href="#vboxSettingsTabGeneralAdvanced"><span class='translate'>Advanced</span></a></li>
 	<li><a href="#vboxSettingsTabGeneralDescription"><span class='translate'>Description</span></a></li>
+	<li><a href="#vboxSettingsTabGeneralEncryption"><span class='translate'>Encryption</span></a></li>
 	<li id='vboxSettingsTabGeneralInputTab'><a href="#vboxSettingsTabGeneralInput"><span class='translate'>Input</span></a></li>
 </ul>
 
@@ -93,6 +94,39 @@
 <div id='vboxSettingsTabGeneralDescription' title='Description'>
     <textarea class='vboxRunningEnabled' rows='16' cols='20' name='vboxSettingsGeneralDescription'></textarea>
 </div>
+
+<!-- Encryption Tab -->
+<div id='vboxSettingsTabGeneralEncryption' title='Encryption'>
+<table class='vboxVertical'>
+    <tr>
+        <td colspan='2'>
+            <label><input type='checkbox' class='vboxCheckbox vboxEnablerCheckbox' name='vboxSettingsGeneralEncryptionEnable' />
+                <span class='translate'>Enable Encryption</span>
+                </label>
+        </td>
+    </tr>
+    <tr>
+        <th><span class='translate'>Encryption Cipher:</span></th>
+        <td>
+            <select name='vboxSettingsTabGeneralEncryptionCipher'>
+                <option value=''>Leave Unchanged</option>
+                <option value='AES-XTS256-PLAIN64'>AES-XTS256-PLAIN64</option>
+                <option value='AES-XTS128-PLAIN64'>AES-XTS128-PLAIN64</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <th><span class='translate'>Enter New Password:</span></th>
+        <td><input type='password' class='vboxText' name='vboxGeneralEncryptionPassword'/></td>
+    </tr>
+    <tr>
+        <th><span class='translate'>Confirm New Password:</span></th>
+        <td><input type='password' class='vboxText' name='vboxGeneralEncryptionPassword2'/></td>
+    </tr>
+
+</table>
+</div>
+
 <!-- Input Tab -->
 <div id='vboxSettingsTabGeneralInput' title='Input'>
     <table class='vboxVertical'>
@@ -306,6 +340,28 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 		$(document.images["vboxOSTypeImg"]).removeClass('vboxDisabled');
 	}
 
+	// Encrypted mediums
+	var encryptedMediums = [];
+    var cons = $('#vboxSettingsDialog').data('vboxMachineData').storageControllers;
+    for(var a = 0; a < cons.length; a++) {
+
+        var attch = cons[a].mediumAttachments;
+
+        for(var b = 0; b < attch.length; b++) {
+            var m = attch[b].medium;
+            if(!m) continue;
+            m = vboxMedia.getMediumById(m.base ? m.base : m.id);
+            if(m && m.type == 'HardDisk' && m.encryptionSettings) {
+                encryptedMediums.push(m);
+            }
+        }
+    }
+    $('#vboxSettingsDialog').data('vboxEncryptedMediums', encryptedMediums);
+    
+    $(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked', (encryptedMediums.length))
+        .trigger('syntheticClick');
+
+	
 
 	
 });

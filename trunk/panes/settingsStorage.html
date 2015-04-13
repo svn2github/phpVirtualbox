@@ -314,9 +314,10 @@ for(var i=0;i<imgsToLoad.length;i++){
   	},
   	function(action, el, pos) {
 
-  		var bus = action.substring(3);
+  	    var bus = action.substring(3);
  		var c = {'bus':bus,'mediumAttachments':[],'controllerType':vboxStorage[bus].types[0],'useHostIOCache':1,
  				'maxPortCount':vboxStorage[bus]['maxPortCount'],'maxDevicesPerPortCount':vboxStorage[bus]['maxDevicesPerPortCount']};
+ 		
 
  		vboxSettingsAddController(c, $('#vboxSettingsStorageTree').children('ul').first());
 
@@ -1174,7 +1175,11 @@ function vboxSettingsAddController(con,list) {
     
     var tr = $('<tr />');
 
-    $('<td />').attr({'class':'vboxSettingsStorageTypeIcon vboxSettingsController' + con.bus + 'Expanded','style':'width:22px'}).html('<div style="width:22px" />').click(function(){
+    $('<td />').attr({'class':'vboxSettingsStorageTypeIcon vboxSettingsController' + con.bus + 'Expanded'})
+        .css({
+	        'background-image':'url(images/vbox/'+con.bus.toLowerCase()+'_collapse_16px.png)'
+        }).html('<div style="width:22px" />').click(function(){
+    
 
 		if(!$(this).data('toggleClicked')) {
 			
@@ -1182,14 +1187,16 @@ function vboxSettingsAddController(con,list) {
 
             var n = $(this).closest('li');
             $(n).children('ul').addClass('vboxHidden').css('display','none');
-            $(this).removeClass('vboxSettingsController'+con.bus+'Expanded').addClass('vboxSettingsController'+con.bus);
+            $(this).removeClass('vboxSettingsController'+con.bus+'Expanded').addClass('vboxSettingsController'+con.bus)
+                .css({'background-image':'url(images/vbox/'+con.bus.toLowerCase()+'_expand_16px.png)'});
             
         } else {
         	
         	$(this).data('toggleClicked', false);
             var n = $(this).closest('li');
             $(n).children('ul').removeClass('vboxHidden').css('display','');
-            $(this).removeClass('vboxSettingsController'+con.bus).addClass('vboxSettingsController'+con.bus+'Expanded');                  
+            $(this).removeClass('vboxSettingsController'+con.bus).addClass('vboxSettingsController'+con.bus+'Expanded')
+                .css({'background-image':'url(images/vbox/'+con.bus.toLowerCase()+'_collapse_16px.png)'})
         	
         }
 		
@@ -1360,7 +1367,10 @@ function vboxSettingsSelectAttachment(tbl) {
         ma.medium = vboxMedia.getMediumById(ma.medium.id);
 
     (function(){
-	    var tblSA = $('#vboxSettingsStorageAttachment').find('table').first();
+	    
+        var sc = $(tbl).closest('li.vboxSettingsController').children('table').first().data('controller');
+        
+        var tblSA = $('#vboxSettingsStorageAttachment').find('table').first();
 	    $(tblSA).find('tr.vboxSettingsControllerDeviceOptionRow').empty().remove();
 	    
 	    switch(ma.type) {
@@ -1375,12 +1385,11 @@ function vboxSettingsSelectAttachment(tbl) {
 	        	label = 'Floppy Drive:';
 	        	break;
 	    }
-	    var maOptions = vboxStorage.getMAOptions(ma);
+	    var maOptions = vboxStorage.getMAOptions(ma)
+	       .concat(vboxStorage.getMAOptionsForSC(sc));
 	    for(var i = 0; i < maOptions.length; i++) {
 	        
 	        var opt = maOptions[i];
-	        if(opt.condition && !opt.condition())
-	            continue
 	        
 	        var cbox = $('<input />').attr('type','checkbox').prop('checked', ma[opt.attrib] ? true : false)
 	           .on('click', {attrib: opt.attrib}, function(event){

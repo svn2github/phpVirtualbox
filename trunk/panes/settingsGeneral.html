@@ -166,6 +166,8 @@ if($('#vboxPane').data('vboxConfig').vboxAutostartConfig) {
 	$('#vboxSettingsTabGeneralBasic .vboxAutostartConfig').empty().remove();
 }
 
+$('#vboxSettingsTabGeneralEncryption').find('option').html(function(i,h){ return trans(h, 'cipher type')});
+
 /* Browse for snapshot folder */
 function vboxSnapshotBrowseFolder(btn) {
 	vboxFileBrowser($(btn).siblings('input').first().val(),function(f){
@@ -327,7 +329,7 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 	}
 	
 	/* Settings that are disabled / enabled depending on if VM is mutable */
-	var p = $('#vboxSettingsTabGeneralBasic').parent().children('div'); 
+	var p = $('#vboxSettingsTabGeneralBasic').parent().children('div');
 	if(!$('#vboxSettingsDialog').data('vboxFullEdit')) {
 		$(p).find('tr:not(.vboxRunningEnabled)').find('span').addClass('disabled');
 		$(p).find('tr:not(.vboxRunningEnabled)').find('input,select,textarea').prop('disabled',true);

@@ -790,12 +790,7 @@ class vboxconnector {
 			case 'OnSnapshotDeleted':
 			case 'OnSnapshotChanged':
 				$data['machineId'] = $eventDataObject->machineId;
-				// This fails sometimes for seemingly no reason at all
-				try {
-					$data['snapshotId'] = $eventDataObject->snapshotId;
-				} catch (Exception $e) {
-					$data['snapshotId'] = '';
-				}
+				$data['snapshotId'] = $eventDataObject->snapshotId;
 				$data['dedupId'] .= '-'. $data['machineId'] .'-' . $data['snapshotId'];
 		        break;
 		        
@@ -4785,6 +4780,68 @@ class vboxconnector {
 		return $sc;
 	}
 
+	/**
+	 * Check medium encryption password
+	 *
+	 * @param array $args array of arguments. See function body for details.
+	 * @return array response data
+	 */
+	public function remote_mediumCheckEncryptionPassword($args) {
+
+	    // Connect to vboxwebsrv
+	    $this->connect();
+	    
+	    $m = $this->vbox->openMedium($args['medium'],'HardDisk');
+
+	    $retval = $m->checkEncryptionPassword($args['password']);
+	    
+	    $m->releaseRemote();
+	    
+	    return $retval;
+	     
+	}
+	
+	/**
+	 * Change medium encryption
+	 *
+	 * @param array $args array of arguments. See function body for details.
+	 * @return array response data containing progress id or true
+	 */
+	public function remote_mediumChangeEncryption($args) {
+	
+	    // Connect to vboxwebsrv
+	    $this->connect();
+	
+	    $m = $this->vbox->openMedium($args['medium'],'HardDisk');
+	
+	    /* @var $progress IProgress */
+	    $progress = $m->changeEncryption($args['old_pw'],
+	            $args['cipher'], $args['new_pw'], $args['new_pwid']);
+	
+	    // Does an exception exist?
+	    try {
+	        if($progress->errorInfo->handle) {
+	            $this->errors[] = new Exception($progress->errorInfo->text);
+	            $progress->releaseRemote();
+	            $m->releaseRemote();
+	            return false;
+	        }
+	    } catch (Exception $null) {
+	    }
+	
+	    if($args['waitForCompletion']) {
+	        $progress->waitForCompletion(-1);
+	        $progress->releaseRemote();
+	        $m->releaseRemote();
+	        return true;
+	    }
+	    
+	    $this->_util_progressStore($progress);
+	
+	    return array('progress' => $progress->handle);
+	
+	}
+	
 	/**
 	 * Resize a medium. Currently unimplemented in GUI.
 	 * 

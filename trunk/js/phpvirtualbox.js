@@ -1261,22 +1261,39 @@ var vboxVMDetailsSections = {
 	usb : {
 		icon: 'usb_16px.png',
 		title: 'USB',
+		language_context: 'UIGDetails',
 		settingsLink: 'USB',
 		rows: function(d) {
 			
 			var rows = [];
 			
 			var usbEnabled = false;
-			
-			for(var i = 0; i < d.USBControllers.length; i++) {
-				if(d.USBControllers[i].type == 'OHCI') {
-					usbEnabled = true;
-					break;
-				}
-			}
-			
+			var usbType = 'OHCI';
+		        
+	        for(var i = 0; i < d.USBControllers.length; i++) {
+	            var listUSBType = d.USBControllers[i].type;
+	            if(listUSBType == 'OHCI') {
+	                usbEnabled = true;
+	            }
+	            switch(listUSBType) {
+	                case 'OHCI':
+	                    if(usbType == 'EHCI')
+	                        break;
+	                case 'EHCI':
+	                    if(usbType == 'XHCI')
+	                       break;
+	                default:
+	                    usbType = listUSBType;
+	            }
+	        }
+
 			if(usbEnabled) {
 				
+			    rows.push({
+			        title: trans("USB Controller", 'UIGDetails', null, 'details (usb)'),
+			        data: usbType
+			    });
+			    
 				var tot = 0;
 				var act = 0;
 				for(var i = 0; i < d.USBDeviceFilters.length; i++) {
@@ -1284,17 +1301,17 @@ var vboxVMDetailsSections = {
 					if(d.USBDeviceFilters[i].active) act++;
 				}
 				
-				rows[0] = {
-						title: trans("Device Filters"),
-						data: trans('%1 (%2 active)').replace('%1',tot).replace('%2',act)
-				};
+				rows.push({
+					title: trans("Device Filters", 'UIGDetails', null, 'details (usb)'),
+					data: trans('%1 (%2 active)', 'UIGDetails', null, 'details (usb)').replace('%1',tot).replace('%2',act)
+				});
 				
 			} else {
 				
-				rows[0] = {
-					title: trans("Disabled",null,null,'details report (USB)'),
+				rows.push({
+					title: trans("Disabled", 'UIGDetails', null, 'details report (USB)'),
 					cssClass: 'vboxDetailsNone'
-				};
+				});
 			}
 			
 			return rows;
@@ -1438,7 +1455,7 @@ var vboxVMActions = {
 	/** Invoke the new virtual machine wizard */
 	'new':{
 			label: 'New...',
-			icon:'vm_new',
+			icon: 'vm_new',
 			click: function(fromGroup){
 				new vboxWizardNewVMDialog((fromGroup ? $(vboxChooser.getSelectedGroupElements()[0]).data('vmGroupPath') : '')).run();
 			}
@@ -1447,8 +1464,8 @@ var vboxVMActions = {
 	/** Add a virtual machine via its settings file */
 	add: {
 		label: 'Add...',
-		icon:'vm_add',
-		click:function(){
+		icon: 'vm_add',
+		click: function(){
 			vboxFileBrowser($('#vboxPane').data('vboxSystemProperties').defaultMachineFolder,function(f){
 				if(!f) return;
 				var l = new vboxLoader();
@@ -1466,12 +1483,71 @@ var vboxVMActions = {
 
 	/** Start VM */
 	start: {
-		label : 'Start',
-		name : 'start',
-		icon : 'vm_start',
+		label: 'Start',
+		name: 'start',
+		icon: 'vm_start',
+		_startedVMs : {},
+		_vmRuntimeError: function(eventData) {
+		    
+		},
+        /*
+         * Subscribe to machine state changes to remove from _startedVMs
+         * 
+         */
+        _subscribedStateChanges: false,
+        _subscribeStateChanges: function() {
+            
+            if(vboxVMActions.start._subscribedStateChanges)
+                return;
+            
+            vboxVMActions.start._subscribedStateChanges = true;
+            
+            $('#vboxPane').on('vboxOnMachineStateChanged', function(e, eventData) {
+
+                // We did not start this VM
+                if(!vboxVMActions.start._startedVMs[eventData.machineId])
+                    return;
+                
+                var vmState = {'state': eventData.state};
+                if(vboxVMStates.isPaused(vmState) || vboxVMStates.isStuck(vmState) || vboxVMStates.isPoweredOff(vmState)) {
+                    delete vboxVMActions.start._startedVMs[eventData.machineId];
+                }
+
+            });
+
+        },
+		/*
+		 * Subscribe to machine runtime errors to ask for medium
+		 * encryption password(s)
+		 */
+		_subscribedRuntimeErrors: false,
+		_subscribeRuntimeErrors: function() {
+		    
+		    if(vboxVMActions.start._subscribedRuntimeErrors)
+		        return;
+		    
+		    vboxVMActions.start._subscribedRuntimeErrors = true;
+		    
+		    // Trigger VM media encryption password dialog
+		    $('#vboxPane').on('vboxOnRuntimeError',function(e, eventData) {
+		        
+		        // We did not start this VM
+		        if(!vboxVMActions.start._startedVMs[eventData.machineId])
+		            return;
+		        
+		        var vmData = vboxVMDataMediator.getVMDetails(eventData.machineId);
+		        
+		        var pwPromise = vboxMediumEncryptionPasswordsDialog(vmData);
+		        
+		    });
+		    
+		},
 		click : function (btn) {
 		
-			
+			// Setup
+		    vboxVMActions.start._subscribeRuntimeErrors();
+		    vboxVMActions.start._subscribeStateChanges();
+		    
 			// Should the "First Run" wizard be started
 			////////////////////////////////////////////
 			var firstRun = function(vm) {
@@ -1533,14 +1609,18 @@ var vboxVMActions = {
 					
 					(vms.length && $.when(firstRun(vms.shift())).done(function(vm){
 
-						$.when(vm,vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'})).done(function(evm,d){
+					    // Save the fact that we started this VM
+					    vboxVMActions.start._startedVMs[vm.id] = true;
+					    
+					    $.when(vm,vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'})).done(function(evm,d){
+						    
 							// check for progress operation
 							if(d && d.responseData && d.responseData.progress) {
-								var icon = null;
 								if(vboxVMStates.isSaved(evm)) icon = 'progress_state_restore_90px.png';
 								else icon = 'progress_start_90px.png';
-								vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){return;},icon,
-										trans('Start the selected virtual machines','UIActionPool'),evm.name);
+								
+								vboxProgress({'progress':d.responseData.progress,'persist':d.persist}, function(){return;},
+								        icon, trans('Start the selected virtual machines','UIActionPool'),evm.name);
 							}
 						});
 						

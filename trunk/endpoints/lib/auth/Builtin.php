@@ -2,7 +2,7 @@
 /**
  * 
  * Built-in authentication module. Uses VirtualBox's set/getExtraData capability
- * to store / retrieve user credentials. Called from ajax.php when authentication
+ * to store / retrieve user credentials. Called from API when authentication
  * functions are requested.
  * 
  * @author Ian Moore (imoore76 at yahoo dot com)
@@ -10,7 +10,6 @@
  * @version $Id$
  * @package phpVirtualBox
  * @see vboxconnector
- * @see ajax.php
  * 
  */
 class phpvbAuthBuiltin implements phpvbAuth {
@@ -124,7 +123,7 @@ class phpvbAuthBuiltin implements phpvbAuth {
 	/**
 	 * 
 	 * Log out user present in $_SESSION
-	 * @param array $response response passed byref by ajax.php and populated within function
+	 * @param array $response response passed byref by API and populated within function
 	 */
 	function logout(&$response)
 	{
@@ -162,7 +161,7 @@ class phpvbAuthBuiltin implements phpvbAuth {
 	/**
 	 * 
 	 * Update user information such as password and admin status
-	 * @param array $vboxRequest request passed from ajax.php representing the ajax request. Contains user, password and administration level.
+	 * @param array $vboxRequest request passed from API representing the request. Contains user, password and administration level.
 	 * @param boolean $skipExistCheck Do not check that the user exists first. Essentially, if this is set and the user does not exist, it is added.
 	 */
 	function updateUser($vboxRequest, $skipExistCheck)

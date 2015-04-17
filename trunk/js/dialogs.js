@@ -275,6 +275,67 @@ function vboxWizardExportApplianceDialog() {
 }
 
 /**
+ * Show the medium encryption dialog
+ * 
+ * @param {String} vm
+ */
+function vboxMediumEncryptionPasswordsDialog(vm, action) {
+    
+    var results = $.Deferred();
+    
+    var dialogTitle = trans("%1 - Disk Encryption").replace('%1', vm.name);
+    
+    var l = new vboxLoader();
+    l.addFileToDOM("panes/mediumEncryptionPasswords.html");
+    l.onLoad = function() {
+
+        // Encrypted mediums
+        var encryptedMediums = [];
+        var cons = vm.storageControllers;
+        for(var a = 0; a < cons.length; a++) {
+    
+            var attch = cons[a].mediumAttachments;
+            
+            for(var b = 0; b < attch.length; b++) {
+    
+                var m = attch[b].medium;
+                if(!m) continue;            
+                m = vboxMedia.getMediumById(m.base ? m.base : m.id);
+                
+                if(m && m.encryptionSettings && m.encryptionSettings.id) {
+                    vboxMediumEncryptionPasswordAdd(m);
+                }
+            }
+        }
+        
+        var buttons = {};
+        buttons[trans('OK','QIMessageBox')] = function(){
+            // Get passwords
+            var pws = vboxMediumEncryptionPasswordsGet();
+            if(pws === false)
+                return;
+            
+            $(this).trigger('close').empty().remove();
+            
+            results.resolve(pws);
+        };
+        buttons[trans('Cancel','QIMessageBox')] = function(){
+            results.reject();
+            $(this).trigger('close').empty().remove();
+        };
+
+        $('#vboxMediumEncryptionPasswords').dialog({'closeOnEscape':true,'width':600,'height':400,'buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/nw_16px.png" class="vboxDialogTitleIcon" /> ' + dialogTitle}).on("dialogbeforeclose",function(){
+            $(this).parent().find('span:contains("'+trans('Cancel','QIMessageBox')+'")').trigger('click');
+        });
+
+    };
+    
+    l.run()
+    
+    return results.promise();
+}
+
+/**
  * Show the port forwarding configuration dialog
  * @param {Array} rules - list of port forwarding rules to process
  * @returns {Object} deferred promise

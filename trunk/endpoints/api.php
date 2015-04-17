@@ -1,7 +1,7 @@
 <?php
 /**
- * Main ajax interface between JavaScript ajax calls and PHP functions.
- * Accepts JSON or simple GET requests, and returns JSON data.
+ * Main API interface between JavaScript ajax calls and PHP functions.
+ * Accepts JSON, POST data or simple GET requests, and returns JSON data.
  * 
  * @author Ian Moore (imoore76 at yahoo dot com)
  * @copyright Copyright (C) 2010-2015 Ian Moore (imoore76 at yahoo dot com)

@@ -143,7 +143,6 @@ class phpVBoxConfigClass {
 	
 	/**
 	 * Read user configuration, apply defaults, and do some sanity checking
-	 * @see ajax
 	 * @see vboxconnector
 	 */
 	function __construct() {

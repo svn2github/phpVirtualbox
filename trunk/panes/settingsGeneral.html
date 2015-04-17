@@ -1,7 +1,7 @@
 <!--
 
 	General Machine Settings
-	Copyright (C) 2010-2013 Ian Moore (imoore76 at yahoo dot com)
+	Copyright (C) 2010-2015 Ian Moore (imoore76 at yahoo dot com)
 	
 	$Id$
 
@@ -345,16 +345,22 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 	// Encrypted mediums
 	var encryptedMediums = [];
     var cons = $('#vboxSettingsDialog').data('vboxMachineData').storageControllers;
+    var lastCipher = null;
+    var uniqueCiphers = false;
     for(var a = 0; a < cons.length; a++) {
 
         var attch = cons[a].mediumAttachments;
-
+        
         for(var b = 0; b < attch.length; b++) {
             var m = attch[b].medium;
             if(!m) continue;
             m = vboxMedia.getMediumById(m.base ? m.base : m.id);
-            if(m && m.type == 'HardDisk' && m.encryptionSettings) {
+            if(m && m.encryptionSettings && m.encryptionSettings.id) {
                 encryptedMediums.push(m);
+                if(!lastCipher || (lastCipher && lastCipher == m.encryptionSettings.cipher)) {
+                    uniqueCiphers = true;
+                }
+                lastCipher = m.encryptionSettings.cipher;
             }
         }
     }
@@ -363,6 +369,10 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
     $(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked', (encryptedMediums.length))
         .trigger('syntheticClick');
 
+    if(uniqueCiphers) {
+        $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralEncryptionCipher).val(lastCipher);
+    }
+    
 	
 
 	

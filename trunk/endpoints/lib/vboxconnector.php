@@ -2087,21 +2087,25 @@ class vboxconnector {
 			$n = $m->getNetworkAdapter($i);
 
 			// Skip disabled adapters
-			if(!($n->enabled && $args['networkAdapters'][$i]['enabled']))
+			if(!($n->enabled || @$args['networkAdapters'][$i]['enabled']))
 				continue;
 
 			for($p = 0; $p < count($netprops); $p++) {
+			    /*
 				switch($netprops[$p]) {
 					case 'enabled':
 					case 'cableConnected':
 						continue;
 				}
+				*/
 				$n->{$netprops[$p]} = @$args['networkAdapters'][$i][$netprops[$p]];
 			}
 
 			// Special case for boolean values
+			/*
 			$n->enabled = $args['networkAdapters'][$i]['enabled'];
 			$n->cableConnected = $args['networkAdapters'][$i]['cableConnected'];
+			*/
 
 			// Network properties
 			$eprops = $n->getProperties();
@@ -4351,6 +4355,46 @@ class vboxconnector {
 		return $return;
 	}
 
+	/**
+	 * Add encryption password to VM console
+	 *
+	 * @param array $args array of arguments. See function body for details.
+	 * @return true on success
+	 */
+	public function remote_consoleAddDiskEncryptionPasswords($args) {
+
+	    $this->connect();
+
+	    /* @var $machine IMachine */
+	    $machine = $this->vbox->findMachine($args['vm']);
+
+	    $this->session = $this->websessionManager->getSessionObject($this->vbox->handle);
+	    $machine->lockMachine($this->session->handle,'Shared');
+
+	    $response = array('accepted'=>array(),'failed'=>array(),'errors'=>array());
+
+	    foreach($args['passwords'] as $creds) {
+	        try {
+	            $this->session->console->removeDiskEncryptionPassword($creds['id']);
+	        } catch(Exception $e) {
+	            // It may not exist yet
+	        }
+
+    	    try {
+    	        $this->session->console->addDiskEncryptionPassword($creds['id'], $creds['password'], (bool)@$args['clearOnSuspend']);
+    	        $response['accepted'][] = $creds['id'];
+    		} catch (Exception $e) {
+    		    $response['failed'][] = $creds['id'];
+    		    $response['errors'][] = $e->getMessage();
+    		}
+	    }
+
+		$this->session->unlockMachine();
+		unset($this->session);
+		$machine->releaseRemote();
+
+		return $response;
+	}
 
 	/**
 	 * Get a list of transient (temporary) shared folders

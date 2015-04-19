@@ -268,8 +268,6 @@ document.getElementById('vboxSettingsGeneralOSType').setAttribute('onChange','do
 
 
 
-
-
 /* Update settings when data is loaded */
 $('#vboxSettingsDialog').on('dataLoaded', function(){
 	
@@ -342,44 +340,30 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 		$(document.images["vboxOSTypeImg"]).removeClass('vboxDisabled');
 	}
 
-	// Encrypted mediums
-	var encryptedMediums = [];
-    var cons = $('#vboxSettingsDialog').data('vboxMachineData').storageControllers;
+	// Encrypted media
+	var encIds = vboxMedia.getEncryptedMediaIds(
+        vboxStorage.getAttachedBaseMedia($('#vboxSettingsDialog').data('vboxMachineData'))
+	);
+	
     var lastCipher = null;
-    var uniqueCiphers = false;
-    for(var a = 0; a < cons.length; a++) {
-
-        var attch = cons[a].mediumAttachments;
-        
-        for(var b = 0; b < attch.length; b++) {
-            var m = attch[b].medium;
-            if(!m) continue;
-            m = vboxMedia.getMediumById(m.base ? m.base : m.id);
-            if(m && m.encryptionSettings && m.encryptionSettings.id) {
-                encryptedMediums.push(m);
-                if(!lastCipher || (lastCipher && lastCipher == m.encryptionSettings.cipher)) {
-                    uniqueCiphers = true;
-                }
-                lastCipher = m.encryptionSettings.cipher;
-            }
+    var uniqueCiphers = true;
+    for(var i = 0; i < encIds.length; i++) {
+        if(lastCipher && (lastCipher != encIds[i].cipher)) {
+            uniqueCiphers = false;
+            break;
         }
+        lastCipher = encIds[i].cipher;
     }
-    $('#vboxSettingsDialog').data('vboxEncryptedMediums', encryptedMediums);
     
-    $(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked', (encryptedMediums.length))
+    $(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked', (encIds.length))
         .trigger('syntheticClick');
 
     if(uniqueCiphers) {
         $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralEncryptionCipher).val(lastCipher);
     }
-    
 	
-
-	
-});
-
 /* Change general settings onSave() */
-$('#vboxSettingsDialog').on('save',function(){
+}).on('save',function(){
 
 	// Start / stop config
 	if($('#vboxPane').data('vboxConfig').startStopConfig) {
@@ -414,7 +398,6 @@ $('#vboxSettingsDialog').on('save',function(){
 	if($('#vboxPane').data('vboxConfig').enableCustomIcons)
 		$('#vboxSettingsDialog').data('vboxMachineData').customIcon = $(document.forms['frmVboxSettings'].vboxSettingsGeneralIcon).val();
 
-	
 });
 
 

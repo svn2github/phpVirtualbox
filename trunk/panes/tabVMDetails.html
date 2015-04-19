@@ -374,7 +374,11 @@ function __vboxDetailAddRows(data, rows, table) {
 		if(rows[i].rawRow) {
 			$(table).append(rowData);
 		} else {
-			$(table).append(__vboxDetailRow(rows[i].title, rowData, 'vboxDetailName' + (rows[i].indented ? ' vboxDetailNameIndent' : ''), rows[i].html));
+			$(table).append(__vboxDetailRow(
+			        rows[i].title,
+			        rowData, 
+			        'vboxDetailName ' + (rows[i].indented ? ' vboxDetailNameIndent' : '') + ' ' + (rows[i].cssClass ? rows[i].cssClass : ''),
+			        rows[i].html));
 		}
 		
 	}

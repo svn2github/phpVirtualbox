@@ -245,10 +245,12 @@ function vboxGuestOSTypeIcon(osTypeId) {
 		case "Windows2008_64":  strIcon = "os_win2k8_64.png"; break;
 		case "Windows7":        strIcon = "os_win7.png"; break;
 		case "Windows7_64":     strIcon = "os_win7_64.png"; break;
-		case "Windows81":
 		case "Windows8":        strIcon = "os_win8.png"; break;
-		case "Windows81_64":
 		case "Windows8_64":     strIcon = "os_win8_64.png"; break;
+		case "Windows81":       strIcon = "os_win81.png"; break;
+		case "Windows81_64":     strIcon = "os_win81_64.png"; break;
+		case "Windows10":       strIcon = "os_win10.png"; break
+		case "Windows10_64":       strIcon = "os_win10.png"; break
 		case "WindowsNT_64":
 		case "WindowsNT":       strIcon = "os_win_other.png"; break;
 		case "Windows2012_64":	strIcon = "os_win2k12_64.png"; break;
@@ -296,7 +298,9 @@ function vboxGuestOSTypeIcon(osTypeId) {
 		case "OpenSolaris":     strIcon = "os_oraclesolaris.png"; break;
 		case "OpenSolaris_64":  strIcon = "os_oraclesolaris_64.png"; break;
 		case "QNX":             strIcon = "os_qnx.png"; break;
+		case "MacOS106":
 		case 'MacOS':			strIcon = "os_macosx.png"; break;
+		case "MacOS106_64":
 		case 'MacOS_64':			strIcon = "os_macosx_64.png"; break;
 		case 'Oracle':			strIcon = "os_oracle.png"; break;
 		case 'Oracle_64':			strIcon = "os_oracle_64.png"; break;
@@ -445,6 +449,8 @@ function vboxConvertMbytes(str) {
  */
 function vboxAlert(e,xtraOpts) {
 
+    var acknowledged = $.Deferred();
+    
 	var msg = '';
 	
 	if(typeof e == 'object') msg = e.error;
@@ -480,7 +486,10 @@ function vboxAlert(e,xtraOpts) {
 	
 	
 	var buttons = { };
-	buttons[trans('OK','QIMessageBox')] = function(f) {$(this).trigger('close').empty().remove();};
+	buttons[trans('OK','QIMessageBox')] = function(f) {
+	    $(this).trigger('close').empty().remove();
+	    acknowledged.resolve();
+	};
 
 	var dialogOpts = {'closeOnEscape':false,'width':600,'height':'auto','buttons':buttons,'modal':true,'autoOpen':true,'dialogClass':'vboxDialogContent','title':'<img src="images/vbox/OSE/about_16px.png" class="vboxDialogTitleIcon" /> phpVirtualBox'};
 
@@ -492,7 +501,7 @@ function vboxAlert(e,xtraOpts) {
 
 	$(div).dialog(dialogOpts);
 	
-    	
+    return acknowledged;
 
 }
 /**

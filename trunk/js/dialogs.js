@@ -279,7 +279,7 @@ function vboxWizardExportApplianceDialog() {
  * 
  * @param {String} vm
  */
-function vboxMediumEncryptionPasswordsDialog(vm, action) {
+function vboxMediumEncryptionPasswordsDialog(vm, validIds) {
     
     var results = $.Deferred();
     
@@ -289,23 +289,13 @@ function vboxMediumEncryptionPasswordsDialog(vm, action) {
     l.addFileToDOM("panes/mediumEncryptionPasswords.html");
     l.onLoad = function() {
 
-        // Encrypted mediums
-        var encryptedMediums = [];
-        var cons = vm.storageControllers;
-        for(var a = 0; a < cons.length; a++) {
-    
-            var attch = cons[a].mediumAttachments;
-            
-            for(var b = 0; b < attch.length; b++) {
-    
-                var m = attch[b].medium;
-                if(!m) continue;            
-                m = vboxMedia.getMediumById(m.base ? m.base : m.id);
-                
-                if(m && m.encryptionSettings && m.encryptionSettings.id) {
-                    vboxMediumEncryptionPasswordAdd(m);
-                }
-            }
+        // Encrypted media
+        var encIds = vboxMedia.getEncryptedMediaIds(
+            vboxStorage.getAttachedBaseMedia(vm)
+        );
+
+        for(var i = 0; i < encIds.length; i++) {    
+            vboxMediumEncryptionPasswordAdd(encIds[i].id, validIds && validIds.length && $.inArray(encIds[i].id, validIds));
         }
         
         var buttons = {};
@@ -1294,16 +1284,16 @@ function vboxVMsettingsDialog(vm,pane) {
 		 */
 		var panes = new Array(
 				
-			{'name':'General','label':'General','icon':'machine','tabbed':true,'context':'UIMachineSettingsGeneral'},
-			{'name':'System','label':'System','icon':'chipset','tabbed':true,'context':'UIMachineSettingsSystem'},
-			{'name':'Display','label':'Display','icon':'vrdp','tabbed':true,'context':'UIMachineSettingsDisplay'},
-			{'name':'Storage','label':'Storage','icon':'attachment','context':'UIMachineSettingsStorage'},
-			{'name':'Audio','label':'Audio','icon':'sound','context':'UIMachineSettingsAudio'},
-			{'name':'Network','label':'Network','icon':'nw','tabbed':true,'context':'UIMachineSettingsNetwork'},
-			{'name':'SerialPorts','label':'Serial Ports','icon':'serial_port','tabbed':true,'context':'UIMachineSettingsSerial'},
-			{'name':'ParallelPorts','label':'Parallel Ports','icon':'parallel_port','tabbed':true,'disabled':(!$('#vboxPane').data('vboxConfig').enableLPTConfig),'context':'UIMachineSettingsParallel'},
-			{'name':'USB','label':'USB','icon':'usb','context':'UIMachineSettingsUSB'},
-			{'name':'SharedFolders','label':'Shared Folders','icon':'sf','context':'UIMachineSettingsSF'}
+			{name:'General',label:'General',icon:'machine',tabbed:true,context:'UIMachineSettingsGeneral'},
+			{name:'System',label:'System',icon:'chipset',tabbed:true,context:'UIMachineSettingsSystem'},
+			{name:'Display',label:'Display',icon:'vrdp',tabbed:true,context:'UIMachineSettingsDisplay'},
+			{name:'Storage',label:'Storage',icon:'attachment',context:'UIMachineSettingsStorage'},
+			{name:'Audio',label:'Audio',icon:'sound',context:'UIMachineSettingsAudio'},
+			{name:'Network',label:'Network',icon:'nw',tabbed:true,context:'UIMachineSettingsNetwork'},
+			{name:'SerialPorts',label:'Serial Ports',icon:'serial_port',tabbed:true,context:'UIMachineSettingsSerial'},
+			{name:'ParallelPorts',label:'Parallel Ports',icon:'parallel_port',tabbed:true,disabled:(!$('#vboxPane').data('vboxConfig').enableLPTConfig),context:'UIMachineSettingsParallel'},
+			{name:'USB',label:'USB',icon:'usb',context:'UIMachineSettingsUSB'},
+			{name:'SharedFolders',label:'Shared Folders',icon:'sf',context:'UIMachineSettingsSF'}
 
 		);
 		
@@ -1321,6 +1311,7 @@ function vboxVMsettingsDialog(vm,pane) {
 		
 			// Run this when "Save" is clicked
 			.done(function() {
+			    
 				var loader = new vboxLoader();
 				var sdata = $.extend($('#vboxSettingsDialog').data('vboxMachineData'),{'clientConfig':$('#vboxPane').data('vboxConfig')});
 				loader.add('machineSave',function(){return;},sdata);
@@ -1526,6 +1517,13 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 		var buttons = { };
 		buttons[trans('OK','QIMessageBox')] = function() {
 			
+		    // Does some settings pane need to do some preprocessing
+		    // work? (ask questions, run wizard, some other asynch task)
+		    var preProcessWork = $(this).trigger('preprocess');
+		    if(preProcessWork === true) {
+		        return;
+		    }
+		    
 			$(this).trigger('save');
 			results.resolve(true);
 			$(this).trigger('close').empty().remove();
@@ -1533,7 +1531,7 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 		};
 		buttons[trans('Cancel','QIMessageBox')] = function() {
 			results.reject();
-			$('#vboxSettingsDialog').trigger('close').empty().remove();
+			$(this).trigger('close').empty().remove();
 			$(document).trigger('click');
 		};
 

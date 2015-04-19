@@ -1142,8 +1142,8 @@ var vboxVMDetailsSections = {
 			if(vboxDetailsTableNics == 0) {
 				
 				rows[rows.length] = {
-					title: '<span class="vboxDetailsNone">'+trans('Disabled','VBoxGlobal',null,'details report (network)')+'</span>',
-					html: true
+					title: trans('Disabled','VBoxGlobal',null,'details report (network)'),
+					cssClass: 'vboxDetailsNone'
 				};
 				
 			// Link nic to guest networking info?
@@ -1201,9 +1201,8 @@ var vboxVMDetailsSections = {
 			
 			if(vboxDetailsTableSPorts == 0) {
 				rows[rows.length] = {
-					title: '<span class="vboxDetailsNone">'+trans('Disabled','VBoxGlobal',null,'details report (serial ports)')+'</span>',
-					data: '',
-					html: true
+					title: trans('Disabled','VBoxGlobal',null,'details report (serial ports)'),
+					cssClass: 'vboxDetailsNone'
 				};
 			}
 			
@@ -1487,9 +1486,6 @@ var vboxVMActions = {
 		name: 'start',
 		icon: 'vm_start',
 		_startedVMs : {},
-		_vmRuntimeError: function(eventData) {
-		    
-		},
         /*
          * Subscribe to machine state changes to remove from _startedVMs
          * 
@@ -1534,13 +1530,82 @@ var vboxVMActions = {
 		        // We did not start this VM
 		        if(!vboxVMActions.start._startedVMs[eventData.machineId])
 		            return;
+
+		        // Disk encryption missing
+		        if(eventData.id == "DrvVD_DEKMISSING") {
+		            
+		            // Encryption passwords are needed to start VM
+		            var vmData = vboxVMDataMediator.getVMDetails(eventData.machineId);
+		            vboxVMActions.start._getEncryptionPasswordsStartVM(vmData);
+		            
+		            return;
+		        }
+
+		        // Display runtime error
+		        var message = vboxVMDataMediator.getVMData(eventData.machineId).title + ' - ' +
+		            eventData.message;
+		        vboxAlert(message);
 		        
-		        var vmData = vboxVMDataMediator.getVMDetails(eventData.machineId);
-		        
-		        var pwPromise = vboxMediumEncryptionPasswordsDialog(vmData);
 		        
 		    });
 		    
+		},
+		/* Get passwords and start VM Logic */
+		_getEncryptionPasswordsStartVM: function(vm, validIds) {
+		    
+            // Get encryption password(s)
+            var pwPromise = vboxMediumEncryptionPasswordsDialog(vm, validIds);
+            
+            $.when(pwPromise).done(function(pwdata) {
+                
+                
+                // vboxVMActions.start._getEncryptionPasswordsStartVM(vm);
+                $.when(vboxAjaxRequest('consoleAddDiskEncryptionPasswords',
+                        {'vm':vm.id,'passwords':pwdata}))
+                        
+                .done(function(retData) {
+
+                    if(!retData)
+                        return;
+                    
+                    var failed = retData.responseData.failed.length;
+                    var valid = retData.responseData.accepted;
+
+                    if(failed) {
+                        var acknowledged = vboxAlert(trans('Unable to enter password!')+
+                                '<p>'+retData.responseData.errors.join('<br />')+'</p>');
+                        
+                        $.when(acknowledged).done(function(){
+                            vboxVMActions.start._getEncryptionPasswordsStartVM(vm, valid);
+                        })
+                    }
+                    // VMs will be started automatically if the password(s) supplied were correct
+                })
+                
+            }).fail(function(){
+                // Clicked cancel
+                // TODO: "Close VM" dialog
+            });
+
+		},
+		/* Start a single VM */
+		_startVM: function(vm) {
+		    
+            $.when(vm,vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'}))
+            
+                // VM started and / or progress op returned
+                .done(function(evm,d){
+                
+                    // check for progress operation
+                    if(d && d.responseData && d.responseData.progress) {
+                        if(vboxVMStates.isSaved(evm)) icon = 'progress_state_restore_90px.png';
+                        else icon = 'progress_start_90px.png';
+                        
+                        vboxProgress({'progress':d.responseData.progress,'persist':d.persist}, function(){return;},
+                                icon, trans('Start the selected virtual machines','UIActionPool'),evm.name);
+                    }
+            });
+
 		},
 		click : function (btn) {
 		
@@ -1612,18 +1677,9 @@ var vboxVMActions = {
 					    // Save the fact that we started this VM
 					    vboxVMActions.start._startedVMs[vm.id] = true;
 					    
-					    $.when(vm,vboxAjaxRequest('machineSetState',{'vm':vm.id,'state':'powerUp'})).done(function(evm,d){
-						    
-							// check for progress operation
-							if(d && d.responseData && d.responseData.progress) {
-								if(vboxVMStates.isSaved(evm)) icon = 'progress_state_restore_90px.png';
-								else icon = 'progress_start_90px.png';
-								
-								vboxProgress({'progress':d.responseData.progress,'persist':d.persist}, function(){return;},
-								        icon, trans('Start the selected virtual machines','UIActionPool'),evm.name);
-							}
-						});
-						
+					    vboxVMActions.start._startVM(vm);
+					    
+					    // Loop
 						runVMsToStart(vms);
 						
 					}));
@@ -2220,6 +2276,29 @@ var vboxVMActions = {
  * @namespace vboxMedia
  */
 var vboxMedia = {
+
+    /**
+     * Get encryption settings for medium
+     */
+    getEncryptionSettings: function(m) {
+        if(m.encryptionSettings) {
+            return m.encryptionSettings
+        }
+        return null;
+    },
+
+    /**
+     * Return list of IDs and cypers for media list
+     */
+    getEncryptedMediaIds: function(media) {
+        var encryptIds = [];
+        for(var i = 0; i < media.length; i++) {
+            var e = vboxMedia.getEncryptionSettings(media[i]);
+            if(!e) continue;
+            encryptIds.push({id: e.id, cipher: e.cipher})
+        }
+        return encryptIds;
+    },
 
     /**
      * Return true if medium is a host drive
@@ -4499,7 +4578,7 @@ var vboxParallelPorts = {
 
 
 /**
- * Common VM storage / controller namespace
+ * Common VM storage / controller functions namespace
  * 
  * @namespace vboxStorage
  * 
@@ -4527,6 +4606,29 @@ var vboxStorage = {
 			busts[busts.length] = i;
 		}
 		return busts;
+	},
+	
+	/**
+	 * Return list of attached media for storage
+	 * controllers of a VM
+	 */
+	getAttachedBaseMedia: function(vm) {
+	    
+	    var media = [];
+	    
+	    for(var a = 0; a < vm.storageControllers.length; a++) {
+
+	        var attch = vm.storageControllers[a].mediumAttachments;
+	        
+	        for(var b = 0; b < attch.length; b++) {
+	            var m = attch[b].medium;
+	            if(!m) continue;
+	            media.push(vboxMedia.getMediumById(m.base ? m.base : m.id));
+	        }
+	    }
+	    
+	    return media;
+    
 	},
 	
     /**

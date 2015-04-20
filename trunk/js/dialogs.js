@@ -277,22 +277,19 @@ function vboxWizardExportApplianceDialog() {
 /**
  * Show the medium encryption dialog
  * 
- * @param {String} vm
+ * @param {String} context - used in dialog name
+ * @param {Array} encIds - encryption ids
+ * 
  */
-function vboxMediumEncryptionPasswordsDialog(vm, validIds) {
+function vboxMediumEncryptionPasswordsDialog(context, encIds, validIds) {
     
     var results = $.Deferred();
     
-    var dialogTitle = trans("%1 - Disk Encryption").replace('%1', vm.name);
+    var dialogTitle = trans("%1 - Disk Encryption").replace('%1', context);
     
     var l = new vboxLoader();
     l.addFileToDOM("panes/mediumEncryptionPasswords.html");
     l.onLoad = function() {
-
-        // Encrypted media
-        var encIds = vboxMedia.getEncryptedMediaIds(
-            vboxStorage.getAttachedBaseMedia(vm)
-        );
 
         for(var i = 0; i < encIds.length; i++) {    
             vboxMediumEncryptionPasswordAdd(encIds[i].id, validIds && validIds.length && $.inArray(encIds[i].id, validIds));
@@ -1296,10 +1293,34 @@ function vboxVMsettingsDialog(vm,pane) {
 			{name:'SharedFolders',label:'Shared Folders',icon:'sf',context:'UIMachineSettingsSF'}
 
 		);
-		
-		
 
-		$.when(vboxSettingsDialog(vmData.name + ' - ' + trans('Settings','UISettingsDialog'),panes,dataList,pane,'vm_settings','UISettingsDialogMachine'))
+		/*
+		 * Check for encryption settings change
+		 */
+		var presaveCallback = function() {
+		    
+		    if(!$('#vboxSettingsDialog').data('vboxEncSettingsChanged'))
+		        return true;
+		    
+		    var vm = $('#vboxSettingsDialog').data('vboxMachineData');
+		    var done = $.Deferred();
+		    var encIds = vboxMedia.getEncryptedMediaIds(
+                vboxStorage.getAttachedBaseMedia(vm)
+	        );
+
+		    // Get encryption password(s)
+            var pwPromise = vboxMediumEncryptionPasswordsDialog(vm.name, encIds, validIds);
+            $.when(pwPromise).done(function(pwdata) {
+                
+            }).fail(function() {
+                done.reject();
+            });
+  
+		    return done.promise();
+		    
+		}
+
+		$.when(vboxSettingsDialog(vmData.name + ' - ' + trans('Settings','UISettingsDialog'),panes,dataList,pane,'vm_settings','UISettingsDialogMachine', presaveCallback))
 		
 			// Always run this
 			.always(function(){
@@ -1429,10 +1450,11 @@ function vboxWizardFirstRunDialog(vm) {
  * @param {String} pane - optionally automatically select pane when dialog is shown
  * @param {String} icon - optional URL to icon for dialog
  * @param {String} langContext - language context to use for translations
+ * @param {Function} presave - presave callback to run
  * @returns {Object} deferred promise
  * @see trans()
  */
-function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
+function vboxSettingsDialog(title,panes,data,pane,icon,langContext,presave) {
 	
 	var results = $.Deferred();
 	
@@ -1517,17 +1539,20 @@ function vboxSettingsDialog(title,panes,data,pane,icon,langContext) {
 		var buttons = { };
 		buttons[trans('OK','QIMessageBox')] = function() {
 			
-		    // Does some settings pane need to do some preprocessing
+		    $(this).trigger('save');
+
+		    // Does some settings pane need to do some presave
 		    // work? (ask questions, run wizard, some other asynch task)
-		    var preProcessWork = $(this).trigger('preprocess');
-		    if(preProcessWork === true) {
-		        return;
+		    var promise = true;
+		    if(presave) {
+		        promise = presave();
 		    }
-		    
-			$(this).trigger('save');
-			results.resolve(true);
-			$(this).trigger('close').empty().remove();
-			$(document).trigger('click');
+		    var dlg = this;
+		    $.when(promise).done(function() {
+		        results.resolve(true);
+		        $(dlg).trigger('close').empty().remove();
+		        $(document).trigger('click');                
+            });
 		};
 		buttons[trans('Cancel','QIMessageBox')] = function() {
 			results.reject();

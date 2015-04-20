@@ -356,12 +356,17 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
     }
     
     $(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked', (encIds.length))
-        .trigger('syntheticClick');
+        .triggerHandler('click');
 
     if(uniqueCiphers) {
         $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralEncryptionCipher).val(lastCipher);
     }
-	
+    
+    $('#vboxSettingsDialog').data('vboxEncSettings', {
+        enabled: $(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked'),
+        uniqueCiphers: uniqueCiphers
+    });
+    
 /* Change general settings onSave() */
 }).on('save',function(){
 
@@ -397,7 +402,14 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 
 	if($('#vboxPane').data('vboxConfig').enableCustomIcons)
 		$('#vboxSettingsDialog').data('vboxMachineData').customIcon = $(document.forms['frmVboxSettings'].vboxSettingsGeneralIcon).val();
+	
+	var encSettings = $('#vboxSettingsDialog').data('vboxEncSettings');
+	var encSettingsChanged = (encSettings.enabled != $(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked')) ||
+	   (encSettings.uniqueCiphers != $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralEncryptionCipher).val()) ||
+	   $(document.forms['frmVboxSettings'].vboxGeneralEncryptionPassword).val().length > 0;
 
+    $('#vboxSettingsDialog').data('vboxEncSettingsChanged', encSettingsChanged);
+    
 });
 
 

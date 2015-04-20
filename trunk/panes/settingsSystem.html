@@ -299,7 +299,7 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 	
 	$(document.forms['frmVboxSettings'].vboxSettingsParavirtInterface).val($('#vboxSettingsDialog').data('vboxMachineData').paravirtProvider);
 	
-	$(document.forms['frmVboxSettings'].settingsSystemVT).trigger('syntheticClick');
+	$(document.forms['frmVboxSettings'].settingsSystemVT).triggerHandler('click');
 
 
 	/* Only if acceleration config is enabled */

@@ -1553,8 +1553,13 @@ var vboxVMActions = {
 		/* Get passwords and start VM Logic */
 		_getEncryptionPasswordsStartVM: function(vm, validIds) {
 		    
+	        // Encrypted media
+	        var encIds = vboxMedia.getEncryptedMediaIds(
+	            vboxStorage.getAttachedBaseMedia(vm)
+	        );
+
             // Get encryption password(s)
-            var pwPromise = vboxMediumEncryptionPasswordsDialog(vm, validIds);
+            var pwPromise = vboxMediumEncryptionPasswordsDialog(vm.name, encIds, validIds);
             
             $.when(pwPromise).done(function(pwdata) {
                 

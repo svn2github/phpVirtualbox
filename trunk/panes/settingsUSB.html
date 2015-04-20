@@ -347,12 +347,12 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 			        usbType = listUSBType;
 			}
 		}
-		$(document.forms['frmVboxSettings'].vboxSettingsUSBEnabled).prop('checked',enabled).trigger('syntheticClick');
+		$(document.forms['frmVboxSettings'].vboxSettingsUSBEnabled).prop('checked',enabled).triggerHandler('click');
 		
 		$(document.forms['frmVboxSettings']).find('input[value="'+usbType+'"]').prop('checked',true);	
 		
 	} else {
-		$(document.forms['frmVboxSettings'].vboxSettingsUSBEnabled).prop('checked',false).trigger('syntheticClick');
+		$(document.forms['frmVboxSettings'].vboxSettingsUSBEnabled).prop('checked',false).triggerHandler('click');
 		$(document.forms['frmVboxSettings']).find('input[value="OHCI"]').prop('checked',true);
 	}
 

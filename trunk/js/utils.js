@@ -631,7 +631,7 @@ function vboxInitDisplay(root,context) {
 	 * 
 	 */
 	
-	$(root).find('input.vboxEnablerCheckbox').on('click syntheticClick', function(e) {
+	$(root).find('input.vboxEnablerCheckbox').on('click', function(e) {
 	
 			var roottbl = $(this).closest('table');
 			

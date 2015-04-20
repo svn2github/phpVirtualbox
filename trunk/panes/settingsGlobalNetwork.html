@@ -540,8 +540,8 @@ function vboxSettingsGlobalNATNetworkEditDialog() {
 	$('#vboxSettingsGlobalNATNetIPv6').prop('checked', net.IPv6Enabled)
 	$('#vboxSettingsGlobalNATNetIPv6Route').prop('checked', net.advertiseDefaultIPv6RouteEnabled)
 
-	$('#vboxSettingsGlobalNATNetEnabled').trigger('syntheticClick');
-	$('#vboxSettingsGlobalNATNetIPv6').trigger('syntheticClick');
+	$('#vboxSettingsGlobalNATNetEnabled').triggerHandler('click');
+	$('#vboxSettingsGlobalNATNetIPv6').triggerHandler('click');
 	
 	$('#vboxSettingsGlobalNATNetRules').off('click').on('click',function(){
 		vboxSettingsGlobalNetworkNatPortForwardingDialog(net, $('#vboxSettingsGlobalNATNetList').children('tr.vboxListItemSelected').first());	

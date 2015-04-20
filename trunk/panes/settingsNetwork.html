@@ -378,7 +378,7 @@ $('#vboxSettingsDialog').on('dataLoaded',function(){
 		document.forms['frmVboxSettings'].elements['vboxSettingsNetGenericProps'+a].innerHTML = $('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].properties;
 			
 		// Enabled adapter
-		$(document.forms['frmVboxSettings'].elements['vboxSettingsNetEnabled'+a]).prop('checked',$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].enabled).trigger('syntheticClick');;
+		$(document.forms['frmVboxSettings'].elements['vboxSettingsNetEnabled'+a]).prop('checked',$('#vboxSettingsDialog').data('vboxMachineData').networkAdapters[i].enabled).triggerHandler('click');;
 
 		
 		$(document.forms['frmVboxSettings'].elements['vboxSettingsNetPF'+a]).unbind('click');

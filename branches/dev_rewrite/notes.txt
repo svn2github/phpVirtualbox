@@ -1,0 +1,43 @@
+"Settings have changed" dialog pops up under settings dialog
+
+VM settings dialog. Update to only change updated settings
+ 
+global vboxweb object
+
+.actions
+.vms (datamediator)
+.events (has event listener, maybe others)
+    .on()
+    .trigger()
+    .listener
+.icons (icon config and functions)
+.progress
+.validators
+.enums
+.widgets
+    .toolbar
+    .menu
+    .menubar
+    .toolbarSmall
+    .toolbarMedim
+    .guestostype
+    .listbox
+        .bootorder
+        .usblist
+    .detailsection
+    .slider
+    .tab
+    .fileselect
+    .folderselect
+    .select
+.chooser
+.session
+.data
+    .definitions
+    .register('media', 
+    .mediator
+.lcache (local cache, cookies or local storage)
+.utils
+.utils-ui
+
+    

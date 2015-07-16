@@ -345,7 +345,7 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
         vboxStorage.getAttachedBaseMedia($('#vboxSettingsDialog').data('vboxMachineData'))
 	);
 	
-    var lastCipher = null;
+	var lastCipher = null;
     var uniqueCiphers = true;
     for(var i = 0; i < encIds.length; i++) {
         if(lastCipher && (lastCipher != encIds[i].cipher)) {
@@ -364,7 +364,7 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
     
     $('#vboxSettingsDialog').data('vboxEncSettings', {
         enabled: $(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked'),
-        uniqueCiphers: uniqueCiphers
+        uniqueCiphers: $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralEncryptionCipher).val()
     });
     
 /* Change general settings onSave() */
@@ -409,9 +409,39 @@ $('#vboxSettingsDialog').on('dataLoaded', function(){
 	   $(document.forms['frmVboxSettings'].vboxGeneralEncryptionPassword).val().length > 0;
 
     $('#vboxSettingsDialog').data('vboxEncSettingsChanged', encSettingsChanged);
+    $('#vboxSettingsDialog').data('vboxEncEnabled', $(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked'));
+    $('#vboxSettingsDialog').data('vboxEncCipher', $(document.forms['frmVboxSettings'].vboxSettingsTabGeneralEncryptionCipher).val());
+    $('#vboxSettingsDialog').data('vboxEncPw', $(document.forms['frmVboxSettings'].vboxGeneralEncryptionPassword).val());
     
 });
 
+function vboxSettingsGeneralValidate() {
+
+    var encSettings = $('#vboxSettingsDialog').data('vboxEncSettings');
+
+    // Going from disabled to enabled
+    if(!encSettings.enabled && $(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked')) {
+        
+        if(!$(document.forms['frmVboxSettings'].vboxSettingsTabGeneralEncryptionCipher).val()) {
+            vboxAlert("Encryption cipher type not specified.");
+            return false;
+        } else if(!$(document.forms['frmVboxSettings'].vboxGeneralEncryptionPassword).val()) {
+            vboxAlert("Encryption password empty.");
+            return false;
+        } else if($(document.forms['frmVboxSettings'].vboxGeneralEncryptionPassword).val() != $(document.forms['frmVboxSettings'].vboxGeneralEncryptionPassword2).val()) {
+            vboxAlert("Encryption passwords do not match.");
+            return false;
+        }
+        
+    // If enabled and poasswords don't match
+    } else if($(document.forms['frmVboxSettings'].vboxSettingsGeneralEncryptionEnable).prop('checked')) {
+        if($(document.forms['frmVboxSettings'].vboxGeneralEncryptionPassword).val() != $(document.forms['frmVboxSettings'].vboxGeneralEncryptionPassword2).val()) {
+            vboxAlert("Encryption passwords do not match.");
+            return false;
+        }
+    }
+    return true;
+}
 
 </script>
 

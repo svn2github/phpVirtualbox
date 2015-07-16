@@ -283,6 +283,8 @@ function vboxWizardExportApplianceDialog() {
  */
 function vboxMediumEncryptionPasswordsDialog(context, encIds, validIds) {
     
+    if(!(encIds && encIds.length)) { return []; }
+
     var results = $.Deferred();
     
     var dialogTitle = trans("%1 - Disk Encryption").replace('%1', context);
@@ -292,7 +294,7 @@ function vboxMediumEncryptionPasswordsDialog(context, encIds, validIds) {
     l.onLoad = function() {
 
         for(var i = 0; i < encIds.length; i++) {    
-            vboxMediumEncryptionPasswordAdd(encIds[i].id, validIds && validIds.length && $.inArray(encIds[i].id, validIds));
+            vboxMediumEncryptionPasswordAdd(encIds[i].id, validIds && validIds.length && jQuery.inArray(encIds[i].id, validIds) > -1);
         }
         
         var buttons = {};
@@ -1302,21 +1304,128 @@ function vboxVMsettingsDialog(vm,pane) {
 		    if(!$('#vboxSettingsDialog').data('vboxEncSettingsChanged'))
 		        return true;
 		    
+		    var encMediaSettings = $.Deferred();
+		    
+		    // Validate
+		    if(!vboxSettingsGeneralValidate()) {
+        	      $('#vboxSettingsMenuList').children('li:eq(0)').first().click();
+        	      $('#vboxSettingsPane-General').tabs('option','active', 3);
+        	      encMediaSettings.reject();
+        	      return encMediaSettings;
+		    }
+		    
 		    var vm = $('#vboxSettingsDialog').data('vboxMachineData');
-		    var done = $.Deferred();
-		    var encIds = vboxMedia.getEncryptedMediaIds(
-                vboxStorage.getAttachedBaseMedia(vm)
-	        );
+		    var media = vboxStorage.getAttachedBaseMedia(vm);
+		    var encIds = vboxMedia.getEncryptedMediaIds(media);
+		    var encMedia = vboxMedia.getEncryptedMedia(media);
 
+		    var formCipher = $('#vboxSettingsDialog').data('vboxEncCipher');
+		    var formPassword = $('#vboxSettingsDialog').data('vboxEncPw');
+		    var formEncEnabled = $('#vboxSettingsDialog').data('vboxEncEnabled');
+		    
+		    // If encryption is not enabled, cipher needs to be blank
+		    if(!formEncEnabled) {
+		        formCipher = '';
+		    }
+		    
 		    // Get encryption password(s)
-            var pwPromise = vboxMediumEncryptionPasswordsDialog(vm.name, encIds, validIds);
-            $.when(pwPromise).done(function(pwdata) {
-                
-            }).fail(function() {
-                done.reject();
-            });
+            $.when(vboxMediumEncryptionPasswordsDialog(vm.name, encIds))
+            
+                .done(function(pwdata) {
+                    
+                    var runs = []
+                    
+                    // Each medium attached
+                    for(var i = 0; i < media.length; i++) {
+                        // Only hard disks
+                        if(media[i].deviceType != 'HardDisk') continue;
+                        
+                        var id = vm.name;
+                        var oldpw = null;
+                        var cipher = null;
+                        
+                        // Check for existing encryption setting
+                        for(var a = 0; a < encMedia.length; a++) {
+                            if(encMedia[a].medium == media[i].id) {
+                                cipher = media[i].encryptionSettings.cipher;
+                                // Look in passwords for id
+                                for(var b = 0; b < pwdata.length; b++) {
+                                    if(pwdata[b].id == id) {
+                                        oldpw = pwdata[b].password;
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        
+                        runs.push({
+                            medium: media[i].id,
+                            cipher: cipher,
+                            encId: id,
+                            password: oldpw
+                        });
+                                                
+                    }
+                    // No encrypted media changes
+                    if(!runs.length) {
+                        encMediaSettings.resolve();
+                        return;
+                    }
+                    
+                    var l = new vboxLoader();
+                    l.showLoading();
+                    
+                    (function doruns(encMediaRuns){
+                        
+                        if(!encMediaRuns.length) {
+                            l.removeLoading();
+                            encMediaSettings.resolve();
+                            return;                            
+                        }
+                        
+                        var run = encMediaRuns.shift();
+                        
+                        // If encryption is enabled, and cypher is blank / "Leave Unchanged"
+                        // keep the original cipher
+                        var mcipher = formCipher;
+                        if(formEncEnabled && !mcipher) {
+                            mcipher = run.cipher;
+                        }
+                        
+                        var rdata = {
+                            medium: run.medium,
+                            id: run.encId,
+                            old_password: run.password,
+                            cipher: mcipher,
+                            password: formPassword
+                        };
+                        
+                        $.when(vboxAjaxRequest('mediumChangeEncryption',rdata)).done(function(d){
+                            
+                            if(d.responseData.progress) {
+                                var icon = 'progress_media_create_90px.png';
+                                var title = trans('Encryption');
+                                vboxProgress({'progress':d.responseData.progress,'persist':d.persist},function(){
+                                    // Loop
+                                    doruns(encMediaRuns);                                    
+                                },icon,title,vboxMedia.getMediumById(run.medium).name, true);
+                            } else {
+                                l.removeLoading();
+                                encMediaSettings.reject();
+                                return;
+                            }
+                            
+                        });
+                        
+                    })(runs);
+
+                })
+                .fail(function() {
+                    encMediaSettings.reject();
+                });
   
-		    return done.promise();
+		    return encMediaSettings.promise();
 		    
 		}
 

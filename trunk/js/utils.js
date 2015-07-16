@@ -780,7 +780,7 @@ function vboxProgressCreateDialog(prequest,icon,title,target,callback) {
 	$(tbl).append($(tr).append(td)).appendTo(div);
 	
 	// Append placeholder for list element
-	$('#vboxProgressOps').append($('<div />').addClass('vboxProgressOpElement').css({'display':'none'}).attr({'id':'vboxProgressPlaceholder'+pid}));
+	$('#vboxProgressOps').prepend($('<div />').addClass('vboxProgressOpElement').css({'display':'none'}).attr({'id':'vboxProgressPlaceholder'+pid}));
 	
 	$(div).data({
 		'vboxCallback':callback,
@@ -847,7 +847,7 @@ function vboxProgressCreateListElement(prequest,icon,title,target,callback) {
 	if($('#vboxProgressPlaceholder'+pid)[0]) {
 		$('#vboxProgressPlaceholder'+pid).replaceWith(div);
 	} else {
-		$(div).insertAfter($('#vboxResizeBarProgressEW'));		
+	    $('#vboxProgressOps').prepend(div);		
 	}
 
 	

@@ -2291,15 +2291,35 @@ var vboxMedia = {
         }
         return null;
     },
-
+    
+    /**
+     * Return a list of encrypted media and associated
+     * encryption ids
+     */
+    getEncryptedMedia: function(media) {
+        var encMedia = [];
+        for(var i = 0; i < media.length; i++) {
+            var e = vboxMedia.getEncryptionSettings(media[i]);
+            if(!e) continue;
+            encMedia.push({
+                medium: media[i].id,
+                id: e.id
+            });
+        }
+        return encMedia;
+    },
+    
     /**
      * Return list of IDs and cypers for media list
      */
     getEncryptedMediaIds: function(media) {
         var encryptIds = [];
+        var idsSeen = [];
         for(var i = 0; i < media.length; i++) {
             var e = vboxMedia.getEncryptionSettings(media[i]);
             if(!e) continue;
+            if(jQuery.inArray(e.id, idsSeen) > -1) continue;
+            idsSeen.push(e.id);
             encryptIds.push({id: e.id, cipher: e.cipher})
         }
         return encryptIds;
